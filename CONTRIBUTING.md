@@ -11,7 +11,7 @@ https://github.com/Chameleon-company/Planting-Optimisation-Tool/fork
 
 Then clone your fork locally
 ```bash
-git clone https://github.com/<your-username>/Planting-Optimisation-Tool.git
+git clone https://github.com/<your-username>/Planting-Optimisation-Tool.git  # Replace <your-username> with your github username.
 cd Planting-Optimisation-Tool
 ```
 Add the project repo as remote to keep your fork up to date
@@ -25,6 +25,9 @@ git remote -v
 The front-end is built with React. Make sure you have **Node.js (v18+)** and **npm** installed.
 https://nodejs.org/en/download
 https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
+
+Confirm installation with:
+
 
 then
 ```bash
