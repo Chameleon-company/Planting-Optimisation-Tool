@@ -9,7 +9,13 @@ export default defineConfig([
     files: ["**/*.{js,mjs,cjs,jsx}"],
     plugins: { js },
     extends: ["js/recommended"],
-    languageOptions: { globals: globals.browser, test: true, expect: true },
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        // test: "readonly",
+        // expect: "readonly",
+      }
+    },
     settings: {
       react: {
         version: "detect",
