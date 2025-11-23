@@ -7,18 +7,21 @@ import eslintConfigPrettier from "eslint-config-prettier/flat";
 export default defineConfig([
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
-    plugins: { js },
+    plugins: { js, react: pluginReact },
     extends: ["js/recommended"],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        // test: "readonly",
-        // expect: "readonly",
-      }
-    },
+    languageOptions: { globals: globals.browser, },
     settings: {
       react: {
         version: "detect",
+      },
+    },
+  },
+  {
+    files: ["**/*.test.{js,jsx}"],
+    languageOptions: {
+      globals: {
+        test: "readonly",
+        expect: "readonly",
       },
     },
   },
