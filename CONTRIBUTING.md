@@ -76,6 +76,16 @@ Then push your changes **locally** to your fork with
 ```bash
 git push origin feature/<branch-name>
 ```
+# **MOST IMPORTANT - BEFORE SUBMITTING PR**
+
+- Your code **MUST** have tests committed with it.
+- Your code **MUST** be documented, legible and following the guidelines.
+- Your code **MUST** be linked to an item in the project planner in MS Teams that is assigned to **YOU**.
+
+Failure to adhere to any of the the above will result in your PR **not being accepted**.
+
+Once you have confirmed:
+
 Open a Pull request - https://github.com/Chameleon-company/Planting-Optimisation-Tool/compare
 
 Fill out the PR template and click Create Pull request. Then mark off your task on the MS Teams planner [here](https://teams.microsoft.com/l/entity/com.microsoft.teamspace.tab.planner/_djb2_msteams_prefix_4285208193?context=%7B%22channelId%22%3A%2219%3A040b4a55d7084ae0b2426a200c20ac53%40thread.tacv2%22%7D&tenantId=d02378ec-1688-46d5-8540-1c28b5f470f6).
