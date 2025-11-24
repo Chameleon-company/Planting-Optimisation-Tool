@@ -1,0 +1,9 @@
+# Ignore root node modules
+node_modules/
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Common editor files
+.vscode/
