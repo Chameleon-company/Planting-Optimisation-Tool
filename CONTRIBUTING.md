@@ -94,41 +94,52 @@ Fill out the PR template and click Create Pull request. Then mark off your task 
 
 ## 1. Front-end setup
 
-The front-end is built with React. Make sure you have **Node.js (v18+)** https://nodejs.org/en/download and **npm** https://docs.npmjs.com/downloading-and-installing-node-js-and-npm installed.
+The front-end is built with React. Make sure you have **Node.js (v24+)**  and **npm** installed.
 
+[Download Node.js](https://nodejs.org/en/download)
 
 Confirm installation with:
 ```bash
-node -v # should return >18.0
+node -v # should return >24.0
 npm -v
 ```
 
 then
 ```bash
 cd frontend
-npm install
+npm install # to install dependencies
 ```
 then to start the development server
 ```bash
-npm start
+npm run dev
 ```
 
 If you get errors or white screen after pulling new changes, run `npm install` again to update dependencies.
 
 ### Testing
 
-The front end uses eslint for linting - https://eslint.org/docs/latest/use/getting-started
+The front end uses **Vitest** for testing
 
-Prettier for code formatting - https://prettier.io/docs/
-
-CRA's built-in test runner for testing - https://create-react-app.dev/docs/running-tests/ **(TBC)**
-
-They are setup so you can run:
 ```bash
-npm lint            # for linting
-npm format      # for formatting
-npm test            # for testing
+npm run test # runs tests
+npm run test -- --coverage # runs tests with coverage
 ```
+Your code must include tests and pass existing tests before submitting a PR.  
+
+The front end uses [ESlint](https://eslint.org/docs/latest/use/getting-started) for linting
+```bash
+npm run lint:scripts # checks code
+npm run lint:styles  # checks css
+``` 
+
+[Prettier](https://prettier.io/docs/) for code formatting
+```bash
+npm run format:scripts  # format code
+npm run format:styles   # format CSS/SCSS 
+npm run format           # formats everything
+```
+
+[Husky](https://github.com/typicode/husky) is set up for pre-commit hooks. When you commit, lint-staged will run to ensure your staged files are properly linted and formatted. You do not need to run it manually.
 
 
 ## 2. Back-end and Data Science setup
