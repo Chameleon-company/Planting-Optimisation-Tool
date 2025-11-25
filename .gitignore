@@ -1,0 +1,9 @@
+
+#  Ignore environment variable files
+GIS/.env
+
+#ignore virtual environment folders
+.venv
+
+#Ignore GEE key files
+GIS/keys/*.json
