@@ -1,49 +1,50 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
-name: Node.js CI
+name: POT frontend infrastructure
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
-  build:
-
+  build-test-lint:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install dependencies
-      working-directory: frontend
-      run: npm ci
-      
-    - name: Lint check
-      working-directory: frontend
-      run: npm run lint
-    
-    - name: Format check
-      working-directory: frontend
-      run: npm run format -- --check
+      - name: Use Node.js 24
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24'
 
-    - name: Build check
-      working-directory: frontend
-      run: npm run build --if-present
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
 
-    - name: Run tests
-      working-directory: frontend
-      run: npm test --watchAll=false --passwithNoTests
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
+
+      - name: Run tests
+        run: npm run test
+        working-directory: frontend
+
+      - name: Lint scripts
+        run: npm run lint:scripts
+        working-directory: frontend
+
+      - name: Lint styles
+        run: npm run lint:styles
+        working-directory: frontend
+
+      - name: Check scripts formatting
+        run: npm run format:scripts -- --check
+        working-directory: frontend
+
+      - name: Check styles formatting
+        run: npm run format:styles -- -- check
+        working-directory: frontend

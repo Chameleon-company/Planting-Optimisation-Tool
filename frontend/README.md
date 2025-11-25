@@ -1,70 +1,61 @@
-# Getting Started with Create React App
+# vite-vanilla-ts-lib-starter
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The starter is built on top of Vite 7.x and prepared for writing libraries in TypeScript. It generates a package with support for ESM modules and IIFE.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- ESM modules
+- IIFE bundle for direct browser support without bundler
+- Typings bundle
+- ESLint - scripts linter
+- Stylelint - styles linter
+- Prettier - formatter
+- Vitest - test framework
+- Husky + lint-staged - pre-commit git hook set up for formatting
 
-### `npm start`
+## GitHub Template
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This is a template repo. Click the green [Use this template](https://github.com/kbysiec/vite-vanilla-ts-lib-starter/generate) button to get started.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Clone to local
 
-### `npm test`
+If you prefer to do it manually with the cleaner git history
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone https://github.com/kbysiec/vite-vanilla-ts-lib-starter.git
+cd vite-vanilla-ts-lib-starter
+npm i
+```
 
-### `npm run build`
+## Checklist
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+When you use this template, update the following:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Remove `.git` directory and run `git init` to clean up the history
+- Change the name in `package.json` - it will be the name of the IIFE bundle global variable and bundle files name (`.mjs`, `.iife.js`, `d.ts`)
+- Change the author name in `LICENSE`
+- Clean up the `README` and `CHANGELOG` files
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+And, enjoy 😊
 
-### `npm run eject`
+## Usage
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The starter contains the following scripts:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `dev` - starts dev server
+- `build` - generates the following bundles: ESM (`.js`) and IIFE (`.iife.js`). The name of bundle is automatically taken from `package.json` name property
+- `test` - starts vitest and runs all tests
+- `test:coverage` - starts vitest and run all tests with code coverage report
+- `lint:scripts` - lint `.ts` files with eslint
+- `lint:styles` - lint `.css` and `.scss` files with stylelint
+- `format:scripts` - format `.ts`, `.html` and `.json` files with prettier
+- `format:styles` - format `.cs` and `.scss` files with stylelint
+- `format` - format all with prettier and stylelint
+- `prepare` - script for setting up husky pre-commit hook
+- `uninstall-husky` - script for removing husky from repository
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Acknowledgment
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+If you found it useful somehow, I would be grateful if you could leave a star in the project's GitHub repository.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Thank you.

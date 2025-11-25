@@ -1,16 +1,38 @@
-import js from "@eslint/js";
+import eslint from "@eslint/js";
+import type { Linter } from "eslint";
+import eslintConfigPrettier from "eslint-config-prettier";
+import prettier from "eslint-plugin-prettier";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import pluginReact from "eslint-plugin-react";
-import { defineConfig } from "eslint/config";
 
-export default defineConfig([
+export default [
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  eslintConfigPrettier,
   {
-    files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-    plugins: { js },
-    extends: ["js/recommended"],
-    languageOptions: { globals: globals.browser },
+    ignores: [
+      "**/.history",
+      "**/.husky",
+      "**/.vscode",
+      "**/coverage",
+      "**/dist",
+      "**/node_modules",
+    ],
   },
-  tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
-]);
+  {
+    plugins: {
+      typescriptEslint: tseslint.plugin,
+      prettier,
+    },
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+      parser: tseslint.parser,
+    },
+    rules: {
+      "prettier/prettier": "error",
+    },
+  },
+] satisfies Linter.Config[];
