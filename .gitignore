@@ -7,3 +7,7 @@ GIS/.env
 
 #Ignore GEE key files
 GIS/keys/*.json
+
+#Ignore python cache files
+__pycache__/
+*.pyc
