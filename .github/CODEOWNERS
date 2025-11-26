@@ -1,0 +1,8 @@
+# This files purpose is purely to automatically assign PR reviews
+# And save us from having to do it manually for every PR.
+
+# Documentation can be found at: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+
+# Code owners of POT repository.
+* @leecopland @dwstephens
