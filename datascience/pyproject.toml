@@ -20,3 +20,12 @@ dependencies = [
     "statsmodels>=0.14.5",
     "xgboost>=3.1.1",
 ]
+
+# So the tests for DS exclude GIS subdirectory
+# GIS will test itself - for now...
+[tool.pytest.ini_options]
+norecursedirs = [
+  ".git",
+  ".venv",
+  "gis",
+]
