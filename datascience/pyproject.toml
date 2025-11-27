@@ -19,6 +19,17 @@ dependencies = [
     "shapely>=2.1.2",
     "statsmodels>=0.14.5",
     "xgboost>=3.1.1",
+
+    #Testing
+    "pytest>=9.0.1",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+
+    #GEE
+    "earthengine-api>=1.0.0",
+
+    #Environmental loading
+    "python-dotenv>=1.0.1"
 ]
 
 # So the tests for DS exclude GIS subdirectory
