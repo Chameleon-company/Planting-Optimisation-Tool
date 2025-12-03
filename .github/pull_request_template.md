@@ -1,17 +1,17 @@
-# Description
-
+## Description
 <!-- Describe what this PR does. Include context and why the change was made. -->
 
-## Related Issue
 
+## Related Issue / Task
 <!-- If this PR addresses an issue, link it here. E.g., "Closes #123" -->
 
-## Team / Area
 
+## Team / Area
 <!-- Indicate which part of the project this PR affects. For example: -->
 - [ ] Frontend
 - [ ] Backend
-- [ ] Data Science / ML
+- [ ] Data Science
+- [ ] GIS
 - [ ] Documentation
 - [ ] Other (please specify):
 
