@@ -22,7 +22,58 @@ gis/
 │   └── <service-account>.json   # Local service account key (ignored by Git)
 │
 ├── .env                         # GEE_SERVICE_ACCOUNT and GEE_KEY_PATH variables
-└── tests/
-    └──test_gis.py               # unit tests for all gis functions
-
+├── tests/
+│   └──test_gis.py               # unit tests for all gis functions
+├── utils 
+    └──build_farm_table.py       # script to load farm_boundaries.gpkg and generates a CSV for later import into PostgreSQL
 ```
+
+# Function Documentation
+
+**init_gee()**
+
+Initializes Google Earth Engine using the service account and key path from config/settings.py.
+Validates the required environment variables and calls ee.Initialize().
+
+**parse_point(lat, lon)**
+
+Converts a (lat, lon) coordinate into an ee.Geometry.Point.
+Earth Engine expects coordinates in [lon, lat] order.
+
+**parse_multipoint(coords)**
+
+Takes a list of (lat, lon) tuples and returns an ee.Geometry.MultiPoint.
+Coordinates are converted to [lon, lat].
+
+**parse_polygon(coords)**
+
+Creates an ee.Geometry.Polygon from a list of rings.
+Each ring is a list of (lat, lon) tuples; the outer ring must be closed.
+
+**parse_geometry(geom_raw)**
+
+Auto-detects whether the input is a Point, MultiPoint, or Polygon and returns the appropriate Earth Engine geometry.
+Raises an error for unsupported formats.
+
+**build_farm_table()**
+
+A one-time script that loads farm_boundaries.gpkg, cleans the geometries, and prepares a farm table for later GIS and database use.
+It converts 3D polygons to 2D, computes centroids, calculates area in hectares, generates WKT geometry, and outputs a clean CSV (gis/docs/farm_table.csv) containing all farm attributes and polygon data.
+
+**get_rainfall()**
+Returns the 5-year (2020 - 2024) average annual rainfall (mm) at a given point in Timor-Leste from PO's Dataset.
+
+**get_temperature()**
+Returns the 5-year (2020 - 2024) average land surface temperature (°C) at a given point in Timor-Leste from PO's Dataset.
+
+**get_ph()**
+Returns the soil pH value at a given point, based on a soil pH polygon layer from PO's Dataset.
+
+**get_elevation()**
+Returns the elevation (m) at a given point, from a DEM provided by the PO.
+
+**get_landcover()**
+Returns the landcover class for the farm containing the point, including "forest" or "non_forest".
+
+**get_NDVI()**
+turns the mean NDVI (Normalised Difference Vegetation Index, -1 to 1) at a point for the year 2025 from Modis Dataset.

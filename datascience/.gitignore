@@ -1,0 +1,19 @@
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Common editor files
+.vscode/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Ignore coverage file
+.coverage
+
+# Ruff stuff:
+.ruff_cache/
+
+# pytest stuff
+.pytest_cache/

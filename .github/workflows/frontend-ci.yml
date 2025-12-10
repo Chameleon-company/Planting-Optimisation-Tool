@@ -1,4 +1,4 @@
-name: POT frontend infrastructure
+name: POT Front-end Testing
 
 on:
   push:

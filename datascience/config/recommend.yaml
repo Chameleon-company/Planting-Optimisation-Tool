@@ -1,0 +1,45 @@
+
+# Names for id columns
+ids:
+  farm: farm_id
+  species: species_id
+
+names:
+  species_common_name: species_common_name
+  species_name: species_name
+
+# Configuration for features
+features:
+  # Numeric features
+  rainfall_mm:
+    type: numeric
+    short: rainfall
+    score_method: num_range
+    default_weight: 0.20
+
+  temperature_celsius:
+    type: numeric
+    short: temperature
+    score_method: num_range
+    default_weight: 0.20
+
+  elevation_m:
+    type: numeric
+    short: elevation
+    score_method: num_range
+    default_weight: 0.20
+
+  ph:
+    type: numeric
+    short: ph
+    score_method: num_range
+    default_weight: 0.20
+
+  # Categorical features
+  soil_texture:
+    type: categorical
+    short: soil
+    score_method: cat_exact
+    categorical:
+      exact_match: 1.0
+    default_weight: 0.20

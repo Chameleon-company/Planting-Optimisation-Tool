@@ -5,7 +5,7 @@ name: POT Back-end Testing
 
 on:
   push:
-    branches: [ "master" ]
+    branches: "**"
   pull_request:
     branches: [ "master" ]
 

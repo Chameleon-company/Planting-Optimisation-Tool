@@ -1,7 +1,9 @@
 # Planting Optimisation Tool
-[![POT Python infrastructure](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/python-app.yml/badge.svg)](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/python-app.yml)
-[![POT frontend infrastructure](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/node.js.yml/badge.svg)](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/node.js.yml)
-[![CodeQL](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/github-code-scanning/codeql)
+[![POT frontend infrastructure](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/frontend-ci.yml)
+[![POT Back-end Testing](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/backend-ci.yml)
+
+[![POT Data Science Testing](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/ds-ci.yml/badge.svg)](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/ds-ci.yml)
+[![POT GIS Testing](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/gis-ci.yml/badge.svg)](https://github.com/Chameleon-company/Planting-Optimisation-Tool/actions/workflows/gis-ci.yml)
 
 A data-driven recommendation system designed to support sustainable reforestation and agroforestry planning in Timor-Leste. The tool identifies the most suitable tree species for a given farm by analysing environmental conditions, species requirements, and geospatial datasets.
 

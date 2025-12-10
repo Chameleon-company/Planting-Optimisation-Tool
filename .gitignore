@@ -33,8 +33,11 @@ gis/assets/
 
 # Local scripts not needed in repo
 gis/main.py
+gis/test_main.py
 
 # Test caches
 gis/tests/**/__pycache__/
 gis/tests/.pytest_cache/
 
+# Ruff stuff:
+.ruff_cache/

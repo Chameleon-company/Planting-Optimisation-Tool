@@ -41,3 +41,24 @@ def parse_polygon(coords: list[list[tuple[float, float]]]):
         ee_rings.append(ee_ring)
 
     return ee.Geometry.Polygon(ee_rings)
+
+
+def parse_geometry(geom_raw):
+    """
+    Auto-detect the geometry type and return ee.Geometry.
+    """
+    # Point
+    if isinstance(geom_raw, tuple) and len(geom_raw) == 2:
+        return parse_point(geom_raw[0], geom_raw[1])
+
+    # MultiPoint
+    if isinstance(geom_raw, list) and all(
+        isinstance(p, tuple) and len(p) == 2 for p in geom_raw
+    ):
+        return parse_multipoint(geom_raw)
+
+    # Polygon
+    if isinstance(geom_raw, list) and all(isinstance(r, list) for r in geom_raw):
+        return parse_polygon(geom_raw)
+
+    raise ValueError(f"Invalid geometry format: {geom_raw}")

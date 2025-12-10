@@ -1,0 +1,35 @@
+```{mermaid}
+
+graph TD
+
+    %% Define Styles
+    classDef inputs fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef process fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef storage fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
+    classDef output fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+
+    %% Nodes
+    Farm[("Farm profile")]:::inputs
+    Species[("Species profile")]:::inputs
+    Config[("<b>Configuration</b><br>YAML defaults + Expert overrides")]:::storage
+    
+    subgraph "Stage 1: Orchestration Layer"
+        Filter["<b>Hard Exclusion Filter</b><br>Pass/Fail"]:::process
+    end
+
+    subgraph "Stage 2: Scoring Engine"
+        MCDA["<b>Suitability Scoring Loop</b><br>Weighted linear combination"]:::process
+        Norm["<b>Weight Normalisation</b><br>Handling missing data"]:::process
+    end
+
+    Result[("<b>Output</b><br>Ranked list + Key reasons")]:::output
+
+    %% Connections
+    Farm --> Filter
+    Species --> Filter
+    Filter -- "Valid Candidates Only" --> MCDA
+    Config -- "Weights & Methods" --> MCDA
+    MCDA --> Norm
+    Norm --> Result
+
+```
