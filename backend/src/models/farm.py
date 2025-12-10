@@ -32,6 +32,7 @@ class Farm(Base):
     nitrogen_fixing: Mapped[bool] = mapped_column()
     shade_tolerant: Mapped[bool] = mapped_column()
     bank_stabilising: Mapped[bool] = mapped_column()
+    slope: Mapped[float] = mapped_column()
 
     # Relationships
     # -------------

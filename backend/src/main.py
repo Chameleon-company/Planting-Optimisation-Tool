@@ -3,8 +3,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 # from fastapi.middleware.cors import CORSMiddleware
 
-
-app = FastAPI()
+app = FastAPI(
+    title="Planting Optimisation Tool API",
+    version="1.0.0",
+)
 
 
 class Item(BaseModel):

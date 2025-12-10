@@ -20,6 +20,7 @@ class Base(DeclarativeBase):
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
+    plugins=["geoalchemy2"]
 )
 
 AsyncSessionLocal = async_sessionmaker(
