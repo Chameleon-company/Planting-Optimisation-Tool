@@ -24,3 +24,16 @@ species_agroforestry_association = Table(
         primary_key=True,
     ),
 )
+
+species_soil_texture_association = Table(
+    "species_soil_texture_association",
+    Base.metadata,
+    Column(
+        "species_id", ForeignKey("species.id", ondelete="CASCADE"), primary_key=True
+    ),
+    Column(
+        "soil_texture_id",
+        ForeignKey("soil_textures.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)

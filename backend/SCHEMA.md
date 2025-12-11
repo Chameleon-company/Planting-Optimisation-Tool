@@ -12,6 +12,12 @@
 | :--- | :--- | :--- | :--- | :--- |
 | `species_id` | `Integer` | No | Yes | id |
 | `agroforestry_type_id` | `Integer` | No | Yes | id |
+## TABLE: `species_soil_texture_association`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `species_id` | `Integer` | No | Yes | id |
+| `soil_texture_id` | `Integer` | No | Yes | id |
 ## TABLE: `farms`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -30,6 +36,7 @@
 | `nitrogen_fixing` | `Boolean` | No | No |  |
 | `shade_tolerant` | `Boolean` | No | No |  |
 | `bank_stabilising` | `Boolean` | No | No |  |
+| `slope` | `Float` | No | No |  |
 ## TABLE: `species`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -45,7 +52,6 @@
 | `elevation_m_max` | `Integer` | No | No |  |
 | `ph_min` | `Float` | No | No |  |
 | `ph_max` | `Float` | No | No |  |
-| `preferred_soil_texture_id` | `Integer` | No | No | id |
 | `coastal` | `Boolean` | No | No |  |
 | `riparian` | `Boolean` | No | No |  |
 | `nitrogen_fixing` | `Boolean` | No | No |  |

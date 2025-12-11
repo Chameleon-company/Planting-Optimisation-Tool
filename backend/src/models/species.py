@@ -11,7 +11,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .soil_texture import SoilTexture
     from .agroforestry_type import AgroforestryType
-from .association import species_agroforestry_association
+from .association import (
+    species_agroforestry_association,
+    species_soil_texture_association,
+)
 
 
 class Species(Base):
@@ -29,9 +32,9 @@ class Species(Base):
     elevation_m_max: Mapped[int] = mapped_column()
     ph_min: Mapped[float] = mapped_column()  # 1 decimal
     ph_max: Mapped[float] = mapped_column()  # 1 decimal
-    preferred_soil_texture_id: Mapped[int] = mapped_column(
-        ForeignKey("soil_textures.id", ondelete="CASCADE")
-    )
+    # preferred_soil_texture_id: Mapped[int] = mapped_column(
+    #     ForeignKey("soil_textures.id", ondelete="CASCADE")
+    # )
     coastal: Mapped[bool] = mapped_column()
     riparian: Mapped[bool] = mapped_column()
     nitrogen_fixing: Mapped[bool] = mapped_column()
@@ -41,9 +44,14 @@ class Species(Base):
     # Relationships
     # -------------
     # Links a species object to its corresponding soil_texture object
-    preferred_soil_texture_link: Mapped["SoilTexture"] = relationship(
-        back_populates="preferred_species_link"
+    # preferred_soil_texture_link: Mapped["SoilTexture"] = relationship(
+    #     back_populates="preferred_species_link"
+    # )
+    soil_textures: Mapped[list["SoilTexture"]] = relationship(
+        secondary=species_soil_texture_association,
+        back_populates="soil_textures_for_species",
     )
+
     # Links a species object to its corresponding agroforestry_type object
     agroforestry_types: Mapped[list["AgroforestryType"]] = relationship(
         secondary=species_agroforestry_association,

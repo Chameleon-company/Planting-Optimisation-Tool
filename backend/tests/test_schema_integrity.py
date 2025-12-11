@@ -31,9 +31,10 @@ async def test_foreign_key_cascade_delete():
         # 1b. Insert Child (Farm) referencing the Parent
         farm = Farm(
             rainfall_mm=1000053400,
-            temp_c=222135.08686,
+            temperature_celsius=222135.08686,
             elevation_m=51123120,
-            soil_ph=63.65,
+            ph=63.65,
+            soil_texture_id=soil_id,
             area_ha=10.02,
             latitude=5234523.42342,
             longitude=3452.3,
@@ -42,7 +43,7 @@ async def test_foreign_key_cascade_delete():
             nitrogen_fixing=True,
             shade_tolerant=False,
             bank_stabilising=True,
-            soil_texture_id=soil_id,
+            slope=32.556,
         )
         session.add(farm)
         await session.flush()

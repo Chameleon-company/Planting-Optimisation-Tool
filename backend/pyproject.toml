@@ -28,3 +28,10 @@ pythonpath = [
 testpaths = [
     "tests"
 ]
+
+[tool.ruff]
+# Ignore unused imports (F401) in all SQLAlchemy model files.
+lint.per-file-ignores = { "src/models/*.py" = ["F401"] }
+exclude = [
+    "alembic/versions/*",
+]

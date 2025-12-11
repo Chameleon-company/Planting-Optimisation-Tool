@@ -1,14 +1,8 @@
+# ruff: noqa: F401
 import sys
 import os
 from .database import Base
-from .models.farm import Farm  # noqa: F401
-from .models.species import Species  # noqa: F401
-from .models.soil_texture import SoilTexture  # noqa: F401
-from .models.agroforestry_type import AgroforestryType  # noqa: F401
-from .models.association import (
-    farm_agroforestry_association, # noqa: F401
-    species_agroforestry_association # noqa: F401
-)  
+import src.models
 
 # Add model directory to path (necessary for importing all models)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "models")))

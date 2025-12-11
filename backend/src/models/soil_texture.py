@@ -22,8 +22,8 @@ class SoilTexture(Base):
     # Links a SoilTexture object back to the Farm objects
     farms: Mapped[list["Farm"]] = relationship(back_populates="soil_texture")
 
-    preferred_species_link: Mapped[list["Species"]] = relationship(
-        back_populates="preferred_soil_texture_link"
+    soil_textures_for_species: Mapped[list["Species"]] = relationship(
+        secondary="species_soil_texture_association", back_populates="soil_textures"
     )
 
     def __repr__(self) -> str:
