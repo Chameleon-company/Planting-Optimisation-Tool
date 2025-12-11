@@ -322,7 +322,7 @@ def test_empty_ids(farms_df, species_df, basic_cfg, params_index):
 
     # Scores should be empty (no valid species match found in dataframe)
     assert scores.empty
-    assert not explanations
+    assert explanations[101] == []
 
 
 def test_unknown_numeric_scorer(farms_df, species_df, params_index):
