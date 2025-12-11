@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field, confloat
+from pydantic import BaseModel, Field
 
 from src.schemas.constants import SoilTextureID
 
-from soil_texture import SoilTextureRead
+# from soil_texture import SoilTextureRead
 
 
 class FarmBase(BaseModel):

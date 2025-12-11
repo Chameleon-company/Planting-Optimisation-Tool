@@ -1,9 +1,10 @@
 # Farm table model and reference tables
-from sqlalchemy import ForeignKey
+
+# from sqlalchemy import ForeignKey
 from ..database import Base
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
+# from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
 class FarmBoundary(Base):
