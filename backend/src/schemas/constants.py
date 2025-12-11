@@ -6,7 +6,7 @@ class SoilTextureID(IntEnum):
     LOAMY_SAND = 2
     SANDY_LOAM = 3
     LOAM = 4
-    SILT_LOAM = 5
+    SILTY_LOAM = 5
     SILT = 6
     SANDY_CLAY_LOAM = 7
     CLAY_LOAM = 8
