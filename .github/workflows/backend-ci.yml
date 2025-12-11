@@ -20,6 +20,27 @@ jobs:
       run:
         working-directory: backend
 
+    # This starts the PostgreSQL container and exposes it to the runner.
+    services:
+      postgres_db: # Service name (used internally)
+        # Uses the image defined in docker-compose.yml
+        image: postgres:15-alpine
+        env:
+          # These MUST match the credentials in your local .env file
+          # And will be changed when the project is deployed
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: devpassword
+          POSTGRES_DB: POT_db
+        ports:
+          # Expose the port so the runner can connect via 'localhost:5432'
+          - 5432:5432
+        options: >
+          --health-cmd pg_isready 
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --name pot_postgres_db_ci 
+
     steps:
     - uses: actions/checkout@v4
 
@@ -35,6 +56,27 @@ jobs:
     - name: Install Backend dependencies
       run: |
         uv sync
+
+    - name: Set DB Environment Variables for CI
+      run: |
+        # Set the environment variables your src/config.py needs.
+        # The host is 'localhost' because the ports are exposed via the 'services' block.
+        echo "POSTGRES_USER=postgres" >> $GITHUB_ENV
+        echo "POSTGRES_PASSWORD=devpassword" >> $GITHUB_ENV
+        echo "POSTGRES_DB=POT_db" >> $GITHUB_ENV
+        echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV 
+        echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
+        
+    - name: Wait for PostgreSQL to be ready and healthy
+      # This waits for the service to be fully ready before proceeding to migrations.
+      # Checks the health of the container we defined above.
+      run: |
+        docker exec pot_postgres_db_ci pg_isready -U postgres
+        
+    - name: Apply Alembic Migrations
+      # Run migrations to create the table structure required by the tests.
+      run: |
+        uv run dotenv run alembic upgrade head
 
     - name: Lint with ruff
       run: |
