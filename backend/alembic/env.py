@@ -16,9 +16,9 @@ from src.models.agroforestry_type import AgroforestryType  # noqa: F401
 from src.models.farm import Farm  # noqa: F401
 from src.models.species import Species  # noqa: F401
 from src.models.association import (
-    farm_agroforestry_association,
-    species_agroforestry_association,
-)  # noqa: F401
+    farm_agroforestry_association, # noqa: F401
+    species_agroforestry_association, # noqa: F401
+)  
 
 # Because database.py lives above this dir we need to add path
 # .. = backend, so that we can import src/ classes
