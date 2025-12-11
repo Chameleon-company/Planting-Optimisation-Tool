@@ -8,7 +8,9 @@ farm_agroforestry_association = Table(
     Base.metadata,
     Column("farm_id", ForeignKey("farms.id"), primary_key=True),
     Column(
-        "agroforestry_type_id", ForeignKey("agroforestry_types.id", ondelete="CASCADE"), primary_key=True
+        "agroforestry_type_id",
+        ForeignKey("agroforestry_types.id", ondelete="CASCADE"),
+        primary_key=True,
     ),
 )
 
@@ -17,6 +19,8 @@ species_agroforestry_association = Table(
     Base.metadata,
     Column("species_id", ForeignKey("species.id"), primary_key=True),
     Column(
-        "agroforestry_type_id", ForeignKey("agroforestry_types.id", ondelete="CASCADE"), primary_key=True
+        "agroforestry_type_id",
+        ForeignKey("agroforestry_types.id", ondelete="CASCADE"),
+        primary_key=True,
     ),
 )

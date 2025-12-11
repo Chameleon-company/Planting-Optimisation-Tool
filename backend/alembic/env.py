@@ -4,18 +4,21 @@ import sys
 
 # Model discovery
 # These imports appear 'unused' but are REQUIRED.
-# SQLAlchemy's Declarative Base (Base) needs to run these files 
-# (as a side effect of importing) to register all table definitions 
+# SQLAlchemy's Declarative Base (Base) needs to run these files
+# (as a side effect of importing) to register all table definitions
 # and Foreign Key constraints into the shared Base.metadata object.
 #
 # Alembic's autogenerate process reads Base.metadata, not the models directly.
 # ---------------------------------------------------------------------
 from src.database import Base
-from src.models.soil_texture import SoilTexture # noqa: F401
-from src.models.agroforestry_type import AgroforestryType # noqa: F401
-from src.models.farm import Farm # noqa: F401
-from src.models.species import Species # noqa: F401
-from src.models.association import farm_agroforestry_association, species_agroforestry_association # noqa: F401
+from src.models.soil_texture import SoilTexture  # noqa: F401
+from src.models.agroforestry_type import AgroforestryType  # noqa: F401
+from src.models.farm import Farm  # noqa: F401
+from src.models.species import Species  # noqa: F401
+from src.models.association import (
+    farm_agroforestry_association,
+    species_agroforestry_association,
+)  # noqa: F401
 
 # Because database.py lives above this dir we need to add path
 # .. = backend, so that we can import src/ classes

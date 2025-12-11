@@ -17,11 +17,7 @@ class Base(DeclarativeBase):
     pass
 
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=False,
-    plugins=["geoalchemy2"]
-)
+engine = create_async_engine(settings.DATABASE_URL, echo=False, plugins=["geoalchemy2"])
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

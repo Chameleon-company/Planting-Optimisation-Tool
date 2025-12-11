@@ -41,7 +41,7 @@ async def test_foreign_key_cascade_delete():
             riparian=True,
             nitrogen_fixing=True,
             shade_tolerant=False,
-            bank_stabilising=True,        
+            bank_stabilising=True,
             soil_texture_id=soil_id,
         )
         session.add(farm)

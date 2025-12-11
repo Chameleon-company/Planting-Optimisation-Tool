@@ -46,8 +46,8 @@ class Species(Base):
     )
     # Links a species object to its corresponding agroforestry_type object
     agroforestry_types: Mapped[list["AgroforestryType"]] = relationship(
-        secondary=species_agroforestry_association, 
-        back_populates="species_agroforestry_type"
+        secondary=species_agroforestry_association,
+        back_populates="species_agroforestry_type",
     )
 
     def __repr__(self) -> str:

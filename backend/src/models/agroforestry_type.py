@@ -28,8 +28,7 @@ class AgroforestryType(Base):
 
     # Links an AgroforestryType object back to a Farm object
     species_agroforestry_type: Mapped[list["Species"]] = relationship(
-        secondary=species_agroforestry_association, 
-        back_populates="agroforestry_types"
+        secondary=species_agroforestry_association, back_populates="agroforestry_types"
     )
 
     def __repr__(self) -> str:

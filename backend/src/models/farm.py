@@ -23,7 +23,9 @@ class Farm(Base):
     temperature_celsius: Mapped[int] = mapped_column()
     elevation_m: Mapped[int] = mapped_column()
     ph: Mapped[float] = mapped_column()  # 1 decimal point, enforced by Pydantic model
-    soil_texture_id: Mapped[int] = mapped_column(ForeignKey("soil_textures.id", ondelete="CASCADE"))
+    soil_texture_id: Mapped[int] = mapped_column(
+        ForeignKey("soil_textures.id", ondelete="CASCADE")
+    )
     area_ha: Mapped[float] = mapped_column()  # 3 decimal points
     latitude: Mapped[float] = mapped_column()  # 5 decimal points
     longitude: Mapped[float] = mapped_column()  # 5 decimal points
@@ -40,8 +42,7 @@ class Farm(Base):
     soil_texture: Mapped["SoilTexture"] = relationship(back_populates="farms")
     # Links a Farm object to a list of AgroforestryType objects (M:M)
     agroforestry_type: Mapped[list["AgroforestryType"]] = relationship(
-        secondary=farm_agroforestry_association, 
-        back_populates="farms"
+        secondary=farm_agroforestry_association, back_populates="farms"
     )
 
     def __repr__(self) -> str:
