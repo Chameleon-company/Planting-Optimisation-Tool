@@ -96,7 +96,7 @@ jobs:
     # 4. APPLY MIGRATIONS
     - name: Apply Alembic Migrations
       run: |
-        uv run dotenv run alembic upgrade head
+        uv run alembic upgrade head
     
     # 5. LINT AND FORMAT
     - name: Lint with ruff
