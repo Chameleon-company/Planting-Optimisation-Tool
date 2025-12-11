@@ -61,13 +61,13 @@ jobs:
     
     - name: Set DB Environment Variables for CI
       run: |
-        # Set the environment variables your src/config.py needs.
-        # The host is 'localhost' because the ports are exposed via the 'services' block.
+        # Set individual components
         echo "POSTGRES_USER=postgres" >> $GITHUB_ENV
         echo "POSTGRES_PASSWORD=devpassword" >> $GITHUB_ENV
         echo "POSTGRES_DB=POT_db" >> $GITHUB_ENV
         echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV 
         echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgresql+asyncpg://postgres:devpassword@localhost:5432/POT_db" >> $GITHUB_ENV
         
     - name: Wait for PostgreSQL Service to be Healthy
       run: |
