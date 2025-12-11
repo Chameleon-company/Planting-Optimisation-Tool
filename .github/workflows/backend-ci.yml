@@ -34,11 +34,11 @@ jobs:
         ports:
           # Expose the port so the runner can connect via 'localhost:5432'
           - 5432:5432
-        healthcheck:
-          test: ["CMD-SHELL", "pg_isready -U postgres"]
-          interval: 10s
-          timeout: 5s
-          retries: 5
+        options: |
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -66,11 +66,29 @@ jobs:
         echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV 
         echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
         
-    - name: Wait for PostgreSQL to be ready and healthy
-      # This waits for the service to be fully ready before proceeding to migrations.
-      # Checks the health of the container we defined above.
+    - name: Wait for PostgreSQL Service to be Healthy
+  # This uses a loop to repeatedly check the container health status
       run: |
-        docker exec pot_postgres_db_ci pg_isready -U postgres
+        # The service name defined in the 'services' block
+        SERVICE_NAME="postgres_db" 
+        MAX_ATTEMPTS=15
+        ATTEMPT=0
+        
+        echo "Waiting for ${SERVICE_NAME} to accept connections on 5432..."
+        
+        # Loop until the check succeeds or max attempts are reached
+        until [ "$(docker inspect --format '{{.State.Health.Status}}' $SERVICE_NAME)" == "healthy" ]; do
+          if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+            echo "Error: PostgreSQL service did not become healthy within 60 seconds."
+            exit 1
+          fi
+          
+          echo "Attempt $((ATTEMPT + 1)) of ${MAX_ATTEMPTS}: DB is not yet healthy. Waiting..."
+          sleep 4
+          ATTEMPT=$((ATTEMPT + 1))
+        done
+        
+        echo "✅ PostgreSQL service is now healthy!"
         
     - name: Apply Alembic Migrations
       # Run migrations to create the table structure required by the tests.
