@@ -69,9 +69,7 @@ jobs:
         echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV 
         echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
         
-    # 3. WAIT FOR SERVICE (Native Bash Script - No External Dependency)
     - name: Wait for PostgreSQL Service to be Healthy
-      # This relies on the 'options' health checks being configured correctly above.
       run: |
         SERVICE_NAME="postgres_db" 
         MAX_ATTEMPTS=15
@@ -79,11 +77,11 @@ jobs:
         
         echo "Waiting for ${SERVICE_NAME} to accept connections on 5432..."
         
-        # Loop until the check succeeds or max attempts are reached
-        until [ "$(docker inspect --format '{{.State.Health.Status}}' $SERVICE_NAME)" == "healthy" ]; do
+        # Use 'pg_isready' directly against the network alias (DNS name)
+        # The 'pg_isready' utility must be installed on the runner OS for this to work.
+        until pg_isready -h $SERVICE_NAME -p 5432 -U postgres -t 1; do
           if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
             echo "Error: PostgreSQL service did not become healthy within 60 seconds."
-            docker logs $SERVICE_NAME
             exit 1
           fi
           
@@ -92,8 +90,8 @@ jobs:
           ATTEMPT=$((ATTEMPT + 1))
         done
         
-        echo "✅ PostgreSQL service is now healthy!"
-
+        echo "PostgreSQL service is now healthy!"
+        
     # 4. APPLY MIGRATIONS
     - name: Apply Alembic Migrations
       run: |
