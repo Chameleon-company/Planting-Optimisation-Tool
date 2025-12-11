@@ -1,61 +1,64 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
+          
+          
 name: POT Back-end Testing 
-
+          
+          
 on:
   push:
     branches: "**"
   pull_request:
     branches: [ "master" ]
-
+          
+          
 permissions:
   contents: read
-
+          
+          
 jobs:
   build:
-
+    
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
-
-    # This starts the PostgreSQL container and exposes it to the runner.
+    
+    # ====================================================================
+    # 1. DATABASE SERVICE SETUP
+    # Starts the PostgreSQL container and exposes it to the runner.
+    # The 'options' are set on a single line to avoid YAML parsing bugs.
+    # ====================================================================
     services:
-      postgres_db: # Service name (used internally)
-        # Uses the image defined in docker-compose.yml
+      postgres_db: # Service name
         image: postgres:15-alpine
         env:
-          # These MUST match the credentials in your local .env file
-          # And will be changed when the project is deployed
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: devpassword
           POSTGRES_DB: POT_db
         ports:
           # Expose the port so the runner can connect via 'localhost:5432'
           - 5432:5432
-        options: |
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+        options: "--health-cmd \"pg_isready -U postgres\" --health-interval 10s --health-timeout 5s --health-retries 5"
+    
+    # ====================================================================
+    # 2. WORKFLOW STEPS
+    # ====================================================================
     steps:
     - uses: actions/checkout@v4
-
+    
     - name: Install uv
       uses: astral-sh/setup-uv@v6
       with: 
           version: "0.9.11"
           enable-cache: true
-
+    
     - name: Set up Python
       run: uv python install 
-
+    
     - name: Install Backend dependencies
       run: |
         uv sync
-
+    
     - name: Set DB Environment Variables for CI
       run: |
         # Set the environment variables your src/config.py needs.
@@ -66,10 +69,10 @@ jobs:
         echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV 
         echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
         
+    # 3. WAIT FOR SERVICE (Native Bash Script - No External Dependency)
     - name: Wait for PostgreSQL Service to be Healthy
-  # This uses a loop to repeatedly check the container health status
+      # This relies on the 'options' health checks being configured correctly above.
       run: |
-        # The service name defined in the 'services' block
         SERVICE_NAME="postgres_db" 
         MAX_ATTEMPTS=15
         ATTEMPT=0
@@ -80,6 +83,7 @@ jobs:
         until [ "$(docker inspect --format '{{.State.Health.Status}}' $SERVICE_NAME)" == "healthy" ]; do
           if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
             echo "Error: PostgreSQL service did not become healthy within 60 seconds."
+            docker logs $SERVICE_NAME
             exit 1
           fi
           
@@ -89,20 +93,22 @@ jobs:
         done
         
         echo "✅ PostgreSQL service is now healthy!"
-        
+
+    # 4. APPLY MIGRATIONS
     - name: Apply Alembic Migrations
-      # Run migrations to create the table structure required by the tests.
       run: |
         uv run dotenv run alembic upgrade head
-
+    
+    # 5. LINT AND FORMAT
     - name: Lint with ruff
       run: |
         uv run ruff check .
-
+    
     - name: Format check with ruff
       run: |
         uv run ruff format --check .
-
+    
+    # 6. RUN TESTS
     - name: Test with pytest
       run: |
         uv run pytest
