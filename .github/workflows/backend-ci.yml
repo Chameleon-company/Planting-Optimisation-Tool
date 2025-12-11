@@ -39,7 +39,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --name pot_postgres_db_ci 
 
     steps:
     - uses: actions/checkout@v4
