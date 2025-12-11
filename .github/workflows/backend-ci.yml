@@ -71,27 +71,28 @@ jobs:
         
     - name: Wait for PostgreSQL Service to be Healthy
       run: |
-        SERVICE_NAME="postgres_db" 
+        SERVICE_HOST="localhost" # Runner connects to the exposed port via localhost
+        SERVICE_PORT=5432
         MAX_ATTEMPTS=15
         ATTEMPT=0
         
-        echo "Waiting for ${SERVICE_NAME} to accept connections on 5432..."
+        echo "Waiting for DB service to open port ${SERVICE_PORT}..."
         
-        # Use 'pg_isready' directly against the network alias (DNS name)
-        # The 'pg_isready' utility must be installed on the runner OS for this to work.
-        until pg_isready -h $SERVICE_NAME -p 5432 -U postgres -t 1; do
+        # Loop until netcat (nc) successfully connects to the host/port
+        # 'nc -z' checks for open port without sending data
+        until nc -z $SERVICE_HOST $SERVICE_PORT; do
           if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
-            echo "Error: PostgreSQL service did not become healthy within 60 seconds."
+            echo "Error: PostgreSQL service did not open port ${SERVICE_PORT} within 60 seconds."
             exit 1
           fi
           
-          echo "Attempt $((ATTEMPT + 1)) of ${MAX_ATTEMPTS}: DB is not yet healthy. Waiting..."
+          echo "Attempt $((ATTEMPT + 1)) of ${MAX_ATTEMPTS}: Port is not yet open. Waiting..."
           sleep 4
           ATTEMPT=$((ATTEMPT + 1))
         done
         
-        echo "PostgreSQL service is now healthy!"
-        
+        echo "PostgreSQL service is now reachable!"
+
     # 4. APPLY MIGRATIONS
     - name: Apply Alembic Migrations
       run: |
