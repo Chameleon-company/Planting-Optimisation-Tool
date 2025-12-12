@@ -11,33 +11,33 @@ __pycache__/
 # GIS files
 
 # Bytecode + cache (recursive)
-gis/**/*.pyc
-gis/**/__pycache__/
-gis/.pytest_cache/
+**/*.pyc
+**/__pycache__/
+.pytest_cache/
 
 # Virtual environment
-gis/.venv/
+.venv/
 
 # Editor / OS artifacts
-gis/.vscode/
-gis/.DS_Store
+.vscode/
 .DS_Store
 **/.DS_Store
 
 # Environment variables & secrets
-gis/.env
-gis/keys/
+.env
+keys/
 
 # Assets & temporary data
-gis/assets/
+assets/
 
 # Local scripts not needed in repo
-gis/main.py
-gis/test_main.py
+main.py
+test_main.py
 
 # Test caches
-gis/tests/**/__pycache__/
-gis/tests/.pytest_cache/
+tests/**/__pycache__/
+tests/.pytest_cache/
 
-# Ruff stuff:
+# Ruff cache
 .ruff_cache/
+

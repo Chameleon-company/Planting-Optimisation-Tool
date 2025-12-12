@@ -7,9 +7,9 @@ These data dictionaries contains all variables for the recommendation system (su
 | Column Name          | Type        | Unit     | Description                     | Constraints                        |
 | -------------------- | ----------- | -------- | ------------------------------- | ---------------------------------- |
 | `id`            | Integer      | —        | Unique identifier for each farm | Required, unique                   |
-| `rainfall_mm`    | Float       | `mm` | Annual average rainfall         | Required, Range: `1000`–`3000`             |
-| `temperature_celsius` | Float       | `celsius` | Annual average temperature      | Required, Range: `15`–`30`             |
-| `elevation_m`    | Float       | `m` | Elevation above sea level       | Required, Range: `0`–`2963`             |
+| `rainfall_mm`    | Integer       | `mm` | Annual average rainfall         | Required, Range: `1000`–`3000`             |
+| `temperature_celsius` | Integer       | `celsius` | Annual average temperature      | Required, Range: `15`–`30`             |
+| `elevation_m`    | Integer       | `m` | Elevation above sea level       | Required, Range: `0`–`2963`             |
 | `ph`                 | Float       | pH units | Soil acidity/alkalinity         | Required, Range: `4.0`–`8.5`             |
 | `soil_texture_id`          | Integer | —        | Dominant soil texture type id    | Required, Allowed: See Soil Textures table  |
 | `area_ha`          | Float       | `ha`  | Farm area            | Range: 0 to 100                 |
@@ -32,12 +32,12 @@ These data dictionaries contains all variables for the recommendation system (su
 | `id`              | Integer | —        | Unique identifier for each species       | Required, unique                   |
 | `name`            | String | —        | Scientific name of the species | Required                           |
 | `common_name`            | String | —        | Common name of the species | Required                           |
-| `rainfall_mm_min`            | Float  | `mm` | Minimum preferred annual rainfall        | Required, Range: `200`–`5000`             |
-| `rainfall_mm_max`            | Float  | `mm` | Maximum preferred annual rainfall        | Required, Range: `200`–`5000`             |
-| `temperature_celsius_min`         | Float  | `celsius` | Minimum preferred temperature            | Required, Range: `10`–`40`             |
-| `temperature_celsius_max`         | Float  | `celsius` | Maximum preferred temperature            | Required, Range: `10`–`40`             |
-| `elevation_m_min`            | Float  | `m` | Minimum preferred altitude               | Required, Range: `0`–`3000`             |
-| `elevation_m_max`            | Float  | `m` | Maximum preferred altitude               | Required, Range: `0`–`3000`             |
+| `rainfall_mm_min`            | Integer  | `mm` | Minimum preferred annual rainfall        | Required, Range: `200`–`5000`             |
+| `rainfall_mm_max`            | Integer  | `mm` | Maximum preferred annual rainfall        | Required, Range: `200`–`5000`             |
+| `temperature_celsius_min`         | Integer  | `celsius` | Minimum preferred temperature            | Required, Range: `10`–`40`             |
+| `temperature_celsius_max`         | Integer  | `celsius` | Maximum preferred temperature            | Required, Range: `10`–`40`             |
+| `elevation_m_min`            | Integer  | `m` | Minimum preferred altitude               | Required, Range: `0`–`3000`             |
+| `elevation_m_max`            | Integer  | `m` | Maximum preferred altitude               | Required, Range: `0`–`3000`             |
 | `ph_min`                  | Float  | pH units | Minimum preferred soil pH                | Required, Range: `4.0`–`7.0`             |
 | `ph_max`                  | Float  | pH units | Maximum preferred soil pH                | Required, Range: `7.0`–`8.5`             |
 | `preferred_soil_texture_id`    | List (integers)   | —        | List of compatible soil texture ids            | Required, See Soil Textures table    |
@@ -56,7 +56,7 @@ These data dictionaries contains all variables for the recommendation system (su
 | `loamy sand`       | 2    |
 | `sandy loam`       | 3    |
 | `loam`             | 4    |
-| `silt loam`        | 5    |
+| `silty loam`       | 5    |
 | `silt`             | 6    |
 | `sandy clay loam`  | 7    |
 | `clay loam`        | 8    |
