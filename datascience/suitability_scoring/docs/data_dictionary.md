@@ -56,7 +56,7 @@ These data dictionaries contains all variables for the recommendation system (su
 | `loamy sand`       | 2    |
 | `sandy loam`       | 3    |
 | `loam`             | 4    |
-| `silt loam`        | 5    |
+| `silty loam`       | 5    |
 | `silt`             | 6    |
 | `sandy clay loam`  | 7    |
 | `clay loam`        | 8    |
