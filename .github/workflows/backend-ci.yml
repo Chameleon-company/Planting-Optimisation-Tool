@@ -30,7 +30,7 @@ jobs:
     # ====================================================================
     services:
       postgres_db: # Service name
-        image: postgis/postgis:15-alpine
+        image: postgis/postgis:15-3.4-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: devpassword
