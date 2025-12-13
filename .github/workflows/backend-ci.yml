@@ -95,8 +95,13 @@ jobs:
 
     - name: Enable PostGIS Extension
       run: |
-        # Use the DATABASE_URL environment variable set previously to connect via psql
-        psql $DATABASE_URL -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+        # Use explicit options to force TCP connection via localhost:5432
+        psql \
+          --host=$POSTGRES_HOST \
+          --port=$POSTGRES_PORT \
+          --dbname=$POSTGRES_DB \
+          --username=$POSTGRES_USER \
+          -c "CREATE EXTENSION IF NOT EXISTS postgis;"
         echo "PostGIS extension successfully enabled."
 
     # 4. APPLY MIGRATIONS
