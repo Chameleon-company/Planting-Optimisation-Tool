@@ -7,6 +7,7 @@ from src.schemas.constants import AgroforestryTypeID
 # from soil_texture import SoilTextureRead
 
 
+# Base Farm model used for validation
 class FarmBase(BaseModel):
     rainfall_mm: int = Field(
         title="Annual rainfall in millimetres",
@@ -88,11 +89,39 @@ class FarmBase(BaseModel):
     agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None
 
 
+# Inherits from Base class, provides functionality to create a new farm.
 class FarmCreate(FarmBase):
     # WIP
     pass
 
 
 class FarmRead(FarmBase):
-    # WIP
-    pass
+    # This is still WIP, I don't completely understand the impacts it has yet
+    # I think it is the fields being exposed to the end-user
+    # Of which these existing values would be useless
+    id: int = Field(..., description="The unique database ID of the farm.")
+    user_id: int = Field(..., description="The ID of the user who owns this farm.")
+    agroforestry_type_ids: List[int] = Field(
+        default_factory=list,
+        description="List of IDs representing the agroforestry types associated with the farm.",
+    )
+
+
+# Updating a field of a farm doesn't require all other fields being passed too
+# Therefore this class inherits the validation criteria from Base while making each field optional.
+class FarmUpdate(FarmBase):
+    rainfall_mm: Optional[int] = None
+    temperature_celsius: Optional[int] = None
+    elevation_m: Optional[int] = None
+    ph: Optional[float] = None
+    soil_texture_id: Optional[SoilTextureID] = None
+    area_ha: Optional[float] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    coastal: Optional[bool] = None
+    riparian: Optional[bool] = None
+    nitrogen_fixing: Optional[bool] = None
+    shade_tolerant: Optional[bool] = None
+    bank_stabilising: Optional[bool] = None
+    slope: Optional[float] = None
+    agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None

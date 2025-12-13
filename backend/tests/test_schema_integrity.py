@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, select
 from src.models.farm import Farm
 from src.models.soil_texture import SoilTexture
+from src.models.user import User
 
 
 @pytest.mark.asyncio
@@ -13,7 +14,14 @@ async def test_foreign_key_cascade_delete(async_session: AsyncSession):
     """
     session = async_session
 
-    # 1. SETUP: Insert Parent and Child Records
+    # Insert Parent and Child Records
+    # 1a Create user
+    test_user = User(email="test_user@test.com", hashed_password="password999999")
+    session.add(test_user)
+    await session.flush()
+    user_id = test_user.id
+
+    # 1b Create soil testure
     soil_texture = SoilTexture(texture_name="Loam")
     session.add(soil_texture)
     await session.flush()
@@ -35,6 +43,7 @@ async def test_foreign_key_cascade_delete(async_session: AsyncSession):
         shade_tolerant=False,
         bank_stabilising=True,
         slope=32.556,
+        user_id=user_id,
     )
     session.add(farm)
     await session.flush()

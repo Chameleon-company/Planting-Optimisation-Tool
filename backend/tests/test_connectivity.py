@@ -1,5 +1,3 @@
-# test_connectivity.py
-
 import pytest
 from sqlalchemy import text
 from src.config import Settings

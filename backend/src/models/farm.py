@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .soil_texture import SoilTexture
     from .agroforestry_type import AgroforestryType
     from .boundaries import FarmBoundary
+    from .user import User
 
 
 class Farm(Base):
@@ -36,6 +37,7 @@ class Farm(Base):
     shade_tolerant: Mapped[bool] = mapped_column()
     bank_stabilising: Mapped[bool] = mapped_column()
     slope: Mapped[float] = mapped_column()  # 2 decimal points
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     # Relationships
     # -------------
@@ -51,6 +53,8 @@ class Farm(Base):
         uselist=False,  # Apparently critical for 1:1
         cascade="all, delete-orphan",
     )
+    # Links farm owner/user to farm
+    owner: Mapped["User"] = relationship(back_populates="farms")
 
     def __repr__(self) -> str:
         """
