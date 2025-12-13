@@ -61,19 +61,25 @@ A one-time script that loads farm_boundaries.gpkg, cleans the geometries, and pr
 It converts 3D polygons to 2D, computes centroids, calculates area in hectares, generates WKT geometry, and outputs a clean CSV (gis/docs/farm_table.csv) containing all farm attributes and polygon data.
 
 **get_rainfall()**
-Returns the 5-year (2020 - 2024) average annual rainfall (mm) at a given point in Timor-Leste from PO's Dataset.
+Returns the 5-year (2020 - 2024) average annual rainfall (mm) for a given geometry (point or polygon), in Timor-Leste from PO's Dataset.
 
 **get_temperature()**
-Returns the 5-year (2020 - 2024) average land surface temperature (°C) at a given point in Timor-Leste from PO's Dataset.
+Returns the 5-year (2020 - 2024) average land surface temperature (°C) for a given geometry (point or polygon), in Timor-Leste from PO's Dataset.
 
 **get_ph()**
-Returns the soil pH value at a given point, based on a soil pH polygon layer from PO's Dataset.
+Returns the soil pH value for a given geometry (point or polygon), based on a soil pH polygon layer from PO's Dataset.
 
 **get_elevation()**
-Returns the elevation (m) at a given point, from a DEM provided by the PO.
+Returns the elevation (m) for a given geometry (point or polygon), from a DEM provided by the PO.
 
-**get_landcover()**
-Returns the landcover class for the farm containing the point, including "forest" or "non_forest".
+**get_slope()**
+Returns the get_slope (degree) for a given geometry (point or polygon), from a DEM provided by the PO.
 
-**get_NDVI()**
-turns the mean NDVI (Normalised Difference Vegetation Index, -1 to 1) at a point for the year 2025 from Modis Dataset.
+**get_texture()**
+Return soil texture for a given geometry (point or polygon), from a soil_texture provided by the PO.
+
+**get_area_ha()**
+Return area of the input geometry in hectares for a given geometry (point or polygon)
+
+**get_dist_to_coast()**
+Return distance to coast_boundary by measure the distance of the centroild point to timor boundary for a given geometry (point or polygon)

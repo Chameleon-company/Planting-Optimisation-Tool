@@ -1,163 +1,255 @@
-def get_rainfall(lat: float, lon: float):
-    """Returns the 5-year (2020 - 2024) average annual rainfall (mm) at a given point in Timor-Leste from PO's Dataset."""
+from config.settings import (
+    RAINFALL_ASSET_ID,
+    RAINFALL_BAND,
+    RAINFALL_SCALE,
+    TEMP_ASSET_ID,
+    TEMP_BAND,
+    TEMP_SCALE,
+    SOIL_PH_ASSET_ID,
+    SOIL_PH_FIELD,
+    DEM_ASSET_ID,
+    DEM_BAND,
+    DEM_SCALE,
+    SLOPE_BAND,
+    SOIL_TEXTURE_ASSET_ID,
+    SOIL_TEXTURE_FIELD,
+    BOUNDARY_TIMOR_ASSET_ID,
+)
+
+from core.geometry_parser import parse_geometry
+
+
+# Function return to float
+def _ee_to_float(value):
+    """Convert an ee.Number or Python scalar to Python float, handling None safely."""
+    if value is None:
+        return None
+    if hasattr(value, "getInfo"):
+        value = value.getInfo()
+    return float(value) if value is not None else None
+
+
+def get_rainfall(geometry, year: int | None = None):
+    """
+    Return mean annual rainfall (mm) for a given geometry (point or polygon).
+
+    Parameters
+    ----------
+    geometry : ee.Geometry
+        ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    year : int, optional
+        Target year. Currently we only have a 5-year average (2020–2024),
+        so `year` is accepted for future extension but not used yet.
+    """
     import ee
 
-    # Create a point geometry from longitude (lon), latitude (lat)
-    point = ee.Geometry.Point([lon, lat])
+    geometry = parse_geometry(geometry)
 
-    # Rainfal from Annual Rainfall data from PO
-    rain = ee.Image(
-        "projects/scenic-block-466510-c5/assets/CHIRPS_5yr_Avg_Annual_Rainfall_2020_2024_30m"
-    ).select("b1")
+    # Select rainfall dataset
+    img = ee.Image(RAINFALL_ASSET_ID).select(RAINFALL_BAND)
 
-    rain_dict = rain.reduceRegion(
-        reducer=ee.Reducer.mean(), geometry=point, scale=30, maxPixels=1e9
+    stats = img.reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=geometry,
+        scale=RAINFALL_SCALE,
+        maxPixels=1e9,
     )
 
-    # Return as Python Float
-    rain_value = rain_dict.get("b1")
-
-    # Check it return Python Float
-    if hasattr(rain_value, "getInfo"):
-        rain_value = rain_value.getInfo()
-
-    return float(rain_value) if rain_value is not None else None
+    value = stats.get(RAINFALL_BAND)
+    value = int(round(_ee_to_float(value))) if value is not None else None
+    return value
 
 
-def get_temperature(lat: float, lon: float):
-    """Returns the 5-year (2020 - 2024) average land surface temperature (°C) at a given point in Timor-Leste from PO's Dataset."""
+def get_temperature(geometry: list[list], year: int | None = None):
+    """
+    Return mean annual temperature for a given geometry (point or polygon).
+
+    Parameters
+    ----------
+    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    year : int, optional
+        Target year. Currently we only have a 5-year average (2020–2024),
+        so `year` is accepted for future extension but not used yet.
+    """
     import ee
 
-    # Create a point geometry from longitude (lon), latitude (lat)
-    point = ee.Geometry.Point([lon, lat])
+    geometry = parse_geometry(geometry)
 
-    # Rainfal from Annual Rainfall data from PO
-    temp = ee.Image(
-        "projects/scenic-block-466510-c5/assets/MOD11A2_5yr_Avg_Annual_temperature_2020_2024_30m"
-    ).select("b1")
+    # Select rainfall dataset
+    img = ee.Image(TEMP_ASSET_ID).select(TEMP_BAND)
 
-    temp_dict = temp.reduceRegion(
-        reducer=ee.Reducer.mean(), geometry=point, scale=30, maxPixels=1e9
+    stats = img.reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=geometry,
+        scale=TEMP_SCALE,
+        maxPixels=1e9,
     )
 
-    # Return as Python Float
-    temp_value = temp_dict.get("b1")
-
-    # Check it return Python Float
-    if hasattr(temp_value, "getInfo"):
-        temp_value = temp_value.getInfo()
-
-    return float(temp_value) if temp_value is not None else None
+    value = stats.get(TEMP_BAND)
+    value = int(round(_ee_to_float(value))) if value is not None else None
+    return value
 
 
-def get_ph(lat: float, lon: float):
-    """Returns the soil pH value at a given point, based on a soil pH polygon layer from PO's Dataset."""
+def get_ph(geometry: list[list], year: int | None = None):
+    """
+    Return soil pH for a given geometry (point or polygon).
+
+    Parameters
+    ----------
+    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    year : int, optional
+        Reserved for future use if soil pH becomes time-varying.
+        Currently ignored.
+    """
     import ee
 
-    # Create point geometry
-    point = ee.Geometry.Point([lon, lat])
+    geometry = parse_geometry(geometry)
 
     # Load soil pH FeatureCollection
-    soil_ph_file = ee.FeatureCollection(
-        "projects/scenic-block-466510-c5/assets/soil_ph_timor"
-    )
+    file = ee.FeatureCollection(SOIL_PH_ASSET_ID)
 
-    ph_field = "ph"
-
-    # Find the polygon that intersects this point
-    feature = soil_ph_file.filterBounds(point).first()
-
-    # If no polygon covers this point, return None
-    feature_info = feature.getInfo() if feature is not None else None
-    if feature_info is None:
+    # Find the polygon that intersects this geometry
+    feature = file.filterBounds(geometry).first()
+    if feature is None:
         return None
 
     # Read the 'ph' attribute from the feature
-    ph_val = feature.get(ph_field)
-
-    # Check it return Python Float
-    if hasattr(ph_val, "getInfo"):
-        ph_val = ph_val.getInfo()
-
-    # Return as a Python float (or None if missing)
-    return float(ph_val) if ph_val is not None else None
+    value = feature.get(SOIL_PH_FIELD)
+    return _ee_to_float(value)
 
 
-def get_elevation(lat: float, lon: float):
-    """Returns the elevation (m) at a given point, from a DEM provided by the PO."""
+def get_elevation(geometry: list[list], year: int | None = None):
+    """
+    Return mean elevation (m) for point a point or polygon from DEM asset.
+
+    Parameters
+    ----------
+    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    year : int, optional
+        Reserved for future use if DEM data becomes time-varying.
+        Currently ignored.
+    """
     import ee
 
-    # Create point geometry
-    point = ee.Geometry.Point([lon, lat])
+    geometry = parse_geometry(geometry)
 
     # Load DEM
-    dem = ee.Image("projects/scenic-block-466510-c5/assets/DEM").select("b1")
+    img = ee.Image(DEM_ASSET_ID).select(DEM_BAND)
 
-    elev_dict = dem.reduceRegion(
-        reducer=ee.Reducer.mean(), geometry=point, scale=30, maxPixels=1e9
+    # Find the polygon that intersects this geometry
+    stats = img.reduceRegion(
+        reducer=ee.Reducer.mean(), geometry=geometry, scale=DEM_SCALE, maxPixels=1e9
     )
 
-    elev_value = elev_dict.get("b1")
-
-    if hasattr(elev_value, "getInfo"):
-        elev_value = elev_value.getInfo()
-
-    return float(elev_value) if elev_value is not None else None
+    value = stats.get(DEM_BAND)
+    value = int(round(_ee_to_float(value))) if value is not None else None
+    return value
 
 
-def get_landcover(lat: float, lon: float):
-    """Returns the landcover class for the farm containing the point, including "forest" or "non_forest"."""
+def get_slope(geometry: list[list], year: int | None = None):
+    """
+    Return mean slope (degrees) for point a point or polygon from DEM asset.
+
+    Parameters
+    ----------
+    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    year : int, optional
+        Reserved for future use if DEM data becomes time-varying.
+        Currently ignored.
+    """
     import ee
 
-    # Create point geometry
-    point = ee.Geometry.Point([lon, lat])
+    geometry = parse_geometry(geometry)
 
-    # Load landcover FeatureCollection
-    landcover_file = ee.FeatureCollection(
-        "projects/scenic-block-466510-c5/assets/farm_with_landcover"
+    # Load DEM
+    img = ee.Image(DEM_ASSET_ID).select(DEM_BAND)
+
+    # Create slope image
+    slope_img = ee.Terrain.slope(img)
+
+    # Find the polygon that intersects this geometry
+    stats = slope_img.reduceRegion(
+        reducer=ee.Reducer.mean(), geometry=geometry, scale=DEM_SCALE, maxPixels=1e9
     )
 
-    landcover_field = "lc_class"
-
-    # Find first farm polygon that intersects this point
-    farm = landcover_file.filterBounds(point).first()
-
-    # If no farm found → return None
-    if farm is None:
-        return None
-
-    try:
-        landcover_value = farm.get(landcover_field).getInfo()
-    except Exception:
-        return None
-
-    return landcover_value
+    value = stats.get(SLOPE_BAND)
+    return round(_ee_to_float(value), 3)
 
 
-def get_NDVI(lat: float, lon: float):
-    """turns the mean NDVI (Normalised Difference Vegetation Index, -1 to 1) at a point for the year 2025 from Modis Dataset."""
+def get_texture(geometry: list[list], year: int | None = None):
+    """
+    Return soil texture for a given geometry (point or polygon).
+
+    Parameters
+    ----------
+    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    year : int, optional
+        Reserved for future use if soil texture becomes time-varying.
+        Currently ignored.
+    """
     import ee
 
-    # Create point geometry
-    point = ee.Geometry.Point([lon, lat])
+    geometry = parse_geometry(geometry)
 
-    # Load MODIS NDVI collection
-    ndvi_ic = (
-        ee.ImageCollection("MODIS/061/MOD13Q1")
-        .filterDate("2025-01-01", "2025-12-31")
-        .select("NDVI")
-    )
+    # Load soil texture FeatureCollection
+    file = ee.FeatureCollection(SOIL_TEXTURE_ASSET_ID)
 
-    # Compute mean NDVI image over the period
-    ndvi_img = ndvi_ic.mean()
+    # Find the polygon that intersects this geometry
+    feature = file.filterBounds(geometry).first()
+    if feature is None:
+        return None
 
-    ndvi_dict = ndvi_img.reduceRegion(
-        reducer=ee.Reducer.mean(), geometry=point, scale=250, maxPixels=1e9
-    )
+    # Read the 'ph' attribute from the feature
+    value = feature.get(SOIL_TEXTURE_FIELD)
 
-    ndvi_raw = ndvi_dict.get("NDVI").getInfo()
+    # Convert into string
+    if hasattr(value, "getInfo"):
+        value = value.getInfo()
 
-    # Scale to get real NDVI in
-    ndvi_mean = ndvi_raw * 1e-4
+    return value
 
-    return ndvi_mean
+
+def get_area_ha(geometry: list[list]):
+    """
+    Return area of the input geometry in hectares.
+
+    Parameters
+    ----------
+    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    """
+
+    geometry = parse_geometry(geometry)
+
+    # Call area based on point and polygon
+    value = geometry.area(maxError=1)
+
+    # Convert into string
+    if hasattr(value, "getInfo"):
+        value = value.getInfo()
+
+    return round(float(value) / 10_000.0, 3)
+
+
+def get_dist_to_coast(geometry: list[list]):
+    """
+    Return distance to coast_boundary by measure the distance of the centroild point to timor boundary
+
+    Parameters
+    ----------
+    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    """
+
+    import ee
+
+    geometry = parse_geometry(geometry)
+
+    # Get centroid point
+    centroid = geometry.centroid(maxError=1)
+
+    # Timor Boundary
+    boundary_fc = ee.FeatureCollection(BOUNDARY_TIMOR_ASSET_ID)
+    country_geom = boundary_fc.geometry()
+
+    value = centroid.distance(country_geom, 100)
+
+    return round(_ee_to_float(value) / 1000.0, 3)
