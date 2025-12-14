@@ -35,6 +35,8 @@ from core.geometry_parser import (
     parse_geometry,
 )
 
+from core.farm_profile import build_farm_profile
+
 
 # Helper to create fake ee module for mocking
 def make_fake_ee():
@@ -445,3 +447,46 @@ def test_parse_geometry_dispatch():
 
     fake_ee.Geometry.Polygon.assert_called_once()
     assert g_polygon == fake_ee.Geometry.Polygon.return_value
+
+
+# test_build_farm_profile
+def test_build_farm_profile_basic():
+    # Fake input
+    geometry = [(-8.569, 126.676), (-8.570, 126.676), (-8.570, 126.677)]
+    farm_id = 123
+    year = 2024
+
+    # Fake all the functions used in build_farm_profile
+    with (
+        patch("core.farm_profile.get_rainfall", return_value=1000.0) as mock_rain,
+        patch("core.farm_profile.get_temperature", return_value=23.5) as mock_temp,
+        patch("core.farm_profile.get_ph", return_value=6.3) as mock_ph,
+        patch("core.farm_profile.get_elevation", return_value=350.0) as mock_elev,
+        patch("core.farm_profile.get_slope", return_value=12.0) as mock_slope,
+        patch("core.farm_profile.get_texture", return_value="clay loam") as mock_tex,
+        patch("core.farm_profile.get_area_ha", return_value=2.5) as mock_area,
+        patch("core.farm_profile.get_dist_to_coast", return_value=20.0) as mock_dist,
+    ):
+        profile = build_farm_profile(geometry, year=year, farm_id=farm_id)
+
+    assert isinstance(profile, dict)
+    assert profile["id"] == farm_id
+    assert profile["geometry"] == geometry
+    assert profile["temperature_celsius"] == 23.5
+    assert profile["rainfall_mm"] == 1000.0
+    assert profile["ph"] == 6.3
+    assert profile["elevation_m"] == 350.0
+    assert profile["slope"] == 12.0
+    assert profile["area_ha"] == 2.5
+    assert profile["soil_textures"] == "clay loam"
+    assert profile["dist_to_coast_km"] == 20.0
+    assert profile["coastal region"] is True
+
+    mock_rain.assert_called_once_with(geometry, year=year)
+    mock_temp.assert_called_once_with(geometry, year=year)
+    mock_ph.assert_called_once_with(geometry, year=year)
+    mock_elev.assert_called_once_with(geometry, year=year)
+    mock_slope.assert_called_once_with(geometry, year=year)
+    mock_tex.assert_called_once_with(geometry, year=year)
+    mock_area.assert_called_once_with(geometry)
+    mock_dist.assert_called_once_with(geometry)
