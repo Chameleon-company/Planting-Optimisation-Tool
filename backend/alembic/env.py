@@ -1,22 +1,62 @@
 # ruff: noqa: F401,F403
+import sys
+from pathlib import Path
 from logging.config import fileConfig
 import os
-import sys
+from dotenv import load_dotenv
 
-# Alembic's autogenerate process reads Base.metadata, not the models directly.
-from src.database import Base
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import pool, event, text
+from sqlalchemy.schema import Index
+from alembic import context
 
 # Model discovery
-# These imports appear 'unused' but are REQUIRED.
-import src.models  # noqa: F403
+from src.database import Base
+import src.models
 
-# Because database.py lives above this dir we need to add path
-# .. = backend, so that we can import src/ classes
-sys.path.insert(0, os.path.abspath(".."))
-from dotenv import load_dotenv  # For the .env file
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import pool
-from alembic import context
+load_dotenv()
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+target_metadata = Base.metadata
+
+
+def include_name(name, type_, parent_names):
+    """
+    Excludes tables that exist in the database but are NOT defined in the models (target_metadata).
+    This automatically ignores extension tables like spatial_ref_sys.
+    """
+    if type_ == "table":
+        return name in target_metadata.tables
+    else:
+        return True
+
+
+def setup_ddl_listeners():
+    # Use a flag to ensure the listener is only attached once, even if env.py is reloaded
+    if not getattr(setup_ddl_listeners, "_attached", False):
+
+        @event.listens_for(Index, "before_create")
+        def receive_before_create(target, connection, **kw):
+            """Ensures an index is dropped if it exists before creation to avoid DuplicateTableError."""
+
+            # Check if we are connected to PostgreSQL
+            if connection.engine.name == "postgresql":
+                # Generate the DROP INDEX IF EXISTS SQL command
+                index_name = target.name
+                drop_sql = f"DROP INDEX IF EXISTS {index_name}"
+
+                # Execute the raw SQL command before proceeding with the CREATE INDEX
+                connection.execute(text(drop_sql))
+
+        # Set the flag so this listener isn't attached again
+        setup_ddl_listeners._attached = True
+
+
+# Call the setup function to activate the listener early in the file
+setup_ddl_listeners()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -27,17 +67,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = Base.metadata
-
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-load_dotenv(os.path.join(os.getcwd(), "..", ".env"))
 
 
 def run_migrations_offline() -> None:
@@ -58,6 +91,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_name=include_name,
     )
 
     with context.begin_transaction():
@@ -98,6 +132,7 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             dialect_opts={"paramstyle": "named"},
+            include_name=include_name,
         )
         with context.begin_transaction():
             context.run_migrations()
