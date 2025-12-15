@@ -1,0 +1,113 @@
+name: Validate Pull Request Template
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR body
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            const errors = [];
+
+            function getSection(title) {
+              const regex = new RegExp(
+                `##\\s*${title}[\\s\\S]*?(?=\\n##\\s|$)`,
+                "i"
+              );
+              const match = body.match(regex);
+              return match ? match[0] : null;
+            }
+
+            function stripComments(text) {
+              return text.replace(/<!--[\s\S]*?-->/g, "").trim();
+            }
+
+            function requireSection(title) {
+              if (!getSection(title)) {
+                errors.push(`Missing section: ${title}`);
+              }
+            }
+
+            function requireMeaningfulText(title, minLength = 10) {
+              const sec = getSection(title);
+              if (!sec) return;
+
+              const content = stripComments(sec)
+                .replace(/^##.*$/m, "")          // remove heading
+                .replace(/^-\s*\[[ xX]\].*$/gm, "") // remove checkboxes
+                .trim();
+
+              if (content.length < minLength) {
+                errors.push(`${title}: must contain meaningful text`);
+              }
+            }
+
+            function countChecked(sec) {
+              return (sec.match(/-\s*\[[xX]\]/g) || []).length;
+            }
+
+            function countCheckboxes(sec) {
+              return (sec.match(/-\s*\[[ xX]\]/g) || []).length;
+            }
+
+            function requireAtLeastOneChecked(title) {
+              const sec = getSection(title);
+              if (!sec || countChecked(sec) === 0) {
+                errors.push(`${title}: at least one option must be checked`);
+              }
+            }
+
+            function requireAllChecked(title) {
+              const sec = getSection(title);
+              if (!sec) return;
+
+              if (countChecked(sec) !== countCheckboxes(sec)) {
+                errors.push(`${title}: all checklist items must be checked`);
+              }
+            }
+
+            function requireOtherDescription(title) {
+              const sec = getSection(title);
+              if (!sec) return;
+
+              const line = sec
+                .split("\n")
+                .find(l => /-\s*\[[xX]\]\s*Other/i.test(l));
+
+              if (line && !/Other.*:\s*\S+/.test(line)) {
+                errors.push(`${title}: 'Other' is checked but not described`);
+              }
+            }
+
+            // Required sections
+            requireSection("Description");
+            requireSection("Related Issue / Task");
+            requireSection("Team / Area");
+            requireSection("Type of Change");
+            requireSection("Checklist");
+
+            // Text requirements
+            requireMeaningfulText("Description", 20);
+            requireMeaningfulText("Related Issue / Task", 5);
+
+            // Checkbox rules
+            requireAtLeastOneChecked("Team / Area");
+            requireOtherDescription("Team / Area");
+
+            requireAtLeastOneChecked("Type of Change");
+            requireOtherDescription("Type of Change");
+
+            requireAllChecked("Checklist");
+
+            if (errors.length > 0) {
+              core.setFailed(
+                "Pull request template validation failed:\n\n" +
+                errors.map(e => `- ${e}`).join("\n")
+              );
+            }
