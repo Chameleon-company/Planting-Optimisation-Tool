@@ -2,16 +2,14 @@ from fastapi import APIRouter, Depends
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Import the necessary components
 from src.schemas.soil_texture import SoilTextureRead
-from src.services.soil_texture import get_all_textures  # Import the service function
-from src.database import get_db_session  # Import the database dependency
+from src.services.soil_texture import get_all_textures # Import the service function
+from src.database import get_db_session # Import the database dependency
 
 router = APIRouter(
     prefix="/soil-textures",
     tags=["Soil Textures (Reference)"],
 )
-
 
 @router.get(
     "/",
@@ -24,8 +22,8 @@ async def read_soil_textures(db: AsyncSession = Depends(get_db_session)):
     Returns a list of all soil texture types used for foreign key lookups.
     """
     # Call the service layer function
-    db_textures = await get_all_textures(db)
-
-    # FastAPI automatically serializes the list of ORM objects
+    db_textures = await get_all_textures(db) 
+    
+    # FastAPI automatically serializes the list of ORM objects 
     # (db_textures) using the SoilTextureRead Pydantic schema.
     return db_textures
