@@ -51,6 +51,14 @@ class Farm(Base):
     agroforestry_type: Mapped[list["AgroforestryType"]] = relationship(
         secondary=farm_agroforestry_association, back_populates="farms"
     )
+    # Links the farm to it's boundary Polygon entry in the boundary table
+    boundary: Mapped["FarmBoundary"] = relationship(
+        back_populates="farm",
+        uselist=False,  # Apparently critical for 1:1
+        cascade="all, delete-orphan",
+    )
+    # Links farm owner/user to farm
+    owner: Mapped["User"] = relationship(back_populates="farms")
 
     # Links the farm to its boundary Polygon entry in the boundary table (1:1)
     boundary: Mapped["FarmBoundary"] = relationship(
