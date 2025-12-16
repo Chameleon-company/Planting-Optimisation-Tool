@@ -23,7 +23,7 @@ class FarmBoundary(Base):
         )
     )
     # Relationships
-    farm: Mapped["Farm"] = relationship(
+    farms: Mapped["Farm"] = relationship(
         back_populates="boundary",
         # Data is loaded only when the relationship attribute is accessed for the first time.
         # Not required for all operations on a farm so it's kept separate.

@@ -16,13 +16,15 @@ async def test_foreign_key_cascade_delete(async_session: AsyncSession):
 
     # Insert Parent and Child Records
     # 1a Create user
-    test_user = User(email="test_user@test.com", hashed_password="password999999")
+    test_user = User(
+        name="John Doe", email="test_user@test.com", hashed_password="password999999"
+    )
     session.add(test_user)
     await session.flush()
     user_id = test_user.id
 
     # 1b Create soil testure
-    soil_texture = SoilTexture(texture_name="Loam")
+    soil_texture = SoilTexture(name="Loam")
     session.add(soil_texture)
     await session.flush()
     soil_id = soil_texture.id

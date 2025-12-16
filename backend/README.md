@@ -30,4 +30,5 @@ run `make [target]` in `/backend` to execute.
 | **`rename-column`** | **GUIDES** the user through generating a **manual script** to perform non-destructive column renaming. This prevents data loss from Alembic's default DROP/ADD behavior. | 1. `uv run dotenv run alembic revision -m "MANUAL_RENAME..."` 2. (Requires manual editing of script) |
 | **`test`** | Executes the full test suite using Pytest on the contents of the `tests/` directory. | `uv run dotenv run pytest tests/` |
 | **`db-stop`** | Stops the running PostgreSQL container without removing the data volumes, preserving current data. | `docker compose stop` |
-| **`schema`** | Generates a markdown formatted schema diagram and writes it to **`SCHEMA.md`**. | `uv run dotenv run python -m src.print_schema > SCHEMA.md` |
+| **`schema`** | Generates a markdown formatted schema diagram and writes it to **`SCHEMA.md`**. | `uv run dotenv run python -m src.generate_schema > SCHEMA.md` |
+| **`erd`** | Generates an Entity-Relationship Diagram of the database and outputs to **`ERD.svg`**. | `uv run dotenv run python -m src.generate_erd` |
