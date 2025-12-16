@@ -1,7 +1,8 @@
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import text
 from src.config import Settings
+from sqlalchemy.ext.asyncio import AsyncEngine  # Import the engine type
+
 
 # Instantiate settings once for testing purposes
 settings = Settings()
@@ -15,10 +16,10 @@ async def test_database_url_is_set():
 
 
 @pytest.mark.asyncio
-async def test_database_connection_success():
+async def test_database_connection_success(db_engine: AsyncEngine):
     """Test if a connection can be made to the running DB container."""
-
-    engine = create_async_engine(settings.DATABASE_URL)
+    # The engine is provided by the session-scoped fixture in conftest.py
+    engine = db_engine
 
     try:
         # Connect and execute a simple, non-destructive query
@@ -30,5 +31,5 @@ async def test_database_connection_success():
     except Exception as e:
         pytest.fail(f"Failed to connect to the database: {e}")
 
-    finally:
-        await engine.dispose()
+    # NOTE: engine.dispose() is called by the db_engine fixture (in conftest.py)
+    # after the entire test session is complete.

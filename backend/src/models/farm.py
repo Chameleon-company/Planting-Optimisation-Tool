@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .soil_texture import SoilTexture
     from .agroforestry_type import AgroforestryType
+    from .boundaries import FarmBoundary
+    from .user import User
 
 
 class Farm(Base):
@@ -34,7 +36,8 @@ class Farm(Base):
     nitrogen_fixing: Mapped[bool] = mapped_column()
     shade_tolerant: Mapped[bool] = mapped_column()
     bank_stabilising: Mapped[bool] = mapped_column()
-    slope: Mapped[float] = mapped_column()
+    slope: Mapped[float] = mapped_column()  # 2 decimal points
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     # Relationships
     # -------------
@@ -44,6 +47,14 @@ class Farm(Base):
     agroforestry_type: Mapped[list["AgroforestryType"]] = relationship(
         secondary=farm_agroforestry_association, back_populates="farms"
     )
+    # Links the farm to it's boundary Polygon entry in the boundary table
+    boundary: Mapped["FarmBoundary"] = relationship(
+        back_populates="farm",
+        uselist=False,  # Apparently critical for 1:1
+        cascade="all, delete-orphan",
+    )
+    # Links farm owner/user to farm
+    owner: Mapped["User"] = relationship(back_populates="farms")
 
     def __repr__(self) -> str:
         """
