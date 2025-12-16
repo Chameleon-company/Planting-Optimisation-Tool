@@ -13,7 +13,7 @@ from config.settings import (
     SLOPE_BAND,
     SOIL_TEXTURE_ASSET_ID,
     SOIL_TEXTURE_FIELD,
-    BOUNDARY_TIMOR_ASSET_ID,
+    TEXTURE_MAP,
 )
 
 from core.geometry_parser import parse_geometry
@@ -230,26 +230,35 @@ def get_area_ha(geometry: list[list]):
     return round(float(value) / 10_000.0, 3)
 
 
-def get_dist_to_coast(geometry: list[list]):
+def _normalise_texture_name(value) -> str | None:
     """
-    Return distance to coast_boundary by measure the distance of the centroild point to timor boundary
-
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    Normalize the texture name
     """
+    if value is None:
+        return None
 
-    import ee
+    txt = str(value).strip().lower()
+    if not txt:
+        return None
 
-    geometry = parse_geometry(geometry)
+    if "," in txt:
+        txt = txt.split(",")[0].strip()
 
-    # Get centroid point
-    centroid = geometry.centroid(maxError=1)
+    if txt in ("organic", "variable"):
+        return None
 
-    # Timor Boundary
-    boundary_fc = ee.FeatureCollection(BOUNDARY_TIMOR_ASSET_ID)
-    country_geom = boundary_fc.geometry()
+    return txt
 
-    value = centroid.distance(country_geom, 100)
 
-    return round(_ee_to_float(value) / 1000.0, 3)
+def get_texture_id(geometry: list[list], year: int | None = None) -> int | None:
+    """
+    Return soil texture ID (1–12) for a given geometry,
+    using TEXTURE_MAP. Trả về None nếu không map được.
+    """
+    texture_name = get_texture(geometry, year=year)
+    norm_name = _normalise_texture_name(texture_name)
+
+    if norm_name is None:
+        return None
+
+    return TEXTURE_MAP.get(norm_name)
