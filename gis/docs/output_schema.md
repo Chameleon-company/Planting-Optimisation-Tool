@@ -5,9 +5,9 @@ This document explains the output schema from the build_farm_profile function. T
 *  `id` *(int, required)* - ID from farms.
 *  `temperature_celsius` *(int)* - 5-year average land surface temperature (°C).
 *  `rainfall_mm` *(int)* - 5-year average annual rainfall at the farm location (mm).
+*  `elevation_m` *(int)* - Mean elevation of the farm (m)
 *  `ph` *(float)* - Soil pH at the farm location.
 *  `soil_textures)ud` *(int)* - Dominant soil texture.
-*  `elevation_m` *(int)* - Mean elevation of the farm (m)
 *  `area_ha` *(float)* - Farm area in hectares.
 *  `geometry` *(list [tuple])* - Input geometry in [lon, lat] format (point or polygon ring).
 *  `coastal` *(bool)* - true if farm is within 30 km of coast, false otherwise, null if distance is missing.
@@ -17,12 +17,12 @@ This document explains the output schema from the build_farm_profile function. T
 
 ```json
 {
-  "farm_id": 1,
+  "id": 1,
   "rainfall_mm": 1843,
   "temperature_celsius": 24,
+  "elevation_m": 950,
   "ph": 6.2,
   "soil_texture_id": 8,
-  "elevation_m": 950,
   "area_ha": 3.742,
   "geometry": [(-8.569, 126.676),(-8.570, 126.676),(-8.570, 126.677)],
   "coastal": true,
