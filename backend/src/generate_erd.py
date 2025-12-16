@@ -29,9 +29,21 @@ graph = create_schema_graph(
     metadata=Base.metadata,
     show_datatypes=True,
     show_indexes=False,
-    rankdir="LR",
+    rankdir="TB",
     concentrate=True,
 )
+
+graph.set_node_defaults(
+    shape="Mrecord",
+    fontsize="10",
+    bgcolor="lightyellow",
+    fontname="Helvetica"
+)
+
+graph.set("ranksep", "0.7")
+graph.set("nodesep", "0.4")
+graph.set("splines", "ortho")
+graph.set("layout", "dot")
 
 # 3. Draw the diagram
 graph.write("ERD.svg", format="svg")
