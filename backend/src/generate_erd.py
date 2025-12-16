@@ -34,10 +34,7 @@ graph = create_schema_graph(
 )
 
 graph.set_node_defaults(
-    shape="Mrecord",
-    fontsize="10",
-    bgcolor="lightyellow",
-    fontname="Helvetica"
+    shape="Mrecord", fontsize="10", bgcolor="lightyellow", fontname="Helvetica"
 )
 
 graph.set("ranksep", "0.7")
