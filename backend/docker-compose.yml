@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: postgis/postgis:15-3.4-alpine
     container_name: pot_postgres_db
     ports:
       - "5432:5432" # Maps host port 5432 to container port 5432

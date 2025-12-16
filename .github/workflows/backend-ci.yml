@@ -30,7 +30,7 @@ jobs:
     # ====================================================================
     services:
       postgres_db: # Service name
-        image: postgres:15-alpine
+        image: postgis/postgis:15-3.4-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: devpassword
@@ -92,6 +92,16 @@ jobs:
         done
         
         echo "PostgreSQL service is now reachable!"
+
+    - name: Enable PostGIS Extension
+      run: |
+        # Construct a psql connection string using the environment variables.
+        # Authenticates the psql client to facilitate PostGIS extension.
+        PSQL_URI="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+        
+        # Execute the command using the constructed URI
+        psql $PSQL_URI -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+        echo "PostGIS extension successfully enabled."
 
     # 4. APPLY MIGRATIONS
     - name: Apply Alembic Migrations
