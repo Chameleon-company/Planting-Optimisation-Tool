@@ -83,3 +83,81 @@ def get_feature_params(params_dict, config, species_id, feature):
         weight = float(weight)
 
     return {"score_method": score_method, "weight": weight}
+
+
+def parse_prefs(prefs_raw):
+    """
+    Parse preferences ensuring they are a list.
+
+    :param prefs_raw: The raw value of the preferences read from the dataframe.
+    :returns:
+    """
+    # If None return empty list
+    if prefs_raw is None:
+        return []
+
+    # If a list then do nothing and return the original list
+    if isinstance(prefs_raw, list):
+        return prefs_raw
+
+    # If a string then try to convert to a Python literal and return as a list
+    if isinstance(prefs_raw, str):
+        return [s.strip() for s in prefs_raw.split(",")]
+
+
+def build_rules_dict(species_list, params, cfg):
+    """
+    Builds a dictionary of rules for each species/feature combination
+
+    :param species_list: List of species dictionaries
+    :param params: Nested dictionary with the species parameters.
+    :param cfg: Configuration dictionary
+    :returns: Dictionary of rules
+    """
+    # Fetch column name for species id
+    species_id_col = cfg.get("ids", {}).get("species", "id")
+
+    # Fetch feature dictionary
+    features_cfg = cfg["features"]
+
+    # Create a rules dictionary for optimisation
+    # Structure: { species_id: [ (feature_key, rule_metadata, pre_calc_values), ... ] }
+    rules = {}
+
+    for sp in species_list:
+        sp_id = sp.get(species_id_col)
+        rules_list = []
+
+        for feat, meta in features_cfg.items():
+            # Resolve overrides and defaults once
+            combined_params = get_feature_params(params, cfg, sp_id, feat)
+
+            weight = combined_params["weight"]
+            score_method = combined_params["score_method"]
+
+            # Pack the specific data needed for scoring this feature
+            rule_data = {
+                "feat": feat,
+                "weight": weight,
+                "short_name": meta["short"],
+                "type": meta["type"],
+                "score_method": score_method,
+            }
+
+            if score_method == "num_range":
+                min_v = sp.get(f"{feat}_min")
+                max_v = sp.get(f"{feat}_max")
+                rule_data["params_out"] = {"min": min_v, "max": max_v}
+                rule_data["args"] = (min_v, max_v)
+
+            elif score_method == "cat_exact":
+                prefs = parse_prefs(sp.get(f"preferred_{feat}"))
+                cat_cfg = meta.get("categorical", {}) or {}
+                exact_score = float(cat_cfg.get("exact_match", 1.0))
+                rule_data["preferred"] = prefs
+                rule_data["args"] = (prefs, exact_score)
+
+            rules_list.append(rule_data)
+
+        rules[sp_id] = rules_list
+    return rules
