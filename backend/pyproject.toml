@@ -9,7 +9,7 @@ dependencies = [
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.122.0",
     "geoalchemy2>=0.18.1",
-    "logfire>=4.16.0",
+    "jose>=1.0.0",
     "pydantic-settings>=2.12.0",
     "pytest>=9.0.1",
     "pytest-asyncio>=1.3.0",
@@ -18,6 +18,8 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "ruff>=0.14.5",
     "sqlalchemy>=2.0.44",
+    "sqlalchemy-schemadisplay>=2.0",
+    "sqlalchemy-utils>=0.42.1",
 ]
 
 [tool.pytest.ini_options]

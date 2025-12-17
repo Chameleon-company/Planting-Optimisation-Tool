@@ -37,7 +37,7 @@
 | `shade_tolerant` | `Boolean` | No | No |  |
 | `bank_stabilising` | `Boolean` | No | No |  |
 | `slope` | `Float` | No | No |  |
-| `user_id` | `Integer` | No | No | id |
+| `user_id` | `Integer` | Yes | No | id |
 ## TABLE: `species`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -63,7 +63,7 @@
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | `Integer` | No | Yes |  |
-| `texture_name` | `String` | No | No |  |
+| `name` | `String` | No | No |  |
 ## TABLE: `boundary`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -81,5 +81,6 @@
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | `Integer` | No | Yes |  |
+| `name` | `String` | No | No |  |
 | `email` | `String` | No | No |  |
 | `hashed_password` | `String` | No | No |  |

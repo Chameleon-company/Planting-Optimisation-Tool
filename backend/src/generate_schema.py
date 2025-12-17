@@ -1,7 +1,7 @@
 # ruff: noqa: F401
 import sys
 import os
-from .database import Base
+from src.database import Base
 import src.models
 
 # Add model directory to path (necessary for importing all models)

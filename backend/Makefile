@@ -5,6 +5,8 @@ PYTHON_PATH_ROOT = .
 PYTEST_RUNNER = uv run dotenv run
 PYTEST_CMD = $(PYTEST_RUNNER) pytest
 UV_RUNNER = uv run dotenv run
+FASTAPI_TARGET = src/main.py
+FASTAPI_CMD = fastapi dev $(FASTAPI_TARGET) --port 8080 --reload
 
 # The primary command for a developer to set up the project from scratch.
 # It depends on db-start, which transitively calls db-teardown.
@@ -79,5 +81,18 @@ db-stop:
 .PHONY: schema
 schema:
 	@echo "--- Generating SCHEMA.md from Models ---"
-	$(UV_RUNNER) python -m src.print_schema > SCHEMA.md
+	$(UV_RUNNER) python -m src.generate_schema > SCHEMA.md
 	@echo "--- SCHEMA.md created ---"
+
+# Outputs ER-Diagram to ERD.svg
+.PHONY: erd
+erd:
+	@echo "--- Generating ER-Diagram from Database ---"
+	$(UV_RUNNER) python -m src.generate_erd
+	@echo "--- ER-Diagram created ---"
+
+# Start the FastAPI server on port 8080
+.PHONY: run-api
+run-api:
+	@echo "--- Starting FastAPI Server on http://0.0.0.0:8080 ---"
+	$(UV_RUNNER) $(FASTAPI_CMD)

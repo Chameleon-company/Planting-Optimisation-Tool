@@ -1,4 +1,5 @@
 # Farm table model and reference tables
+from typing import Optional
 from sqlalchemy import ForeignKey
 from ..database import Base
 from sqlalchemy.orm import Mapped
@@ -37,12 +38,15 @@ class Farm(Base):
     shade_tolerant: Mapped[bool] = mapped_column()
     bank_stabilising: Mapped[bool] = mapped_column()
     slope: Mapped[float] = mapped_column()  # 2 decimal points
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE")
+    )
 
     # Relationships
     # -------------
-    # Links a Farm object to its corresponding SoilTexture object
+    # Links a Farm object to its corresponding SoilTexture object (1:1)
     soil_texture: Mapped["SoilTexture"] = relationship(back_populates="farms")
+
     # Links a Farm object to a list of AgroforestryType objects (M:M)
     agroforestry_type: Mapped[list["AgroforestryType"]] = relationship(
         secondary=farm_agroforestry_association, back_populates="farms"
@@ -54,7 +58,17 @@ class Farm(Base):
         cascade="all, delete-orphan",
     )
     # Links farm owner/user to farm
-    owner: Mapped["User"] = relationship(back_populates="farms")
+    farm_supervisor: Mapped["User"] = relationship(back_populates="farms")
+
+    # Links the farm to its boundary Polygon entry in the boundary table (1:1)
+    boundary: Mapped["FarmBoundary"] = relationship(
+        back_populates="farm",
+        uselist=False,  # Apparently critical for 1:1
+        cascade="all, delete-orphan",
+    )
+
+    # Links farm owner/user to farm (1:1)
+    farm_supervisor: Mapped["User"] = relationship(back_populates="farms")
 
     def __repr__(self) -> str:
         """

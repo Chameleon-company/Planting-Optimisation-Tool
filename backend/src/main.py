@@ -1,70 +1,52 @@
 from typing import Union
 from fastapi import FastAPI
+from src.routers import farm, soil_texture
 from pydantic import BaseModel
-# from fastapi.middleware.cors import CORSMiddleware
+from src.database import get_db_session
 
 app = FastAPI(
     title="Planting Optimisation Tool API",
     version="1.0.0",
 )
 
-
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Union[bool, None] = None
-
+app.include_router(farm.router)
+app.include_router(soil_texture.router)
 
 # Just a test for now, using tutorial from FastAPI docs
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
-
-
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
+# # Farm related endpoints
+# @app.post("/farms/single")
+# def submit():
+#     return
 
 
-# Example schema endpoints:
-# WIP
+# @app.post("/farms/bulk")
+# def submit_bulk():
+#     return
 
 
-# Farm related endpoints
-@app.post("/farms/single")
-def submit():
-    return
+# @app.get("/farms/{farm_id}")
+# def retrieve_id():
+#     return
 
 
-@app.post("/farms/bulk")
-def submit_bulk():
-    return
+# @app.put("/farms/{farm_id}")
+# def update_farm():
+#     return
 
 
-@app.get("/farms/{farm_id}")
-def retrieve_id():
-    return
+# @app.get("/farms/by-supervisor/{supervisor_id}")
+# def retrieve_farms():
+#     return
 
 
-@app.put("/farms/{farm_id}")
-def update_farm():
-    return
+# # Species related endpoints
+# @app.get("species/approved")
+# def approved_list():
+#     return
 
 
-@app.get("/farms/by-supervisor/{supervisor_id}")
-def retrieve_farms():
-    return
-
-
-# Species related endpoints
-@app.get("species/approved")
-def approved_list():
-    return
-
-
-# ETC
+# # ETC

@@ -15,7 +15,7 @@ class SoilTexture(Base):
     __tablename__ = "soil_textures"
     # Column names
     id: Mapped[int] = mapped_column(primary_key=True)
-    texture_name: Mapped[str] = mapped_column(String(15), unique=True)
+    name: Mapped[str] = mapped_column(String(15), unique=True)
 
     # Relationships
     # -------------
@@ -31,4 +31,4 @@ class SoilTexture(Base):
         Returns the official string representation of the Agroforestry_types object.
         Used primarily for debugging, logging, inspection.
         """
-        return f"soil_textures(id={self.id!r}, type{self.texture_name!r})"
+        return f"soil_textures(id={self.id!r}, type{self.name!r})"

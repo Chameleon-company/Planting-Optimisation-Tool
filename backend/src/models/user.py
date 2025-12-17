@@ -18,11 +18,12 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
 
+    name: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
 
-    # Relates a farm to the user responsible for it.
-    farms: Mapped[List["Farm"]] = relationship(back_populates="owner")
+    # Relates a farm back to the user responsible for it.
+    farms: Mapped[List["Farm"]] = relationship(back_populates="farm_supervisor")
 
     def __repr__(self) -> str:
         return f"<User (id={self.id!r}, email='{self.email!r}'"
