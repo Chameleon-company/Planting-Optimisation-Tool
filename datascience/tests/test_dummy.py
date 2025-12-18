@@ -1,12 +1,11 @@
 import os
 import sys
 
+from exclusion_rules.dummy_run import run_exclusion_rules
+
 # Add datascience/src to Python path so we can import exclusion_rules
 SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
 sys.path.insert(0, SRC_DIR)
-
-
-from exclusion_rules.dummy_run import run_exclusion_rules
 
 def test_dummy_exclusion_rules_returns_all_candidates():
     farm_data = {
