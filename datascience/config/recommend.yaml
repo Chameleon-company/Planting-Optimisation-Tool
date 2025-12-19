@@ -1,12 +1,12 @@
 
 # Names for id columns
 ids:
-  farm: farm_id
-  species: species_id
+  farm: id
+  species: id
 
 names:
-  species_common_name: species_common_name
-  species_name: species_name
+  species_common_name: common_name
+  species_name: name
 
 # Configuration for features
 features:

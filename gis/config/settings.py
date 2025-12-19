@@ -34,3 +34,18 @@ DEM_SCALE = int(os.getenv("DEM_SCALE", "30"))
 SLOPE_BAND = os.getenv("SLOPE_BAND")
 
 BOUNDARY_TIMOR_ASSET_ID = os.getenv("BOUNDARY_TIMOR_ASSET_ID")
+
+TEXTURE_MAP = {
+    "sand": 1,
+    "loamy sand": 2,
+    "sandy loam": 3,
+    "loam": 4,
+    "silt loam": 5,
+    "silt": 6,
+    "sandy clay loam": 7,
+    "clay loam": 8,
+    "silty clay loam": 9,
+    "sandy clay": 10,
+    "silty clay": 11,
+    "clay": 12,
+}
