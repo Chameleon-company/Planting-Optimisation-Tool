@@ -22,23 +22,23 @@ def initialise_data():
     # Load Config
     config = load_yaml(config_path)
 
-    # Path to farms Excel
-    farms_path = "data/farms_cleaned.xlsx"
+    # Path to farms CSV
+    farms_path = "data/farms_cleaned.csv"
 
-    # Load farm profile data from Excel file
-    farms_df = pd.read_excel(farms_path)
+    # Load farm profile data from CSV file
+    farms_df = pd.read_csv(farms_path)
 
-    # Path to species Excel
-    species_path = "data/species.xlsx"
+    # Path to species CSV
+    species_path = "data/species.csv"
 
-    # Load species profile data from Excel file
-    species_df = pd.read_excel(species_path)
+    # Load species profile data from CSV file
+    species_df = pd.read_csv(species_path)
 
-    # Path to species_params Excel
-    species_params_path = "data/species_params.xlsx"
+    # Path to species_params CSV
+    species_params_path = "data/species_params.csv"
 
     # Load species parameters
-    species_params_df = pd.read_excel(species_params_path)
+    species_params_df = pd.read_csv(species_params_path)
 
     # Pre-process params
     params_dict = build_species_params_dict(species_params_df, config)
