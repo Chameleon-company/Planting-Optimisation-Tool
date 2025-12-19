@@ -7,18 +7,14 @@ from exclusion_rules.dummy_run import run_exclusion_rules
 SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
 sys.path.insert(0, SRC_DIR)
 
+
 def test_dummy_exclusion_rules_returns_all_candidates():
-    farm_data = {
-        "rainfall": 1200,
-        "temper"
-        "ature": 24,
-        "soil_type": "Loam"
-    }
+    farm_data = {"rainfall": 1200, "temperature": 24, "soil_type": "Loam"}
 
     species_data = [
         {"species_id": 1, "species_name": "Acacia"},
         {"species_id": 2, "species_name": "Eucalyptus"},
-        {"species_id": 3, "species_name": "Ficus"}
+        {"species_id": 3, "species_name": "Ficus"},
     ]
 
     config = {}
