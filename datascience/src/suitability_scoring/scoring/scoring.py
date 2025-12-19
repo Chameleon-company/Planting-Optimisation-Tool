@@ -73,9 +73,9 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
 
     # Get column names from config with defaults
     species_id_col = cfg.get("ids", {}).get("species", "id")
-    species_name_col = cfg.get("names", {}).get("species_name", "species_name")
+    species_name_col = cfg.get("names", {}).get("species_name", "name")
     species_cname_col = cfg.get("ids", {}).get(
-        "species_common_name", "species_common_name"
+        "species_common_name", "common_name"
     )
 
     # Initialise results to an empty list
