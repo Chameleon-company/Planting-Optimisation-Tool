@@ -130,9 +130,7 @@ def score_farms_species_by_id_list(
     species_name_col = cfg.get("names", {}).get("species_name", "name")
 
     # Get column name for species common name
-    species_cname_col = cfg.get("ids", {}).get(
-        "species_common_name", "common_name"
-    )
+    species_cname_col = cfg.get("ids", {}).get("species_common_name", "common_name")
 
     # Create a dictionary for species data so we don't have to filter the dataframe every loop
     species_lookup = {row[species_id_col]: row for row in species_df.to_dict("records")}
@@ -380,9 +378,7 @@ def score_farms_species_by_id_list(
         explanations[farm_id] = farm_explanations
 
     # For testing and debugging
-    scores_df = pd.DataFrame(
-        results, columns=["farm_id", "species_id", "mcda_score"]
-    )
+    scores_df = pd.DataFrame(results, columns=["farm_id", "species_id", "mcda_score"])
 
     return scores_df, explanations
 
