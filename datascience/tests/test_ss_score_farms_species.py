@@ -9,8 +9,8 @@ def basic_cfg():
     Returns a minimal configuration dictionary.
     """
     return {
-        "ids": {"farm": "farm_id", "species": "species_id"},
-        "names": {"species_name": "scientific_name"},
+        "ids": {"farm": "id", "species": "id"},
+        "names": {"species_name": "name"},
         "features": {
             "ph": {
                 "type": "numeric",
@@ -36,8 +36,8 @@ def farms_df():
     """
     return pd.DataFrame(
         [
-            {"farm_id": 101, "ph": 6.5, "soil_texture": "clay"},
-            {"farm_id": 102, "ph": 4.0, "soil_texture": "sand"},
+            {"id": 101, "ph": 6.5, "soil_texture": "clay"},
+            {"id": 102, "ph": 4.0, "soil_texture": "sand"},
         ]
     )
 
@@ -50,17 +50,17 @@ def species_df():
     return pd.DataFrame(
         [
             {
-                "species_id": 1,
-                "scientific_name": "Tree A",
-                "species_common_name": "Common A",
+                "id": 1,
+                "name": "Tree A",
+                "common_name": "Common A",
                 "ph_min": 6.0,
                 "ph_max": 7.0,
                 "preferred_soil_texture": "clay",
             },
             {
-                "species_id": 2,
-                "scientific_name": "Tree B",
-                "species_common_name": "Common B",
+                "id": 2,
+                "name": "Tree B",
+                "common_name": "Common B",
                 "ph_min": 4.0,
                 "ph_max": 5.0,
                 "preferred_soil_texture": "sand",
@@ -124,8 +124,8 @@ def test_missing_numeric_data(basic_cfg, params_index):
     """
     farms_df = pd.DataFrame(
         [
-            {"farm_id": 101, "ph": 6.5, "soil_texture": "clay"},
-            {"farm_id": 102, "ph": None, "soil_texture": "sand"},
+            {"id": 101, "ph": 6.5, "soil_texture": "clay"},
+            {"id": 102, "ph": None, "soil_texture": "sand"},
         ]
     )
 
@@ -133,17 +133,17 @@ def test_missing_numeric_data(basic_cfg, params_index):
     species_df = pd.DataFrame(
         [
             {
-                "species_id": 1,
-                "scientific_name": "Tree A",
-                "species_common_name": "Common A",
+                "id": 1,
+                "name": "Tree A",
+                "common_name": "Common A",
                 "ph_min": None,
                 "ph_max": 7.0,
                 "preferred_soil_texture": "clay",
             },
             {
-                "species_id": 2,
-                "scientific_name": "Tree A",
-                "species_common_name": "Common A",
+                "id": 2,
+                "name": "Tree A",
+                "common_name": "Common A",
                 "ph_min": 6.0,
                 "ph_max": None,
                 "preferred_soil_texture": "clay",
@@ -174,8 +174,8 @@ def test_missing_categorical(basic_cfg, params_index):
     """
     farms_df = pd.DataFrame(
         [
-            {"farm_id": 101, "ph": 6.5, "soil_texture": None},
-            {"farm_id": 102, "ph": 4.0, "soil_texture": "sand"},
+            {"id": 101, "ph": 6.5, "soil_texture": None},
+            {"id": 102, "ph": 4.0, "soil_texture": "sand"},
         ]
     )
 
@@ -183,17 +183,17 @@ def test_missing_categorical(basic_cfg, params_index):
     species_df = pd.DataFrame(
         [
             {
-                "species_id": 1,
-                "scientific_name": "Tree A",
-                "species_common_name": "Common A",
+                "id": 1,
+                "name": "Tree A",
+                "common_name": "Common A",
                 "ph_min": 6.0,
                 "ph_max": 7.0,
                 "preferred_soil_texture": "clay",
             },
             {
-                "species_id": 2,
-                "scientific_name": "Tree B",
-                "species_common_name": "Common B",
+                "id": 2,
+                "name": "Tree B",
+                "common_name": "Common B",
                 "ph_min": 4.0,
                 "ph_max": 5.0,
                 "preferred_soil_texture": None,
@@ -225,15 +225,15 @@ def test_zero_denominator(basic_cfg, params_index):
     """
     Checks handling each feature retuning a None score, therefore giving a denominator of 0.
     """
-    farms_df = pd.DataFrame([{"farm_id": 102, "ph": None, "soil_texture": None}])
+    farms_df = pd.DataFrame([{"id": 102, "ph": None, "soil_texture": None}])
 
     # Create a species row with missing data
     species_df = pd.DataFrame(
         [
             {
-                "species_id": 1,
-                "scientific_name": "Tree A",
-                "species_common_name": "Common A",
+                "id": 1,
+                "name": "Tree A",
+                "common_name": "Common A",
                 "ph_min": None,
                 "ph_max": 7.0,
                 "preferred_soil_texture": "clay",
@@ -276,7 +276,7 @@ def test_unknown_ids_handling_empty_subset(
     assert scores.empty
 
     # Explanations should contain a note about the missing ID
-    farm_id = single_farm.iloc[0]["farm_id"]
+    farm_id = single_farm.iloc[0]["id"]
     farm_exp = explanations[farm_id]
 
     # Check the list structure
@@ -299,7 +299,7 @@ def test_unknown_ids_handling(farms_df, species_df, basic_cfg, params_index):
     )
 
     # Explanations should contain a note about the missing ID
-    farm_id = single_farm.iloc[0]["farm_id"]
+    farm_id = single_farm.iloc[0]["id"]
     farm_exp = explanations[farm_id]
 
     # Check the list structure
@@ -358,8 +358,8 @@ def test_unknown_categorical_scorer(farms_df, species_df, params_index):
     Checks the function raise a ValueError when an unknown categorical scorer is selected.
     """
     cfg = {
-        "ids": {"farm": "farm_id", "species": "species_id"},
-        "names": {"species_name": "scientific_name"},
+        "ids": {"farm": "id", "species": "id"},
+        "names": {"name": "name"},
         "features": {
             "soil_texture": {
                 "type": "categorical",
@@ -387,8 +387,8 @@ def test_unknown_feature_type(farms_df, species_df, params_index):
     Checks the function raise a ValueError when an unknown feature type is specified.
     """
     cfg = {
-        "ids": {"farm": "farm_id", "species": "species_id"},
-        "names": {"species_name": "scientific_name"},
+        "ids": {"farm": "id", "species": "id"},
+        "names": {"species_name": "name"},
         "features": {
             "ph": {
                 "type": "number",

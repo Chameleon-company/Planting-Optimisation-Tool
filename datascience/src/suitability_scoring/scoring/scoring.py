@@ -121,17 +121,17 @@ def score_farms_species_by_id_list(
     features_cfg = cfg["features"]
 
     # Get column name for farm ids
-    farm_id_col = cfg.get("ids", {}).get("farm", "farm_id")
+    farm_id_col = cfg.get("ids", {}).get("farm_id", "id")
 
     # Get column name for species ids
-    species_id_col = cfg.get("ids", {}).get("species", "species_id")
+    species_id_col = cfg.get("ids", {}).get("species_id", "id")
 
     # Get column name for species name
-    species_name_col = cfg.get("names", {}).get("species_name", "species_name")
+    species_name_col = cfg.get("names", {}).get("species_name", "name")
 
     # Get column name for species common name
     species_cname_col = cfg.get("ids", {}).get(
-        "species_common_name", "species_common_name"
+        "species_common_name", "common_name"
     )
 
     # Create a dictionary for species data so we don't have to filter the dataframe every loop
@@ -381,7 +381,7 @@ def score_farms_species_by_id_list(
 
     # For testing and debugging
     scores_df = pd.DataFrame(
-        results, columns=[farm_id_col, species_id_col, "mcda_score"]
+        results, columns=["farm_id", "species_id", "mcda_score"]
     )
 
     return scores_df, explanations
@@ -404,13 +404,13 @@ def mcda_scorer(farm_ids):
 
     # Config variables - These could be arguments using an argparse
     # Path to farms Excel
-    farms_path = "data/farms_cleaned.xlsx"
+    farms_path = "data/farms_cleaned.csv"
 
     # Path to species Excel
-    species_path = "data/species.xlsx"
+    species_path = "data/species.csv"
 
     # Path to species_params Excel
-    species_params_path = "data/species_params.xlsx"
+    species_params_path = "data/species_params.csv"
 
     # Path to YAML with defaults and feature meta
     config_path = "config/recommend.yaml"
@@ -419,13 +419,13 @@ def mcda_scorer(farm_ids):
     # This will need to come from database in future
 
     # Load farm profile data from Excel file
-    farms_df = pd.read_excel(farms_path)
+    farms_df = pd.read_csv(farms_path)
 
     # Load species profile data from Excel file
-    species_df = pd.read_excel(species_path)
+    species_df = pd.read_csv(species_path)
 
     # Load species parameters
-    species_params_df = pd.read_excel(species_params_path)
+    species_params_df = pd.read_csv(species_params_path)
 
     # Configs
     cfg = load_yaml(config_path)
@@ -436,7 +436,7 @@ def mcda_scorer(farm_ids):
     #######################################
     ## Replace this with exclusion rules ##
     #######################################
-    species_id_col = cfg.get("ids", {}).get("species", "species_id")
+    species_id_col = cfg.get("ids", {}).get("species", "id")
     all_ids = species_df[species_id_col].tolist()[::]
 
     def provider(farm_row):
@@ -447,7 +447,7 @@ def mcda_scorer(farm_ids):
     #######################################
 
     # Subset farms to only those requested
-    farm_id_col = cfg.get("ids", {}).get("farm", "farm_id")
+    farm_id_col = cfg.get("ids", {}).get("farm", "id")
     farm_set = set(farm_ids)
 
     # Return the subset of the dataframe
