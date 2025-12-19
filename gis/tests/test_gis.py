@@ -12,7 +12,6 @@ from config.settings import (
     SLOPE_BAND,
     SOIL_TEXTURE_ASSET_ID,
     SOIL_TEXTURE_FIELD,
-    BOUNDARY_TIMOR_ASSET_ID,
 )
 
 
@@ -22,10 +21,12 @@ from core.extract_data import (
     get_temperature,
     get_ph,
     get_area_ha,
-    get_dist_to_coast,
     get_elevation,
     get_slope,
     get_texture,
+    _normalise_texture_name,
+    get_texture_id,
+    get_centroid_lat_lon,
 )
 
 from core.geometry_parser import (
@@ -34,6 +35,8 @@ from core.geometry_parser import (
     parse_polygon,
     parse_geometry,
 )
+
+from core.farm_profile import build_farm_profile
 
 
 # Helper to create fake ee module for mocking
@@ -370,45 +373,6 @@ def test_get_area():
     fake_point.area.assert_called_once_with(maxError=1)
 
 
-# dist_to_coast test
-def test_get_dist_to_coast():
-    fake_ee = make_fake_ee()
-
-    # Fake Geometry.Point
-    fake_point = MagicMock()
-    fake_ee.Geometry.Point.return_value = fake_point
-
-    # Fake centroid point hectar
-    fake_centroid = MagicMock()
-    fake_point.centroid.return_value = fake_centroid
-
-    # Fake Feature Collection and country geom
-    fake_country_geom = MagicMock()
-    fake_feature = MagicMock()
-    fake_ee.FeatureCollection.return_value = fake_feature
-    fake_feature.geometry.return_value = fake_country_geom
-
-    # Fake distance values
-    fake_dist_value = MagicMock()
-    fake_dist_value.getInfo.return_value = 4_932.9
-    fake_centroid.distance.return_value = fake_dist_value
-
-    coords = (-8.569, 126.676)
-
-    with patch.object(builtins, "__import__", return_value=fake_ee):
-        value = get_dist_to_coast(coords)
-
-    assert isinstance(value, (int, float))
-    assert value == 4.933
-
-    # Check that the EE API was called as expected
-    fake_ee.Geometry.Point.assert_called_once_with([126.676, -8.569])
-    fake_point.centroid.assert_called_once_with(maxError=1)
-    fake_ee.FeatureCollection.assert_called_once_with(BOUNDARY_TIMOR_ASSET_ID)
-    fake_feature.geometry.assert_called_once_with()
-    fake_centroid.distance.assert_called_once_with(fake_country_geom, 100)
-
-
 # parse_geometry auto-detection
 def test_parse_geometry_dispatch():
     fake_ee = make_fake_ee()
@@ -445,3 +409,105 @@ def test_parse_geometry_dispatch():
 
     fake_ee.Geometry.Polygon.assert_called_once()
     assert g_polygon == fake_ee.Geometry.Polygon.return_value
+
+
+# test normalize_texture_name
+def test_normalize_name():
+    value = "Clay, Clay Loam"
+    txt = _normalise_texture_name(value)
+    assert txt == "clay"
+
+
+# test get_texture_id
+def test_get_texture_id():
+    geometry = [(-8.569, 126.676), (-8.570, 126.676), (-8.570, 126.677)]
+
+    with (
+        patch(
+            "core.extract_data.get_texture", return_value="Clay Loam, Clay"
+        ) as mock_tex,
+        patch(
+            "core.extract_data._normalise_texture_name", return_value="clay loam"
+        ) as mock_norm,
+    ):
+        texture_id = get_texture_id(geometry)
+
+    assert texture_id == 8
+
+    mock_tex.assert_called_once_with(geometry, year=None)
+    mock_norm.assert_called_once_with("Clay Loam, Clay")
+
+
+def test_get_centroid_lat_lon():
+    fake_ee = make_fake_ee()
+
+    # Fake Geometry.Point
+    fake_point = MagicMock()
+    fake_ee.Geometry.Point.return_value = fake_point
+
+    # Fake centroid
+    fake_centroid = MagicMock()
+    fake_coords = MagicMock()
+    fake_coords.getInfo.return_value = [126.676, -8.57]
+    fake_centroid.coordinates.return_value = fake_coords
+    fake_point.centroid.return_value = fake_centroid
+
+    geometry = [(-8.569, 126.676), (-8.570, 126.676), (-8.570, 126.677)]
+
+    target = f"{get_centroid_lat_lon.__module__}.parse_geometry"
+
+    with (
+        patch.object(builtins, "__import__", return_value=fake_ee),
+        patch(target, return_value=fake_point),
+    ):
+        lat, lon = get_centroid_lat_lon(geometry)
+
+    assert (lat, lon) == (-8.57, 126.676)
+    fake_point.centroid.assert_called_once_with(maxError=1)
+    fake_centroid.coordinates.assert_called_once()
+    fake_coords.getInfo.assert_called_once()
+
+
+# test_build_farm_profile
+def test_build_farm_profile_basic():
+    # Fake input
+    geometry = [(-8.569, 126.676), (-8.570, 126.676), (-8.570, 126.677)]
+    farm_id = 123
+    year = 2024
+
+    # Fake all the functions used in build_farm_profile
+    with (
+        patch("core.farm_profile.get_rainfall", return_value=1000.0) as mock_rain,
+        patch("core.farm_profile.get_temperature", return_value=23.5) as mock_temp,
+        patch("core.farm_profile.get_ph", return_value=6.3) as mock_ph,
+        patch("core.farm_profile.get_elevation", return_value=350.0) as mock_elev,
+        patch("core.farm_profile.get_slope", return_value=12.0) as mock_slope,
+        patch("core.farm_profile.get_area_ha", return_value=2.5) as mock_area,
+        patch("core.farm_profile.get_texture_id", return_value=12) as mock_texture_id,
+        patch(
+            "core.farm_profile.get_centroid_lat_lon", return_value=(-8.57, 126.676)
+        ) as mock_location,
+    ):
+        profile = build_farm_profile(geometry, year=year, farm_id=farm_id)
+
+    assert isinstance(profile, dict)
+    assert profile["id"] == farm_id
+    assert profile["temperature_celsius"] == 23.5
+    assert profile["rainfall_mm"] == 1000.0
+    assert profile["ph"] == 6.3
+    assert profile["elevation_m"] == 350.0
+    assert profile["slope"] == 12.0
+    assert profile["latitude"] == -8.57
+    assert profile["longitude"] == 126.676
+    assert profile["area_ha"] == 2.5
+    assert profile["soil_texture_id"] == 12
+    assert profile["coastal"] is False
+
+    mock_rain.assert_called_once_with(geometry, year=year)
+    mock_temp.assert_called_once_with(geometry, year=year)
+    mock_ph.assert_called_once_with(geometry, year=year)
+    mock_elev.assert_called_once_with(geometry, year=year)
+    mock_slope.assert_called_once_with(geometry, year=year)
+    mock_area.assert_called_once_with(geometry)
+    mock_texture_id.assert_called_once_with(geometry)
+    mock_location.assert_called_once_with(geometry)

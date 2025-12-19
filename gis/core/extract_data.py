@@ -13,7 +13,7 @@ from config.settings import (
     SLOPE_BAND,
     SOIL_TEXTURE_ASSET_ID,
     SOIL_TEXTURE_FIELD,
-    BOUNDARY_TIMOR_ASSET_ID,
+    TEXTURE_MAP,
 )
 
 from core.geometry_parser import parse_geometry
@@ -230,26 +230,54 @@ def get_area_ha(geometry: list[list]):
     return round(float(value) / 10_000.0, 3)
 
 
-def get_dist_to_coast(geometry: list[list]):
+def _normalise_texture_name(value) -> str | None:
     """
-    Return distance to coast_boundary by measure the distance of the centroild point to timor boundary
+    Normalize the texture name
+    """
+    if value is None:
+        return None
 
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
+    txt = str(value).strip().lower()
+    if not txt:
+        return None
+
+    if "," in txt:
+        txt = txt.split(",")[0].strip()
+
+    if txt in ("organic", "variable"):
+        return None
+
+    return txt
+
+
+def get_texture_id(geometry: list[list], year: int | None = None) -> int | None:
+    """
+    Return soil texture ID (1–12) for a given geometry,
+    """
+    texture_name = get_texture(geometry, year=year)
+    norm_name = _normalise_texture_name(texture_name)
+
+    if norm_name is None:
+        return None
+
+    return TEXTURE_MAP.get(norm_name)
+
+
+def get_centroid_lat_lon(geometry):
+    """
+    Take farmer input geometry (point or polygon), use parse_geometry
+    to build an ee.Geometry, then return centroid as (lat, lon) rounded
+    to 3 decimal places.
     """
 
-    import ee
+    geom = parse_geometry(geometry)
 
-    geometry = parse_geometry(geometry)
+    centroid = geom.centroid(maxError=1)
 
-    # Get centroid point
-    centroid = geometry.centroid(maxError=1)
+    coords = centroid.coordinates()
+    if hasattr(coords, "getInfo"):
+        coords = coords.getInfo()  # → [lon, lat]
 
-    # Timor Boundary
-    boundary_fc = ee.FeatureCollection(BOUNDARY_TIMOR_ASSET_ID)
-    country_geom = boundary_fc.geometry()
+    lon, lat = float(coords[0]), float(coords[1])
 
-    value = centroid.distance(country_geom, 100)
-
-    return round(_ee_to_float(value) / 1000.0, 3)
+    return round(lat, 3), round(lon, 3)

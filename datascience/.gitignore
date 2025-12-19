@@ -17,3 +17,8 @@ __pycache__/
 
 # pytest stuff
 .pytest_cache/
+
+# egg-info files
+# created by cross-project integration
+# backend using datascience/src/suitability_scoring causes creation.
+*.egg-info/

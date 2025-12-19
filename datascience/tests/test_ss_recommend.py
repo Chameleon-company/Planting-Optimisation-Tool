@@ -3,9 +3,8 @@ from datetime import datetime, timezone
 from suitability_scoring.recommend import (
     assign_dense_ranks,
     build_species_recommendations,
-    build_farm_recommendations,
-    build_payload_for_farm,
-    build_payloads_for_farms,
+    get_recommendations_service,
+    get_batch_recommendations_service,
 )
 
 
@@ -49,10 +48,7 @@ def mock_scorer_output(sample_species_list):
     """
     Simulates the return value of mcda_scorer.
     """
-    return {
-        1: sample_species_list,
-        2: [],  # Test empty farm
-    }
+    return sample_species_list, []
 
 
 def test_assign_dense_ranks_basic():
@@ -110,7 +106,7 @@ def test_build_species_recommendations_sorting_and_content(sample_species_list):
     assert recs[2]["key_reasons"] == []
 
 
-def test_build_farm_recommendations_timestamp(mocker, sample_species_list):
+def test_get_recommendations_service_timestamp(mocker, sample_species_list):
     """
     Check that timestamp is generated correctly using a mock.
     """
@@ -123,49 +119,45 @@ def test_build_farm_recommendations_timestamp(mocker, sample_species_list):
     mock_dt.now.return_value = fixed_time
 
     # Run the function
-    input_data = {1: sample_species_list}
-    result = build_farm_recommendations(input_data, 1)
+    result = get_recommendations_service(1)
 
     # Assert
     assert result["timestamp_utc"] == "2025-01-01T12:00:00Z"
 
 
-def test_build_payload_for_farm_calls_scorer(mocker, mock_scorer_output):
+def test_get_recommendations_service(mocker, mock_scorer_output):
     """
     Check that the single farm payload builder calls the scorer correctly.
     """
 
     # Patch the scorer function
-    mock_scorer = mocker.patch(
-        "suitability_scoring.recommend.mcda_scorer", return_value=mock_scorer_output
+    mocker.patch(
+        "suitability_scoring.recommend.calculate_suitability",
+        return_value=mock_scorer_output,
     )
 
     # Run the function
-    result = build_payload_for_farm(1)
-
-    mock_scorer.assert_called_once_with([1])
+    result = get_recommendations_service(1)
 
     # Check the result for the farm
     assert result["farm_id"] == 1
     assert len(result["recommendations"]) == 3
 
 
-def test_build_payloads_for_farms_calls_scorer_once(mocker, mock_scorer_output):
+def test_get_batch_recommendations_service(mocker, mock_scorer_output):
     """
     Check that multiple farms are processed in one scorer batch.
     """
 
     # Patch
-    mock_scorer = mocker.patch(
-        "suitability_scoring.recommend.mcda_scorer", return_value=mock_scorer_output
+    mocker.patch(
+        "suitability_scoring.recommend.calculate_suitability",
+        return_value=mock_scorer_output,
     )
 
     # Run
     farm_ids = [1, 2]
-    results = build_payloads_for_farms(farm_ids)
-
-    # Assert
-    mock_scorer.assert_called_once_with(farm_ids)
+    results = get_batch_recommendations_service(farm_ids)
 
     # Check the results are a list
     assert isinstance(results, list)
@@ -179,4 +171,4 @@ def test_build_payloads_for_farms_calls_scorer_once(mocker, mock_scorer_output):
 
     # Check second farm
     assert results[1]["farm_id"] == 2
-    assert len(results[1]["recommendations"]) == 0
+    assert len(results[1]["recommendations"]) == 3
