@@ -39,7 +39,7 @@ These data dictionaries contains all variables for the recommendation system (su
 | `elevation_m_min`            | Integer  | `m` | Minimum preferred altitude               | Required, Range: `0`–`3000`             |
 | `elevation_m_max`            | Integer  | `m` | Maximum preferred altitude               | Required, Range: `0`–`3000`             |
 | `ph_min`                  | Float  | pH units | Minimum preferred soil pH                | Required, Range: `4.0`–`7.0`             |
-| `ph_max`                  | Float  | pH units | Maximum preferred soil pH                | Required, Range: `7.0`–`8.5`             |
+| `ph_max`                  | Float  | pH units | Maximum preferred soil pH                | Required, Range: `6.5`–`8.5`             |
 | `preferred_soil_texture_id`    | List (integers)   | —        | List of compatible soil texture ids            | Required, See Soil Textures table    |
 | `coastal`    | Boolean   | —        | Suitable for costal environment   | Required, Allowed: True/False    |
 | `riparian`    | Boolean   | —        | Suitable for wetlands adjacent to rivers and streams   | Required, Allowed: True/False    |
