@@ -1,0 +1,29 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Git
+.git
+.gitignore
+
+# OS files
+.DS_Store
+
+# Tests & docs (not needed in runtime image)
+tests/
+*.md
+
+# Node / frontend junk (just in case)
+node_modules/
+
+# Docker junk
+Dockerfile
+docker-compose.yml
+
+
