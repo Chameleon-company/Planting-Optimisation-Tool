@@ -1,5 +1,5 @@
-﻿id,feature,score_method,weight,,
-1,rainfall_mm,num_range,0.3,,
+﻿id,feature,score_method,weight,trap_left_tol,trap_right_tol
+1,rainfall_mm,trapezoid,0.3,0,2000
 1,temperature_celsius,num_range,0.25,,
 1,ph,num_range,0.2,,
 1,elevation_m,num_range,0.05,,

@@ -22,6 +22,105 @@ def numerical_range_score(value, min_val, max_val):
         return None
 
 
+def derive_trapezoid_from_minmax(min_v, max_v, delta_left, delta_right):
+    """
+    For species min/max, derive trapezoid params:
+      a = min_v
+      d = max_v
+      b = min_v + delta_left   (shrink from min inward)
+      c = max_v - delta_right  (shrink from max inward)
+
+    If b > c after deltas, collapse plateau to midpoint to preserve a <= b <= c <= d.
+
+    :param min_v: Minimum value
+    :param max_v: Maximum value
+    :param delta_left: Left shoulder width
+    :param delta_right: Right shoulder width
+    :returns: Float values for the trapezoid points.
+    """
+    if min_v is None or max_v is None:
+        raise ValueError("min/max cannot be None.")
+    min_v = float(min_v)
+    max_v = float(max_v)
+
+    if max_v < min_v:
+        raise ValueError(f"max ({max_v}) < min ({min_v})")
+
+    # Set the values of a and d
+    a, d = min_v, max_v
+
+    # Total width of trapezoid
+    width = d - a
+
+    b = a + delta_left
+    c = d - delta_right
+
+    # Ensure ordering a <= b <= c <= d
+    if b > c:
+        # Collapse plateau to midpoint to enforce point ordering
+        mid = a + width / 2.0
+        b = c = mid
+    return a, b, c, d
+
+
+def trapezoid_score(x, min_v, max_v, tol_left, tol_right):
+    """
+    Scoring for a trapezoid with shoulders [a,b], [c,d]; plateau [b,c],
+    a=min, d=max, inner [b,c] from tolerances.
+        b ------ c
+       /          \
+      /            \
+     /              \
+    a                d
+
+    Function returns tuple containing the score, reason and trapezoid points. If any of x,
+    min_v, max_v is missing a None score is returned. If x is within the trapezoid a score
+    value in [0,1] is returned.
+     
+    Function assumes valid order a <= b <= c <= d.
+
+    :param x:
+    :param min_v:
+    :param max_v:
+    :param tol_left:
+    :param tol_right:
+    :returns: Tuple with score, reason and trapezoid points
+    """
+    if pd.isna(x):
+        return None, "missing farm data", {}
+
+    if pd.isna(min_v) or pd.isna(max_v):
+        return None, "missing species data", {}
+
+    # Derive the trapezoid values
+    a, b, c, d = derive_trapezoid_from_minmax(min_v, max_v, tol_left, tol_right)
+
+    params_out = {"a": a, "b": b, "c": c, "d": d}
+
+    # Below minimum
+    if x < a:
+        s = 0.0
+        reason = "below minimum"
+
+    elif a <= x < b:  # Left shoulder
+        s = (x - a) / (b - a) if (b - a) > 0 else 0.0
+        reason = f"within left shoulder [{a}, {b}]"
+
+    elif b <= x <= c:  # Plateau
+        s = 1.0
+        reason = f"within plateau [{b}, {c}]"
+
+    elif c < x <= d:  # Right shoulder
+        s = (d - x) / (d - c) if (d - c) > 0 else 0.0
+        reason = f"within right shoulder [{c}, {d}]"
+
+    else:  # Above maximum x>d
+        s = 0.0
+        reason = "above maximum"
+
+    return s, reason, params_out
+
+
 def categorical_exact_score(value, preferred_list, exact_score=1.0):
     """
     Function for scoring categorical values with an exact match.
@@ -47,10 +146,14 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
     Scoring is performed using a weighted arithmetic mean of individual feature scores.
     Feature behaviour is defined in `cfg['features']` and applied as follows:
 
-    * Numerical features: Evaluated using range logic (e.g., `num_range`). A score of
-        1.0 is awarded if the farm's value falls between the species' min/max
-        requirements. Zero scores are assigned for values outside this range or missing
-        data.
+    * Numerical features: Evaluated using one of two scoring methods
+        * `num_range`: A score of 1.0 is awarded if the farm's value falls between the
+          species' min/max requirements. Zero scores are assigned for values outside this
+          range. None is assigned for missing data.
+
+        * `trapezoid`: A score in [0,1] is awarded if the farm's value falls within the
+          trapezoid. Zero scores are assigned for values outside this
+          range. None is assigned for missing data.
 
     * Categorical features: Evaluated using preference matching (e.g., `cat_exact`).
         Checks if the farm's attribute (e.g., soil texture) exists within the species'
@@ -132,6 +235,9 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     # Score this feature
                     score = numerical_range_score(farm_val, min_v, max_v)
 
+                    # Get the output parameters
+                    params_out = rule.get("params_out")
+
                     # Determine reason for score
                     if score == 1.0:
                         reason = "inside preferred range"
@@ -147,6 +253,14 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                             reason = "missing species data"
                         else:
                             reason = "missing data"
+                elif score_method == "trapezoid":
+                    # Get minimum, maximum and tolerance values for the feature
+                    min_v, max_v, left_tol, right_tol = rule["args"]
+
+                    # Score the farm value
+                    score, reason, params_out = trapezoid_score(
+                        farm_val, min_v, max_v, left_tol, right_tol
+                    )
 
                 else:  # No valid scoring method selected
                     raise ValueError(
@@ -160,7 +274,7 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     "farm_value": farm_val,
                     "score": score,
                     "reason": reason,
-                    "params": rule.get("params_out"),
+                    "params": params_out,
                 }
 
             # Categorical feature

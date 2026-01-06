@@ -14,7 +14,10 @@ features:
   rainfall_mm:
     type: numeric
     short: rainfall
-    score_method: num_range
+    score_method: num_range #trapezoid
+#    tolerance: # for trapezoid scoring
+#      left:  100
+#      right: 200    
     default_weight: 0.20
 
   temperature_celsius:

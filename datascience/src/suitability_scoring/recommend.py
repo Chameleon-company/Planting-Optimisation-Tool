@@ -18,7 +18,7 @@ def get_valid_tree_ids_and_reasons(farm_data, species_list):
      candidate species.
     :returns: Tuple (valid_ids_list, excluded_records_list)
     """
-    valid_ids = list(range(0, 21))
+    valid_ids = list(range(0, 2))
     return valid_ids, []
 
 
