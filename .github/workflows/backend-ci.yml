@@ -1,123 +1,41 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-          
-          
-name: POT Back-end Testing 
-          
-          
+name: Backend CI
+
 on:
-  push:
-    branches: "**"
   pull_request:
-    branches: [ "master" ]
-          
-          
-permissions:
-  contents: read
-          
-          
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  push:
+    branches: [ master ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
 jobs:
-  build:
-    
+  backend-ci:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    
-    # ====================================================================
-    # 1. DATABASE SERVICE SETUP
-    # Starts the PostgreSQL container and exposes it to the runner.
-    # The 'options' are set on a single line to avoid YAML parsing bugs.
-    # ====================================================================
-    services:
-      postgres_db: # Service name
-        image: postgis/postgis:15-3.4-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: devpassword
-          POSTGRES_DB: POT_db
-        ports:
-          # Expose the port so the runner can connect via 'localhost:5432'
-          - 5432:5432
-        options: "--health-cmd \"pg_isready -U postgres\" --health-interval 10s --health-timeout 5s --health-retries 5"
-    
-    # ====================================================================
-    # 2. WORKFLOW STEPS
-    # ====================================================================
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
-      with: 
-          version: "0.9.11"
-          enable-cache: true
-    
-    - name: Set up Python
-      run: uv python install 
-    
-    - name: Install Backend dependencies
-      run: |
-        uv sync
-    
-    - name: Set DB Environment Variables for CI
-      run: |
-        # Set individual components
-        echo "POSTGRES_USER=postgres" >> $GITHUB_ENV
-        echo "POSTGRES_PASSWORD=devpassword" >> $GITHUB_ENV
-        echo "POSTGRES_DB=POT_db" >> $GITHUB_ENV
-        echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV 
-        echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
-        echo "DATABASE_URL=postgresql+asyncpg://postgres:devpassword@localhost:5432/POT_db" >> $GITHUB_ENV
-        
-    - name: Wait for PostgreSQL Service to be Healthy
-      run: |
-        SERVICE_HOST="localhost" # Runner connects to the exposed port via localhost
-        SERVICE_PORT=5432
-        MAX_ATTEMPTS=15
-        ATTEMPT=0
-        
-        echo "Waiting for DB service to open port ${SERVICE_PORT}..."
-        
-        # Loop until netcat (nc) successfully connects to the host/port
-        # 'nc -z' checks for open port without sending data
-        until nc -z $SERVICE_HOST $SERVICE_PORT; do
-          if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
-            echo "Error: PostgreSQL service did not open port ${SERVICE_PORT} within 60 seconds."
-            exit 1
-          fi
-          
-          echo "Attempt $((ATTEMPT + 1)) of ${MAX_ATTEMPTS}: Port is not yet open. Waiting..."
-          sleep 4
-          ATTEMPT=$((ATTEMPT + 1))
-        done
-        
-        echo "PostgreSQL service is now reachable!"
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Enable PostGIS Extension
-      run: |
-        # Construct a psql connection string using the environment variables.
-        # Authenticates the psql client to facilitate PostGIS extension.
-        PSQL_URI="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-        
-        # Execute the command using the constructed URI
-        psql $PSQL_URI -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-        echo "PostGIS extension successfully enabled."
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    # 4. APPLY MIGRATIONS
-    - name: Apply Alembic Migrations
-      run: |
-        uv run alembic upgrade head
-    
-    # 5. LINT AND FORMAT
-    - name: Lint with ruff
-      run: |
-        uv run ruff check .
-    
-    - name: Format check with ruff
-      run: |
-        uv run ruff format --check .
-    
-    # 6. RUN TESTS
-    - name: Test with pytest
-      run: |
-        uv run pytest
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync
+
+      - name: Lint (ruff)
+        working-directory: backend
+        run: uv run ruff check .
+
+      - name: Run tests (pytest)
+        working-directory: backend
+        run: uv run pytest -q
+
