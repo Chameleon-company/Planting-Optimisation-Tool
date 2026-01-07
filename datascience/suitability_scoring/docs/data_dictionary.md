@@ -48,6 +48,18 @@ These data dictionaries contains all variables for the recommendation system (su
 | `bank_stabilising`    | Boolean   | —        | Can be used for erosion control  | Required, Allowed: True/False    |
 | `agroforestry_type_ids`    | List   | —        | List of compatible agroforestry uses          | Required, Allowed: See Agroforestry Types table  |
 
+## **Species Parameters**
+
+| Column Name               | Type    | Unit          | Description                              | Constraints                        |
+| ------------------------- | ------  | --------      | ---------------------------------------- | ---------------------------------- |
+| `id`                      | Integer | —             | Unique identifier for each parameter     | Required, unique                   |
+| `species_id`              | Integer | —             | The species this parameter applied too   | Required                           |
+| `feature`                 | String  | —             | Name of feature parameter is for         | Required                           |
+| `weight`                  | Float   | —             | Weight for this feature                  | Optional, Range: `0.0`–`1.0`       |
+| `trap_left_tol`           | Float   | Feature units | Trapezoid left tolerance                 | Optional, Range: `0.0`–`5000`      |
+| `trap_right_tol`          | Float   | Feature units | Trapezoid right tolerance                | Optional, Range: `0.0`–`5000`      |
+
+
 ## **Soil Textures**
 
 | Name               | ID   | 
