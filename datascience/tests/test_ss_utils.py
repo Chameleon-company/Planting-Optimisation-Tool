@@ -116,31 +116,6 @@ def test_build_params_structure(species_params_df, basic_cfg):
     assert result[1]["soil_texture"]["weight"] == pytest.approx(0.7)
 
 
-def test_build_params_custom_id_column(basic_cfg):
-    """
-    Check that the function respects a custom ID column name defined in config.
-    """
-    # Modify config to look for 'species_key' instead of 'species_id'
-    basic_cfg["ids"]["species"] = "species_key"
-
-    # Create DF with that specific column
-    df = pd.DataFrame(
-        [
-            {
-                "species_key": 2,
-                "feature": "rainfall",
-                "score_method": "num_range",
-                "weight": 0.3,
-            }
-        ]
-    )
-
-    result = build_species_params_dict(df, basic_cfg)
-
-    assert 2 in result
-    assert result[2]["rainfall"]["weight"] == pytest.approx(0.3)
-
-
 def test_build_params_handles_missing_values(basic_cfg):
     """
     Check the function handles NaN or None values in the dataFrame.

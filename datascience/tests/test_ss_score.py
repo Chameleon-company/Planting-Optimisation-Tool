@@ -329,3 +329,50 @@ def test_unknown_feature_type(farms, species, params_index):
 
     with pytest.raises(ValueError, match="Unknown feature type 'number' for 'ph'"):
         scores, explanations = calculate_suitability(farms[0], species, rules, cfg)
+
+
+def test_trapezoid(params_index):
+    """
+    Checks handling of wrong type for numeric data in both the species and the farm.
+    """
+    cfg = {
+        "ids": {"farm": "farm_id", "species": "species_id"},
+        "names": {"species_name": "scientific_name"},
+        "features": {
+            "rainfall_mm": {
+                "type": "numeric",
+                "short": "rainfall",
+                "score_method": "trapezoid",
+                "tolerance": {"left": 250, "right": 500},
+                "default_weight": 0.50,
+            },
+        },
+    }
+
+    farms = [
+        {"farm_id": 101, "rainfall_mm": 1000, "soil_texture": "clay"},
+    ]
+
+    # Create a species row with missing data
+    species = [
+        {
+            "species_id": 1,
+            "scientific_name": "Tree A",
+            "species_common_name": "Common A",
+            "rainfall_mm_min": 500,
+            "rainfall_mm_max": 2000,
+            "preferred_soil_texture": "clay",
+        }
+    ]
+
+    rules = build_rules_dict(species, params_index, cfg)
+
+    explanations, scores = calculate_suitability(farms[0], species, rules, cfg)
+
+    # First species should report missing data for the ph score
+    assert (
+        explanations[0]["features"]["rainfall_mm"]["reason"]
+        == "within plateau [750.0, 1500.0]"
+    )
+    # Expect 1.0 because rainfall is within plateau  AND clay == clay
+    assert scores[0][1] == pytest.approx(1.0)
