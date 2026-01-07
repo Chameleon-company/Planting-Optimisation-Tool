@@ -22,8 +22,8 @@ def build_species_params_dict(species_params_df, config):
     # Create an empty dictionary
     params_dict = {}
 
-    # Get column name for species id
-    species_id_col = config.get("ids", {}).get("species", "id")
+    # Column name for species id
+    species_id_col = "species_id"
 
     # For each row in the species_params dataframe
     for _, row in species_params_df.iterrows():

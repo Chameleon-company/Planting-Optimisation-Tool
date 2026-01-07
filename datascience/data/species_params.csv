@@ -1,4 +1,4 @@
-﻿id,feature,score_method,weight,trap_left_tol,trap_right_tol
+﻿species_id,feature,score_method,weight,trap_left_tol,trap_right_tol
 4,elevation_m,trapezoid,0.25,50,0
 6,elevation_m,trapezoid,0.25,30,0
 7,elevation_m,trapezoid,0.25,500,1500
@@ -8,5 +8,3 @@
 13,elevation_m,trapezoid,0.25,200,500
 15,elevation_m,trapezoid,0.25,0,400
 17,elevation_m,trapezoid,0.25,0,600
-,,,,,
-,,,,,
