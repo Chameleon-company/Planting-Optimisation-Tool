@@ -25,9 +25,9 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('species_id', sa.Integer(), nullable=False),
     sa.Column('feature', sa.String(), nullable=False),
-    sa.Column('weight', sa.Float(), nullable=False),
-    sa.Column('trap_left_tol', sa.Float(), nullable=False),
-    sa.Column('trap_right_tol', sa.Float(), nullable=False),
+    sa.Column('weight', sa.Float(), nullable=True),
+    sa.Column('trap_left_tol', sa.Float(), nullable=True),
+    sa.Column('trap_right_tol', sa.Float(), nullable=True),
     sa.ForeignKeyConstraint(['species_id'], ['species.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
