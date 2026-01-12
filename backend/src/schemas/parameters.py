@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -21,13 +22,15 @@ class ParameterBase(BaseModel):
         ge=0.0,
         le=1.0,
     )
-    trap_left_tol: float = Field(
+    trap_left_tol: Optional[float] = Field(
+        default=None,
         title="Trapezoid left tolerance",
         description="Trapezoid left tolerance",
         ge=0,
         le=5000,
     )
-    trap_right_tol: float = Field(
+    trap_right_tol: Optional[float] = Field(
+        default=None,
         title="Trapezoid right tolerance",
         description="Trapezoid right tolerance",
         ge=0,
