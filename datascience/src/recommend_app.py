@@ -6,28 +6,32 @@ from suitability_scoring.recommend import (
 )
 
 
-def parse_int_list(value):
+def parse_int_list(token):
     """
-    Accepts either a comma-separated list ("1,2,3") or a single int-like string,
-    or space-separated via nargs in argparse. Returns a list of ints.
+    Parse a token that can be:
+      - a single integer (e.g., '5')
+      - a comma-separated list (e.g., '1,2,3')
+      - a range (e.g., '10-20')
+      - a mixed combo (e.g., '1,2,10-12')
+    Returns a list of ints.
     """
     # If called as a type for argparse (nargs='+' case), value may be a single token
     # that contains commas, or not. We'll normalize both.
-    parts = []
-    if isinstance(value, list):
-        # Shouldn't happen when used as type; but keep defensive
-        for v in value:
-            parts.extend(str(v).split(","))
-    else:
-        parts = str(value).split(",")
+    parts = token.split(",")
+    result = []
 
-    try:
-        ints = [int(v.strip()) for v in parts if v.strip() != ""]
-    except ValueError as e:
-        raise argparse.ArgumentTypeError(f"Invalid integer in list: {e}")
-    if not ints:
-        raise argparse.ArgumentTypeError("No valid farm IDs provided.")
-    return ints
+    for part in parts:
+        part = part.strip()
+        if "-" in part:
+            start_str, end_str = part.split("-", 1)
+            start = int(start_str)
+            end = int(end_str)
+            if start > end:
+                raise argparse.ArgumentTypeError(f"Invalid range '{part}': start > end")
+            result.extend(range(start, end + 1))
+        else:
+            result.append(int(part))
+    return result
 
 
 def build_parser():
@@ -47,11 +51,20 @@ def build_parser():
     # Option 2: multiple farm ids
     # Supports: --farm-ids 1 2 3    (space-separated via nargs)
     #           --farm-ids 1,2,3    (comma-separated via custom type)
+    #           --farm-ids 1-1000   (range of values)
+    #           --farm-ids 5,10,20-25 (mix of comma-separated and range)
     group.add_argument(
         "--farm-ids",
         nargs="+",
-        type=parse_int_list,  # allows comma-separated in each token
-        help="One or more farm IDs (space- or comma-separated). Example: --farm-ids 1 2 3 OR --farm-ids 1,2,3",
+        type=parse_int_list,  # allows comma-separated and ranges in each token
+        help=(
+            "One or more farm IDs. Supports space-/comma-separated and ranges.\n"
+            "Examples:\n"
+            "  --farm-ids 1 2 3\n"
+            "  --farm-ids 1,2,3\n"
+            "  --farm-ids 1-1000\n"
+            "  --farm-ids 5,10,20-25"
+        ),
     )
 
     return parser
