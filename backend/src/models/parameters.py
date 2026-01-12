@@ -21,6 +21,7 @@ class Parameter(Base):
         ForeignKey("species.id", ondelete="CASCADE")
     )
     feature: Mapped[str] = mapped_column()
+    score_method: Mapped[str] = mapped_column(nullable=True)
     weight: Mapped[float | None] = mapped_column(nullable=True)
     trap_left_tol: Mapped[float | None] = mapped_column(nullable=True)
     trap_right_tol: Mapped[float | None] = mapped_column(nullable=True)

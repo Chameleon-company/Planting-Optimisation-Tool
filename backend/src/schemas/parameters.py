@@ -16,6 +16,10 @@ class ParameterBase(BaseModel):
         title="Feature",
         description="Name of the feature",
     )
+    score_method: str = Field(
+        title="Score method",
+        description="Scoring method of the feature",
+    )
     weight: float = Field(
         title="Weight",
         description="Weight of the feature",

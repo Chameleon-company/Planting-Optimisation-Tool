@@ -55,6 +55,7 @@ These data dictionaries contains all variables for the recommendation system (su
 | `id`                      | Integer | —             | Unique identifier for each parameter     | Required, unique                   |
 | `species_id`              | Integer | —             | The species this parameter applied too   | Required                           |
 | `feature`                 | String  | —             | Name of feature parameter is for         | Required                           |
+| `score_method`            | String  | —             | Name of scoring method for this feature  | Optional                           |
 | `weight`                  | Float   | —             | Weight for this feature                  | Optional, Range: `0.0`–`1.0`       |
 | `trap_left_tol`           | Float   | Feature units | Trapezoid left tolerance                 | Optional, Range: `0.0`–`5000`      |
 | `trap_right_tol`          | Float   | Feature units | Trapezoid right tolerance                | Optional, Range: `0.0`–`5000`      |
