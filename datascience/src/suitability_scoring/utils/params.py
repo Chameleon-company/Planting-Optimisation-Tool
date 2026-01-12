@@ -213,7 +213,8 @@ def build_rules_dict(species_list, params, cfg):
                 rule_data["args"] = (min_v, max_v, left_tol, right_tol)
 
             elif score_method == "cat_exact":
-                prefs = parse_prefs(sp.get(f"preferred_{feat}"))
+                # Note: In the database the column name is feature+'s'
+                prefs = parse_prefs(sp.get(f"{feat}s"))
                 cat_cfg = meta.get("categorical", {}) or {}
                 exact_score = float(cat_cfg.get("exact_match", 1.0))
                 rule_data["preferred"] = prefs
