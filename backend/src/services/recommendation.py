@@ -1,5 +1,4 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-import pandas as pd
 from src.domains.suitability_scoring import SuitabilityFarm
 from src.services.species_parameters import get_species_parameters_as_dicts
 from suitability_scoring import (
