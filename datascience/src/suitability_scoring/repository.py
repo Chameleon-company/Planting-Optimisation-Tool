@@ -1,8 +1,9 @@
 import pandas as pd
+import csv
 from suitability_scoring.utils.config import load_yaml
 from suitability_scoring.utils.params import build_species_params_dict
 
-# Cache the data so we don't read Excel on every request
+# Cache the data so we don't read CSV on every request
 _DATA_CACHE = {}
 
 
@@ -38,10 +39,12 @@ def initialise_data():
     species_params_path = "data/species_params.csv"
 
     # Load species parameters
-    species_params_df = pd.read_csv(species_params_path)
+    with open(species_params_path, encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        species_params_rows = [row for row in reader]
 
     # Pre-process params
-    params_dict = build_species_params_dict(species_params_df, config)
+    params_dict = build_species_params_dict(species_params_rows, config)
 
     # Store in cache
     _DATA_CACHE["config"] = config
@@ -67,8 +70,8 @@ def get_farms_by_ids(farm_id_list):
     # Filter, matching any row where the ID is inside the provided list
     subset_df = df[df[farm_id_col].isin(farm_id_list)]
 
-    # Return as list of dictionaries
-    farms_dicts = subset_df.to_dict("records")
+    # Return as list of dictionaries ensuring any NaN's are None
+    farms_dicts = subset_df.where(pd.notnull(subset_df), None).to_dict(orient="records")
 
     return farms_dicts
 
@@ -80,8 +83,9 @@ def get_all_species():
     # Initialise data by loading if not loaded
     initialise_data()
 
-    # Return as list of dictionaries
-    species_dicts = _DATA_CACHE["species_df"].to_dict("records")
+    # Return as list of dictionaries ensuring any NaN's are None
+    df = _DATA_CACHE["species_df"]
+    species_dicts = df.where(pd.notnull(df), None).to_dict(orient="records")
 
     return species_dicts
 

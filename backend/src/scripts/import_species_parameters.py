@@ -28,6 +28,7 @@ async def import_species_parameters():
                 for row in reader:
                     sp_id = to_int_or_none(row["species_id"])
                     feature_string = row["feature"].strip()
+                    sm_string = row["score_method"].strip()
                     wt = to_float_or_none(row["weight"])
                     trp_lt = to_float_or_none(row["trap_left_tol"])
                     trp_rt = to_float_or_none(row["trap_right_tol"])
@@ -39,9 +40,9 @@ async def import_species_parameters():
 
                     if species:
                         new_species_parameter = Parameter(
-                            #                        id=farm_id,  # Shared PK with Farm
                             species_id=sp_id,
                             feature=feature_string,
+                            score_method=sm_string,
                             weight=wt,
                             trap_left_tol=trp_lt,
                             trap_right_tol=trp_rt,

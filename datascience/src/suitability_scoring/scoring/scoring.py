@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 ########################################################################################
 # Scoring functions
 ########################################################################################
@@ -14,7 +11,7 @@ def numerical_range_score(value, min_val, max_val):
     :param max_val: Species maximum preferred value.
     :returns: Score value between 0 and 1 or None.
     """
-    if pd.isna(value) or pd.isna(min_val) or pd.isna(max_val):
+    if (value is None) or (min_val is None) or (max_val is None):
         return None
     try:
         return 1.0 if float(min_val) <= float(value) <= float(max_val) else 0.0
@@ -86,10 +83,10 @@ def trapezoid_score(x, min_v, max_v, tol_left, tol_right):
     :param tol_right:
     :returns: Tuple with score, reason and trapezoid points
     """
-    if pd.isna(x):
+    if x is None:
         return None, "missing farm data", {}
 
-    if pd.isna(min_v) or pd.isna(max_v):
+    if min_v is None or max_v is None:
         return None, "missing species data", {}
 
     # Derive the trapezoid values
@@ -132,7 +129,7 @@ def categorical_exact_score(value, preferred_list, exact_score=1.0):
     :param exact_score: Score to return if exact match found.
     :returns: Score value between 0 and 1 or None.
     """
-    if pd.isna(value) or not preferred_list:
+    if value is None or not preferred_list:
         return None
     return exact_score if (value in preferred_list) else 0.0
 
@@ -247,9 +244,9 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                         else:
                             reason = "above maximum"
                     else:
-                        if pd.isna(farm_val):
+                        if farm_val is None:
                             reason = "missing farm data"
-                        elif pd.isna(min_v) or pd.isna(max_v):
+                        elif (min_v is None) or (max_v is None):
                             reason = "missing species data"
                         else:
                             reason = "missing data"

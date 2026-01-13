@@ -1,5 +1,3 @@
-import pandas as pd
-import numpy as np
 import pytest
 from suitability_scoring.scoring.scoring import categorical_exact_score
 
@@ -34,7 +32,7 @@ def test_custom_exact_score():
     ) == pytest.approx(0.75)
 
 
-@pytest.mark.parametrize("missing", [None, np.nan, pd.NA])
+@pytest.mark.parametrize("missing", [None])
 def test_missing_values_return_none(missing):
     """
     Checks missing values return None as a score. Tests for different types of missing.

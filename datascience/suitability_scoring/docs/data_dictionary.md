@@ -40,7 +40,7 @@ These data dictionaries contains all variables for the recommendation system (su
 | `elevation_m_max`            | Integer  | `m` | Maximum preferred altitude               | Required, Range: `0`–`3000`             |
 | `ph_min`                  | Float  | pH units | Minimum preferred soil pH                | Required, Range: `4.0`–`7.0`             |
 | `ph_max`                  | Float  | pH units | Maximum preferred soil pH                | Required, Range: `6.5`–`8.5`             |
-| `preferred_soil_texture_id`    | List (integers)   | —        | List of compatible soil texture ids            | Required, See Soil Textures table    |
+| `soil_textures`    | List (integers)   | —        | List of compatible soil texture ids            | Required, See Soil Textures table    |
 | `coastal`    | Boolean   | —        | Suitable for costal environment   | Required, Allowed: True/False    |
 | `riparian`    | Boolean   | —        | Suitable for wetlands adjacent to rivers and streams   | Required, Allowed: True/False    |
 | `nitrogen_fixing`    | Boolean   | —        | Provides Nitrogen-fixing function  | Required, Allowed: True/False    |
@@ -55,6 +55,7 @@ These data dictionaries contains all variables for the recommendation system (su
 | `id`                      | Integer | —             | Unique identifier for each parameter     | Required, unique                   |
 | `species_id`              | Integer | —             | The species this parameter applied too   | Required                           |
 | `feature`                 | String  | —             | Name of feature parameter is for         | Required                           |
+| `score_method`            | String  | —             | Name of scoring method for this feature  | Optional                           |
 | `weight`                  | Float   | —             | Weight for this feature                  | Optional, Range: `0.0`–`1.0`       |
 | `trap_left_tol`           | Float   | Feature units | Trapezoid left tolerance                 | Optional, Range: `0.0`–`5000`      |
 | `trap_right_tol`          | Float   | Feature units | Trapezoid right tolerance                | Optional, Range: `0.0`–`5000`      |

@@ -1,7 +1,32 @@
-import pandas as pd
+def to_float_or_none(value):
+    """
+    Convert value to float or None. Handles exception if the value cannot be converted
+    to a Float.
+
+    :param value: Value to be converted to a Float.
+    """
+    if value is None or str(value).strip() == "":
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
 
 
-def build_species_params_dict(species_params_df, config):
+def to_string_or_none(value):
+    """
+    Convert value to string or None. Raises and exception if the value cannot be
+    converted to a String.
+
+    :param value: Value to be converted to a String.
+    """
+    if value is None or str(value).strip() == "":
+        return None
+    else:
+        return str(value)
+
+
+def build_species_params_dict(species_params_rows, config):
     """
     This function builds an dictionary of species parameters for lookup
       params_dict[species_id][feature] = {
@@ -10,12 +35,11 @@ def build_species_params_dict(species_params_df, config):
         'trap_left_tol':float|None,
         'trap_right_tol':float|None,
       }
-    from the species_params dataframe to prevent the scoring from searching through the dataframe.
+    from a list of row dictionaries.
 
-    The species_parameters dataframe is in long form were each row is for a species x feature.
-    This choice was made for the future move to a database.
+    Each row is for a species x feature.
 
-    :param species_params_df: DataFrame with the per species parameters.
+    :param species_rows: List of dictionaries.
     :param config: Configuration dictionary
     :returns index: Nested dictionary with the species parameters.
     """
@@ -26,9 +50,11 @@ def build_species_params_dict(species_params_df, config):
     species_id_col = "species_id"
 
     # For each row in the species_params dataframe
-    for _, row in species_params_df.iterrows():
+    for row in species_params_rows:
         # Get the species_id for this row
-        species_id = row[species_id_col]
+        species_id = (
+            int(row[species_id_col]) if row[species_id_col] is not None else "unknown"
+        )
 
         # Get the feature name for this row
         feat = row["feature"]
@@ -40,10 +66,10 @@ def build_species_params_dict(species_params_df, config):
         # contains keys score_method and weight.
         # use .get to return None if the values for score_method or weight are missing.
         params_dict.setdefault(species_id, {})[feat] = {
-            "score_method": row.get("score_method"),
-            "weight": row.get("weight"),
-            "trap_left_tol": row.get("trap_left_tol"),
-            "trap_right_tol": row.get("trap_right_tol"),
+            "score_method": to_string_or_none(row.get("score_method")),
+            "weight": to_float_or_none(row.get("weight")),
+            "trap_left_tol": to_float_or_none(row.get("trap_left_tol")),
+            "trap_right_tol": to_float_or_none(row.get("trap_right_tol")),
         }
     return params_dict
 
@@ -85,25 +111,25 @@ def get_feature_params(params_dict, config, species_id, feature):
 
     # Score method
     score_method = sp_feature_params.get("score_method")
-    if score_method is None or pd.isna(score_method):
+    if score_method is None:
         score_method = default_scm
 
     # Weight
     weight = sp_feature_params.get("weight")
-    if weight is None or pd.isna(weight):
+    if weight is None:
         weight = default_weight
     else:
         weight = float(weight)
 
     # Trapezoid tolerances
     trap_left_tol = sp_feature_params.get("trap_left_tol")
-    if trap_left_tol is None or pd.isna(trap_left_tol):
+    if trap_left_tol is None:
         trap_left_tol = default_trap_left_tol
     else:
         trap_left_tol = float(trap_left_tol)
 
     trap_right_tol = sp_feature_params.get("trap_right_tol")
-    if trap_right_tol is None or pd.isna(trap_right_tol):
+    if trap_right_tol is None:
         trap_right_tol = default_trap_right_tol
     else:
         trap_right_tol = float(trap_right_tol)
@@ -189,7 +215,8 @@ def build_rules_dict(species_list, params, cfg):
                 rule_data["args"] = (min_v, max_v, left_tol, right_tol)
 
             elif score_method == "cat_exact":
-                prefs = parse_prefs(sp.get(f"preferred_{feat}"))
+                # Note: In the database the column name is feature+'s'
+                prefs = parse_prefs(sp.get(f"{feat}s"))
                 cat_cfg = meta.get("categorical", {}) or {}
                 exact_score = float(cat_cfg.get("exact_match", 1.0))
                 rule_data["preferred"] = prefs

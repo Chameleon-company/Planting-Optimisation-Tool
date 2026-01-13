@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-import pandas as pd
 from src.domains.suitability_scoring import SuitabilityFarm
+from src.services.species_parameters import get_species_parameters_as_dicts
 from suitability_scoring import (
     calculate_suitability,
     build_species_params_dict,
@@ -14,10 +14,10 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
     species_dicts = [s.model_dump() for s in all_species]
 
     # Pre-calculate rules
-    empty_params_df = pd.DataFrame(
-        columns=["species_id", "feature", "score_method", "weight"]
-    )
-    params_dict = build_species_params_dict(empty_params_df, cfg)
+    # Get species (over-ride) parameters from database
+    species_params_rows = await get_species_parameters_as_dicts(db)
+
+    params_dict = build_species_params_dict(species_params_rows, cfg)
     optimised_rules = build_rules_dict(species_dicts, params_dict, cfg)
 
     batch_results = []
