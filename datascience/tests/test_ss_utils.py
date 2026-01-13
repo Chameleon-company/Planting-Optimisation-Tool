@@ -27,7 +27,6 @@ def basic_cfg():
                 "type": "categorical",
                 "short": "soil",
                 "score_method": "cat_exact",
-                "categorical": {"exact_match": 1.0},
                 "default_weight": 0.50,
             },
         },

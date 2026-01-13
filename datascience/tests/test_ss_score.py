@@ -22,8 +22,38 @@ def basic_cfg():
                 "type": "categorical",
                 "short": "soil",
                 "score_method": "cat_exact",
-                "categorical": {"exact_match": 1.0},
                 "default_weight": 0.50,
+            },
+        },
+    }
+
+
+@pytest.fixture
+def second_cfg():
+    """
+    Returns a minimal configuration dictionary.
+    """
+    return {
+        "ids": {"farm": "farm_id", "species": "species_id"},
+        "names": {"species_name": "scientific_name"},
+        "features": {
+            "ph": {
+                "type": "numeric",
+                "short": "ph",
+                "score_method": "num_range",
+                "default_weight": 0.50,
+            },
+            "soil_texture": {
+                "type": "categorical",
+                "short": "soil",
+                "score_method": "cat_compatibility",
+                "default_weight": 0.50,
+                "compatibility_pairs": {
+                    "sand": {"sand": 1.0, "loam": 0.4, "silt": 0.1, "clay": 0.0},
+                    "loam": {"sand": 0.4, "loam": 1.0, "silt": 0.6, "clay": 0.3},
+                    "silt": {"sand": 0.1, "loam": 0.6, "silt": 1.0, "clay": 0.3},
+                    "clay": {"sand": 0.0, "loam": 0.3, "silt": 0.3, "clay": 1.0},
+                },
             },
         },
     }
@@ -81,6 +111,22 @@ def test_scoring_exact_match(farms, species, basic_cfg, params_index):
     rules = build_rules_dict(species, params_index, basic_cfg)
 
     explanations, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
+
+    # Filter for Farm 101 and Species A
+    result = scores[0]
+
+    # Expect 1.0 because 6.5 is between 6.0-7.0 AND clay == clay
+    assert result[1] == pytest.approx(1.0)
+
+
+def test_scoring_exact_match2(farms, species, second_cfg, params_index):
+    """
+    Checks if Farm 101 gets a 1.0 score for Species 1.
+    """
+
+    rules = build_rules_dict(species, params_index, second_cfg)
+
+    explanations, scores = calculate_suitability(farms[0], species, rules, second_cfg)
 
     # Filter for Farm 101 and Species A
     result = scores[0]
@@ -331,9 +377,9 @@ def test_unknown_feature_type(farms, species, params_index):
         scores, explanations = calculate_suitability(farms[0], species, rules, cfg)
 
 
-def test_trapezoid(params_index):
+def test_numerical_trapezoid(params_index):
     """
-    Checks handling of wrong type for numeric data in both the species and the farm.
+    Checks scoring for a single numeric feature using trapezoid.
     """
     cfg = {
         "ids": {"farm": "farm_id", "species": "species_id"},
@@ -353,7 +399,7 @@ def test_trapezoid(params_index):
         {"farm_id": 101, "rainfall_mm": 1000, "soil_texture": "clay"},
     ]
 
-    # Create a species row with missing data
+    # Create a species row
     species = [
         {
             "species_id": 1,
@@ -376,3 +422,53 @@ def test_trapezoid(params_index):
     )
     # Expect 1.0 because rainfall is within plateau  AND clay == clay
     assert scores[0][1] == pytest.approx(1.0)
+
+
+def test_categorical_compatibility(params_index):
+    """
+    Checks scoring for a single categorical feature using cat_compatibility.
+    """
+    cfg = {
+        "ids": {"farm": "farm_id", "species": "species_id"},
+        "names": {"species_name": "scientific_name"},
+        "features": {
+            "soil_texture": {
+                "type": "categorical",
+                "short": "soil",
+                "score_method": "cat_compatibility",
+                "default_weight": 0.50,
+                "compatibility_pairs": {
+                    "sand": {"sand": 1.0, "loam": 0.4, "silt": 0.1, "clay": 0.0},
+                    "loam": {"sand": 0.4, "loam": 1.0, "silt": 0.6, "clay": 0.3},
+                    "silt": {"sand": 0.1, "loam": 0.6, "silt": 1.0, "clay": 0.3},
+                    "clay": {"sand": 0.0, "loam": 0.3, "silt": 0.3, "clay": 1.0},
+                },
+            },
+        },
+    }
+
+    farms = [
+        {"farm_id": 101, "soil_texture": "clay"},
+    ]
+
+    # Create a species row with missing data
+    species = [
+        {
+            "species_id": 1,
+            "scientific_name": "Tree A",
+            "species_common_name": "Common A",
+            "preferred_soil_texture": ["loam", "silt"],
+        }
+    ]
+
+    rules = build_rules_dict(species, params_index, cfg)
+
+    explanations, scores = calculate_suitability(farms[0], species, rules, cfg)
+
+    # First species should report missing data for the ph score
+    assert (
+        explanations[0]["features"]["soil_texture"]["reason"]
+        == "closest compatibility match 'loam' at 0.30. closest compatibility match 'silt' at 0.30"
+    )
+    # Expect 0.3 because  clay:loam == 0.3
+    assert scores[0][1] == pytest.approx(0.3)
