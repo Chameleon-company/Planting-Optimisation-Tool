@@ -2,7 +2,7 @@ import re
 import pytest
 from suitability_scoring.scoring.scoring import (
     derive_trapezoid_from_minmax,
-    trapezoid_score,
+    numerical_trapezoid_score,
 )
 
 
@@ -44,7 +44,7 @@ def test_trapezoid_score_farm_missing():
     """
     Test trapezoid scoring for missing farm data
     """
-    s, r, o = trapezoid_score(None, 10, 20, 2, 4)
+    s, r, o = numerical_trapezoid_score(None, 10, 20, 2, 4)
     assert s is None
     assert r == "missing farm data"
 
@@ -53,7 +53,7 @@ def test_trapezoid_score_species_missing():
     """
     Test trapezoid scoring for missing species data
     """
-    s, r, o = trapezoid_score(15, None, 20, 2, 4)
+    s, r, o = numerical_trapezoid_score(15, None, 20, 2, 4)
     assert s is None
     assert r == "missing species data"
 
@@ -62,7 +62,7 @@ def test_trapezoid_score_low_farm():
     """
     Test trapezoid scoring for low farm value
     """
-    s, r, o = trapezoid_score(8, 10, 20, 2, 4)
+    s, r, o = numerical_trapezoid_score(8, 10, 20, 2, 4)
     assert s == pytest.approx(0.0)
     assert r == "below minimum"
 
@@ -71,7 +71,7 @@ def test_trapezoid_score_high_farm():
     """
     Test trapezoid scoring for high farm value
     """
-    s, r, o = trapezoid_score(22, 10, 20, 2, 4)
+    s, r, o = numerical_trapezoid_score(22, 10, 20, 2, 4)
     assert s == pytest.approx(0.0)
     assert r == "above maximum"
 
@@ -90,20 +90,20 @@ def test_trapezoid_score_shoulders():
     assert d == pytest.approx(24.0)
 
     # Shoulders midpoint ~ 0.5
-    s, r, o = trapezoid_score((a + b) / 2, a, d, 0.6, 3)
+    s, r, o = numerical_trapezoid_score((a + b) / 2, a, d, 0.6, 3)
     assert s == pytest.approx(0.5)
     assert r == "within left shoulder [18.0, 18.6]"
 
-    s, r, o = trapezoid_score((c + d) / 2, a, d, 0.6, 3)
+    s, r, o = numerical_trapezoid_score((c + d) / 2, a, d, 0.6, 3)
     assert s == pytest.approx(0.5)
     assert r == "within right shoulder [21.0, 24.0]"
 
     # Shoulder endpoints = 0.0
-    s, r, o = trapezoid_score(a, a, d, 0.6, 3)
+    s, r, o = numerical_trapezoid_score(a, a, d, 0.6, 3)
     assert s == pytest.approx(0.0)
     assert r == "within left shoulder [18.0, 18.6]"
 
-    s, r, o = trapezoid_score(d, a, d, 0.6, 3)
+    s, r, o = numerical_trapezoid_score(d, a, d, 0.6, 3)
     assert s == pytest.approx(0.0)
     assert r == "within right shoulder [21.0, 24.0]"
 
@@ -122,16 +122,16 @@ def test_trapezoid_score_plateau():
     assert d == pytest.approx(24.0)
 
     # Plateau midpoint = 1.0
-    s, r, o = trapezoid_score((b + c) / 2, a, d, 0.6, 3)
+    s, r, o = numerical_trapezoid_score((b + c) / 2, a, d, 0.6, 3)
     assert s == pytest.approx(1.0)
     assert r == "within plateau [18.6, 21.0]"
 
     # Plateau endpoints = 1.0
-    s, r, o = trapezoid_score(b, a, d, 0.6, 3)
+    s, r, o = numerical_trapezoid_score(b, a, d, 0.6, 3)
     assert s == pytest.approx(1.0)
     assert r == "within plateau [18.6, 21.0]"
 
-    s, r, o = trapezoid_score(c, a, d, 0.6, 3)
+    s, r, o = numerical_trapezoid_score(c, a, d, 0.6, 3)
     assert s == pytest.approx(1.0)
     assert r == "within plateau [18.6, 21.0]"
 
@@ -150,10 +150,10 @@ def test_trapezoid_score_zero_shoulder():
     assert d == pytest.approx(24.0)
 
     # Shoulder endpoints = 1.0
-    s, r, o = trapezoid_score(b, a, d, 0.0, 0.0)
+    s, r, o = numerical_trapezoid_score(b, a, d, 0.0, 0.0)
     assert s == pytest.approx(1.0)
     assert r == "within plateau [18.0, 24.0]"
 
-    s, r, o = trapezoid_score(c, a, d, 0.0, 0.0)
+    s, r, o = numerical_trapezoid_score(c, a, d, 0.0, 0.0)
     assert s == pytest.approx(1.0)
     assert r == "within plateau [18.0, 24.0]"

@@ -60,7 +60,7 @@ def derive_trapezoid_from_minmax(min_v, max_v, delta_left, delta_right):
     return a, b, c, d
 
 
-def trapezoid_score(x, min_v, max_v, tol_left, tol_right):
+def numerical_trapezoid_score(x, min_v, max_v, tol_left, tol_right):
     """
     Scoring for a trapezoid with shoulders [a,b], [c,d]; plateau [b,c],
     a=min, d=max, inner [b,c] from tolerances.
@@ -308,7 +308,7 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     min_v, max_v, left_tol, right_tol = rule["args"]
 
                     # Score the farm value
-                    score, reason, params_out = trapezoid_score(
+                    score, reason, params_out = numerical_trapezoid_score(
                         farm_val, min_v, max_v, left_tol, right_tol
                     )
 
