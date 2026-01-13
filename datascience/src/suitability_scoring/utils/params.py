@@ -218,7 +218,6 @@ def build_rules_dict(species_list, params, cfg):
                 # Note: In the database the column name is feature+'s'
                 prefs = parse_prefs(sp.get(f"{feat}s"))
                 cat_cfg = meta.get("categorical", {}) or {}
-                exact_score = float(cat_cfg.get("exact_match", 1.0))
                 rule_data["preferred"] = prefs
                 rule_data["args"] = prefs
 
