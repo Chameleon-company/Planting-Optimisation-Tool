@@ -1,5 +1,3 @@
-import pandas as pd
-import numpy as np
 import pytest
 from suitability_scoring.scoring.scoring import categorical_compatibility_score
 
