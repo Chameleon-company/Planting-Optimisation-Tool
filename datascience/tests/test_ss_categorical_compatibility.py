@@ -33,13 +33,13 @@ def basic_cfg():
         # exact match
         ("clay", ["clay", "sand"], 1.0, "exact match"),
         # compatibility match
-        ("loam", ["clay", "sand"], 0.4, "closest compatibility match 'sand' at 0.40"),
+        ("loam", ["clay", "sand"], 0.4, "closest compatibility match sand at 0.40"),
         # multiple compatibility matches
         (
             "clay",
             ["loam", "silt"],
             0.3,
-            "closest compatibility match 'loam' at 0.30. closest compatibility match 'silt' at 0.30",
+            "closest compatibility match loam at 0.30. closest compatibility match silt at 0.30",
         ),
         # case sensitivity: 'clay' != 'Clay'
         ("clay", ["Clay"], 0.0, "no_match"),

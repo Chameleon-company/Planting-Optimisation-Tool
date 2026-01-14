@@ -82,7 +82,7 @@ def species():
             "species_common_name": "Common A",
             "ph_min": 6.0,
             "ph_max": 7.0,
-            "preferred_soil_texture": "clay",
+            "soil_textures": "clay",
         },
         {
             "species_id": 2,
@@ -90,7 +90,7 @@ def species():
             "species_common_name": "Common B",
             "ph_min": 4.5,
             "ph_max": 5.0,
-            "preferred_soil_texture": "sand",
+            "soil_textures": "sand",
         },
     ]
 
@@ -173,7 +173,7 @@ def test_missing_numeric_data(basic_cfg, params_index):
             "species_common_name": "Common A",
             "ph_min": None,
             "ph_max": 7.0,
-            "preferred_soil_texture": "clay",
+            "soil_textures": "clay",
         },
         {
             "species_id": 2,
@@ -181,7 +181,7 @@ def test_missing_numeric_data(basic_cfg, params_index):
             "species_common_name": "Common A",
             "ph_min": 6.0,
             "ph_max": None,
-            "preferred_soil_texture": "clay",
+            "soil_textures": "clay",
         },
     ]
 
@@ -217,7 +217,7 @@ def test_incorrect_type_numeric_data(basic_cfg, params_index):
             "species_common_name": "Common A",
             "ph_min": "s",
             "ph_max": 7.0,
-            "preferred_soil_texture": "clay",
+            "soil_textures": "clay",
         }
     ]
 
@@ -246,7 +246,7 @@ def test_missing_categorical(basic_cfg, params_index):
             "species_common_name": "Common A",
             "ph_min": 6.0,
             "ph_max": 7.0,
-            "preferred_soil_texture": "clay",
+            "soil_textures": "clay",
         },
         {
             "species_id": 2,
@@ -254,7 +254,7 @@ def test_missing_categorical(basic_cfg, params_index):
             "species_common_name": "Common B",
             "ph_min": 4.0,
             "ph_max": 5.0,
-            "preferred_soil_texture": None,
+            "soil_textures": None,
         },
     ]
 
@@ -289,7 +289,7 @@ def test_zero_denominator(basic_cfg, params_index):
             "species_common_name": "Common A",
             "ph_min": None,
             "ph_max": 7.0,
-            "preferred_soil_texture": "clay",
+            "soil_textures": "clay",
         }
     ]
 
@@ -407,7 +407,7 @@ def test_numerical_trapezoid(params_index):
             "species_common_name": "Common A",
             "rainfall_mm_min": 500,
             "rainfall_mm_max": 2000,
-            "preferred_soil_texture": "clay",
+            "soil_textures": "clay",
         }
     ]
 
@@ -457,7 +457,7 @@ def test_categorical_compatibility(params_index):
             "species_id": 1,
             "scientific_name": "Tree A",
             "species_common_name": "Common A",
-            "preferred_soil_texture": ["loam", "silt"],
+            "soil_textures": ["loam", "silt"],
         }
     ]
 
@@ -468,7 +468,7 @@ def test_categorical_compatibility(params_index):
     # First species should report missing data for the ph score
     assert (
         explanations[0]["features"]["soil_texture"]["reason"]
-        == "closest compatibility match 'loam' at 0.30. closest compatibility match 'silt' at 0.30"
+        == "closest compatibility match loam at 0.30. closest compatibility match silt at 0.30"
     )
     # Expect 0.3 because  clay:loam == 0.3
     assert scores[0][1] == pytest.approx(0.3)
