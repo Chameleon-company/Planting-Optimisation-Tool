@@ -164,7 +164,7 @@ def categorical_compatibility_score(value, preferred_list, compat_dict):
             if p == value:  # Exact match
                 reason = "exact match"
             else:  # Compatibility match
-                reason = f"closest compatibility match '{p}' at {score:.2f}"
+                reason = f"closest compatibility match {p} at {score:.2f}"
 
             pref_details.append({"score": score, "reason": reason})
             continue
@@ -175,7 +175,10 @@ def categorical_compatibility_score(value, preferred_list, compat_dict):
     max_score = max(d["score"] for d in pref_details)
 
     # Collect all dicts that match that score
-    top_reasons = [d["reason"] for d in pref_details if d["score"] == max_score]
+    if max_score > 0.0:
+        top_reasons = [d["reason"] for d in pref_details if d["score"] == max_score]
+    else:
+        top_reasons = ["no_match"]
 
     # Join them into a single string separated by commas
     joined_reasons = ". ".join(top_reasons)

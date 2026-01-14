@@ -222,7 +222,7 @@ def build_rules_dict(species_list, params, cfg):
                 rule_data["args"] = prefs
 
             elif score_method == "cat_compatibility":
-                prefs = parse_prefs(sp.get(f"preferred_{feat}"))
+                prefs = parse_prefs(sp.get(f"{feat}s"))
                 rule_data["preferred"] = prefs
                 cat_cfg = meta.get("compatibility_pairs", {}) or {}
                 rule_data["args"] = (prefs, cat_cfg)
