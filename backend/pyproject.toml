@@ -28,16 +28,21 @@ dependencies = [
     "mermaid-cli>=0.1.2",
     "httpx>=0.28.1",
     "pre-commit>=4.5.1",
+    "earthengine-api>=1.7.4",
+    "google-auth>=2.47.0",
 ]
 
 [tool.pytest.ini_options]
 # Add the 'backend/' directory to the Python path so tests can find src/ etc.
 pythonpath = [
     ".",
+    "../gis"
 ]
+
 testpaths = [
     "tests"
 ]
+
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
@@ -48,6 +53,9 @@ lint.per-file-ignores = { "src/models/*.py" = ["F401"] }
 exclude = [
     "alembic/versions/*",
 ]
+
+[tool.uv]
+workspace = { members = ["backend", "datascience", "gis"] }
 
 [tool.uv.sources]
 datascience = { path = "../datascience", editable = true }
