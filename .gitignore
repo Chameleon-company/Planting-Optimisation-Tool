@@ -41,4 +41,5 @@ tests/.pytest_cache/
 # Ruff cache
 .ruff_cache/
 
-.ipynb_checkpoints/
+# Egg info
+*.egg-info/

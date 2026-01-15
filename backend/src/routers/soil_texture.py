@@ -8,7 +8,7 @@ from src.database import get_db_session  # Import the database dependency
 
 router = APIRouter(
     prefix="/soil-textures",
-    tags=["Soil Textures (Reference)"],
+    tags=["Soil Textures"],
 )
 
 

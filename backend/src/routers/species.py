@@ -10,7 +10,7 @@ from src.models.agroforestry_type import AgroforestryType
 from src.schemas.species import SpeciesCreate
 from src.dependencies import CurrentActiveUser
 
-router = APIRouter(prefix="/species", tags=["species"])
+router = APIRouter(prefix="/species", tags=["Species"])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
