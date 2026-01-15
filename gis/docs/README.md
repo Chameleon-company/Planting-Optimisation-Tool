@@ -865,49 +865,6 @@ Bulk update complete!
 
 ---
 
-### Utility Functions
-
-#### **build_farm_table()**
-
-One-time script to process farm boundaries and create a standardized farm table.
-
-**Data Source:** farm_boundaries.gpkg
-
-**Operations:**
-1. Loads farm geometries from GeoPackage
-2. Converts 3D polygons to 2D
-3. Computes centroids
-4. Calculates area in hectares
-5. Generates WKT (Well-Known Text) geometry
-6. Handles multi-parcel farms (merges parcels)
-7. Outputs clean CSV
-
-**Output:** `gis/docs/farm_table.csv`
-
-**Example:**
-```python
-from gis.scripts.build_farm_table import build_farm_table
-
-build_farm_table()
-# Creates: gis/docs/farm_table.csv
-```
-
-**Output Columns:**
-- farm_id: Unique identifier
-- farm_name: Farm name
-- centroid_lat: Centroid latitude
-- centroid_lon: Centroid longitude
-- area_ha: Farm area in hectares
-- geometry_wkt: WKT polygon string
-- num_parcels: Number of parcels (for multi-parcel farms)
-
-**Notes:**
-- Handles invalid geometries automatically
-- Merges multi-parcel farms using unary_union
-- Filters out farms with area < 0.01 ha
-- Preserves all original attributes
-
----
 
 ## Usage Examples
 
