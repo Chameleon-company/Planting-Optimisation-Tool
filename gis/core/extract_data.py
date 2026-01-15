@@ -178,12 +178,12 @@ def get_rainfall(geometry, year: int | None = None):
     Return mean annual rainfall (mm) for a given geometry.
 
     Dataset: CHIRPS (Pearson r=0.96, MAE=23mm)
-    
+
     Returns:
         Integer (mm) in range [1000, 3000] as per data dictionary
     """
     value = _extract_from_raster(geometry, "rainfall", year=year or 2024)
-    
+
     # Convert to Integer as per schema
     if value is not None:
         return int(round(value))
@@ -195,12 +195,12 @@ def get_temperature(geometry, year: int | None = None):
     Return mean annual temperature (°C) for a given geometry.
 
     Dataset: MODIS LST (Pearson r=0.87, MAE=1.5°C with -4.43°C correction)
-    
+
     Returns:
         Integer (celsius) in range [15, 30] as per data dictionary
     """
     value = _extract_from_raster(geometry, "temperature", year=year or 2024)
-    
+
     # Convert to Integer as per schema
     if value is not None:
         return int(round(value))
@@ -212,12 +212,12 @@ def get_elevation(geometry, year: int | None = None):
     Return mean elevation (m) for a given geometry.
 
     Dataset: SRTM DEM (Pearson r=0.98, MAE=11m)
-    
+
     Returns:
         Integer (m) in range [0, 2963] as per data dictionary
     """
     value = _extract_from_raster(geometry, "elevation")
-    
+
     # Convert to Integer as per schema
     if value is not None:
         return int(round(value))
@@ -230,12 +230,12 @@ def get_ph(geometry, year: int | None = None):
 
     Dataset: OpenLandMap (Pearson r=0.18, MAE=1.21)
     WARNING: Low correlation - consider using local data instead.
-    
+
     Returns:
         Float (pH units) in range [4.0, 8.5] with 1 decimal place as per data dictionary
     """
     value = _extract_from_raster(geometry, "soil_ph")
-    
+
     # Convert to Float with 1 decimal as per schema
     if value is not None:
         return round(float(value), 1)
@@ -247,7 +247,7 @@ def get_slope(geometry, year: int | None = None):
     Return mean slope (degrees) for a given geometry.
 
     Derived from SRTM DEM.
-    
+
     Returns:
         Float (degrees) in range [0, 90] with 1 decimal place as per data dictionary
     """
@@ -269,7 +269,7 @@ def get_slope(geometry, year: int | None = None):
     )
 
     value = _ee_to_float(stats.get("slope"))
-    
+
     # Convert to Float with 1 decimal as per schema
     return round(value, 1) if value is not None else None
 
@@ -357,13 +357,13 @@ def get_texture_id(geometry, year: int | None = None) -> int | None:
 def get_area_ha(geometry):
     """
     Return area of the input geometry in hectares.
-    
+
     Returns:
         Float (ha) in range [0, 100] with 3 decimal places as per data dictionary
     """
     geometry = parse_geometry(geometry)
     area_m2 = geometry.area(maxError=1).getInfo()
-    
+
     # Convert to Float with 3 decimals as per schema
     return round(float(area_m2) / 10_000.0, 3)
 
@@ -371,7 +371,7 @@ def get_area_ha(geometry):
 def get_centroid_lat_lon(geometry):
     """
     Return centroid as (lat, lon).
-    
+
     Returns:
         Tuple of (latitude, longitude) as Floats with 6 decimal places as per data dictionary
         Latitude range: [-90, 90]
@@ -382,6 +382,6 @@ def get_centroid_lat_lon(geometry):
     coords = centroid.coordinates().getInfo()
 
     lon, lat = float(coords[0]), float(coords[1])
-    
+
     # Convert to Float with 6 decimals as per schema
     return round(lat, 6), round(lon, 6)
