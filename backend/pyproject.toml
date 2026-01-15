@@ -20,6 +20,7 @@ dependencies = [
     "sqlalchemy-schemadisplay>=2.0",
     "sqlalchemy-utils>=0.42.1",
     "datascience",
+    "gis",
     "pyjwt>=2.10.1",
     "psycopg>=3.3.2",
     "psycopg-binary>=3.3.2",
@@ -28,7 +29,7 @@ dependencies = [
     "mermaid-cli>=0.1.2",
     "httpx>=0.28.1",
     "pre-commit>=4.5.1",
-    "earthengine-api>=1.7.4",
+    "earthengine-api>=1.7.4, !=1.7.9",
     "google-auth>=2.47.0",
 ]
 
@@ -59,3 +60,4 @@ workspace = { members = ["backend", "datascience", "gis"] }
 
 [tool.uv.sources]
 datascience = { path = "../datascience", editable = true }
+gis = { path = "../gis", editable = true }
