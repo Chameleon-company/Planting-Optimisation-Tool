@@ -1,5 +1,3 @@
-```{mermaid}
-
 graph TD
 
     %% Define Styles
@@ -13,13 +11,13 @@ graph TD
     Species[("Species profile")]:::inputs
     Config[("<b>Configuration</b><br>YAML defaults + Expert overrides")]:::storage
     
-    subgraph "Stage 1: Orchestration Layer"
-        Filter["<b>Hard Exclusion Filter</b><br>Pass/Fail"]:::process
+    subgraph "Stage 1: Hard exclusion"
+        Filter["<b>Hard exclusion filter</b><br>Pass/Fail"]:::process
     end
 
-    subgraph "Stage 2: Scoring Engine"
-        MCDA["<b>Suitability Scoring Loop</b><br>Weighted linear combination"]:::process
-        Norm["<b>Weight Normalisation</b><br>Handling missing data"]:::process
+    subgraph "Stage 2: Soft scoring"
+        MCDA["<b>Suitability scoring</b><br>Weighted linear combination"]:::process
+        Norm["<b>Weight normalisation</b><br>Handling missing data"]:::process
     end
 
     Result[("<b>Output</b><br>Ranked list + Key reasons")]:::output
@@ -31,5 +29,3 @@ graph TD
     Config -- "Weights & Methods" --> MCDA
     MCDA --> Norm
     Norm --> Result
-
-```

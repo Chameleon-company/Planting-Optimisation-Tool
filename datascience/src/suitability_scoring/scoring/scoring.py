@@ -60,7 +60,7 @@ def derive_trapezoid_from_minmax(min_v, max_v, delta_left, delta_right):
     return a, b, c, d
 
 
-def trapezoid_score(x, min_v, max_v, tol_left, tol_right):
+def numerical_trapezoid_score(x, min_v, max_v, tol_left, tol_right):
     """
     Scoring for a trapezoid with shoulders [a,b], [c,d]; plateau [b,c],
     a=min, d=max, inner [b,c] from tolerances.
@@ -118,20 +118,72 @@ def trapezoid_score(x, min_v, max_v, tol_left, tol_right):
     return s, reason, params_out
 
 
-def categorical_exact_score(value, preferred_list, exact_score=1.0):
+def categorical_exact_score(value, preferred_list):
     """
     Function for scoring categorical values with an exact match.
     Returns exact_score if the value is in the preferred_list, else 0.0 and None for
     missing or no preferences.
 
-    :param val: Farm's value of the feature.
+    :param value: Farm's value of the feature.
     :param preferred_list: List of preferred values.
-    :param exact_score: Score to return if exact match found.
     :returns: Score value between 0 and 1 or None.
     """
     if value is None or not preferred_list:
         return None
-    return exact_score if (value in preferred_list) else 0.0
+    return 1.0 if (value in preferred_list) else 0.0
+
+
+def categorical_compatibility_score(value, preferred_list, compat_dict):
+    """
+    Function for scoring categorical values using a compatibility matrix.
+    Returns exact_score if the value is in the preferred_list, a value in [0,1]
+    if the value matches another in the compatibility matrix else 0.0 and None for
+    missing or no preferences.
+
+    :param value: Farm's value of the feature.
+    :param preferred_list: List of preferred values.
+    :param compat_dict: Compatibility dictionary.
+    :returns: Score value between 0 and 1 or None and the reason for the score.
+    """
+    if value is None:
+        return None, "missing farm data"
+
+    if not preferred_list:
+        return None, "missing species data"
+
+    # Compute per-preference scores and record match types
+    pref_details = []
+
+    for p in preferred_list:
+        # Exact match if the preference equals value AND compatibility score available
+        base = compat_dict.get(value, {}).get(p)
+
+        if base is not None:
+            score = float(base)
+
+            if p == value:  # Exact match
+                reason = "exact match"
+            else:  # Compatibility match
+                reason = f"closest compatibility match {p} at {score:.2f}"
+
+            pref_details.append({"score": score, "reason": reason})
+            continue
+        else:
+            pref_details.append({"score": 0.0, "reason": "no_match"})
+
+    # Find the maximum score
+    max_score = max(d["score"] for d in pref_details)
+
+    # Collect all dicts that match that score
+    if max_score > 0.0:
+        top_reasons = [d["reason"] for d in pref_details if d["score"] == max_score]
+    else:
+        top_reasons = ["no_match"]
+
+    # Join them into a single string separated by commas
+    joined_reasons = ". ".join(top_reasons)
+
+    return max_score, joined_reasons
 
 
 def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
@@ -148,14 +200,18 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
           species' min/max requirements. Zero scores are assigned for values outside this
           range. None is assigned for missing data.
 
-        * `trapezoid`: A score in [0,1] is awarded if the farm's value falls within the
+        * `trapezoid`: A score in [0, 1] is awarded if the farm's value falls within the
           trapezoid. Zero scores are assigned for values outside this
           range. None is assigned for missing data.
 
-    * Categorical features: Evaluated using preference matching (e.g., `cat_exact`).
-        Checks if the farm's attribute (e.g., soil texture) exists within the species'
-        list of preferred types. A score of 1.0 is returned is an exact match is found
-        and zero if no match is found.
+    * Categorical features: Evaluated using one of two scoring methods
+        * `cat_exact`: Checks if the farm's attribute (e.g., soil texture) exists within
+          the species' list of preferred types. A score of 1.0 is returned is an exact match
+          is found and zero if no match is found.
+
+        * `cat_compatibility`: Scores using a compatibility matrix. Returns 1.0 if an exact
+          match is found, a value in [0,1] if the value matches another in the compatibility
+          matrix else 0.0 and None for missing or no preferences.
 
     Traceability and Explanations
     In addition to the raw scores, the function generates a `explanations` dictionary.
@@ -255,7 +311,7 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     min_v, max_v, left_tol, right_tol = rule["args"]
 
                     # Score the farm value
-                    score, reason, params_out = trapezoid_score(
+                    score, reason, params_out = numerical_trapezoid_score(
                         farm_val, min_v, max_v, left_tol, right_tol
                     )
 
@@ -278,19 +334,25 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
             elif rule["type"] == "categorical":
                 # Check if the score method is for an exact categorical match
                 if score_method == "cat_exact":
-                    # Get list of preferences and score for an exact match for this feature
-                    prefs, exact_match_score = rule["args"]
+                    # Get list of preferences for this feature
+                    prefs = rule["args"]
 
                     # Call exact match scoring function
-                    score = categorical_exact_score(
-                        farm_val, prefs, exact_score=exact_match_score
-                    )
+                    score = categorical_exact_score(farm_val, prefs)
                     if score is None:
                         reason = "missing or no preference"
-                    elif score == exact_match_score:
+                    elif score == 1.0:
                         reason = "exact match"
                     else:
                         reason = "no match"
+                elif score_method == "cat_compatibility":
+                    # Get list of preferences and compatibility dictionary
+                    prefs, compat_dict = rule["args"]
+
+                    # Score the farm value
+                    score, reason = categorical_compatibility_score(
+                        farm_val, prefs, compat_dict
+                    )
                 else:  # No valid scoring method selected
                     raise ValueError(
                         f"Unknown categorical mode '{score_method}' for feature '{feat}'"

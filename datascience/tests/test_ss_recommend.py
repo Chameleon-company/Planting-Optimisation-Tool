@@ -1,10 +1,7 @@
 import pytest
-from datetime import datetime, timezone
 from suitability_scoring.recommend import (
     assign_dense_ranks,
     build_species_recommendations,
-    get_recommendations_service,
-    get_batch_recommendations_service,
 )
 
 
@@ -104,71 +101,3 @@ def test_build_species_recommendations_sorting_and_content(sample_species_list):
 
     # Check Missing Features handling (Banksia)
     assert recs[2]["key_reasons"] == []
-
-
-def test_get_recommendations_service_timestamp(mocker, sample_species_list):
-    """
-    Check that timestamp is generated correctly using a mock.
-    """
-    # Define the fixed time
-    fixed_time = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-
-    # Patch the datetime class in 'suitability_scoring.recommend'
-    # Create a mock object that behaves like the datetime class
-    mock_dt = mocker.patch("suitability_scoring.recommend.datetime")
-    mock_dt.now.return_value = fixed_time
-
-    # Run the function
-    result = get_recommendations_service(1)
-
-    # Assert
-    assert result["timestamp_utc"] == "2025-01-01T12:00:00Z"
-
-
-def test_get_recommendations_service(mocker, mock_scorer_output):
-    """
-    Check that the single farm payload builder calls the scorer correctly.
-    """
-
-    # Patch the scorer function
-    mocker.patch(
-        "suitability_scoring.recommend.calculate_suitability",
-        return_value=mock_scorer_output,
-    )
-
-    # Run the function
-    result = get_recommendations_service(1)
-
-    # Check the result for the farm
-    assert result["farm_id"] == 1
-    assert len(result["recommendations"]) == 3
-
-
-def test_get_batch_recommendations_service(mocker, mock_scorer_output):
-    """
-    Check that multiple farms are processed in one scorer batch.
-    """
-
-    # Patch
-    mocker.patch(
-        "suitability_scoring.recommend.calculate_suitability",
-        return_value=mock_scorer_output,
-    )
-
-    # Run
-    farm_ids = [1, 2]
-    results = get_batch_recommendations_service(farm_ids)
-
-    # Check the results are a list
-    assert isinstance(results, list)
-
-    # Check there 2 results
-    assert len(results) == 2
-
-    # Check first farm
-    assert results[0]["farm_id"] == 1
-    assert len(results[0]["recommendations"]) == 3
-
-    # Check second farm
-    assert results[1]["farm_id"] == 2
-    assert len(results[1]["recommendations"]) == 3

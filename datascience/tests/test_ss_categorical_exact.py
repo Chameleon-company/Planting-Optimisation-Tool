@@ -5,7 +5,7 @@ from suitability_scoring.scoring.scoring import categorical_exact_score
 @pytest.mark.parametrize(
     "value, preferred_list, expected",
     [
-        # exact match, default score
+        # exact match
         ("clay", ["clay", "sand"], 1.0),
         (42, [1, 42, 100], 1.0),
         # non-match
@@ -21,15 +21,6 @@ def test_matches_and_non_matches_default_score(value, preferred_list, expected):
       and non-matching conditions.
     """
     assert categorical_exact_score(value, preferred_list) == pytest.approx(expected)
-
-
-def test_custom_exact_score():
-    """
-    Checks the custom score value works.
-    """
-    assert categorical_exact_score(
-        "clay", ["clay", "loam"], exact_score=0.75
-    ) == pytest.approx(0.75)
 
 
 @pytest.mark.parametrize("missing", [None])
