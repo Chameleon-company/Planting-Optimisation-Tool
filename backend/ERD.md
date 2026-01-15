@@ -2,19 +2,20 @@
 
 ```mermaid
 erDiagram
+  agroforestry_types {
+    INTEGER id PK
+    VARCHAR(15) type_name UK
+  }
+
+  boundary {
+    INTEGER id PK,FK
+    geometry(MULTIPOLYGON-4326) boundary
+    INTEGER external_id UK "nullable"
+  }
+
   farm_agroforestry_association {
     INTEGER agroforestry_type_id PK,FK
     INTEGER farm_id PK,FK
-  }
-
-  species_agroforestry_association {
-    INTEGER agroforestry_type_id PK,FK
-    INTEGER species_id PK,FK
-  }
-
-  species_soil_texture_association {
-    INTEGER soil_texture_id PK,FK
-    INTEGER species_id PK,FK
   }
 
   farms {
@@ -46,6 +47,22 @@ erDiagram
     FLOAT weight
   }
 
+  recommendations {
+    INTEGER id PK
+    INTEGER farm_id FK
+    INTEGER species_id FK
+    DATETIME created_at
+    ARRAY exclusions
+    ARRAY key_reasons
+    INTEGER rank_overall
+    FLOAT score_mcda
+  }
+
+  soil_textures {
+    INTEGER id PK
+    VARCHAR(15) name UK
+  }
+
   species {
     INTEGER id PK
     BOOLEAN bank_stabilising
@@ -65,20 +82,14 @@ erDiagram
     INTEGER temperature_celsius_min
   }
 
-  soil_textures {
-    INTEGER id PK
-    VARCHAR(15) name UK
+  species_agroforestry_association {
+    INTEGER agroforestry_type_id PK,FK
+    INTEGER species_id PK,FK
   }
 
-  boundary {
-    INTEGER id PK,FK
-    geometry(MULTIPOLYGON-4326) boundary
-    INTEGER external_id UK "nullable"
-  }
-
-  agroforestry_types {
-    INTEGER id PK
-    VARCHAR(15) type_name UK
+  species_soil_texture_association {
+    INTEGER soil_texture_id PK,FK
+    INTEGER species_id PK,FK
   }
 
   users {
@@ -88,27 +99,16 @@ erDiagram
     VARCHAR(255) name UK "indexed"
   }
 
-  recommendations {
-    INTEGER id PK
-    INTEGER farm_id FK
-    INTEGER species_id FK
-    DATETIME created_at
-    ARRAY exclusions
-    ARRAY key_reasons
-    INTEGER rank_overall
-    FLOAT score_mcda
-  }
-
+  farms ||--o| boundary : id
   farms ||--o| farm_agroforestry_association : farm_id
   agroforestry_types ||--o| farm_agroforestry_association : agroforestry_type_id
+  soil_textures ||--o{ farms : soil_texture_id
+  users ||--o{ farms : user_id
+  species ||--o{ parameters : species_id
+  farms ||--o{ recommendations : farm_id
+  species ||--o{ recommendations : species_id
   species ||--o| species_agroforestry_association : species_id
   agroforestry_types ||--o| species_agroforestry_association : agroforestry_type_id
   species ||--o| species_soil_texture_association : species_id
   soil_textures ||--o| species_soil_texture_association : soil_texture_id
-  soil_textures ||--o{ farms : soil_texture_id
-  users ||--o{ farms : user_id
-  species ||--o{ parameters : species_id
-  farms ||--o| boundary : id
-  farms ||--o{ recommendations : farm_id
-  species ||--o{ recommendations : species_id
 ```

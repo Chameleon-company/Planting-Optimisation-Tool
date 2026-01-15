@@ -9,7 +9,7 @@ from src.services.species import get_all_species_for_engine, get_recommend_confi
 from src.services.recommendation import run_recommendation_pipeline
 from src.schemas.user import UserRead
 
-router = APIRouter(prefix="/recommendations", tags=["recommendations"])
+router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
 
 
 @router.get("/{farm_id}")
