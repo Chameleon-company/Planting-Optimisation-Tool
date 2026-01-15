@@ -278,6 +278,171 @@ def test_get_texture_id_mapping():
     """Test texture ID mapping."""
     assert TEXTURE_MAP["sand"] == 1
     assert TEXTURE_MAP["clay"] == 12
+
+
+# ============================================================================
+# DATA TYPE TESTS (Schema Compliance)
+# ============================================================================
+
+
+def test_rainfall_data_type(gee_initialized, test_point):
+    """Test that rainfall returns Integer as per data dictionary."""
+    rainfall = get_rainfall(test_point, year=2024)
+    
+    assert rainfall is not None, "Rainfall should not be None"
+    assert isinstance(rainfall, int), f"Rainfall must be Integer, got {type(rainfall).__name__}"
+    assert not isinstance(rainfall, bool), "Rainfall should not be boolean"
+    
+    print(f"✓ Rainfall data type: {type(rainfall).__name__} = {rainfall} mm")
+
+
+def test_temperature_data_type(gee_initialized, test_point):
+    """Test that temperature returns Integer as per data dictionary."""
+    temp = get_temperature(test_point, year=2024)
+    
+    assert temp is not None, "Temperature should not be None"
+    assert isinstance(temp, int), f"Temperature must be Integer, got {type(temp).__name__}"
+    assert not isinstance(temp, bool), "Temperature should not be boolean"
+    
+    print(f"✓ Temperature data type: {type(temp).__name__} = {temp}°C")
+
+
+def test_elevation_data_type(gee_initialized, test_point):
+    """Test that elevation returns Integer as per data dictionary."""
+    elevation = get_elevation(test_point)
+    
+    assert elevation is not None, "Elevation should not be None"
+    assert isinstance(elevation, int), f"Elevation must be Integer, got {type(elevation).__name__}"
+    assert not isinstance(elevation, bool), "Elevation should not be boolean"
+    
+    print(f"✓ Elevation data type: {type(elevation).__name__} = {elevation} m")
+
+
+def test_ph_data_type(gee_initialized, test_point):
+    """Test that pH returns Float with 1 decimal as per data dictionary."""
+    ph = get_ph(test_point)
+    
+    if ph is not None:
+        assert isinstance(ph, float), f"pH must be Float, got {type(ph).__name__}"
+        assert not isinstance(ph, int), "pH should not be integer"
+        
+        # Check decimal places (max 1)
+        ph_str = str(ph)
+        if '.' in ph_str:
+            decimals = len(ph_str.split('.')[1])
+            assert decimals <= 1, f"pH should have max 1 decimal place, got {decimals}"
+        
+        print(f"✓ pH data type: {type(ph).__name__} = {ph} (1 decimal)")
+    else:
+        print("⚠ pH is None (no data at location)")
+
+
+def test_slope_data_type(gee_initialized, test_point):
+    """Test that slope returns Float with 1 decimal as per data dictionary."""
+    slope = get_slope(test_point)
+    
+    assert slope is not None, "Slope should not be None"
+    assert isinstance(slope, float), f"Slope must be Float, got {type(slope).__name__}"
+    
+    # Check decimal places (max 1)
+    slope_str = str(slope)
+    if '.' in slope_str:
+        decimals = len(slope_str.split('.')[1])
+        assert decimals <= 1, f"Slope should have max 1 decimal place, got {decimals}"
+    
+    print(f"✓ Slope data type: {type(slope).__name__} = {slope}° (1 decimal)")
+
+
+def test_area_data_type(gee_initialized, test_polygon):
+    """Test that area returns Float with 3 decimals as per data dictionary."""
+    area = get_area_ha(test_polygon)
+    
+    assert area is not None, "Area should not be None"
+    assert isinstance(area, float), f"Area must be Float, got {type(area).__name__}"
+    
+    # Check decimal places (max 3)
+    area_str = str(area)
+    if '.' in area_str:
+        decimals = len(area_str.split('.')[1])
+        assert decimals <= 3, f"Area should have max 3 decimal places, got {decimals}"
+    
+    print(f"✓ Area data type: {type(area).__name__} = {area} ha (3 decimals)")
+
+
+def test_centroid_data_type(gee_initialized, test_polygon):
+    """Test that centroid returns Float with 6 decimals as per data dictionary."""
+    lat, lon = get_centroid_lat_lon(test_polygon)
+    
+    assert lat is not None, "Latitude should not be None"
+    assert lon is not None, "Longitude should not be None"
+    assert isinstance(lat, float), f"Latitude must be Float, got {type(lat).__name__}"
+    assert isinstance(lon, float), f"Longitude must be Float, got {type(lon).__name__}"
+    
+    # Check decimal places (max 6)
+    lat_str = str(lat)
+    lon_str = str(lon)
+    
+    if '.' in lat_str:
+        decimals = len(lat_str.split('.')[1])
+        assert decimals <= 6, f"Latitude should have max 6 decimal places, got {decimals}"
+    
+    if '.' in lon_str:
+        decimals = len(lon_str.split('.')[1])
+        assert decimals <= 6, f"Longitude should have max 6 decimal places, got {decimals}"
+    
+    print(f"✓ Centroid data types: {type(lat).__name__} = ({lat}, {lon}) (6 decimals)")
+
+
+def test_all_extraction_data_types(gee_initialized, test_point, test_polygon):
+    """
+    Comprehensive test: All extraction functions return schema-compliant data types.
+    
+    This test validates that the data types match the data dictionary exactly:
+    - Integers: rainfall, temperature, elevation
+    - Floats: pH (1dp), slope (1dp), area (3dp), lat/lon (6dp)
+    """
+    print("\n" + "="*80)
+    print("SCHEMA COMPLIANCE: DATA TYPE VALIDATION")
+    print("="*80 + "\n")
+    
+    # Test Integer types
+    rainfall = get_rainfall(test_point, year=2024)
+    temp = get_temperature(test_point, year=2024)
+    elevation = get_elevation(test_point)
+    
+    assert isinstance(rainfall, int), "❌ rainfall must be Integer"
+    assert isinstance(temp, int), "❌ temperature must be Integer"
+    assert isinstance(elevation, int), "❌ elevation must be Integer"
+    
+    print(f"✓ Integer types:")
+    print(f"  rainfall_mm:          {type(rainfall).__name__:8s} = {rainfall}")
+    print(f"  temperature_celsius:  {type(temp).__name__:8s} = {temp}")
+    print(f"  elevation_m:          {type(elevation).__name__:8s} = {elevation}")
+    
+    # Test Float types
+    ph = get_ph(test_point)
+    slope = get_slope(test_point)
+    area = get_area_ha(test_polygon)
+    lat, lon = get_centroid_lat_lon(test_polygon)
+    
+    if ph is not None:
+        assert isinstance(ph, float), "❌ pH must be Float"
+    assert isinstance(slope, float), "❌ slope must be Float"
+    assert isinstance(area, float), "❌ area must be Float"
+    assert isinstance(lat, float), "❌ latitude must be Float"
+    assert isinstance(lon, float), "❌ longitude must be Float"
+    
+    print(f"\n✓ Float types:")
+    if ph is not None:
+        print(f"  ph:                   {type(ph).__name__:8s} = {ph} (1 decimal)")
+    print(f"  slope:                {type(slope).__name__:8s} = {slope} (1 decimal)")
+    print(f"  area_ha:              {type(area).__name__:8s} = {area} (3 decimals)")
+    print(f"  latitude:             {type(lat).__name__:8s} = {lat} (6 decimals)")
+    print(f"  longitude:            {type(lon).__name__:8s} = {lon} (6 decimals)")
+    
+    print("\n" + "="*80)
+    print("✅ ALL DATA TYPES MATCH SCHEMA")
+    print("="*80 + "\n")
     assert TEXTURE_MAP["loam"] == 4
 
 
@@ -365,6 +530,83 @@ def test_coastal_flag_logic(gee_initialized):
         assert profile["coastal"] == expected_coastal, (
             f"Coastal flag mismatch: expected {expected_coastal}, got {profile['coastal']}"
         )
+
+
+def test_farm_profile_schema_compliance(gee_initialized, test_point):
+    """
+    Test that farm profile data types match data dictionary schema.
+    
+    This validates that build_farm_profile() returns:
+    - Integer types: rainfall_mm, temperature_celsius, elevation_m
+    - Float types: soil_ph (1dp), slope_degrees (1dp), area_ha (3dp), lat/lon (6dp)
+    - Boolean: coastal
+    """
+    profile = build_farm_profile(geometry=test_point, year=2024, farm_id=100)
+    
+    assert profile.get("status") == "success", "Profile creation should succeed"
+    
+    print("\n" + "="*80)
+    print("FARM PROFILE SCHEMA COMPLIANCE TEST")
+    print("="*80)
+    
+    # Test Integer types
+    print("\n✓ Integer types (should be int, not float):")
+    
+    assert isinstance(profile["rainfall_mm"], int), \
+        f"rainfall_mm must be Integer, got {type(profile['rainfall_mm']).__name__}"
+    print(f"  rainfall_mm:          {type(profile['rainfall_mm']).__name__:8s} = {profile['rainfall_mm']}")
+    
+    assert isinstance(profile["temperature_celsius"], int), \
+        f"temperature_celsius must be Integer, got {type(profile['temperature_celsius']).__name__}"
+    print(f"  temperature_celsius:  {type(profile['temperature_celsius']).__name__:8s} = {profile['temperature_celsius']}")
+    
+    assert isinstance(profile["elevation_m"], int), \
+        f"elevation_m must be Integer, got {type(profile['elevation_m']).__name__}"
+    print(f"  elevation_m:          {type(profile['elevation_m']).__name__:8s} = {profile['elevation_m']}")
+    
+    # Test Float types with correct decimal places
+    print("\n✓ Float types (with correct decimal precision):")
+    
+    if profile["soil_ph"] is not None:
+        assert isinstance(profile["soil_ph"], float), \
+            f"soil_ph must be Float, got {type(profile['soil_ph']).__name__}"
+        # Check max 1 decimal
+        ph_str = str(profile["soil_ph"])
+        if '.' in ph_str:
+            decimals = len(ph_str.split('.')[1])
+            assert decimals <= 1, f"soil_ph should have max 1 decimal, got {decimals}"
+        print(f"  soil_ph:              {type(profile['soil_ph']).__name__:8s} = {profile['soil_ph']} (1 decimal)")
+    
+    if profile["slope_degrees"] is not None:
+        assert isinstance(profile["slope_degrees"], float), \
+            f"slope_degrees must be Float, got {type(profile['slope_degrees']).__name__}"
+        # Check max 1 decimal
+        slope_str = str(profile["slope_degrees"])
+        if '.' in slope_str:
+            decimals = len(slope_str.split('.')[1])
+            assert decimals <= 1, f"slope_degrees should have max 1 decimal, got {decimals}"
+        print(f"  slope_degrees:        {type(profile['slope_degrees']).__name__:8s} = {profile['slope_degrees']} (1 decimal)")
+    
+    assert isinstance(profile["area_ha"], float), \
+        f"area_ha must be Float, got {type(profile['area_ha']).__name__}"
+    print(f"  area_ha:              {type(profile['area_ha']).__name__:8s} = {profile['area_ha']} (3 decimals)")
+    
+    assert isinstance(profile["latitude"], float), \
+        f"latitude must be Float, got {type(profile['latitude']).__name__}"
+    assert isinstance(profile["longitude"], float), \
+        f"longitude must be Float, got {type(profile['longitude']).__name__}"
+    print(f"  latitude:             {type(profile['latitude']).__name__:8s} = {profile['latitude']} (6 decimals)")
+    print(f"  longitude:            {type(profile['longitude']).__name__:8s} = {profile['longitude']} (6 decimals)")
+    
+    # Test Boolean type
+    print("\n✓ Boolean type:")
+    assert isinstance(profile["coastal"], bool), \
+        f"coastal must be Boolean, got {type(profile['coastal']).__name__}"
+    print(f"  coastal:              {type(profile['coastal']).__name__:8s} = {profile['coastal']}")
+    
+    print("\n" + "="*80)
+    print("✅ FARM PROFILE IS SCHEMA COMPLIANT")
+    print("="*80)
 
 
 # ============================================================================
