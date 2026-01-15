@@ -3,6 +3,7 @@ Extract environmental data from various sources.
 
 Uses config/settings.py for all dataset configurations.
 
+
 SCHEMA COMPLIANCE (data_dictionary.md):
 All extraction functions return values that comply with the data dictionary schema:
 - get_rainfall() → Integer (mm), range: [1000, 3000]
@@ -13,6 +14,7 @@ All extraction functions return values that comply with the data dictionary sche
 - get_area_ha() → Float (ha, 3 decimals), range: [0, 100]
 - get_centroid_lat_lon() → (Float, Float) (6 decimals), lat: [-90, 90], lon: [-180, 180]
 - get_texture_id() → Integer (texture ID), range: [1, 12]
+
 """
 
 import ee
@@ -66,6 +68,12 @@ def _get_reducer(reducer_name: str):
 # ============================================================================
 # RASTER EXTRACTION
 # ============================================================================
+
+
+# ============================================================================
+# RASTER EXTRACTION
+# ============================================================================
+
 
 
 def _extract_from_raster(geometry, dataset_name: str, year: int | None = None):
@@ -179,6 +187,7 @@ def get_rainfall(geometry, year: int | None = None):
 
     Dataset: CHIRPS (Pearson r=0.96, MAE=23mm)
 
+
     Returns:
         Integer (mm) in range [1000, 3000] as per data dictionary
     """
@@ -240,6 +249,18 @@ def get_ph(geometry, year: int | None = None):
     if value is not None:
         return round(float(value), 1)
     return None
+=======
+def get_ph(geometry, year: int | None = None):
+    """
+    Return soil pH for a given geometry.
+
+    Dataset: OpenLandMap (Pearson r=0.18, MAE=1.21)
+    WARNING: Low correlation - consider using local data instead.
+    """
+    return _extract_from_raster(geometry, "soil_ph")
+
+    value = _ee_to_float(stats.get("slope"))
+    return round(value, 3) if value is not None else None
 
 
 def get_slope(geometry, year: int | None = None):
