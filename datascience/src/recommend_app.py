@@ -1,6 +1,6 @@
 import argparse
 
-from suitability_scoring.recommend import (
+from app.orchestrators import (
     get_batch_recommendations_service,
     get_recommendations_service,
 )
