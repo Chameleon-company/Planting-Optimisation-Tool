@@ -1,5 +1,5 @@
 import pytest
-from suitability_scoring.scoring.scoring import categorical_compatibility_score
+from suitability_scoring.scoring import categorical_compatibility_score
 
 
 @pytest.fixture

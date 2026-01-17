@@ -3,7 +3,7 @@ from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from suitability_scoring.utils.config import load_yaml
+from suitability_scoring import load_yaml
 from src.models.species import Species
 from src.domains.suitability_scoring import SuitabilitySpecies
 
