@@ -1,5 +1,3 @@
-# **Not complete**
-
 # Directory 
 ```
 .
@@ -34,4 +32,33 @@ Species-specific overrides (`species_params`) are built into the database and in
 
 For a full description of how to configure the suitability scoring library documentation (`suitability_scoring/docs/scoring_design.md`).
 
-# Usage
+# Usage as a library
+```{python}
+# Load configuration and data
+from yourlib import (
+     load_yaml,
+     build_species_params_dict,
+     build_rules_dict,
+     calculate_suitability,
+     build_species_recommendations,
+ )
+
+# Load configuration file
+cfg = load_yaml("config.yaml")
+
+# Build parameters index and scoring rules
+params = build_species_params_dict(species_params_rows, cfg)
+rules = build_rules_dict(species_list, params, cfg)
+
+# Score all species for the farm and get explanations
+# farm single farm profile dict
+results, scores = calculate_suitability(farm, species_list, rules, cfg)
+
+# Produce ranked recommendations
+recs = build_species_recommendations(results)
+recs[:3]
+[{'species_id': 101, 'species_name': 'X', 'species_common_name': 'Y',
+  'score_mcda': 0.842, 'rank_overall': 1,
+  'key_reasons': ['Soil:exact match', 'Rainfall:inside preferred range', ...]},
+ ...]
+```

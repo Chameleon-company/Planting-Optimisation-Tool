@@ -2,7 +2,7 @@ import timeit
 from datetime import datetime, timezone
 from app import repository
 
-from suitability_scoring.scoring.scoring import calculate_suitability
+from suitability_scoring.scoring import calculate_suitability
 from suitability_scoring.utils.params import build_rules_dict
 from suitability_scoring.recommend import build_species_recommendations
 

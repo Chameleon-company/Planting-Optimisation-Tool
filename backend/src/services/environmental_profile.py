@@ -38,4 +38,27 @@ class EnvironmentalProfileService:
         # Passing the boundary and farm_id
         profile = build_farm_profile(geometry=formatted_geometry, farm_id=farm_id)
 
+        if not profile:
+            return None
+
+        # Data Normalization to enforce pydantic schema
+
+        # Round temp to int
+        if profile.get("temperature_celsius") is not None:
+            profile["temperature_celsius"] = int(
+                round(float(profile["temperature_celsius"]))
+            )
+
+        # Round rainfall to int
+        if profile.get("rainfall_mm") is not None:
+            profile["rainfall_mm"] = int(round(float(profile["rainfall_mm"])))
+
+        # Round pH to 1 decimal place
+        if profile.get("soil_ph") is not None:
+            profile["soil_ph"] = round(float(profile["soil_ph"]), 1)
+
+        # Round slope to 2 decimal places
+        if profile.get("slope_degrees") is not None:
+            profile["slope_degrees"] = round(float(profile["slope_degrees"]), 2)
+
         return profile
