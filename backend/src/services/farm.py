@@ -44,9 +44,11 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
     return result.scalar_one()
 
 
-async def get_farm_by_id(db: AsyncSession, farm_id: int, user_id: int) -> Farm | None:
+async def get_farm_by_id(
+    db: AsyncSession, farm_ids: list[int], user_id: int
+) -> list[Farm] | None:
     """
-    Retrieves a single Farm record, filtered by farm_id AND user_id
+    Retrieves one or many Farm records, filtered by farm_id AND user_id
     to enforce ownership authorization.
 
     Includes selectinload for relationships to prevent MissingGreenlet errors
@@ -57,9 +59,9 @@ async def get_farm_by_id(db: AsyncSession, farm_id: int, user_id: int) -> Farm |
     stmt = (
         select(Farm)
         .options(selectinload(Farm.soil_texture), selectinload(Farm.agroforestry_type))
-        .where((Farm.id == farm_id) & (Farm.user_id == user_id))
+        .where((Farm.id.in_(farm_ids)) & (Farm.user_id == user_id))
     )
 
     result = await db.execute(stmt)
 
-    return result.scalars().first()
+    return list(result.scalars().all())

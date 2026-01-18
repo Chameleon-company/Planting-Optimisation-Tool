@@ -42,9 +42,10 @@ erDiagram
     INTEGER id PK
     INTEGER species_id FK
     VARCHAR feature
-    FLOAT trap_left_tol
-    FLOAT trap_right_tol
-    FLOAT weight
+    VARCHAR score_method "nullable"
+    FLOAT trap_left_tol "nullable"
+    FLOAT trap_right_tol "nullable"
+    FLOAT weight "nullable"
   }
 
   recommendations {
@@ -52,7 +53,7 @@ erDiagram
     INTEGER farm_id FK
     INTEGER species_id FK
     DATETIME created_at
-    ARRAY exclusions
+    ARRAY exclusions "nullable"
     ARRAY key_reasons
     INTEGER rank_overall
     FLOAT score_mcda

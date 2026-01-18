@@ -38,7 +38,7 @@ def generate_schema_report():
             ]
             output.append("| " + " | ".join(row) + " |")
 
-    # Print all lines to the terminal
+    # Print all lines to the terminal if not piped into a file
     print("\n".join(output))
 
 
