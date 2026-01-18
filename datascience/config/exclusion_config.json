@@ -1,0 +1,11 @@
+{
+  "dependency": {
+    "enabled": false
+  },
+
+  "annotation": {
+    "include_values": false
+  },
+
+  "rules": []
+}

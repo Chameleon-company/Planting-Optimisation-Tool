@@ -27,12 +27,11 @@ def run_exclusion_rules(farm_data, species_data, config):
     candidate_ids = []
 
     for record in species_data:
-        if "species_id" in record:
-            candidate_ids.append(record["species_id"])
-
-    excluded_species = []
+        # Backend uses "id" for species identifier
+        if "id" in record:
+            candidate_ids.append(record["id"])
 
     return {
         "candidate_ids": candidate_ids,
-        "excluded_species": excluded_species,
+        "excluded_species": [],
     }
