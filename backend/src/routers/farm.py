@@ -15,7 +15,7 @@ router = APIRouter(prefix="/farms", tags=["Farms"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=FarmRead,  # Response to the user
     status_code=201,
 )
@@ -52,7 +52,7 @@ async def read_farm_endpoint(
     """
     Retrieves a single farm by ID, ensuring the requesting user is the owner.
     """
-    farm = await get_farm_by_id(db, farm_id=farm_id, current_user=current_user)
+    farm = await get_farm_by_id(db, farm_id=farm_id, user_id=current_user.id)
 
     if not farm:
         # A 404 is appropriate here, as it doesn't leak whether the resource

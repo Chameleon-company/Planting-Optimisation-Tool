@@ -92,6 +92,9 @@ class FarmBase(BaseModel):
         decimal_places=2,
     )
     agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None
+    external_id: Optional[int] = Field(
+        None, title="Temporary identifier for CSV import"
+    )
 
 
 # Inherits from Base class, provides functionality to create a new farm.

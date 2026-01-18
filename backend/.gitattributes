@@ -1,0 +1,4 @@
+# Force LF for automation files so they work in WSL and Windows
+justfile text eol=lf
+*.sh text eol=lf
+*.py text eol=lf

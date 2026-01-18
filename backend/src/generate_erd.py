@@ -14,14 +14,14 @@ from src import models  # noqa: F401
 # --- Database URL and Engine Creation ---
 db_url_async = settings.DATABASE_URL
 # Using synchronous driver for compatibility with sqlalchemy_schemadisplay
-DATABASE_URL = db_url_async.replace("asyncpg", "psycopg2")
+DATABASE_URL = db_url_async.replace("postgresql+asyncpg://", "postgresql+psycopg://")
 
 # Create engine
 print(f"Connecting to database to generate ERD: {DATABASE_URL.split('@')[-1]}")
 engine = create_engine(DATABASE_URL)
 
-# Explicitly reflect the schema from the DB into Base.metadata
-Base.metadata.reflect(bind=engine)
+# To ignore the postGIS included unused tables
+target_tables = list(Base.metadata.tables.keys())
 
 # Create graph of ERD
 graph = create_schema_graph(
@@ -31,6 +31,7 @@ graph = create_schema_graph(
     show_indexes=False,
     rankdir="TB",
     concentrate=True,
+    restrict_tables=target_tables,
 )
 
 graph.set_node_defaults(

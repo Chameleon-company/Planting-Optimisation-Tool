@@ -29,9 +29,9 @@ async def test_read_farm_success_and_authorization_check(
     and that they cannot read another user's farm (404 Not Found).
     """
 
-    # --- Setup: Create two farms, one for User A and one for User B ---
+    #  Setup: Create two farms, one for User A and one for User B
 
-    # 1. Farm for User A (Owner)
+    # Farm for User A (Owner)
     farm_data_a = {
         "rainfall_mm": 1000,
         "temperature_celsius": 25.0,
@@ -61,7 +61,7 @@ async def test_read_farm_success_and_authorization_check(
     farm_a_id = farm_a.id
     farm_b_id = farm_b.id
 
-    # --- Test 1: SUCCESS (User A reads their own farm) ---
+    # Test 1: SUCCESS (User A reads their own farm)
     url = f"/farms/{farm_a_id}"
     response = await async_client.get(url, headers=auth_user_headers)
 
@@ -72,7 +72,7 @@ async def test_read_farm_success_and_authorization_check(
     assert data["id"] == farm_a_id
     assert data["user_id"] == test_user_a.id
 
-    # --- Test 2: AUTHORIZATION FAILURE (User A tries to read User B's farm) ---
+    # Test 2: AUTHORIZATION FAILURE (User A tries to read User B's farm)
     url = f"/farms/{farm_b_id}"
     response = await async_client.get(url, headers=auth_user_headers)
 
@@ -83,7 +83,7 @@ async def test_read_farm_success_and_authorization_check(
     )
     assert "not found" in response.json()["detail"]
 
-    # --- Test 3: UNAUTHENTICATED FAILURE (No headers) ---
+    #  Test 3: UNAUTHENTICATED FAILURE (No headers)
     url = f"/farms/{farm_a_id}"
     response = await async_client.get(url)
 

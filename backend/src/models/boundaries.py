@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Integer
 from ..database import Base
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -17,11 +17,10 @@ class FarmBoundary(Base):
     )
     boundary: Mapped[str] = mapped_column(
         Geometry(
-            geometry_type="POLYGON",
-            srid=4326,
-            nullable=False,
+            geometry_type="MULTIPOLYGON", srid=4326, nullable=False, spatial_index=False
         )
     )
+    external_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True)
     # Relationships
     farm: Mapped["Farm"] = relationship(
         back_populates="boundary",

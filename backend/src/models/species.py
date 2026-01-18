@@ -15,6 +15,7 @@ from .association import (
     species_agroforestry_association,
     species_soil_texture_association,
 )
+from .parameters import Parameter
 
 
 class Species(Base):
@@ -50,6 +51,11 @@ class Species(Base):
     agroforestry_types: Mapped[list["AgroforestryType"]] = relationship(
         secondary=species_agroforestry_association,
         back_populates="species_agroforestry_type",
+    )
+
+    # Links a species object to parameter object
+    parameters: Mapped[list["Parameter"]] = relationship(
+        back_populates="species", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

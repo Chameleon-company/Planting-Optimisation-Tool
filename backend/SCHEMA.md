@@ -38,6 +38,17 @@
 | `bank_stabilising` | `Boolean` | No | No |  |
 | `slope` | `Float` | No | No |  |
 | `user_id` | `Integer` | Yes | No | id |
+| `external_id` | `Integer` | Yes | No |  |
+## TABLE: `parameters`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `species_id` | `Integer` | No | No | id |
+| `feature` | `String` | No | No |  |
+| `weight` | `Float` | No | No |  |
+| `trap_left_tol` | `Float` | No | No |  |
+| `trap_right_tol` | `Float` | No | No |  |
 ## TABLE: `species`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -70,6 +81,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | `Integer` | No | Yes | id |
 | `boundary` | `Geometry` | No | No |  |
+| `external_id` | `Integer` | Yes | No |  |
 ## TABLE: `agroforestry_types`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -84,3 +96,15 @@
 | `name` | `String` | No | No |  |
 | `email` | `String` | No | No |  |
 | `hashed_password` | `String` | No | No |  |
+## TABLE: `recommendations`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `farm_id` | `Integer` | No | No | id |
+| `species_id` | `Integer` | No | No | id |
+| `rank_overall` | `Integer` | No | No |  |
+| `score_mcda` | `Float` | No | No |  |
+| `key_reasons` | `ARRAY` | No | No |  |
+| `exclusions` | `ARRAY` | No | No |  |
+| `created_at` | `DateTime` | No | No |  |

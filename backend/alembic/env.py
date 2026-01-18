@@ -23,15 +23,19 @@ load_dotenv()
 target_metadata = Base.metadata
 
 
-def include_name(name, type_, parent_names):
+# This stops alembic from trying to delete the PostGIS system tables
+def include_object(obj, name, type_, reflected, compare_to):
     """
-    Excludes tables that exist in the database but are NOT defined in the models (target_metadata).
-    This automatically ignores extension tables like spatial_ref_sys.
+    Excludes PostGIS system tables from Alembic's consideration.
     """
-    if type_ == "table":
-        return name in target_metadata.tables
-    else:
-        return True
+    # List of tables owned by PostGIS that alembic shouldn't touch
+    if type_ == "table" and name in [
+        "spatial_ref_sys",
+        "geography_columns",
+        "geometry_columns",
+    ]:
+        return False
+    return True
 
 
 def setup_ddl_listeners():
@@ -91,7 +95,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        include_name=include_name,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -132,7 +136,7 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             dialect_opts={"paramstyle": "named"},
-            include_name=include_name,
+            include_object=include_object,
         )
         with context.begin_transaction():
             context.run_migrations()

@@ -41,3 +41,5 @@ tests/.pytest_cache/
 # Ruff cache
 .ruff_cache/
 
+# Egg info
+*.egg-info/

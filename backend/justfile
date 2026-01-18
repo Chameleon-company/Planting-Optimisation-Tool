@@ -1,0 +1,126 @@
+# Set the shell only for Windows
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
+export PYTHONUTF8 := "1"
+export PYTHONPATH := "."
+
+# Variable definitions using direct OS detection
+PYTHON          := if os() == "windows" { "python" } else { "python3" }
+UV_RUNNER       := "uv run"
+ALEMBIC_CMD     := UV_RUNNER + " alembic"
+
+# OS-Specific Background Command Logic
+RUN_BG_API      := if os() == "windows" {
+    "Start-Process uv -ArgumentList 'run', 'fastapi', 'run', 'src/main.py', '--port', '8080' -WindowStyle Hidden; Write-Host 'API starting, waiting 5s for warm-up'; Start-Sleep -s 5"
+} else {
+    "uv run fastapi run src/main.py --port 8080 & sleep 5"
+}
+
+SERVICE_NAME    := "db"
+CONTAINER_NAME  := "pot_postgres_db"
+PYTEST_CMD      := UV_RUNNER + " pytest"
+
+FASTAPI_TARGET  := "src/main.py"
+FASTAPI_CMD     := "fastapi dev " + FASTAPI_TARGET + " --port 8080 --host 0.0.0.0"
+
+# Standard recipe to avoid Shebang/CRLF issues
+[private]
+ensure-env:
+    @{{PYTHON}} -c "import os, shutil; \
+    not os.path.exists('.env') and os.path.exists('.env.example') and \
+    (shutil.copy('.env.example', '.env'), print('--- Created .env from .env.example ---'))"
+
+# Displays all available justfile targets
+help:
+    @just --list
+
+# Stops and creates a new migrated database
+setup: ensure-env stop start migrate
+    @echo "--- Setup/Update Complete ---"
+
+# Stops the current PostgreSQL Container
+stop:
+    @echo "--- Stopping PostgreSQL Container (Preserving Data) ---"
+    @docker compose down
+    @echo "--- PostgreSQL Container Stopped ---"
+
+# Starts the PostgreSQL Container
+start:
+    @echo "--- Starting PostgreSQL Container ---"
+    @docker compose up -d {{SERVICE_NAME}}
+    @echo "Waiting for DB to be ready..."
+    @{{PYTHON}} -c "import time; time.sleep(5)"
+
+# Migrates the database (alembic migration scripts)
+migrate: ensure-env
+    @echo "--- Applying Schema Migration ---"
+    @{{ALEMBIC_CMD}} upgrade head
+    @echo "--- Schema Migrated ---"
+
+# Destroys the database to a clean slate
+reset:
+    @echo "--- WARNING: Wiping Database and Volumes ---"
+    @docker compose down -v
+    @just start
+
+# Generates a revision script (For structural changes to the DB)
+revision message: ensure-env
+    @echo "--- Generating New Migration Script ---"
+    @{{ALEMBIC_CMD}} revision --autogenerate -m "{{message}}"
+    @echo "--- Migration Script generated---"
+
+# Manually changes column names
+rename-column: ensure-env
+    @echo "--- STARTING MANUAL RENAME PROCEDURE ---"
+    @{{ALEMBIC_CMD}} revision -m "MANUAL_RENAME_REQUIRED"
+
+# Clones the database and runs the pytest suite
+test: ensure-env
+	@echo "--- Replicating Database from POT_db to pot_test_db ---"
+	-@docker exec -i {{CONTAINER_NAME}} psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'pot_test_db';"
+	@docker exec -i {{CONTAINER_NAME}} psql -U postgres -c "DROP DATABASE IF EXISTS pot_test_db;"
+	@docker exec -i {{CONTAINER_NAME}} psql -U postgres -c "CREATE DATABASE pot_test_db WITH TEMPLATE \"POT_db\";"
+	@echo "--- Syncing Sequences ---"
+	@docker exec -i {{CONTAINER_NAME}} psql -U postgres -d pot_test_db -c "DO \$\$ DECLARE r RECORD; BEGIN FOR r IN (SELECT table_name, column_name FROM information_schema.columns WHERE column_default LIKE 'nextval%' AND table_schema = 'public') LOOP EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''' || r.column_name || '''), COALESCE(MAX(' || r.column_name || '), 1)) FROM ' || r.table_name; END LOOP; END \$\$;"
+	@echo "--- Running Pytest ---"
+	@DATABASE_URL="postgresql+asyncpg://postgres:devpassword@localhost:5432/pot_test_db" {{PYTEST_CMD}}
+
+# Starts an interactive PSQL session
+psql: ensure-env
+    @docker exec -it {{CONTAINER_NAME}} psql -U postgres -d POT_db
+
+# Generates a schema from the current ORM models
+schema: ensure-env
+    @echo "--- Generating SCHEMA.md from Models ---"
+    @{{UV_RUNNER}} {{PYTHON}} -m src.generate_schema > SCHEMA.md
+    @echo "--- SCHEMA.md generated ---"
+
+# Generates an Entity-Relationship Diagram of the current database
+erd: ensure-env
+    @echo "--- Generating ERD.md ---"
+    @{{PYTHON}} -c "print('# Entity Relationship Diagram\n\n' + chr(96)*3 + 'mermaid')" > ERD.md
+    @{{UV_RUNNER}} paracelsus graph src.database:Base --import-module "src.models:*" >> ERD.md
+    @{{PYTHON}} -c "print(chr(96)*3)" >> ERD.md
+    @echo "--- ERD.md created successfully. ---"
+
+# Starts the FastAPI server
+run-api: ensure-env
+    -@{{UV_RUNNER}} {{FASTAPI_CMD}}
+
+# Runs the data ingestions scripts to populate the database
+populate: ensure-env
+    @echo "Preparing data ingestion environment..."
+    @just reset
+    @just migrate
+    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.seed_references
+    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.create_test_user
+    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.setup_import_db
+    @just kill-api
+    @echo "--- Ingestion Complete, Verifying Stats ---"
+    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.check_data_stats
+    @echo "Database is ready and populated. To start dev server run: just run-api"
+
+# Stops the API server
+kill-api:
+    @echo "Attempting to stop API server..."
+    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.kill-api

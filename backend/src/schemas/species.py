@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from decimal import Decimal
 from src.schemas.constants import SoilTextureID
@@ -60,7 +60,7 @@ class SpeciesBase(BaseModel):
     ph_max: Decimal = Field(
         title="Maximum pH",
         description="Maximum preferred soil pH",
-        ge=7.0,
+        ge=6.5,
         le=8.5,
     )
     coastal: bool = Field(
@@ -106,8 +106,7 @@ class SpeciesRead(SpeciesBase):
         description="List of compatible agroforestry uses with names.",
     )
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SpeciesUpdate(SpeciesBase):
