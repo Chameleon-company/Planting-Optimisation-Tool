@@ -46,9 +46,10 @@
 | `id` | `Integer` | No | Yes |  |
 | `species_id` | `Integer` | No | No | id |
 | `feature` | `String` | No | No |  |
-| `weight` | `Float` | No | No |  |
-| `trap_left_tol` | `Float` | No | No |  |
-| `trap_right_tol` | `Float` | No | No |  |
+| `score_method` | `String` | Yes | No |  |
+| `weight` | `Float` | Yes | No |  |
+| `trap_left_tol` | `Float` | Yes | No |  |
+| `trap_right_tol` | `Float` | Yes | No |  |
 ## TABLE: `species`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -106,5 +107,5 @@
 | `rank_overall` | `Integer` | No | No |  |
 | `score_mcda` | `Float` | No | No |  |
 | `key_reasons` | `ARRAY` | No | No |  |
-| `exclusions` | `ARRAY` | No | No |  |
+| `exclusions` | `ARRAY` | Yes | No |  |
 | `created_at` | `DateTime` | No | No |  |

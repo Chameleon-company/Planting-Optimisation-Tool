@@ -27,7 +27,7 @@ class Recommendation(Base):
     # Using PostgreSQL ARRAY of Strings for the diagnostic messages
     key_reasons: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
 
-    exclusions: Mapped[list[str]] = mapped_column(ARRAY(String))
+    exclusions: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
 
     # timestamp
     created_at: Mapped[datetime] = mapped_column(

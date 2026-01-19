@@ -7,6 +7,7 @@ from suitability_scoring import (
     build_rules_dict,
     build_species_recommendations,
 )
+from src.models.recommendations import Recommendation
 
 
 async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg):
@@ -16,11 +17,11 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
     # Pre-calculate rules
     # Get species (over-ride) parameters from database
     species_params_rows = await get_species_parameters_as_dicts(db)
-
     params_dict = build_species_params_dict(species_params_rows, cfg)
     optimised_rules = build_rules_dict(species_dicts, params_dict, cfg)
 
     batch_results = []
+    all_db_recs = []
 
     for f in farms:
         # Using the domain model
@@ -35,6 +36,19 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
         )
 
         formatted_recs = build_species_recommendations(result_list)
-        batch_results.append({"farm_id": f.id, "recommendations": formatted_recs})
+        for rec in formatted_recs:
+            db_rec = Recommendation(
+                farm_id=f.id,
+                species_id=rec["species_id"],
+                rank_overall=rec["rank_overall"],
+                score_mcda=rec["score_mcda"],
+                key_reasons=rec["key_reasons"],
+                # exclusions=rec.get("exclusions", []) # Not completed
+            )
+            all_db_recs.append(db_rec)
 
+        batch_results.append({"farm_id": f.id, "recommendations": formatted_recs})
+    if all_db_recs:
+        db.add_all(all_db_recs)
+        await db.commit()
     return batch_results

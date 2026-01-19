@@ -22,9 +22,9 @@ router = APIRouter(prefix="/farms", tags=["Farms"])
 async def create_farm_endpoint(
     # Validates the data against the pydantic model
     farm_data: FarmCreate,
-    # 2. Inject the authenticated user
+    # Inject the authenticated user
     current_user: UserRead = CurrentActiveUser,
-    # 3. Inject the REAL database session
+    # Inject the real database session
     db: AsyncSession = Depends(get_db_session),
 ):
     """
@@ -50,16 +50,14 @@ async def read_farm_endpoint(
     current_user: User = CurrentActiveUser,
 ):
     """
-    Retrieves a single farm by ID, ensuring the requesting user is the owner.
+    Retrieves one or many farms by ID, ensuring the requesting user is the owner.
     """
-    farm = await get_farm_by_id(db, farm_id=farm_id, user_id=current_user.id)
+    farms = await get_farm_by_id(db, farm_ids=[farm_id], user_id=current_user.id)
 
-    if not farm:
-        # A 404 is appropriate here, as it doesn't leak whether the resource
-        # exists but is unauthorized, or simply doesn't exist.
+    if not farms:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Farm with ID {farm_id} not found.",
         )
 
-    return farm
+    return farms[0]
