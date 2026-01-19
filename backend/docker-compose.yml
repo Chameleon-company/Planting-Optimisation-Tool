@@ -11,6 +11,7 @@ services:
     volumes:
       # Persists data to local machine so that data isn't lost when the container stops
       - postgres_data:/var/lib/postgresql/data/
+      - ./init-db:/docker-entrypoint-initdb.d/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

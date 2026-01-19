@@ -1,6 +1,4 @@
 import pytest
-import pandas as pd
-import numpy as np
 
 from suitability_scoring.utils.params import (
     build_species_params_dict,
@@ -22,13 +20,13 @@ def basic_cfg():
                 "type": "numeric",
                 "short": "ph",
                 "score_method": "magic",
+                "tolerance": {"left": 0.25, "right": 0.6},
                 "default_weight": 0.50,
             },
             "soil_texture": {
                 "type": "categorical",
                 "short": "soil",
                 "score_method": "cat_exact",
-                "categorical": {"exact_match": 1.0},
                 "default_weight": 0.50,
             },
         },
@@ -36,58 +34,68 @@ def basic_cfg():
 
 
 @pytest.fixture
-def species_params_df():
+def species_params_rows():
     """
-    Returns a DataFrame with species parameters.
+    Returns a list of dictionaries with species parameters.
     """
-    return pd.DataFrame(
-        [
-            {
-                "species_id": 1,
-                "feature": "ph",
-                "score_method": "num_range",
-                "weight": 0.3,
-            },
-            {
-                "species_id": 1,
-                "feature": "soil_texture",
-                "score_method": "cat_exact",
-                "weight": 0.7,
-            },
-            {
-                "species_id": 2,
-                "feature": "ph",
-                "score_method": "num_range",
-                "weight": 0.0,
-            },
-            {
-                "species_id": 2,
-                "feature": "soil_texture",
-                "score_method": None,
-                "weight": 0.8,
-            },
-            {
-                "species_id": 3,
-                "feature": "ph",
-                "score_method": "num_range",
-                "weight": 0.0,
-            },
-            {
-                "species_id": 3,
-                "feature": "soil_texture",
-                "score_method": np.nan,
-                "weight": np.nan,
-            },
-        ]
-    )
+    return [
+        {
+            "species_id": 1,
+            "feature": "ph",
+            "score_method": "num_range",
+            "weight": 0.3,
+            "trap_left_tol": 0,
+            "trap_right_tol": 0.5,
+        },
+        {
+            "species_id": 1,
+            "feature": "soil_texture",
+            "score_method": "cat_exact",
+            "weight": 0.7,
+            "trap_left_tol": None,
+            "trap_right_tol": None,
+        },
+        {
+            "species_id": 2,
+            "feature": "ph",
+            "score_method": "num_range",
+            "weight": 0.0,
+            "trap_left_tol": None,
+            "trap_right_tol": 0.5,
+        },
+        {
+            "species_id": 2,
+            "feature": "soil_texture",
+            "score_method": None,
+            "weight": 0.8,
+            "trap_left_tol": None,
+            "trap_right_tol": None,
+        },
+        {
+            "species_id": 3,
+            "feature": "ph",
+            "score_method": "num_range",
+            "weight": 0.0,
+            "trap_left_tol": None,
+            "trap_right_tol": None,
+        },
+        {
+            "species_id": 3,
+            "feature": "soil_texture",
+            "score_method": "",
+            "weight": "",
+            "trap_left_tol": "",
+            "trap_right_tol": "",
+        },
+    ]
 
 
-def test_build_params_structure(species_params_df, basic_cfg):
+def test_build_params_structure(species_params_rows, basic_cfg):
     """
     Check that the dataFrame is correctly converted to a nested dictionary.
     """
     # Call function
-    result = build_species_params_dict(species_params_df, basic_cfg)
+    result = build_species_params_dict(species_params_rows, basic_cfg)
 
     # Check if keys exist
     assert 1 in result
@@ -97,58 +105,48 @@ def test_build_params_structure(species_params_df, basic_cfg):
     # Check values
     assert result[1]["ph"]["score_method"] == "num_range"
     assert result[1]["ph"]["weight"] == pytest.approx(0.3)
+    assert result[1]["ph"]["trap_left_tol"] == pytest.approx(0.0)
+    assert result[1]["ph"]["trap_right_tol"] == pytest.approx(0.5)
     assert result[1]["soil_texture"]["score_method"] == "cat_exact"
     assert result[1]["soil_texture"]["weight"] == pytest.approx(0.7)
 
 
-def test_build_params_custom_id_column(basic_cfg):
+def test_build_params_handles_exceptions(basic_cfg):
     """
-    Check that the function respects a custom ID column name defined in config.
+    Check the function handles exceptions.
     """
-    # Modify config to look for 'species_key' instead of 'species_id'
-    basic_cfg["ids"]["species"] = "species_key"
+    rows = [{"species_id": 999, "feature": "ph", "score_method": 1, "weight": "large"}]
 
-    # Create DF with that specific column
-    df = pd.DataFrame(
-        [
-            {
-                "species_key": 2,
-                "feature": "rainfall",
-                "score_method": "num_range",
-                "weight": 0.3,
-            }
-        ]
-    )
-
-    result = build_species_params_dict(df, basic_cfg)
-
-    assert 2 in result
-    assert result[2]["rainfall"]["weight"] == pytest.approx(0.3)
-
-
-def test_build_params_handles_missing_values(basic_cfg):
-    """
-    Check the function handles NaN or None values in the dataFrame.
-    """
-    df = pd.DataFrame(
-        [{"species_id": 999, "feature": "ph", "score_method": None, "weight": np.nan}]
-    )
-
-    result = build_species_params_dict(df, basic_cfg)
+    result = build_species_params_dict(rows, basic_cfg)
 
     # Check that the keys exist, even if values are empty.
     assert "ph" in result[999]
 
-    # Check for NaN
-    assert np.isnan(result[999]["ph"]["weight"])
+    # Check for None
+    assert result[999]["ph"]["weight"] is None
 
 
-def test_get_params_full_override(species_params_df, basic_cfg):
+def test_build_params_handles_missing_values(basic_cfg):
+    """
+    Check the function handles None values in the data.
+    """
+    rows = [{"species_id": 999, "feature": "ph", "score_method": None, "weight": None}]
+
+    result = build_species_params_dict(rows, basic_cfg)
+
+    # Check that the keys exist, even if values are empty.
+    assert "ph" in result[999]
+
+    # Check for None
+    assert result[999]["ph"]["weight"] is None
+
+
+def test_get_params_full_override(species_params_rows, basic_cfg):
     """
     Species exists in params_dict and has all values set.
     Expectation: Return the values from params_dict, ignore config defaults.
     """
-    params_dict = build_species_params_dict(species_params_df, basic_cfg)
+    params_dict = build_species_params_dict(species_params_rows, basic_cfg)
 
     result = get_feature_params(params_dict, basic_cfg, species_id=1, feature="ph")
 
@@ -158,27 +156,35 @@ def test_get_params_full_override(species_params_df, basic_cfg):
     # Species 1 has a score_method of 'num_range' (config default is 'magic')
     assert result["score_method"] == "num_range"
 
+    # Species 1 has a ph trap_left_tol 0.0 (config default is 0.25)
+    assert result["trap_left_tol"] == pytest.approx(0.0)
 
-def test_get_params_defaults_only(species_params_df, basic_cfg):
+    # Species 1 has a ph trap_right_tol 0.5 (config default is 0.6)
+    assert result["trap_right_tol"] == pytest.approx(0.5)
+
+
+def test_get_params_defaults_only(species_params_rows, basic_cfg):
     """
     Species ID (999) is NOT in the params_dict.
     Expectation: Return purely the defaults from config.
     """
-    params_dict = build_species_params_dict(species_params_df, basic_cfg)
+    params_dict = build_species_params_dict(species_params_rows, basic_cfg)
 
     result = get_feature_params(params_dict, basic_cfg, species_id=999, feature="ph")
 
     # Should fall back to config values
     assert result["weight"] == pytest.approx(0.5)
     assert result["score_method"] == "magic"
+    assert result["trap_left_tol"] == pytest.approx(0.25)
+    assert result["trap_right_tol"] == pytest.approx(0.6)
 
 
-def test_get_params_partial_fallback(species_params_df, basic_cfg):
+def test_get_params_partial_fallback(species_params_rows, basic_cfg):
     """
     Species exists, has a custom weight, but NO score_method.
     Expectation: Return custom weight, but default score_method.
     """
-    params_dict = build_species_params_dict(species_params_df, basic_cfg)
+    params_dict = build_species_params_dict(species_params_rows, basic_cfg)
 
     # Species 2 has a soil_texture weight 0.8, method is None
     result = get_feature_params(
@@ -196,14 +202,19 @@ def test_get_params_partial_fallback(species_params_df, basic_cfg):
     assert result["weight"] == pytest.approx(0.5)  # Default (fallback)
     assert result["score_method"] == "cat_exact"  # Default (fallback)
 
+    # Species 2 has a ph trap_right_tol 0.5, trap_left_tol is None
+    result = get_feature_params(params_dict, basic_cfg, species_id=2, feature="ph")
+    assert result["trap_right_tol"] == pytest.approx(0.5)  # Specific
+    assert result["trap_left_tol"] == pytest.approx(0.25)  # Default (fallback)
 
-def test_get_params_zero_weight_edge_case(species_params_df, basic_cfg):
+
+def test_get_params_zero_weight_edge_case(species_params_rows, basic_cfg):
     """
     Feature has a weight explicitly set to 0.0.
     Expectation: Logic should treat 0.0 as a valid number, not as 'None'.
     It should NOT fall back to the default weight.
     """
-    params_dict = build_species_params_dict(species_params_df, basic_cfg)
+    params_dict = build_species_params_dict(species_params_rows, basic_cfg)
 
     result = get_feature_params(params_dict, basic_cfg, species_id=2, feature="ph")
 

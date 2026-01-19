@@ -6,6 +6,8 @@ from .agroforestry_type import AgroforestryType
 from .association import farm_agroforestry_association
 from .association import species_agroforestry_association
 from .user import User
+from .parameters import Parameter
+from .recommendations import Recommendation
 
 
 __all__ = [
@@ -17,4 +19,6 @@ __all__ = [
     "species_agroforestry_association",
     "FarmBoundary",
     "User",
+    "Parameter",
+    "Recommendation",
 ]

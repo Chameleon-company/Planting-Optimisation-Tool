@@ -8,12 +8,12 @@ from src.database import get_db_session  # Import the database dependency
 
 router = APIRouter(
     prefix="/soil-textures",
-    tags=["Soil Textures (Reference)"],
+    tags=["Soil Textures"],
 )
 
 
 @router.get(
-    "/",
+    "",
     response_model=List[SoilTextureRead],
     summary="Retrieve all available soil texture types.",
 )

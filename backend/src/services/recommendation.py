@@ -1,34 +1,54 @@
-import asyncio  # noqa: F401
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from fastapi import HTTPException, status
+from src.domains.suitability_scoring import SuitabilityFarm
+from src.services.species_parameters import get_species_parameters_as_dicts
+from suitability_scoring import (
+    calculate_suitability,
+    build_species_params_dict,
+    build_rules_dict,
+    build_species_recommendations,
+)
+from src.models.recommendations import Recommendation
 
-from src.models.farm import Farm
-from suitability_scoring.recommend import build_payload_for_farm  # noqa: F401
 
+async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg):
+    # TODO: still need to convert Species objects to dicts for the DS engine until it accepts objects.
+    species_dicts = [s.model_dump() for s in all_species]
 
-async def get_recommendations_for_farm(db: AsyncSession, farm_id: int):
-    """
-    Orchestrates the recommendation generation.
-    TODO: Need to update recommend.build_payload_for_farm to be async and DB-aware.
-    """
-    # Verification that farm exists
-    result = await db.execute(select(Farm).where(Farm.id == farm_id))
-    farm = result.scalar_one_or_none()
+    # Pre-calculate rules
+    # Get species (over-ride) parameters from database
+    species_params_rows = await get_species_parameters_as_dicts(db)
+    params_dict = build_species_params_dict(species_params_rows, cfg)
+    optimised_rules = build_rules_dict(species_dicts, params_dict, cfg)
 
-    if not farm:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Farm with ID {farm_id} not found.",
+    batch_results = []
+    all_db_recs = []
+
+    for f in farms:
+        # Using the domain model
+        farm_profile = SuitabilityFarm.from_db_model(f)
+
+        # Run the engine
+        result_list, _ = calculate_suitability(
+            farm_data=farm_profile.model_dump(),
+            species_list=species_dicts,
+            optimised_rules=optimised_rules,
+            cfg=cfg,
         )
 
-    # Logic
-    try:
-        return
-        # Once TODO is done, uncomment below.
+        formatted_recs = build_species_recommendations(result_list)
+        for rec in formatted_recs:
+            db_rec = Recommendation(
+                farm_id=f.id,
+                species_id=rec["species_id"],
+                rank_overall=rec["rank_overall"],
+                score_mcda=rec["score_mcda"],
+                key_reasons=rec["key_reasons"],
+                # exclusions=rec.get("exclusions", []) # Not completed
+            )
+            all_db_recs.append(db_rec)
 
-        # return await build_payload_for_farm(db, farm_id)
-        # recommendations = await asyncio.to_thread(build_payload_for_farm, db, farm_id)
-        # return recommendations
-    except TypeError:
-        raise Exception
+        batch_results.append({"farm_id": f.id, "recommendations": formatted_recs})
+    if all_db_recs:
+        db.add_all(all_db_recs)
+        await db.commit()
+    return batch_results

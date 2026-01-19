@@ -1,5 +1,5 @@
 import pytest
-from suitability_scoring.scoring.scoring import numerical_range_score
+from suitability_scoring.scoring import numerical_range_score
 
 
 def test_numerical_range_inclusive_bounds():
