@@ -70,7 +70,9 @@ def test_task7_filters_species_by_rainfall_id_schema():
     # -----------------------
     excluded_item = next(e for e in out["excluded_species"] if e["id"] == 2)
     assert "reasons" in excluded_item
-    assert any("excluded: rainfall below minimum" in r for r in excluded_item["reasons"])
+    assert any(
+        "excluded: rainfall below minimum" in r for r in excluded_item["reasons"]
+    )
 
 
 def test_task10_allows_dynamic_rule_with_direct_columns_no_code_change():
@@ -93,8 +95,18 @@ def test_task10_allows_dynamic_rule_with_direct_columns_no_code_change():
     # Add a custom species column "temp_threshold"
     species_df = pd.DataFrame(
         [
-            {"id": 10, "species_name": "S1", "species_common_name": "S1", "temp_threshold": 15},
-            {"id": 11, "species_name": "S2", "species_common_name": "S2", "temp_threshold": 25},
+            {
+                "id": 10,
+                "species_name": "S1",
+                "species_common_name": "S1",
+                "temp_threshold": 15,
+            },
+            {
+                "id": 11,
+                "species_name": "S2",
+                "species_common_name": "S2",
+                "temp_threshold": 25,
+            },
         ]
     )
 
@@ -119,11 +131,16 @@ def test_task10_allows_dynamic_rule_with_direct_columns_no_code_change():
     assert 11 not in out["candidate_ids"]
 
     excluded_item = next(e for e in out["excluded_species"] if e["id"] == 11)
-    assert any("excluded: temperature not above threshold" in r for r in excluded_item["reasons"])
+    assert any(
+        "excluded: temperature not above threshold" in r
+        for r in excluded_item["reasons"]
+    )
     # include_values=True should add context
     assert any("farm=20" in r for r in excluded_item["reasons"])
 
     # -------------------------
+
+
 # Task 12 - Unit Tests
 # -------------------------
 

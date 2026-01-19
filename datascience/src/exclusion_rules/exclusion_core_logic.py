@@ -13,6 +13,26 @@ Updates included:
 - Task 8: Add annotation logic (more specific, readable reasons)
 - Task 9: Handle missing data (explicitly enforced; no exclusion on missing values)
 - Task 10: Make it configurable (support direct column names in config rules)
+
+# NOTES:
+# Exclusion_criteria.xlsx includes some narrative/text rules.
+# In this sprint we do not parse text-only rules.
+# Exclusions are driven by structured datasets only.
+# Missing values are skipped to avoid accidental exclusion when data is incomplete.
+
+# Notes on missing vs valid values handling:
+#
+# - Blank / NA-like values (e.g. "", "NA", "N/A", "null", None) are treated as MISSING
+#   and will cause the rule to be skipped (no exclusion).
+#
+# - False is considered a VALID value and may trigger exclusion
+#   (e.g. habitat flags such as coastal / riparian).
+#
+# - 0 is considered a VALID numeric value and will be evaluated normally
+#   in numeric comparisons (e.g. rainfall, temperature, elevation).
+#
+# This design avoids accidental exclusion when datasets are incomplete,
+# while still respecting explicit negative constraints in the data.
 """
 
 from dataclasses import dataclass
@@ -59,41 +79,92 @@ SPECIES_COL = {
 # ============================================================
 
 RULES: List[Dict[str, Any]] = [
-    {"id": "rain_min", "farm": "rainfall", "op": ">=", "species": "rain_min",
-     "reason": "excluded: rainfall below minimum"},
-    {"id": "rain_max", "farm": "rainfall", "op": "<=", "species": "rain_max",
-     "reason": "excluded: rainfall above maximum"},
-
-    {"id": "temp_min", "farm": "temperature", "op": ">=", "species": "temp_min",
-     "reason": "excluded: temperature below minimum"},
-    {"id": "temp_max", "farm": "temperature", "op": "<=", "species": "temp_max",
-     "reason": "excluded: temperature above maximum"},
-
-    {"id": "elev_min", "farm": "elevation", "op": ">=", "species": "elev_min",
-     "reason": "excluded: elevation below minimum"},
-    {"id": "elev_max", "farm": "elevation", "op": "<=", "species": "elev_max",
-     "reason": "excluded: elevation above maximum"},
-
-    {"id": "ph_min", "farm": "ph", "op": ">=", "species": "ph_min",
-     "reason": "excluded: pH below minimum"},
-    {"id": "ph_max", "farm": "ph", "op": "<=", "species": "ph_max",
-     "reason": "excluded: pH above maximum"},
-
-    {"id": "soil_texture", "farm": "soil", "op": "in_set", "species": "soil_pref",
-     "reason": "excluded: soil texture not supported"},
-
+    {
+        "id": "rain_min",
+        "farm": "rainfall",
+        "op": ">=",
+        "species": "rain_min",
+        "reason": "excluded: rainfall below minimum",
+    },
+    {
+        "id": "rain_max",
+        "farm": "rainfall",
+        "op": "<=",
+        "species": "rain_max",
+        "reason": "excluded: rainfall above maximum",
+    },
+    {
+        "id": "temp_min",
+        "farm": "temperature",
+        "op": ">=",
+        "species": "temp_min",
+        "reason": "excluded: temperature below minimum",
+    },
+    {
+        "id": "temp_max",
+        "farm": "temperature",
+        "op": "<=",
+        "species": "temp_max",
+        "reason": "excluded: temperature above maximum",
+    },
+    {
+        "id": "elev_min",
+        "farm": "elevation",
+        "op": ">=",
+        "species": "elev_min",
+        "reason": "excluded: elevation below minimum",
+    },
+    {
+        "id": "elev_max",
+        "farm": "elevation",
+        "op": "<=",
+        "species": "elev_max",
+        "reason": "excluded: elevation above maximum",
+    },
+    {
+        "id": "ph_min",
+        "farm": "ph",
+        "op": ">=",
+        "species": "ph_min",
+        "reason": "excluded: pH below minimum",
+    },
+    {
+        "id": "ph_max",
+        "farm": "ph",
+        "op": "<=",
+        "species": "ph_max",
+        "reason": "excluded: pH above maximum",
+    },
+    {
+        "id": "soil_texture",
+        "farm": "soil",
+        "op": "in_set",
+        "species": "soil_pref",
+        "reason": "excluded: soil texture not supported",
+    },
     # Habitat rules: only apply if farm flag == True.
     # If farm flag missing => skip rule safely.
-    {"id": "coastal_habitat", "farm": "coastal_flag", "op": "requires_true", "species": "coastal_ok",
-     "reason": "excluded: not suitable for coastal habitat"},
-    {"id": "riparian_habitat", "farm": "riparian_flag", "op": "requires_true", "species": "riparian_ok",
-     "reason": "excluded: not suitable for riparian habitat"},
+    {
+        "id": "coastal_habitat",
+        "farm": "coastal_flag",
+        "op": "requires_true",
+        "species": "coastal_ok",
+        "reason": "excluded: not suitable for coastal habitat",
+    },
+    {
+        "id": "riparian_habitat",
+        "farm": "riparian_flag",
+        "op": "requires_true",
+        "species": "riparian_ok",
+        "reason": "excluded: not suitable for riparian habitat",
+    },
 ]
 
 
 # ============================================================
 # 3) Dependency model (name-based, flexible parser)
 # ============================================================
+
 
 @dataclass(frozen=True)
 class DependencyRule:
@@ -103,12 +174,40 @@ class DependencyRule:
 
 
 def _norm_str(x: Any) -> Optional[str]:
-    if x is None:
+    if _is_missing_value(x):
         return None
     s = str(x).strip()
-    if not s or s.lower() in {"nan", "none"}:
-        return None
     return s
+
+
+# -------------------------------
+# Task 9 (clarification): strict missing handling
+# -------------------------------
+def _is_missing_value(x: Any) -> bool:
+    """
+    Treat only true missing values as missing.
+    - Missing => None / blank string / NA-like strings
+    - NOT missing => False / 0 (both are meaningful)
+    """
+    if x is None:
+        return True
+
+    # False is meaningful
+    if isinstance(x, bool):
+        return False
+
+    # 0 is meaningful
+    if isinstance(x, (int, float)):
+        return False
+
+    s = str(x).strip()
+    if s == "":
+        return True
+
+    if s.lower() in {"nan", "none", "na", "n/a", "null"}:
+        return True
+
+    return False
 
 
 def _to_bool(x: Any) -> Optional[bool]:
@@ -122,6 +221,11 @@ def _to_bool(x: Any) -> Optional[bool]:
         if x == 0:
             return False
         return None
+
+    # New: treat blank/NA-like strings as missing (skip)
+    if _is_missing_value(x):
+        return None
+
     s = str(x).strip().lower()
     if s in {"true", "yes", "y", "1"}:
         return True
@@ -131,7 +235,7 @@ def _to_bool(x: Any) -> Optional[bool]:
 
 
 def _to_float(x: Any) -> Optional[float]:
-    if x is None:
+    if _is_missing_value(x):
         return None
     try:
         return float(x)
@@ -331,6 +435,7 @@ def parse_dependencies_rows(
 # 4) Core function (records-based)
 # ============================================================
 
+
 def run_exclusion_rules_records(
     farm_data: Dict[str, Any],
     species_rows: List[Dict[str, Any]],
@@ -359,7 +464,9 @@ def run_exclusion_rules_records(
     # -------------------------------
     # Task 8: Annotation config
     # -------------------------------
-    annotation_cfg = cfg.get("annotation", {}) if isinstance(cfg.get("annotation", {}), dict) else {}
+    annotation_cfg = (
+        cfg.get("annotation", {}) if isinstance(cfg.get("annotation", {}), dict) else {}
+    )
     include_values = bool(annotation_cfg.get("include_values", False))
 
     excluded: List[Dict[str, Any]] = []
@@ -409,7 +516,9 @@ def run_exclusion_rules_records(
                 # Task 8: richer annotation
                 # -------------------------------
                 reasons.append(
-                    _format_reason(rule, farm_val, sp_val, include_values=include_values)
+                    _format_reason(
+                        rule, farm_val, sp_val, include_values=include_values
+                    )
                 )
 
         if reasons:
@@ -452,7 +561,9 @@ def run_exclusion_rules_records(
                     excluded_by_id[focal_id] = {
                         "id": focal_id,
                         "species_name": sp.get(SPECIES_COL["species_name"]),
-                        "species_common_name": sp.get(SPECIES_COL["species_common_name"]),
+                        "species_common_name": sp.get(
+                            SPECIES_COL["species_common_name"]
+                        ),
                         "reasons": [dep.reason],
                     }
 

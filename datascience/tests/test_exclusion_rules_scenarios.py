@@ -55,8 +55,18 @@ def test_task11_dynamic_operator_rule_temperature_gt_15():
     # farm_val vs species_val without any hard-coded logic.
     species_df = _simple_species_df(
         [
-            {"id": 101, "species_name": "S1", "species_common_name": "S1", "temp_threshold": 15},
-            {"id": 102, "species_name": "S2", "species_common_name": "S2", "temp_threshold": 25},
+            {
+                "id": 101,
+                "species_name": "S1",
+                "species_common_name": "S1",
+                "temp_threshold": 15,
+            },
+            {
+                "id": 102,
+                "species_name": "S2",
+                "species_common_name": "S2",
+                "temp_threshold": 25,
+            },
         ]
     )
 
@@ -81,7 +91,10 @@ def test_task11_dynamic_operator_rule_temperature_gt_15():
     assert 102 not in out["candidate_ids"]
 
     excluded_102 = next(e for e in out["excluded_species"] if e["id"] == 102)
-    assert any("excluded: temperature not above threshold" in r for r in excluded_102["reasons"])
+    assert any(
+        "excluded: temperature not above threshold" in r
+        for r in excluded_102["reasons"]
+    )
 
 
 # ------------------------------------------------------------
@@ -93,7 +106,11 @@ def test_species_with_no_dependencies_stays_candidate():
     species_df = _simple_species_df(
         [
             {"id": 201, "species_name": "Acacia", "species_common_name": "Acacia"},
-            {"id": 202, "species_name": "Eucalyptus", "species_common_name": "Eucalyptus"},
+            {
+                "id": 202,
+                "species_name": "Eucalyptus",
+                "species_common_name": "Eucalyptus",
+            },
         ]
     )
 
@@ -117,7 +134,11 @@ def test_single_dependency_excludes_when_no_partner_present():
     # Only "Santalum album" is present, but none of its required partners are present
     species_df = _simple_species_df(
         [
-            {"id": 301, "species_name": "Santalum album", "species_common_name": "Sandalwood"},
+            {
+                "id": 301,
+                "species_name": "Santalum album",
+                "species_common_name": "Sandalwood",
+            },
         ]
     )
 
@@ -149,7 +170,11 @@ def test_single_dependency_passes_when_partner_present():
     # Now include one valid partner (Acacia)
     species_df = _simple_species_df(
         [
-            {"id": 401, "species_name": "Santalum album", "species_common_name": "Sandalwood"},
+            {
+                "id": 401,
+                "species_name": "Santalum album",
+                "species_common_name": "Sandalwood",
+            },
             {"id": 402, "species_name": "Acacia", "species_common_name": "Acacia"},
         ]
     )
