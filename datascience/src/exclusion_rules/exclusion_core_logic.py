@@ -57,8 +57,8 @@ FARM_COL = {
 
 SPECIES_COL = {
     "id": "id",
-    "species_name": "species_name",
-    "species_common_name": "species_common_name",
+    "species_name": "name",
+    "species_common_name": "common_name",
     "rain_min": "rainfall_mm_min",
     "rain_max": "rainfall_mm_max",
     "temp_min": "temperature_celsius_min",
@@ -67,7 +67,7 @@ SPECIES_COL = {
     "elev_max": "elevation_m_max",
     "ph_min": "ph_min",
     "ph_max": "ph_max",
-    "soil_pref": "preferred_soil_texture",
+    "soil_pref": "soil_textures",
     # habitat flags
     "coastal_ok": "costal",
     "riparian_ok": "riparian",
@@ -247,11 +247,18 @@ def _parse_set(val: Any) -> Optional[Set[str]]:
     """
     Parse soil / partner lists.
     Supports:
+      - Iterables: list/tuple/set -> returns set of stripped strings
       - "Loam, Clay" / "Loam;Clay" / "Loam / Clay"
       - single string
     """
     if val is None:
         return None
+
+    # If it's already an iterable of values (but not a string), convert directly
+    if isinstance(val, (list, tuple, set)):
+        parts = {str(x).strip() for x in val if str(x).strip()}
+        return parts
+
     s = str(val).strip()
     if not s or s.lower() == "nan":
         return None
