@@ -8,6 +8,18 @@
     {
       "files": ["**/*.scss"],
       "customSyntax": "postcss-scss"
+    },
+    {
+      "files": ["src/style.css", "src/home.css"],
+      "rules": {
+        "selector-class-pattern": null,
+        "color-named": null,
+        "declaration-property-value-disallowed-list": null,
+        "selector-no-qualifying-type": null,
+        "property-no-vendor-prefix": null,
+        "@stylistic/function-parentheses-space-inside": null,
+        "@stylistic/string-quotes": null
+      }
     }
   ],
   "rules": {
@@ -15,15 +27,6 @@
     "no-descending-specificity": null,
     "max-nesting-depth": 2,
     "selector-max-id": 1,
-    "order/properties-alphabetical-order": true,
-
-    "selector-class-pattern": null,
-    "color-named": null,
-    "declaration-property-value-disallowed-list": null,
-    "selector-no-qualifying-type": null,
-    "property-no-vendor-prefix": null,
-
-    "@stylistic/function-parentheses-space-inside": null,
-    "@stylistic/string-quotes": null
+    "order/properties-alphabetical-order": true
   }
 }
