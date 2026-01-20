@@ -121,6 +121,20 @@ html {
   width: 44px;
 }
 
+.aboutLogoContainer {
+  align-items: center;
+  display: flex;
+  gap: 15px;
+  transform: translateY(5px);
+}
+
+.aboutLogo {
+  border-radius: 50%;
+  height: 50px;
+  object-fit: cover;
+  width: 50px;
+}
+
 .nav {
   display: flex;
   gap: 28px;
