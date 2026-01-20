@@ -1,5 +1,7 @@
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domains.suitability_scoring import SuitabilityFarm
+from src.services.species import get_species_by_ids, get_exclusion_config
 from src.services.species_parameters import get_species_parameters_as_dicts
 from suitability_scoring import (
     calculate_suitability,
@@ -7,6 +9,8 @@ from suitability_scoring import (
     build_rules_dict,
     build_species_recommendations,
 )
+from exclusion_rules.exclusion_core_logic import run_exclusion_rules_records
+from exclusion_rules.dummy_run import run_exclusion_rules
 from src.models.recommendations import Recommendation
 
 
@@ -20,6 +24,19 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
     params_dict = build_species_params_dict(species_params_rows, cfg)
     optimised_rules = build_rules_dict(species_dicts, params_dict, cfg)
 
+    # Select the exclusion function
+    # Place here and not in the recommendation router because this config file should
+    # be merged with the recommendation config file
+    exclusion_cfg = get_exclusion_config()
+
+    enable_exclusion = cfg.get("enable_exclusions", True)
+    exclusion_runner = (
+        run_exclusion_rules_records if enable_exclusion else run_exclusion_rules
+    )
+
+    # Get timestamp of execution
+    timestamp_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+
     batch_results = []
     all_db_recs = []
 
@@ -27,10 +44,19 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
         # Using the domain model
         farm_profile = SuitabilityFarm.from_db_model(f)
 
+        # Determine which trees are valid candidates vs excluded
+        exclusions = exclusion_runner(
+            farm_profile.model_dump(), species_dicts, exclusion_cfg
+        )
+
+        # Get species information from database
+        candidate_species = await get_species_by_ids(db, exclusions["candidate_ids"])
+        candidate_species_dicts = [s.model_dump() for s in candidate_species]
+
         # Run the engine
         result_list, _ = calculate_suitability(
             farm_data=farm_profile.model_dump(),
-            species_list=species_dicts,
+            species_list=candidate_species_dicts,
             optimised_rules=optimised_rules,
             cfg=cfg,
         )
@@ -46,8 +72,15 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
                 # exclusions=rec.get("exclusions", []) # Not completed
             )
             all_db_recs.append(db_rec)
+        batch_results.append(
+            {
+                "farm_id": f.id,
+                "timestamp_utc": timestamp_utc,
+                "recommendations": formatted_recs,
+                "excluded_species": exclusions["excluded_species"],
+            }
+        )
 
-        batch_results.append({"farm_id": f.id, "recommendations": formatted_recs})
     if all_db_recs:
         db.add_all(all_db_recs)
         await db.commit()
