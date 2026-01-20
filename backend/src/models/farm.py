@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .agroforestry_type import AgroforestryType
     from .boundaries import FarmBoundary
     from .user import User
+    from .recommendations import Recommendation
 
 
 class Farm(Base):
@@ -68,6 +69,10 @@ class Farm(Base):
         back_populates="farm",
         uselist=False,  # Apparently critical for 1:1
         cascade="all, delete-orphan",
+    )
+
+    recommendations: Mapped[list["Recommendation"]] = relationship(
+        back_populates="farm", cascade="all, delete-orphan"
     )
 
     # Links farm owner/user to farm (1:1)

@@ -107,8 +107,30 @@ jobs:
     - name: Apply Alembic Migrations
       run: |
         uv run alembic upgrade head
+
+    # 5. Seed reference data
+    - name: Seed Reference Data
+      run: |
+        PSQL_URI="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+        psql $PSQL_URI -c "INSERT INTO soil_textures (id, name) VALUES (1, 'Sandy'), (2, 'Loamy'), (4, 'Clay') ON CONFLICT DO NOTHING;"
     
-    # 5. LINT AND FORMAT
+    # 5. REPLICATE DATABASE FOR TESTS
+    - name: Create pot_test_db from Template
+      run: |
+        # Define the URI for the main database
+        PSQL_ROOT="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/postgres"
+        
+        # Force close connections and clone
+        psql $PSQL_ROOT -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'pot_test_db';"
+        psql $PSQL_ROOT -c "DROP DATABASE IF EXISTS pot_test_db;"
+        psql $PSQL_ROOT -c "CREATE DATABASE pot_test_db WITH TEMPLATE \"POT_db\";"
+
+    - name: Sync Sequences on Test DB
+      run: |
+        PSQL_TEST="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/pot_test_db"
+        psql $PSQL_TEST -c "DO \$\$ DECLARE r RECORD; BEGIN FOR r IN (SELECT table_name, column_name FROM information_schema.columns WHERE column_default LIKE 'nextval%' AND table_schema = 'public') LOOP EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''' || r.column_name || '''), COALESCE(MAX(' || r.column_name || '), 1)) FROM ' || r.table_name; END LOOP; END \$\$;"
+    
+    # 6. LINT AND FORMAT
     - name: Lint with ruff
       run: |
         uv run ruff check .
@@ -117,7 +139,8 @@ jobs:
       run: |
         uv run ruff format --check .
     
-    # 6. RUN TESTS
+    # 7. RUN TESTS
     - name: Test with pytest
       run: |
+        export DATABASE_URL="postgresql+asyncpg://postgres:devpassword@localhost:5432/pot_test_db"
         uv run pytest

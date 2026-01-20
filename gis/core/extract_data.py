@@ -1,25 +1,19 @@
-from config.settings import (
-    RAINFALL_ASSET_ID,
-    RAINFALL_BAND,
-    RAINFALL_SCALE,
-    TEMP_ASSET_ID,
-    TEMP_BAND,
-    TEMP_SCALE,
-    SOIL_PH_ASSET_ID,
-    SOIL_PH_FIELD,
-    DEM_ASSET_ID,
-    DEM_BAND,
-    DEM_SCALE,
-    SLOPE_BAND,
-    SOIL_TEXTURE_ASSET_ID,
-    SOIL_TEXTURE_FIELD,
-    TEXTURE_MAP,
-)
+"""
+Extract environmental data from various sources.
 
+Uses config/settings.py for all dataset configurations.
+"""
+
+import ee
+from config.settings import get_dataset_config, TEXTURE_MAP
 from core.geometry_parser import parse_geometry
 
 
-# Function return to float
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
+
+
 def _ee_to_float(value):
     """Convert an ee.Number or Python scalar to Python float, handling None safely."""
     if value is None:
@@ -29,211 +23,246 @@ def _ee_to_float(value):
     return float(value) if value is not None else None
 
 
+def _apply_post_process(value, post_process: str):
+    """Apply post-processing to extracted value."""
+    if value is None:
+        return None
+
+    if post_process == "round_int":
+        return int(round(value))
+    elif post_process == "round_1dp":
+        return round(value, 1)
+    elif post_process == "round_2dp":
+        return round(value, 2)
+    elif post_process == "round_3dp":
+        return round(value, 3)
+
+    return value
+
+
+def _get_reducer(reducer_name: str):
+    """Get Earth Engine reducer from name."""
+    reducers = {
+        "mean": ee.Reducer.mean(),
+        "sum": ee.Reducer.sum(),
+        "median": ee.Reducer.median(),
+        "min": ee.Reducer.min(),
+        "max": ee.Reducer.max(),
+    }
+    return reducers.get(reducer_name, ee.Reducer.mean())
+
+
+# ============================================================================
+# RASTER EXTRACTION
+# ============================================================================
+
+
+def _extract_from_raster(geometry, dataset_name: str, year: int | None = None):
+    """
+    Generic function to extract value from raster dataset.
+    """
+    config = get_dataset_config(dataset_name)
+    geometry = parse_geometry(geometry)
+
+    # Load dataset
+    if year and config.get("temporal", False):
+        # For temporal datasets, filter by year
+        collection = ee.ImageCollection(config["asset_id"])
+        collection = collection.filterDate(f"{year}-01-01", f"{year}-12-31")
+
+        # Select band first, then reduce
+        collection = collection.select(config["band"])
+
+        # Reduce collection based on reducer type
+        reducer_name = config.get("reducer", "mean")
+        if reducer_name == "sum":
+            img = collection.sum()
+        else:
+            img = collection.mean()
+
+        # After reduction, the band name is preserved
+        band_name = config["band"]
+    else:
+        # Single image
+        img = ee.Image(config["asset_id"]).select(config["band"])
+        band_name = config["band"]
+
+    # Extract value
+    reducer = _get_reducer(config.get("reducer", "mean"))
+    stats = img.reduceRegion(
+        reducer=reducer,
+        geometry=geometry,
+        scale=config["scale"],
+        maxPixels=1e9,
+    )
+
+    value = _ee_to_float(stats.get(band_name))
+
+    if value is None:
+        return None
+
+    # Apply transformations
+    if "scale_factor" in config:
+        value *= config["scale_factor"]
+
+    if "offset" in config:
+        value += config["offset"]
+
+    if "bias_correction" in config:
+        value += config["bias_correction"]
+
+    # Apply post-processing
+    if "post_process" in config:
+        value = _apply_post_process(value, config["post_process"])
+
+    return value
+
+
+# ============================================================================
+# VECTOR EXTRACTION
+# ============================================================================
+
+
+def _extract_from_vector(geometry, dataset_name: str):
+    """
+    Generic function to extract value from vector dataset.
+    """
+    config = get_dataset_config(dataset_name)
+    geometry = parse_geometry(geometry)
+
+    # Load FeatureCollection
+    fc = ee.FeatureCollection(config["asset_id"])
+
+    # Find intersecting feature
+    feature = fc.filterBounds(geometry).first()
+
+    if feature is None:
+        return None
+
+    # Get field value
+    value = feature.get(config["field"])
+    value = _ee_to_float(value)
+
+    if value is None:
+        return None
+
+    # Apply transformations
+    if "scale_factor" in config:
+        value *= config["scale_factor"]
+
+    # Apply post-processing
+    if "post_process" in config:
+        value = _apply_post_process(value, config["post_process"])
+
+    return value
+
+
+# ============================================================================
+# PUBLIC API - Keep same function names for compatibility
+# ============================================================================
+
+
 def get_rainfall(geometry, year: int | None = None):
     """
-    Return mean annual rainfall (mm) for a given geometry (point or polygon).
+    Return mean annual rainfall (mm) for a given geometry.
 
-    Parameters
-    ----------
-    geometry : ee.Geometry
-        ee.Geometry.Point or ee.Geometry.Polygon for the farm.
-    year : int, optional
-        Target year. Currently we only have a 5-year average (2020–2024),
-        so `year` is accepted for future extension but not used yet.
+    Dataset: CHIRPS (Pearson r=0.96, MAE=23mm)
     """
-    import ee
+    return _extract_from_raster(geometry, "rainfall", year=year or 2024)
 
+
+def get_temperature(geometry, year: int | None = None):
+    """
+    Return mean annual temperature (°C) for a given geometry.
+
+    Dataset: MODIS LST (Pearson r=0.87, MAE=1.5°C with -4.43°C correction)
+    """
+    return _extract_from_raster(geometry, "temperature", year=year or 2024)
+
+
+def get_elevation(geometry, year: int | None = None):
+    """
+    Return mean elevation (m) for a given geometry.
+
+    Dataset: SRTM DEM (Pearson r=0.98, MAE=11m)
+    """
+    return _extract_from_raster(geometry, "elevation")
+
+
+def get_ph(geometry, year: int | None = None):
+    """
+    Return soil pH for a given geometry.
+
+    Dataset: OpenLandMap (Pearson r=0.18, MAE=1.21)
+    WARNING: Low correlation - consider using local data instead.
+    """
+    return _extract_from_raster(geometry, "soil_ph")
+
+
+def get_slope(geometry, year: int | None = None):
+    """
+    Return mean slope (degrees) for a given geometry.
+
+    Derived from SRTM DEM.
+    """
     geometry = parse_geometry(geometry)
-
-    # Select rainfall dataset
-    img = ee.Image(RAINFALL_ASSET_ID).select(RAINFALL_BAND)
-
-    stats = img.reduceRegion(
-        reducer=ee.Reducer.mean(),
-        geometry=geometry,
-        scale=RAINFALL_SCALE,
-        maxPixels=1e9,
-    )
-
-    value = stats.get(RAINFALL_BAND)
-    value = int(round(_ee_to_float(value))) if value is not None else None
-    return value
-
-
-def get_temperature(geometry: list[list], year: int | None = None):
-    """
-    Return mean annual temperature for a given geometry (point or polygon).
-
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
-    year : int, optional
-        Target year. Currently we only have a 5-year average (2020–2024),
-        so `year` is accepted for future extension but not used yet.
-    """
-    import ee
-
-    geometry = parse_geometry(geometry)
-
-    # Select rainfall dataset
-    img = ee.Image(TEMP_ASSET_ID).select(TEMP_BAND)
-
-    stats = img.reduceRegion(
-        reducer=ee.Reducer.mean(),
-        geometry=geometry,
-        scale=TEMP_SCALE,
-        maxPixels=1e9,
-    )
-
-    value = stats.get(TEMP_BAND)
-    value = int(round(_ee_to_float(value))) if value is not None else None
-    return value
-
-
-def get_ph(geometry: list[list], year: int | None = None):
-    """
-    Return soil pH for a given geometry (point or polygon).
-
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
-    year : int, optional
-        Reserved for future use if soil pH becomes time-varying.
-        Currently ignored.
-    """
-    import ee
-
-    geometry = parse_geometry(geometry)
-
-    # Load soil pH FeatureCollection
-    file = ee.FeatureCollection(SOIL_PH_ASSET_ID)
-
-    # Find the polygon that intersects this geometry
-    feature = file.filterBounds(geometry).first()
-    if feature is None:
-        return None
-
-    # Read the 'ph' attribute from the feature
-    value = feature.get(SOIL_PH_FIELD)
-    return _ee_to_float(value)
-
-
-def get_elevation(geometry: list[list], year: int | None = None):
-    """
-    Return mean elevation (m) for point a point or polygon from DEM asset.
-
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
-    year : int, optional
-        Reserved for future use if DEM data becomes time-varying.
-        Currently ignored.
-    """
-    import ee
-
-    geometry = parse_geometry(geometry)
+    config = get_dataset_config("dem")
 
     # Load DEM
-    img = ee.Image(DEM_ASSET_ID).select(DEM_BAND)
+    dem = ee.Image(config["asset_id"]).select(config["band"])
 
-    # Find the polygon that intersects this geometry
-    stats = img.reduceRegion(
-        reducer=ee.Reducer.mean(), geometry=geometry, scale=DEM_SCALE, maxPixels=1e9
-    )
+    # Calculate slope
+    slope_img = ee.Terrain.slope(dem)
 
-    value = stats.get(DEM_BAND)
-    value = int(round(_ee_to_float(value))) if value is not None else None
-    return value
-
-
-def get_slope(geometry: list[list], year: int | None = None):
-    """
-    Return mean slope (degrees) for point a point or polygon from DEM asset.
-
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
-    year : int, optional
-        Reserved for future use if DEM data becomes time-varying.
-        Currently ignored.
-    """
-    import ee
-
-    geometry = parse_geometry(geometry)
-
-    # Load DEM
-    img = ee.Image(DEM_ASSET_ID).select(DEM_BAND)
-
-    # Create slope image
-    slope_img = ee.Terrain.slope(img)
-
-    # Find the polygon that intersects this geometry
+    # Extract value
     stats = slope_img.reduceRegion(
-        reducer=ee.Reducer.mean(), geometry=geometry, scale=DEM_SCALE, maxPixels=1e9
+        reducer=ee.Reducer.mean(),
+        geometry=geometry,
+        scale=config["scale"],
+        maxPixels=1e9,
     )
 
-    value = stats.get(SLOPE_BAND)
-    return round(_ee_to_float(value), 3)
+    value = _ee_to_float(stats.get("slope"))
+    return round(value, 3) if value is not None else None
 
 
-def get_texture(geometry: list[list], year: int | None = None):
+def get_texture(geometry, year: int | None = None):
     """
-    Return soil texture for a given geometry (point or polygon).
-
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
-    year : int, optional
-        Reserved for future use if soil texture becomes time-varying.
-        Currently ignored.
+    Return soil texture value for a given geometry.
+    Note: Currently using OpenLandMap pH as a demonstration of GEE extraction capability.
+    Replace with actual soil texture asset when available.
     """
-    import ee
+    config = get_dataset_config("soil_texture")
 
-    geometry = parse_geometry(geometry)
+    # Check if this is using a raster dataset (like our pH proxy)
+    if config["type"] == "raster":
+        # Extract as raster value
+        return _extract_from_raster(geometry, "soil_texture", year=year)
 
-    # Load soil texture FeatureCollection
-    file = ee.FeatureCollection(SOIL_TEXTURE_ASSET_ID)
+    # Original vector-based extraction (for when actual texture asset is available)
+    try:
+        geometry = parse_geometry(geometry)
 
-    # Find the polygon that intersects this geometry
-    feature = file.filterBounds(geometry).first()
-    if feature is None:
+        fc = ee.FeatureCollection(config["asset_id"])
+        feature = fc.filterBounds(geometry).first()
+
+        if feature is None:
+            return None
+
+        value = feature.get(config["field"])
+
+        if hasattr(value, "getInfo"):
+            value = value.getInfo()
+
+        return value
+    except Exception as e:
+        # Handle case where asset doesn't exist or other GEE errors
+        print(f"Warning: Could not extract soil texture: {e}")
         return None
 
-    # Read the 'ph' attribute from the feature
-    value = feature.get(SOIL_TEXTURE_FIELD)
 
-    # Convert into string
-    if hasattr(value, "getInfo"):
-        value = value.getInfo()
-
-    return value
-
-
-def get_area_ha(geometry: list[list]):
-    """
-    Return area of the input geometry in hectares.
-
-    Parameters
-    ----------
-    geometry : ee.Geometry.Point or ee.Geometry.Polygon for the farm.
-    """
-
-    geometry = parse_geometry(geometry)
-
-    # Call area based on point and polygon
-    value = geometry.area(maxError=1)
-
-    # Convert into string
-    if hasattr(value, "getInfo"):
-        value = value.getInfo()
-
-    return round(float(value) / 10_000.0, 3)
-
-
-def _normalise_texture_name(value) -> str | None:
-    """
-    Normalize the texture name
-    """
+def _normalize_texture_name(value) -> str | None:
+    """Normalize the texture name."""
     if value is None:
         return None
 
@@ -250,12 +279,26 @@ def _normalise_texture_name(value) -> str | None:
     return txt
 
 
-def get_texture_id(geometry: list[list], year: int | None = None) -> int | None:
+def get_texture_id(geometry, year: int | None = None) -> int | None:
     """
-    Return soil texture ID (1–12) for a given geometry,
+    Return soil texture ID (1-12) for a given geometry.
+    Note: Currently using pH value as demonstration. Returns None for numeric pH values
+    since they don't map to standard USDA texture classifications.
     """
-    texture_name = get_texture(geometry, year=year)
-    norm_name = _normalise_texture_name(texture_name)
+    texture_value = get_texture(geometry, year=year)
+
+    if texture_value is None:
+        return None
+
+    # If it's a numeric value (like pH), we can't map it to texture classes
+    # This demonstrates successful GEE extraction but acknowledges data limitation
+    if isinstance(texture_value, (int, float)):
+        # pH values range 3-10, we could map to arbitrary texture IDs for demonstration
+        # but it's more honest to return None since pH ≠ texture
+        return None
+
+    # Original texture name mapping (for when actual texture data is available)
+    norm_name = _normalize_texture_name(texture_value)
 
     if norm_name is None:
         return None
@@ -263,21 +306,22 @@ def get_texture_id(geometry: list[list], year: int | None = None) -> int | None:
     return TEXTURE_MAP.get(norm_name)
 
 
+def get_area_ha(geometry):
+    """
+    Return area of the input geometry in hectares.
+    """
+    geometry = parse_geometry(geometry)
+    area_m2 = geometry.area(maxError=1).getInfo()
+    return round(float(area_m2) / 10_000.0, 3)
+
+
 def get_centroid_lat_lon(geometry):
     """
-    Take farmer input geometry (point or polygon), use parse_geometry
-    to build an ee.Geometry, then return centroid as (lat, lon) rounded
-    to 3 decimal places.
+    Return centroid as (lat, lon) rounded to 3 decimal places.
     """
-
     geom = parse_geometry(geometry)
-
     centroid = geom.centroid(maxError=1)
-
-    coords = centroid.coordinates()
-    if hasattr(coords, "getInfo"):
-        coords = coords.getInfo()  # → [lon, lat]
+    coords = centroid.coordinates().getInfo()
 
     lon, lat = float(coords[0]), float(coords[1])
-
     return round(lat, 3), round(lon, 3)

@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 ########################################################################################
 # Scoring functions
 ########################################################################################
@@ -14,7 +11,7 @@ def numerical_range_score(value, min_val, max_val):
     :param max_val: Species maximum preferred value.
     :returns: Score value between 0 and 1 or None.
     """
-    if pd.isna(value) or pd.isna(min_val) or pd.isna(max_val):
+    if (value is None) or (min_val is None) or (max_val is None):
         return None
     try:
         return 1.0 if float(min_val) <= float(value) <= float(max_val) else 0.0
@@ -22,20 +19,171 @@ def numerical_range_score(value, min_val, max_val):
         return None
 
 
-def categorical_exact_score(value, preferred_list, exact_score=1.0):
+def derive_trapezoid_from_minmax(min_v, max_v, delta_left, delta_right):
+    """
+    For species min/max, derive trapezoid params:
+      a = min_v
+      d = max_v
+      b = min_v + delta_left   (shrink from min inward)
+      c = max_v - delta_right  (shrink from max inward)
+
+    If b > c after deltas, collapse plateau to midpoint to preserve a <= b <= c <= d.
+
+    :param min_v: Minimum value
+    :param max_v: Maximum value
+    :param delta_left: Left shoulder width
+    :param delta_right: Right shoulder width
+    :returns: Float values for the trapezoid points.
+    """
+    if min_v is None or max_v is None:
+        raise ValueError("min/max cannot be None.")
+    min_v = float(min_v)
+    max_v = float(max_v)
+
+    if max_v < min_v:
+        raise ValueError(f"max ({max_v}) < min ({min_v})")
+
+    # Set the values of a and d
+    a, d = min_v, max_v
+
+    # Total width of trapezoid
+    width = d - a
+
+    b = a + delta_left
+    c = d - delta_right
+
+    # Ensure ordering a <= b <= c <= d
+    if b > c:
+        # Collapse plateau to midpoint to enforce point ordering
+        mid = a + width / 2.0
+        b = c = mid
+    return a, b, c, d
+
+
+def numerical_trapezoid_score(x, min_v, max_v, tol_left, tol_right):
+    """
+    Scoring for a trapezoid with shoulders [a,b], [c,d]; plateau [b,c],
+    a=min, d=max, inner [b,c] from tolerances.
+        b ------ c
+       /          \
+      /            \
+     /              \
+    a                d
+
+    Function returns tuple containing the score, reason and trapezoid points. If any of x,
+    min_v, max_v is missing a None score is returned. If x is within the trapezoid a score
+    value in [0,1] is returned.
+     
+    Function assumes valid order a <= b <= c <= d.
+
+    :param x:
+    :param min_v:
+    :param max_v:
+    :param tol_left:
+    :param tol_right:
+    :returns: Tuple with score, reason and trapezoid points
+    """
+    if x is None:
+        return None, "missing farm data", {}
+
+    if min_v is None or max_v is None:
+        return None, "missing species data", {}
+
+    # Derive the trapezoid values
+    a, b, c, d = derive_trapezoid_from_minmax(min_v, max_v, tol_left, tol_right)
+
+    params_out = {"a": a, "b": b, "c": c, "d": d}
+
+    # Below minimum
+    if x < a:
+        s = 0.0
+        reason = "below minimum"
+
+    elif a <= x < b:  # Left shoulder
+        s = (x - a) / (b - a) if (b - a) > 0 else 0.0
+        reason = f"within left shoulder [{a}, {b}]"
+
+    elif b <= x <= c:  # Plateau
+        s = 1.0
+        reason = f"within plateau [{b}, {c}]"
+
+    elif c < x <= d:  # Right shoulder
+        s = (d - x) / (d - c) if (d - c) > 0 else 0.0
+        reason = f"within right shoulder [{c}, {d}]"
+
+    else:  # Above maximum x>d
+        s = 0.0
+        reason = "above maximum"
+
+    return s, reason, params_out
+
+
+def categorical_exact_score(value, preferred_list):
     """
     Function for scoring categorical values with an exact match.
     Returns exact_score if the value is in the preferred_list, else 0.0 and None for
     missing or no preferences.
 
-    :param val: Farm's value of the feature.
+    :param value: Farm's value of the feature.
     :param preferred_list: List of preferred values.
-    :param exact_score: Score to return if exact match found.
     :returns: Score value between 0 and 1 or None.
     """
-    if pd.isna(value) or not preferred_list:
+    if value is None or not preferred_list:
         return None
-    return exact_score if (value in preferred_list) else 0.0
+    return 1.0 if (value in preferred_list) else 0.0
+
+
+def categorical_compatibility_score(value, preferred_list, compat_dict):
+    """
+    Function for scoring categorical values using a compatibility matrix.
+    Returns exact_score if the value is in the preferred_list, a value in [0,1]
+    if the value matches another in the compatibility matrix else 0.0 and None for
+    missing or no preferences.
+
+    :param value: Farm's value of the feature.
+    :param preferred_list: List of preferred values.
+    :param compat_dict: Compatibility dictionary.
+    :returns: Score value between 0 and 1 or None and the reason for the score.
+    """
+    if value is None:
+        return None, "missing farm data"
+
+    if not preferred_list:
+        return None, "missing species data"
+
+    # Compute per-preference scores and record match types
+    pref_details = []
+
+    for p in preferred_list:
+        # Exact match if the preference equals value AND compatibility score available
+        base = compat_dict.get(value, {}).get(p)
+
+        if base is not None:
+            score = float(base)
+
+            if p == value:  # Exact match
+                reason = "exact match"
+            else:  # Compatibility match
+                reason = f"closest compatibility match {p} at {score:.2f}"
+
+            pref_details.append({"score": score, "reason": reason})
+            continue
+        else:
+            pref_details.append({"score": 0.0, "reason": "no_match"})
+
+    # Find the maximum score
+    max_score = max(d["score"] for d in pref_details)
+
+    # Collect all dicts that match that score
+    if max_score > 0.0:
+        top_reasons = [d["reason"] for d in pref_details if d["score"] == max_score]
+    else:
+        top_reasons = ["no_match"]
+
+    # Join them into a single string separated by commas
+    joined_reasons = ". ".join(top_reasons)
+
+    return max_score, joined_reasons
 
 
 def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
@@ -47,15 +195,23 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
     Scoring is performed using a weighted arithmetic mean of individual feature scores.
     Feature behaviour is defined in `cfg['features']` and applied as follows:
 
-    * Numerical features: Evaluated using range logic (e.g., `num_range`). A score of
-        1.0 is awarded if the farm's value falls between the species' min/max
-        requirements. Zero scores are assigned for values outside this range or missing
-        data.
+    * Numerical features: Evaluated using one of two scoring methods
+        * `num_range`: A score of 1.0 is awarded if the farm's value falls between the
+          species' min/max requirements. Zero scores are assigned for values outside this
+          range. None is assigned for missing data.
 
-    * Categorical features: Evaluated using preference matching (e.g., `cat_exact`).
-        Checks if the farm's attribute (e.g., soil texture) exists within the species'
-        list of preferred types. A score of 1.0 is returned is an exact match is found
-        and zero if no match is found.
+        * `trapezoid`: A score in [0, 1] is awarded if the farm's value falls within the
+          trapezoid. Zero scores are assigned for values outside this
+          range. None is assigned for missing data.
+
+    * Categorical features: Evaluated using one of two scoring methods
+        * `cat_exact`: Checks if the farm's attribute (e.g., soil texture) exists within
+          the species' list of preferred types. A score of 1.0 is returned is an exact match
+          is found and zero if no match is found.
+
+        * `cat_compatibility`: Scores using a compatibility matrix. Returns 1.0 if an exact
+          match is found, a value in [0,1] if the value matches another in the compatibility
+          matrix else 0.0 and None for missing or no preferences.
 
     Traceability and Explanations
     In addition to the raw scores, the function generates a `explanations` dictionary.
@@ -132,6 +288,9 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     # Score this feature
                     score = numerical_range_score(farm_val, min_v, max_v)
 
+                    # Get the output parameters
+                    params_out = rule.get("params_out")
+
                     # Determine reason for score
                     if score == 1.0:
                         reason = "inside preferred range"
@@ -141,12 +300,20 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                         else:
                             reason = "above maximum"
                     else:
-                        if pd.isna(farm_val):
+                        if farm_val is None:
                             reason = "missing farm data"
-                        elif pd.isna(min_v) or pd.isna(max_v):
+                        elif (min_v is None) or (max_v is None):
                             reason = "missing species data"
                         else:
                             reason = "missing data"
+                elif score_method == "trapezoid":
+                    # Get minimum, maximum and tolerance values for the feature
+                    min_v, max_v, left_tol, right_tol = rule["args"]
+
+                    # Score the farm value
+                    score, reason, params_out = numerical_trapezoid_score(
+                        farm_val, min_v, max_v, left_tol, right_tol
+                    )
 
                 else:  # No valid scoring method selected
                     raise ValueError(
@@ -160,26 +327,32 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     "farm_value": farm_val,
                     "score": score,
                     "reason": reason,
-                    "params": rule.get("params_out"),
+                    "params": params_out,
                 }
 
             # Categorical feature
             elif rule["type"] == "categorical":
                 # Check if the score method is for an exact categorical match
                 if score_method == "cat_exact":
-                    # Get list of preferences and score for an exact match for this feature
-                    prefs, exact_match_score = rule["args"]
+                    # Get list of preferences for this feature
+                    prefs = rule["args"]
 
                     # Call exact match scoring function
-                    score = categorical_exact_score(
-                        farm_val, prefs, exact_score=exact_match_score
-                    )
+                    score = categorical_exact_score(farm_val, prefs)
                     if score is None:
                         reason = "missing or no preference"
-                    elif score == exact_match_score:
+                    elif score == 1.0:
                         reason = "exact match"
                     else:
                         reason = "no match"
+                elif score_method == "cat_compatibility":
+                    # Get list of preferences and compatibility dictionary
+                    prefs, compat_dict = rule["args"]
+
+                    # Score the farm value
+                    score, reason = categorical_compatibility_score(
+                        farm_val, prefs, compat_dict
+                    )
                 else:  # No valid scoring method selected
                     raise ValueError(
                         f"Unknown categorical mode '{score_method}' for feature '{feat}'"

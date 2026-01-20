@@ -15,6 +15,7 @@ from .association import (
     species_agroforestry_association,
     species_soil_texture_association,
 )
+from .parameters import Parameter
 
 
 class Species(Base):
@@ -52,30 +53,10 @@ class Species(Base):
         back_populates="species_agroforestry_type",
     )
 
-    def to_dict(self):
-        # Extract the names of the soil textures into a list of strings
-        # For recommendation logic - this matches what the DS engine expects for categorical scoring
-        soil_names = [st.name.lower() for st in self.soil_textures]
-
-        return {
-            "id": self.id,
-            "name": self.name,
-            "common_name": self.common_name,
-            "rainfall_mm_min": self.rainfall_mm_min,
-            "rainfall_mm_max": self.rainfall_mm_max,
-            "ph_min": self.ph_min,
-            "ph_max": self.ph_max,
-            "temperature_celsius_min": self.temperature_celsius_min,
-            "temperature_celsius_max": self.temperature_celsius_max,
-            "elevation_m_min": self.elevation_m_min,
-            "elevation_m_max": self.elevation_m_max,
-            "preferred_soil_texture": soil_names,
-            "coastal": self.coastal,
-            "riparian": self.riparian,
-            "nitrogen_fixing": self.nitrogen_fixing,
-            "shade_tolerant": self.shade_tolerant,
-            "bank_stabilising": self.bank_stabilising,
-        }
+    # Links a species object to parameter object
+    parameters: Mapped[list["Parameter"]] = relationship(
+        back_populates="species", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         """

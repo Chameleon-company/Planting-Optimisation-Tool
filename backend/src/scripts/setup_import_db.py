@@ -50,18 +50,20 @@ def main():
             [
                 "uv",
                 "run",
-                "dotenv",
-                "run",
-                "fastapi",
-                "dev",
-                "src/main.py",
+                "python",
+                "-m",
+                "uvicorn",
+                "src.main:app",
                 "--port",
                 "8080",
+                "--host",
+                "127.0.0.1",
             ],
             stdout=log_file,
             stderr=log_file,
             text=True,
             env=env,
+            start_new_session=True,
         )
 
     try:
@@ -73,6 +75,7 @@ def main():
         run_module("src.scripts.import_species")
         run_module("src.scripts.import_farms")
         run_module("src.scripts.import_boundaries")
+        run_module("src.scripts.import_species_parameters")
 
     except subprocess.CalledProcessError as e:
         print(f"{RED}Ingestion failed during: {e}{NC}")
