@@ -4,7 +4,7 @@ This folder contains the frontend for the Planting Optimisation Tool.
 It is a multi-page Vite + TypeScript application that provides:
 
 - A **Home** page (Landing page)
-- A **Recommendation** page
+- A **Environmental Profile** page
 - A **Sapling Calculator** page
 - A **Species** page
 
@@ -27,14 +27,14 @@ It is a multi-page Vite + TypeScript application that provides:
 Key files:
 
 - `index.html` – Home page
-- `recommendations.html` – Recommendation page (To be updated)
+- `profile.html` – Environmental Profile page (To be updated)
 - `calculator.html` – Sapling Calculator page (To be updated)
 - `species.html` – Species page (To be updated)
 
 Main TypeScript entry points:
 
 - `src/home.ts` – Home page logic (navigation)
-- `src/recommendations.ts` – Species recommendation logic (To be updated)
+- `src/profile.ts` – Environmental profile generation logic (To be updated)
 - `src/calculator.ts` – Sapling Calculator (To be updated)
 - `src/species.ts` – Searching species information based on keywords (To be updated)
 
