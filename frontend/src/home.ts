@@ -5,7 +5,7 @@ import "./home.css";
 export function initNav() {
   const path = window.location.pathname;
   let page = "home";
-  if (path.includes("recommendations.html")) page = "recommendations";
+  if (path.includes("profile.html")) page = "profile";
   else if (path.includes("calculator.html")) page = "calculator";
   else if (path.includes("species.html")) page = "species";
 
