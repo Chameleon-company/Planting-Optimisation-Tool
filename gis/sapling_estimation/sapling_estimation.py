@@ -1,47 +1,66 @@
+import geopandas as gpd
+import rasterio
+
 from slope_raster import compute_farm_slope, slope_tester
 from planting_points import generate_planting_points
 from rotation import rotate_grid, rotation_tester
 from slope_rules import apply_slope_rules
 
-# The sapling estimation function accepts the DEM and boundary data of all farms, along with the farm coordinates and spacing rules (in meters).
+# The sapling estimation function accepts the farm polygon of the input farm and the spacing rules (in meters).
 # This function is the main/orchestrator of the Sapling Estimation Feature, it calls all core functions to produce the final planting plan.
 
 
 def sapling_estimation(
-    DEM_path: str,
-    farm_boundary_path: str,
-    farm_lon: float,
-    farm_lat: float,
-    spacing_m: float,
+    farm_polygon, spacing_m: float, farm_boundary_crs="EPSG:4326", debug=False
 ):
-    # Compute slope raster for the given farm, output as farm_slope.tif
-    compute_farm_slope(
-        "DEM.tif", "farm_boundaries.gpkg", farm_lon, farm_lat, "farm_slope.tif"
-    )
-    if not slope_tester("farm_slope.tif"):  # Validate slope raster
+    # Create a GeoDataFrame
+    farm_gdf = gpd.GeoDataFrame(geometry=[farm_polygon], crs=farm_boundary_crs)
+
+    # Load DEM file
+    DEM_path = "DEM.tif"
+    with rasterio.open(DEM_path) as dem_src:
+        if dem_src.crs is None:
+            raise ValueError("ERROR: DEM data has no CRS, please check DEM file.")
+
+        # Compute slope in memory
+        slope_array, slope_transform, profile_updates = compute_farm_slope(
+            dem_src, farm_gdf
+        )
+
+        output_profile = dem_src.profile.copy()
+        output_profile.update(profile_updates)
+
+    if not slope_tester(slope_array):  # Validate slope array
         raise ValueError("ERROR: Slope raster failed validation checks.")
 
-    # Generate planting points grid, output as farm_grid.shp
-    generate_planting_points(
-        "farm_slope.tif", "farm_boundaries.gpkg", spacing_m, "farm_grid.shp"
+    # Reprojects polygon to DEM CRS and get the bounds of the farm polygon
+    farm_poly_crs = (
+        gpd.GeoSeries([farm_polygon], crs=farm_boundary_crs).to_crs(dem_src.crs).iloc[0]
+    )
+    bounds = farm_poly_crs.bounds
+
+    # Generate planting points grid
+    initial_grid = generate_planting_points(
+        farm_poly_crs, dem_src.crs, bounds, spacing_m
     )
 
-    # Rotate planting points grid, output as rotated_grid.shp
-    optimal_angle = rotate_grid(
-        "farm_grid.shp", "farm_boundaries.gpkg", spacing_m, "rotated_grid.shp"
-    )
+    # Rotate planting points grid
+    rotated_grid, optimal_angle = rotate_grid(farm_poly_crs, initial_grid, spacing_m)
     if not rotation_tester(
-        "rotated_grid.shp", "farm_grid.shp"
+        rotated_grid, initial_grid
     ):  # Validate rotated planting grid
-        raise ValueError("ERROR: Slope raster failed validation checks.")
+        raise ValueError("ERROR: Rotated grid failed validation checks.")
 
     # Apply slope rules to the planting grid
-    sapling_count = apply_slope_rules(
-        "rotated_grid.shp", "farm_slope.tif", "final_grid.shp"
-    )
+    final_grid = apply_slope_rules(slope_array, rotated_grid, slope_transform)
 
-    # Print planting plan
-    print(f"Optimal Rotation Angle: {optimal_angle}°")
-    print(f"Final Sapling Count: {sapling_count}")
+    if debug:
+        # Print planting plan
+        print(f"Optimal Rotation Angle: {optimal_angle}°")
+        print(f"Final Sapling Count: {len(final_grid)}")
 
-    return {"sapling_count": sapling_count, "optimal_angle": optimal_angle}
+        # Save the final planting grid to file
+        final_grid.to_file("final_grid.shp")
+        print(f"Final planting plan saved to {'final_grid.shp'}")
+
+    return {"sapling_count": len(final_grid), "optimal_angle": optimal_angle}
