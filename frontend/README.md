@@ -6,6 +6,7 @@ It is a multi-page Vite + TypeScript application that provides:
 - A **Home** page (Landing page)
 - A **Environmental Profile** page
 - A **Sapling Calculator** page
+- A **Agroforestry Recommendation** page
 - A **Species** page
 
 ---
@@ -29,6 +30,7 @@ Key files:
 - `index.html` – Home page
 - `profile.html` – Environmental Profile page (To be updated)
 - `calculator.html` – Sapling Calculator page (To be updated)
+- `recommendation.html` - Agroforestry Recommendation page (To be updated)
 - `species.html` – Species page (To be updated)
 
 Main TypeScript entry points:
@@ -36,6 +38,7 @@ Main TypeScript entry points:
 - `src/home.ts` – Home page logic (navigation)
 - `src/profile.ts` – Environmental profile generation logic (To be updated)
 - `src/calculator.ts` – Sapling Calculator (To be updated)
+- `src/recommendation.ts` – Agroforestry Recommendation (To be updated)
 - `src/species.ts` – Searching species information based on keywords (To be updated)
 
 Vite is configured in `vite.config.ts` to treat these HTML files as separate entry points.
