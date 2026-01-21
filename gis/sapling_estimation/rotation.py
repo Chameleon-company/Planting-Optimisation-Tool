@@ -10,12 +10,15 @@ from shapely.affinity import rotate
 
 
 def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float):
-    farm_poly_shp = gpd.GeoSeries([farm_polygon], crs=planting_grid.crs).iloc[
-        0
-    ]  # Extract farm polygon as shapely geometry
+    farm_poly_series = gpd.GeoSeries(
+        [farm_polygon], crs=planting_grid.crs
+    )  # Extract farm polygon as Geoseries
 
-    # Generate a regular grid inside planting grid bounds
-    xmin, ymin, xmax, ymax = planting_grid.total_bounds
+    # Generate a regular grid inside polygon bounds
+    xmin, ymin, xmax, ymax = farm_poly_series.total_bounds
+    farm_poly_shp = farm_poly_series.iloc[
+        0
+    ]  # Extract shapely geometry from farm polygon Geoseries
 
     # Create x and y coordinates for planting points based on 3x3 spacing_m
     xs = np.arange(xmin, xmax, spacing_m)
