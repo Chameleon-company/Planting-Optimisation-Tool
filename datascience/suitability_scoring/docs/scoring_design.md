@@ -107,6 +107,9 @@ The system applies a cascade logic: For a given tree and feature, use the values
 ### The global configuration file `recommend.yaml`
 This file contains the global default values. An example is shown below.
 ```yaml
+# Enable/disable exclusion rules
+enable_exclusions: True
+
 # Names for id columns
 ids:
   farm: id
