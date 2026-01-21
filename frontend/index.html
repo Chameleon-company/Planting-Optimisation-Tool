@@ -4,10 +4,153 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>Home | Planting Optimisation Tool</title>
   </head>
+
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/index.ts"></script>
+    <header class="topbar home-topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <img src=" assets/images/logo2.svg" alt="Logo" class="aboutLogo" />
+        </div>
+        <nav class="nav">
+          <a href="/index.html" class="nav-link active" data-page="home"
+            >Home</a
+          >
+          <a href="/profile.html" class="nav-link" data-page="profile"
+            >Environmental Profile</a
+          >
+          <a href="/calculator.html" class="nav-link" data-page="calculator"
+            >Sapling Calculator</a
+          >
+          <a
+            href="/recommendation.html"
+            class="nav-link"
+            data-page="recommendation"
+            >Agroforestry Recommendation</a
+          >
+          <a href="/species.html" class="nav-link" data-page="species"
+            >Species</a
+          >
+        </nav>
+        <div class="actions"></div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Intro/Landing Section -->
+      <section class="heroSection">
+        <video class="heroVideo" autoplay loop muted playsinline>
+          <source src=" assets/videos/herobg.mp4" type="video/mp4" />
+        </video>
+        <div class="videoOverlay"></div>
+        <div class="heroTagline">
+          <h1>Planting Optimisation Tool</h1>
+        </div>
+        <div class="heroCTA">
+          <p class="heroSubtitle">Generate your environmental profile!</p>
+          <a href="/#" class="exploreButton">Generate</a>
+        </div>
+      </section>
+
+      <!-- About Section -->
+      <section class="aboutSection">
+        <div class="aboutLeft">
+          <div class="aboutLogoContainer">
+            <img src="/assets/images/logo2.svg" alt="Logo" class="aboutLogo" />
+            <span class="aboutLogoText"
+              >A tool developed under <b><i>xpandFoundation</i></b></span
+            >
+          </div>
+        </div>
+        <div class="aboutRight">
+          <h2 class="aboutTitle">About Us</h2>
+          <p class="aboutDescription">
+            We help farmers in Timor-Leste generate their environmental profile.
+            to discover the best tree species for their land.
+          </p>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="featuresSection">
+        <div class="featuresContainer">
+          <a href="/profile.html" class="featureCard">
+            <div class="defaultContent">
+              <div class="iconWrapper"><span class="featureIcon">📍</span></div>
+              <h3 class="featureTitle">Generate environmental profile</h3>
+              <p class="featureText">
+                Provide your farm’s boundaries to automatically load
+                environmental data.
+              </p>
+            </div>
+            <div class="hoverContent">
+              <div class="hoverOverlay"></div>
+              <span class="centerButton">Explore Now</span>
+            </div>
+          </a>
+
+          <a href="/calculator.html" class="featureCard">
+            <div class="defaultContent">
+              <div class="iconWrapper"><span class="featureIcon">🔢</span></div>
+              <h3 class="featureTitle">Bulk Sapling Calculator</h3>
+              <p class="featureText">
+                Calculate exactly how many saplings you need for your farm based
+                on land size and optimal spacing.
+              </p>
+            </div>
+            <div class="hoverContent">
+              <div class="hoverOverlay"></div>
+              <span class="centerButton">Explore Now</span>
+            </div>
+          </a>
+
+          <a href="/species.html" class="featureCard">
+            <div class="defaultContent">
+              <div class="iconWrapper"><span class="featureIcon">🌳</span></div>
+              <h3 class="featureTitle">Species Information</h3>
+              <p class="featureText">
+                Access detailed information about 20 species approved by Gold
+                Standard to understand their ecological limits.
+              </p>
+            </div>
+            <div class="hoverContent">
+              <div class="hoverOverlay"></div>
+              <span class="centerButton">Explore Now</span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-col footer-brand">
+          <img src=" assets/images/logo2.svg" alt="Logo" class="aboutLogo" />
+          <div class="product">
+            <div class="product-title">Planting Optimisation Tool</div>
+            <p class="product-desc">
+              The tool helps farmers and agronomists optimise farm species,
+              soil, and sapling recommendations for maximum yield and
+              sustainability.
+            </p>
+          </div>
+        </div>
+        <div class="footer-col">
+          <div class="footer-heading">Explore</div>
+          <ul class="footer-links">
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/profile.html">Environmental Profile</a></li>
+            <li><a href="/calculator.html">Sapling Calculator</a></li>
+            <li>
+              <a href="/recommendation.html">Agroforestry Recommendation</a>
+            </li>
+            <li><a href="/species.html">Species</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/home.ts"></script>
   </body>
 </html>

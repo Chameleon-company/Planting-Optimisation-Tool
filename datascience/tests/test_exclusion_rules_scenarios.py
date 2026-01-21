@@ -57,14 +57,14 @@ def test_task11_dynamic_operator_rule_temperature_gt_15():
         [
             {
                 "id": 101,
-                "species_name": "S1",
-                "species_common_name": "S1",
+                "name": "S1",
+                "common_name": "S1",
                 "temp_threshold": 15,
             },
             {
                 "id": 102,
-                "species_name": "S2",
-                "species_common_name": "S2",
+                "name": "S2",
+                "common_name": "S2",
                 "temp_threshold": 25,
             },
         ]
@@ -105,11 +105,11 @@ def test_species_with_no_dependencies_stays_candidate():
 
     species_df = _simple_species_df(
         [
-            {"id": 201, "species_name": "Acacia", "species_common_name": "Acacia"},
+            {"id": 201, "name": "Acacia", "common_name": "Acacia"},
             {
                 "id": 202,
-                "species_name": "Eucalyptus",
-                "species_common_name": "Eucalyptus",
+                "name": "Eucalyptus",
+                "common_name": "Eucalyptus",
             },
         ]
     )
@@ -136,8 +136,8 @@ def test_single_dependency_excludes_when_no_partner_present():
         [
             {
                 "id": 301,
-                "species_name": "Santalum album",
-                "species_common_name": "Sandalwood",
+                "name": "Santalum album",
+                "common_name": "Sandalwood",
             },
         ]
     )
@@ -172,10 +172,10 @@ def test_single_dependency_passes_when_partner_present():
         [
             {
                 "id": 401,
-                "species_name": "Santalum album",
-                "species_common_name": "Sandalwood",
+                "name": "Santalum album",
+                "common_name": "Sandalwood",
             },
-            {"id": 402, "species_name": "Acacia", "species_common_name": "Acacia"},
+            {"id": 402, "name": "Acacia", "common_name": "Acacia"},
         ]
     )
 
@@ -213,8 +213,8 @@ def test_dependency_chain_excludes_upstream_when_chain_breaks():
 
     species_df = _simple_species_df(
         [
-            {"id": 501, "species_name": "A", "species_common_name": "A"},
-            {"id": 502, "species_name": "B", "species_common_name": "B"},
+            {"id": 501, "name": "A", "common_name": "A"},
+            {"id": 502, "name": "B", "common_name": "B"},
             # C is missing on purpose
         ]
     )
@@ -253,8 +253,8 @@ def test_circular_dependency_does_not_crash_and_is_stable():
 
     species_df = _simple_species_df(
         [
-            {"id": 601, "species_name": "A", "species_common_name": "A"},
-            {"id": 602, "species_name": "B", "species_common_name": "B"},
+            {"id": 601, "name": "A", "common_name": "A"},
+            {"id": 602, "name": "B", "common_name": "B"},
         ]
     )
 
