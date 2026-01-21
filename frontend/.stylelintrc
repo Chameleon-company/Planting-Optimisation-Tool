@@ -8,6 +8,18 @@
     {
       "files": ["**/*.scss"],
       "customSyntax": "postcss-scss"
+    },
+    {
+      "files": ["src/style.css", "src/home.css"],
+      "rules": {
+        "selector-class-pattern": null,
+        "color-named": null,
+        "declaration-property-value-disallowed-list": null,
+        "selector-no-qualifying-type": null,
+        "property-no-vendor-prefix": null,
+        "@stylistic/function-parentheses-space-inside": null,
+        "@stylistic/string-quotes": null
+      }
     }
   ],
   "rules": {

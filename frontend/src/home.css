@@ -1,0 +1,313 @@
+/* Intro/Landing Section */
+.heroSection {
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.heroVideo {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+.videoOverlay {
+  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.heroTagline {
+  color: white;
+  left: 7%;
+  max-width: 700px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.heroCTA {
+  bottom: 80px;
+  position: absolute;
+  right: 7%;
+  text-align: right;
+  z-index: 2;
+}
+
+.heroTagline h1 {
+  font-size: clamp(3.5rem, 6vw, 5rem);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.heroSubtitle {
+  color: white;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.exploreButton {
+  background-color: rgba(46, 92, 49, 0.851);
+  border-radius: 10px;
+  color: white;
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 15px 25px;
+  text-decoration: none;
+  transition:
+    background 0.3s,
+    color 0.3s,
+    box-shadow 0.3s,
+    transform 0.2s;
+}
+
+.exploreButton:hover {
+  background-color: rgba(46, 92, 49, 0.95);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  color: #ffcb71;
+  transform: translateY(-4px);
+}
+
+/* About Section */
+.aboutSection {
+  align-items: stretch;
+  background: white;
+  box-sizing: border-box;
+  display: flex;
+  gap: 50px;
+  padding: 100px 7%;
+  width: 100%;
+}
+
+.aboutLeft {
+  display: flex;
+  flex: 0 0 30%;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.aboutLogoContainer {
+  align-items: center;
+  display: flex;
+  gap: 15px;
+  transform: translateY(5px);
+}
+
+.aboutLogo {
+  border-radius: 50%;
+  height: 50px;
+  object-fit: cover;
+  width: 50px;
+}
+
+.aboutLogoText {
+  color: black;
+  font-size: 1.2rem;
+}
+
+.aboutRight {
+  display: flex;
+  flex: 0 0 70%;
+  flex-direction: column;
+  gap: 30px;
+  justify-content: flex-start;
+}
+
+.aboutTitle {
+  background-color: transparent;
+  border: 1px solid black;
+  border-radius: 50px;
+  color: black;
+  font-size: 1.2rem;
+  margin: 0;
+  padding: 8px 20px;
+  width: fit-content;
+}
+
+.aboutDescription {
+  color: #2e5c31;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .aboutSection {
+    flex-direction: column;
+    gap: 30px;
+    padding: 50px 7%;
+  }
+
+  .aboutLeft {
+    align-items: flex-start;
+    justify-content: flex-start;
+    order: 2;
+  }
+
+  .aboutDescription {
+    font-size: 1.4rem;
+  }
+}
+
+/* Features Section */
+.featuresSection {
+  box-sizing: border-box;
+  margin-bottom: 100px;
+  padding: 15px 7%;
+  width: 100%;
+}
+
+.featuresContainer {
+  display: flex;
+  gap: 25px;
+  height: 300px;
+  width: 100%;
+}
+
+.featureCard {
+  background: #18b860;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+  transition:
+    flex 0.5s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.featureCard:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  flex: 1.5;
+  transform: translateY(-5px);
+}
+
+.defaultContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  inset: 0;
+  justify-content: flex-start;
+  opacity: 1;
+  padding: 40px 30px;
+  position: absolute;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+}
+
+.featureCard:hover .defaultContent {
+  opacity: 0;
+}
+
+.iconWrapper {
+  align-items: center;
+  background-color: #1b3320;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  display: flex;
+  height: 60px;
+  justify-content: center;
+  margin-bottom: 10px;
+  width: 60px;
+}
+
+.featureIcon {
+  font-size: 1.8rem;
+}
+
+.featureTitle {
+  color: #1b3320;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.featureText {
+  color: #1b3320;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.hoverContent {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.featureCard:hover .hoverContent {
+  opacity: 1;
+  z-index: 3;
+}
+
+.hoverBgImage {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+}
+
+.hoverOverlay {
+  background: rgba(0, 0, 0, 0.4);
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+.centerButton {
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #2e5c31;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 12px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-topbar {
+  background: transparent;
+  border-bottom: none;
+  color: #fff;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 30;
+}
+
+.home-topbar .nav-link {
+  color: #fff;
+}
+
+.home-topbar .logo-circle {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.home-topbar.is-scrolled {
+  background: var(--gradient);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
