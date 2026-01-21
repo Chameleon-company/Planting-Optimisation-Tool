@@ -1,3 +1,1 @@
-import "./style.css";
-
-export { sum } from "./sum";
+export const version = "1.0.0";
