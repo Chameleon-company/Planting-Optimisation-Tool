@@ -1,6 +1,6 @@
 # Data Dictionary for Product Owner Datasets
 
-This document provides a structured description of datasets supplied by the Product Owners. It outlines the purpose of each file as well as the data schema covering column types, units, and requirements.
+This document provides an overview of the datasets supplied by the Product Owners. It describes the purpose of each file and outlines the associated data schema, including column names, data types, units, and requirements. All datasets referenced in this document are stored in Microsoft Teams > Planting Optimisation Tool > Shared > Datasets.
 
 **Note:** Some filenames include a date and a unique identifier.
 
@@ -30,14 +30,14 @@ These datasets contain tree monitoring data collected from farmers across multip
 | GS11743_Tree_data.csv                        | Tree monitoring data from Cova Lima Municipality                                |
 | GS11800_Tree_Data.csv                        | Tree monitoring data from Baucau Municipality                                   |
 | GS11801_Tree_Data.csv                        | Tree monitoring data from Liquiçá Municipality                                  |
-| GSxxxxx_RM_Lautem_Lospalos_Tree_Data.csv     | Tree monitoring data from Lospalos, Lautém Municipality                         |
 | GSXXXX_RM_Quelicai_Laga_Tree_Data.csv        | Tree monitoring data from Quelicai and Laga, Baucau Municipality                |
+| GSxxxxx_RM_Lautem_Lospalos_Tree_Data.csv     | Tree monitoring data from Lospalos, Lautém Municipality                         |
 | GSxxxxx_RM_Viqueque_Uatucarbau_Tree_Data.csv | Tree monitoring data from Uatucarbau Administrative Post, Viqueque Municipality |
 
 **Note:** These files use the GS prefix followed by a project number (e.g. GS4210). This indicates that the project is certified 
 under the Gold Standard program, allowing farmers to earn income from carbon credits.
 
-### Other Projects
+#### Other Projects
 
 #### Data Schema
 
@@ -71,19 +71,18 @@ under the Gold Standard program, allowing farmers to earn income from carbon cre
 | File Name                                                | Description                                                                         |
 |----------------------------------------------------------|-------------------------------------------------------------------------------------|
 | Baguia_Trees_2025-11-25_038a64.csv                       | Tree monitoring data from Baguia, Baucau Municipality                               |
-| Lautem-Lospalos_Trees_2025-11-25_564e36.csv              | Tree monitoring data from Lospalos, Lautém Municipality                             |
-| Quelicai-Laga_Trees_2025-11-25_36be59.csv                | Tree monitoring data from Quelicai and Laga, Baucau Municipality                    |
-| Viqueque_Uatucarbau_Uatulari_Trees_2025-11-25_4930fd.csv | Tree monitoring data from Viqueque, Uatucarbau, and Uatulari, Viqueque Municipality |
-| NETIL_Trees_2025-11-25_859919.csv                        | Tree monitoring data managed with local partner NETIL                               |
-| TV_Trees_2025-11-25_56c5f6.csv                           | Tree monitoring data managed with local partner TV                                  |
 | CCC_Trees_2025-11-25_2da6c9.csv                          | Tree monitoring data managed with local partner CCC (Covalima Community Centre)     |
+| Lautem-Lospalos_Trees_2025-11-25_564e36.csv              | Tree monitoring data from Lospalos, Lautém Municipality                             |
+| NETIL_Trees_2025-11-25_859919.csv                        | Tree monitoring data managed with local partner NETIL                               |
+| Quelicai-Laga_Trees_2025-11-25_36be59.csv                | Tree monitoring data from Quelicai and Laga, Baucau Municipality                    |
+| TV_Trees_2025-11-25_56c5f6.csv                           | Tree monitoring data managed with local partner TV                                  |
+| Viqueque_Uatucarbau_Uatulari_Trees_2025-11-25_4930fd.csv | Tree monitoring data from Viqueque, Uatucarbau, and Uatulari, Viqueque Municipality |
 
 ## TreeO2 (Dec 5) Datasets
 
-These are the most recent TreeO2 datasets, provided by the Product Owners on December 5th. They include additional columns such as farmer identification 
-(scanned_to_farmer_id), and tree location (latitude and longitude).
+These are the most recent TreeO2 datasets, provided by the Product Owners as of 5 December 2025. They include additional columns, namely farmer identification (scanned_to_farmer_id) and tree location (latitude and longitude).
 
-### Gold Standard (GS) Projects 
+### Gold Standard (GS) Projects
 
 #### Data Schema
 
@@ -212,7 +211,7 @@ Tree species with flowering and fruiting periods pending verification.
 |---------------------------|---------|------|---------------------------------|-------------|
 | Sr. No.                   | Integer | –    | Serial number                   | Required    |
 | Scientific Name           | String  | –    | Scientific name of the tree     | Required    |
-| Common Name               | String  | –    | Common or local name            | Optional    |
+| Common Name               | String  | –    | Common name of the tree         | Optional    |
 | Location                  | String  | –    | Observation location            | Optional    |
 | Remarks                   | String  | –    | Notes on verification           | Optional    |
 | Flowering/Fruiting Period | String  | –    | Flowering and fruiting period   | Optional    |
@@ -354,6 +353,7 @@ The datasets are commonly used to distinguish forest and non-forest soil classif
 ### Soil type map – Seeds of Life
 
 This folder contains detailed soil type maps produced under the *Seeds of Life* program.  
+
 The datasets represent mapped soil units and soil types across Timor-Leste.
 
 Both original layers and geometry-corrected versions are included to support spatial accuracy.
@@ -399,7 +399,7 @@ Environmental and soil data for each farm
 | Column Name | Type    | Unit      | Description                                           | Requirement |
 |-------------|---------|-----------|-------------------------------------------------------|-------------|
 | farm_ID     | Integer | –         | Unique identifier for each farm record                | Required    |
-| Name        | String  | –         | Farmer or farm name                                   | Required    |
+| Name        | String  | –         | Farmer full name                                      | Required    |
 | elevation   | Integer | m         | Elevation above sea level                             | Required    |
 | temperature | Integer | °C        | Average annual temperature                            | Required    |
 | rainfall    | Integer | mm        | Average annual rainfall                               | Required    |
