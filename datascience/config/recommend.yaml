@@ -1,3 +1,5 @@
+# Enable/disable exclusion rules
+enable_exclusions: True
 
 # Names for id columns
 ids:
@@ -47,157 +49,157 @@ features:
     compatibility_pairs:
       sand:
         sand: 1.0
-        loamy_sand: 0.8
-        sandy_loam: 0.6
+        loamy sand: 0.8
+        sandy loam: 0.6
         loam: 0.4
-        silty_loam: 0.4
+        silty loam: 0.4
         silt: 0.0
-        sandy_clay_loam: 0.4
-        clay_loam: 0.2
-        silty_clay_loam: 0.2
-        sandy_clay: 0.0
-        silty_clay: 0.0
+        sandy clay loam: 0.4
+        clay loam: 0.2
+        silty clay loam: 0.2
+        sandy clay: 0.0
+        silty clay: 0.0
         clay: 0.0
-      loamy_sand:
+      loamy sand:
         sand: 0.8
-        loamy_sand: 1.0
-        sandy_loam: 0.8
+        loamy sand: 1.0
+        sandy loam: 0.8
         loam: 0.6
-        silty_loam: 0.6
+        silty loam: 0.6
         silt: 0.4
-        sandy_clay_loam: 0.6
-        clay_loam: 0.4
-        silty_clay_loam: 0.0
-        sandy_clay: 0.4
-        silty_clay: 0.0
+        sandy clay loam: 0.6
+        clay loam: 0.4
+        silty clay loam: 0.0
+        sandy clay: 0.4
+        silty clay: 0.0
         clay: 0.0
-      sandy_loam:
+      sandy loam:
         sand: 0.6
-        loamy_sand: 0.8
-        sandy_loam: 1.0
+        loamy sand: 0.8
+        sandy loam: 1.0
         loam: 0.8
-        silty_loam: 0.8
+        silty loam: 0.8
         silt: 0.6
-        sandy_clay_loam: 0.8
-        clay_loam: 0.6
-        silty_clay_loam: 0.6
-        sandy_clay: 0.6
-        silty_clay: 0.4
+        sandy clay loam: 0.8
+        clay loam: 0.6
+        silty clay loam: 0.6
+        sandy clay: 0.6
+        silty clay: 0.4
         clay: 0.4
       loam:
         sand: 0.4
-        loamy_sand: 0.6
-        sandy_loam: 0.8
+        loamy sand: 0.6
+        sandy loam: 0.8
         loam: 1.0
-        silty_loam: 0.8
+        silty loam: 0.8
         silt: 0.6
-        sandy_clay_loam: 0.8
-        clay_loam: 0.8
-        silty_clay_loam: 0.6
-        sandy_clay: 0.6
-        silty_clay: 0.6
+        sandy clay loam: 0.8
+        clay loam: 0.8
+        silty clay loam: 0.6
+        sandy clay: 0.6
+        silty clay: 0.6
         clay: 0.6
-      silty_loam:
+      silty loam:
         sand: 0.4
-        loamy_sand: 0.6
-        sandy_loam: 0.8
+        loamy sand: 0.6
+        sandy loam: 0.8
         loam: 0.8
-        silty_loam: 1.0
+        silty loam: 1.0
         silt: 0.8
-        sandy_clay_loam: 0.6
-        clay_loam: 0.8
-        silty_clay_loam: 0.8
-        sandy_clay: 0.6
-        silty_clay: 0.6
+        sandy clay loam: 0.6
+        clay loam: 0.8
+        silty clay loam: 0.8
+        sandy clay: 0.6
+        silty clay: 0.6
         clay: 0.6
       silt:
         sand: 0.0
-        loamy_sand: 0.4
-        sandy_loam: 0.6
+        loamy sand: 0.4
+        sandy loam: 0.6
         loam: 0.6
-        silty_loam: 0.8
+        silty loam: 0.8
         silt: 1.0
-        sandy_clay_loam: 0.4
-        clay_loam: 0.6
-        silty_clay_loam: 0.6
-        sandy_clay: 0.4
-        silty_clay: 0.4
+        sandy clay loam: 0.4
+        clay loam: 0.6
+        silty clay loam: 0.6
+        sandy clay: 0.4
+        silty clay: 0.4
         clay: 0.4
-      sandy_clay_loam:
+      sandy clay loam:
         sand: 0.4
-        loamy_sand: 0.6
-        sandy_loam: 0.8
+        loamy sand: 0.6
+        sandy loam: 0.8
         loam: 0.8
-        silty_loam: 0.6
+        silty loam: 0.6
         silt: 0.4
-        sandy_clay_loam: 1.0
-        clay_loam: 0.8
-        silty_clay_loam: 0.6
-        sandy_clay: 0.8
-        silty_clay: 0.6
+        sandy clay loam: 1.0
+        clay loam: 0.8
+        silty clay loam: 0.6
+        sandy clay: 0.8
+        silty clay: 0.6
         clay: 0.6
-      clay_loam:
+      clay loam:
         sand: 0.2
-        loamy_sand: 0.4
-        sandy_loam: 0.6
+        loamy sand: 0.4
+        sandy loam: 0.6
         loam: 0.8
-        silty_loam: 0.8
+        silty loam: 0.8
         silt: 0.6
-        sandy_clay_loam: 0.8
-        clay_loam: 1.0
-        silty_clay_loam: 0.8
-        sandy_clay: 0.8
-        silty_clay: 0.8
+        sandy clay loam: 0.8
+        clay loam: 1.0
+        silty clay loam: 0.8
+        sandy clay: 0.8
+        silty clay: 0.8
         clay: 0.8
-      silty_clay_loam:
+      silty clay loam:
         sand: 0.2
-        loamy_sand: 0.0
-        sandy_loam: 0.6
+        loamy sand: 0.0
+        sandy loam: 0.6
         loam: 0.6
-        silty_loam: 0.8
+        silty loam: 0.8
         silt: 0.6
-        sandy_clay_loam: 0.6
-        clay_loam: 0.8
-        silty_clay_loam: 1.0
-        sandy_clay: 0.6
-        silty_clay: 0.8
+        sandy clay loam: 0.6
+        clay loam: 0.8
+        silty clay loam: 1.0
+        sandy clay: 0.6
+        silty clay: 0.8
         clay: 0.6
-      sandy_clay:
+      sandy clay:
         sand: 0.0
-        loamy_sand: 0.4
-        sandy_loam: 0.6
+        loamy sand: 0.4
+        sandy loam: 0.6
         loam: 0.6
-        silty_loam: 0.6
+        silty loam: 0.6
         silt: 0.4
-        sandy_clay_loam: 0.8
-        clay_loam: 0.8
-        silty_clay_loam: 0.6
-        sandy_clay: 1.0
-        silty_clay: 0.6
+        sandy clay loam: 0.8
+        clay loam: 0.8
+        silty clay loam: 0.6
+        sandy clay: 1.0
+        silty clay: 0.6
         clay: 0.8
-      silty_clay:
+      silty clay:
         sand: 0.0
-        loamy_sand: 0.0
-        sandy_loam: 0.4
+        loamy sand: 0.0
+        sandy loam: 0.4
         loam: 0.6
-        silty_loam: 0.6
+        silty loam: 0.6
         silt: 0.4
-        sandy_clay_loam: 0.6
-        clay_loam: 0.8
-        silty_clay_loam: 0.8
-        sandy_clay: 0.6
-        silty_clay: 1.0
+        sandy clay loam: 0.6
+        clay loam: 0.8
+        silty clay loam: 0.8
+        sandy clay: 0.6
+        silty clay: 1.0
         clay: 0.8
       clay:
         sand: 0.0
-        loamy_sand: 0.0
-        sandy_loam: 0.4
+        loamy sand: 0.0
+        sandy loam: 0.4
         loam: 0.6
-        silty_loam: 0.6
+        silty loam: 0.6
         silt: 0.4
-        sandy_clay_loam: 0.6
-        clay_loam: 0.8
-        silty_clay_loam: 0.6
-        sandy_clay: 0.8
-        silty_clay: 0.8
+        sandy clay loam: 0.6
+        clay loam: 0.8
+        silty clay loam: 0.6
+        sandy clay: 0.8
+        silty clay: 0.8
         clay: 1.0

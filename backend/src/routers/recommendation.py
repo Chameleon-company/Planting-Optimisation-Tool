@@ -23,9 +23,9 @@ async def get_farm_recs(
     """
     # Fetch the farm and verify ownership
     # Pass current_user (which is a UserRead schema) to the service
-    farm = await get_farm_by_id(db, farm_id, current_user.id)
+    farms = await get_farm_by_id(db, [farm_id], current_user.id)
 
-    if not farm:
+    if not farms:
         raise HTTPException(status_code=404, detail="Farm not found or access denied")
 
     # Prepare data for the engine
@@ -33,6 +33,24 @@ async def get_farm_recs(
     cfg = get_recommend_config()
 
     # Run the pipeline
-    results = await run_recommendation_pipeline(db, [farm], all_species, cfg)
+    results = await run_recommendation_pipeline(db, farms, all_species, cfg)
 
     return results[0]
+
+
+@router.post("/batch")
+async def get_batch_recs(
+    farm_ids: list[int],  # Expects JSON body like [1, 2, 3]
+    current_user: UserRead = CurrentActiveUser,
+    db: AsyncSession = Depends(get_db_session),
+):
+    farms = await get_farm_by_id(db, farm_ids, current_user.id)
+
+    if not farms:
+        raise HTTPException(status_code=404, detail="No valid farms found")
+
+    all_species = await get_all_species_for_engine(db)
+    cfg = get_recommend_config()
+
+    # Process all at once
+    return await run_recommendation_pipeline(db, farms, all_species, cfg)

@@ -98,9 +98,9 @@ def rotate_grid(
 
     # Save rotated planting points grid
     final_grid.to_file(output_path)
-    print(f"Optimal rotation angle: {optimal_angle}°")
-    print(f"Generated {len(final_grid)} rotated planting points")
     print(f"Rotated planting points grid saved to {output_path}")
+
+    return optimal_angle
 
 
 # Rotation Mechanism Tester Code

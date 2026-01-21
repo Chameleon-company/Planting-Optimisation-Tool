@@ -7,7 +7,11 @@ from src.schemas.environmental_profile import FarmProfileResponse
 router = APIRouter(prefix="/farms", tags=["Environmental Profile"])
 
 
-@router.get("/{farm_id}/profile", response_model=FarmProfileResponse)
+@router.get(
+    "/{farm_id}/profile",
+    response_model=FarmProfileResponse,
+    response_model_exclude_none=True,
+)
 async def get_farm_profile(farm_id: int, db: AsyncSession = Depends(get_db_session)):
     """
     Fetch environmental data from Google Earth Engine to build environmental profile for farm.

@@ -77,11 +77,11 @@ rename-column: ensure-env
 # Clones the database and runs the pytest suite
 test: ensure-env
 	@echo "--- Replicating Database from POT_db to pot_test_db ---"
-	-@docker exec -it {{CONTAINER_NAME}} psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'pot_test_db';"
-	@docker exec -it {{CONTAINER_NAME}} psql -U postgres -c "DROP DATABASE IF EXISTS pot_test_db;"
-	@docker exec -it {{CONTAINER_NAME}} psql -U postgres -c "CREATE DATABASE pot_test_db WITH TEMPLATE \"POT_db\";"
+	-@docker exec -i {{CONTAINER_NAME}} psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'pot_test_db';"
+	@docker exec -i {{CONTAINER_NAME}} psql -U postgres -c "DROP DATABASE IF EXISTS pot_test_db;"
+	@docker exec -i {{CONTAINER_NAME}} psql -U postgres -c "CREATE DATABASE pot_test_db WITH TEMPLATE \"POT_db\";"
 	@echo "--- Syncing Sequences ---"
-	@docker exec -it {{CONTAINER_NAME}} psql -U postgres -d pot_test_db -c "DO \$\$ DECLARE r RECORD; BEGIN FOR r IN (SELECT table_name, column_name FROM information_schema.columns WHERE column_default LIKE 'nextval%' AND table_schema = 'public') LOOP EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''' || r.column_name || '''), COALESCE(MAX(' || r.column_name || '), 1)) FROM ' || r.table_name; END LOOP; END \$\$;"
+	@docker exec -i {{CONTAINER_NAME}} psql -U postgres -d pot_test_db -c "DO \$\$ DECLARE r RECORD; BEGIN FOR r IN (SELECT table_name, column_name FROM information_schema.columns WHERE column_default LIKE 'nextval%' AND table_schema = 'public') LOOP EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''' || r.column_name || '''), COALESCE(MAX(' || r.column_name || '), 1)) FROM ' || r.table_name; END LOOP; END \$\$;"
 	@echo "--- Running Pytest ---"
 	@DATABASE_URL="postgresql+asyncpg://postgres:devpassword@localhost:5432/pot_test_db" {{PYTEST_CMD}}
 

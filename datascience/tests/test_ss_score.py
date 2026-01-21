@@ -1,5 +1,5 @@
 import pytest
-from suitability_scoring.scoring.scoring import calculate_suitability
+from suitability_scoring.scoring import calculate_suitability
 from suitability_scoring.utils.params import build_rules_dict
 
 

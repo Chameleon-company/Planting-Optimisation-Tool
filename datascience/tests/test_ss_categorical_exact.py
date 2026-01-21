@@ -1,5 +1,5 @@
 import pytest
-from suitability_scoring.scoring.scoring import categorical_exact_score
+from suitability_scoring.scoring import categorical_exact_score
 
 
 @pytest.mark.parametrize(
