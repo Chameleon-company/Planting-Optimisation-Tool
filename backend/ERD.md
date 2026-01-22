@@ -53,7 +53,6 @@ erDiagram
     INTEGER farm_id FK
     INTEGER species_id FK
     DATETIME created_at
-    ARRAY exclusions "nullable"
     ARRAY key_reasons
     INTEGER rank_overall
     FLOAT score_mcda

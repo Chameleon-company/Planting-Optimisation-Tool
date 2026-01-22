@@ -15,53 +15,53 @@ from collections import deque
 # 12 USDA classes
 CLASSES = [
     "sand",
-    "loamy_sand",
-    "sandy_loam",
+    "loamy sand",
+    "sandy loam",
     "loam",
-    "silty_loam",  # This projects naming convention
+    "silty loam",  # This projects naming convention
     "silt",
-    "sandy_clay_loam",
-    "clay_loam",
-    "silty_clay_loam",
-    "sandy_clay",
-    "silty_clay",
+    "sandy clay loam",
+    "clay loam",
+    "silty clay loam",
+    "sandy clay",
+    "silty clay",
     "clay",
 ]
 
 # Adjacency graph on the USDA triangle (undirected). Edges represent 1-step neighbors.
 # This graph captures polygon border-sharing on the USDA texture triangle.
 ADJ = {
-    "clay": ["clay_loam", "sandy_clay", "silty_clay"],
-    "clay_loam": [
+    "clay": ["clay loam", "sandy clay", "silty clay"],
+    "clay loam": [
         "clay",
         "loam",
-        "sandy_clay",
-        "sandy_clay_loam",
-        "silty_loam",
-        "silty_clay",
-        "silty_clay_loam",
+        "sandy clay",
+        "sandy clay loam",
+        "silty loam",
+        "silty clay",
+        "silty clay loam",
     ],
-    "loam": ["clay_loam", "sandy_clay_loam", "sandy_loam", "silty_loam"],
-    "loamy_sand": ["sand", "sandy_loam"],
-    "sand": ["loamy_sand"],
-    "sandy_clay": ["clay", "clay_loam", "sandy_clay_loam"],
-    "sandy_clay_loam": ["clay_loam", "loam", "sandy_clay", "sandy_loam"],
-    "sandy_loam": ["loam", "loamy_sand", "sandy_clay_loam", "silty_loam"],
-    "silt": ["silty_loam"],
-    "silty_clay": ["clay", "clay_loam", "silty_clay_loam"],
-    "silty_clay_loam": ["clay_loam", "silty_loam", "silty_clay"],
-    "silty_loam": ["clay_loam", "loam", "sandy_loam", "silt", "silty_clay_loam"],
+    "loam": ["clay loam", "sandy clay loam", "sandy loam", "silty loam"],
+    "loamy sand": ["sand", "sandy loam"],
+    "sand": ["loamy sand"],
+    "sandy clay": ["clay", "clay loam", "sandy clay loam"],
+    "sandy clay loam": ["clay loam", "loam", "sandy clay", "sandy loam"],
+    "sandy loam": ["loam", "loamy sand", "sandy clay loam", "silty loam"],
+    "silt": ["silty loam"],
+    "silty clay": ["clay", "clay loam", "silty clay loam"],
+    "silty clay loam": ["clay loam", "silty loam", "silty clay"],
+    "silty loam": ["clay loam", "loam", "sandy loam", "silt", "silty clay loam"],
 }
 
 # Hard incompatibilities (pairs forced to 0.0).
 HARD_ZERO = [
     ("sand", "clay"),
-    ("sand", "silty_clay"),
-    ("sand", "sandy_clay"),
+    ("sand", "silty clay"),
+    ("sand", "sandy clay"),
     ("sand", "silt"),
-    ("loamy_sand", "clay"),
-    ("loamy_sand", "silty_clay"),
-    ("loamy_sand", "silty_clay_loam"),
+    ("loamy sand", "clay"),
+    ("loamy sand", "silty clay"),
+    ("loamy sand", "silty clay loam"),
 ]
 
 # Scoring by shortest-path distance
