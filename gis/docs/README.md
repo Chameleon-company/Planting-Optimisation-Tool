@@ -92,7 +92,7 @@ gis/
 
 ## Data Sources
 
-### Google Earth Engine Datasets (Global)
+### Google Earth Engine Datasets (Global - Used for API )
 
 | Dataset     | Variable    | Resolution | Temporal Coverage | Validation (2020-2024) | Status                 |
 | ----------- | ----------- | ---------- | ----------------- | ---------------------- | ---------------------- |
@@ -128,16 +128,7 @@ source .venv/bin/activate
 
 ### Google Earth Engine Setup
 
-1. Create service account in Google Cloud Platform
-2. Download JSON key file
-3. Place key in `gis/keys/` directory
-4. Create `.env` file:
-
-```bash
-#Edit .env with your credentials
-GEE_SERVICE_ACCOUNT=your-service-account@project.iam.gserviceaccount.com
-GEE_KEY_PATH=/path/to/gis/keys/service-account-key.json
-```
+Please refer to the Handover Documentation (ReferL Section 11: Login Credentials).
 
 ## Function Documentation
 
