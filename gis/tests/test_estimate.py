@@ -5,7 +5,7 @@ from rasterio.transform import from_origin
 from shapely.geometry import box
 import os
 
-from sapling_estimation.sapling_estimation import sapling_estimation
+from sapling_estimation.estimate import sapling_estimation
 
 
 @pytest.fixture
