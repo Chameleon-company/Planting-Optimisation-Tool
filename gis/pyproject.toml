@@ -24,10 +24,15 @@ dependencies = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["."] 
+
+# Ensure package data inside the package is included in the wheel
+[tool.setuptools.package-data]
+sapling_estimation = ["sampling_estimation/data/*"]
+
 
 [tool.setuptools]
 # This tells uv which folders to include as part of the 'gis' package
 # For backend to import
 packages = ["core", "config", "sapling_estimation"]
-
+include-package-data = true
