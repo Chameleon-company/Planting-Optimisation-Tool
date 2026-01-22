@@ -5,7 +5,7 @@ from shapely.affinity import rotate
 
 # The rotation function accepts the polygon and planting grid of the input farm, along with spacing rule (in meters).
 # The function first generates a base grid, and planting points are created based on spacing rules (3x3 spacing).
-# The base grid is then rotated by 1° from 0° to 360°, where the number of points that fall within the polygon is counted for each angle.
+# The base grid is then rotated by 1° from 0° to 90°, where the number of points that fall within the polygon is counted for each angle.
 # The optimal angle and highest point count is tracked during the rotation, which is then applied on the final rotation that outputs the final rotated planting grid.
 
 
@@ -41,8 +41,8 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float)
     optimal_angle = 0  # Stores the optimal rotation angle
     highest_count = -1  # Stores the highest point count
 
-    # Loops through every degree from 0 to 360
-    for angle in range(0, 361, 1):
+    # Loops through every degree from 0 to 90
+    for angle in range(0, 91, 1):
         # Copy base grid and rotate at origin
         rotated = base_grid.copy()
         rotated["geometry"] = rotated.geometry.apply(
