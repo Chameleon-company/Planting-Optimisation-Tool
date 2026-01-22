@@ -4,11 +4,11 @@ from src.database import get_db_session
 from src.services.environmental_profile import EnvironmentalProfileService
 from src.schemas.environmental_profile import FarmProfileResponse
 
-router = APIRouter(prefix="/farms", tags=["Environmental Profile"])
+router = APIRouter(prefix="/profile", tags=["Environmental Profile"])
 
 
 @router.get(
-    "/{farm_id}/profile",
+    "/{farm_id}",
     response_model=FarmProfileResponse,
     response_model_exclude_none=True,
 )

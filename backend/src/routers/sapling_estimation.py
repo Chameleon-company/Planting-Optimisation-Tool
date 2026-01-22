@@ -4,11 +4,11 @@ from src.database import get_db_session
 from src.services.sapling_estimation import SaplingEstimationService
 from src.schemas.sapling_estimation import SaplingEstimationResponse
 
-router = APIRouter(prefix="/farms", tags=["Sapling Calculator"])
+router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
 
 
 @router.get(
-    "/{farm_id}/sapling_estimation",
+    "/{farm_id}",
     response_model=SaplingEstimationResponse,
     response_model_exclude_none=True,
 )
