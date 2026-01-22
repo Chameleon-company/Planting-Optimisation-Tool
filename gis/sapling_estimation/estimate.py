@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import geopandas as gpd
 import rasterio
@@ -22,12 +21,8 @@ def sapling_estimation(
     here = Path(__file__).resolve().parent
 
     # Allow tests to override DEM path
-    DEM_path = os.getenv("SAPLING_DEM_PATH")
-
-    if DEM_path is None:
-        DEM_path = here / "data" / "DEM.tif"
-    else:
-        DEM_path = Path(DEM_path)
+    here = Path(__file__).resolve().parent
+    DEM_path = here / "data" / "DEM.tif"
 
     with rasterio.open(DEM_path) as dem_src:
         if dem_src.crs is None:
