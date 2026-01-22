@@ -1,6 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.boundaries import FarmBoundary
+from geoalchemy2.shape import to_shape
+from sapling_estimation.estimate import sapling_estimation
 
 
 class SaplingEstimationService:
@@ -15,11 +17,20 @@ class SaplingEstimationService:
             return None
 
         # Convert database geometry to a Shapely object
-        # shapely_geom = to_shape(boundary_record.boundary)
+        shapely_geom = to_shape(boundary_record.boundary)
 
         # Pass to GIS logic
         # Function not implemented yet
-        # estimation_results = sapling_estimation(geometry=shapely_geom, spacing_m=3.0)
+        estimation_results = sapling_estimation(
+            farm_polygon=shapely_geom,
+            spacing_m=3.0,
+            farm_boundary_crs="EPSG:4326",
+            debug=False,
+        )
 
         # Return results
-        # return {"farm_id": farm_id, "results": estimation_results}
+        return {
+            "id": farm_id,
+            "sapling_count": estimation_results["sapling_count"],
+            "optimal_angle": estimation_results["optimal_angle"],
+        }

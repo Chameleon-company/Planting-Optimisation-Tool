@@ -7,6 +7,7 @@ from src.routers import (
     species,
     auth,
     environmental_profile,
+    sapling_estimation,
 )
 from core.gee_client import init_gee
 
@@ -36,6 +37,7 @@ app.include_router(soil_texture.router)
 app.include_router(recommendation.router)
 app.include_router(species.router)
 app.include_router(environmental_profile.router)
+app.include_router(sapling_estimation.router)
 # Not created yet
 # app.include_router(user.router)
 
