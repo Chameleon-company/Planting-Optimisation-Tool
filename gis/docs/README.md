@@ -128,7 +128,20 @@ source .venv/bin/activate
 
 ### Google Earth Engine Setup
 
-Please refer to the Handover Documentation (ReferL Section 11: Login Credentials).
+If you are a Deakin Capstone student, please refer to the Handover Documentation for the login credentials.
+
+However, if you were not a Deakin student, you can follow these step below and you can access to our functions.
+
+1. Create service account in Google Cloud Platform
+2. Download JSON key file
+3. Place key in `gis/keys/` directory
+4. Create `.env` file:
+
+```bash
+#Edit .env with your credentials
+GEE_SERVICE_ACCOUNT=your-service-account@project.iam.gserviceaccount.com
+GEE_KEY_PATH=/path/to/gis/keys/service-account-key.json
+```
 
 ## Function Documentation
 
