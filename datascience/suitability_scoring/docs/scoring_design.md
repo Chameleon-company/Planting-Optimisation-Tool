@@ -70,6 +70,8 @@ Categorical features (such as soil texture) are scored using **Exact** or **Comp
 
 This method checks for direct membership in a preferred list.
 
+![Exact Matching.](images/soil_scoring_exact.png)
+
 * **Logic:** If the farm's attribute (e.g., "clay") exists within the species' list of preferred types, the score is 1.0. If not, the score is 0.0.
 * **Use Case:** Best for binary constraints where no substitute is acceptable.
 
@@ -77,10 +79,12 @@ This method checks for direct membership in a preferred list.
 
 This method allows for partial matches using a pre-defined compatibility matrix.
 
+![Compatibility Scoring.](images/soil_scoring_compatibility.png)
+
 * **Logic:**
   * If the farm value is in the preferred list (Exact Match), the score is 1.0.
   * If the farm value is *not* in the list, the system checks the compatibility matrix to see if the farm's value is an acceptable substitute for a preferred value.
-* **Example:** A species prefers "sand". The farm has "sandy loam". If the matrix defines the similarity between sand and sandy loam as 0.8, the score is 0.8.
+* **Example:** A species prefers "sand". The farm has "sandy loam". If the matrix defines the similarity between sand and sandy loam as 0.6, the score is 0.6.
 
 * **Use Case:** Essential for soil textures where boundaries between types are fluid.
 
@@ -107,6 +111,9 @@ The system applies a cascade logic: For a given tree and feature, use the values
 ### The global configuration file `recommend.yaml`
 This file contains the global default values. An example is shown below.
 ```yaml
+# Enable/disable exclusion rules
+enable_exclusions: True
+
 # Names for id columns
 ids:
   farm: id

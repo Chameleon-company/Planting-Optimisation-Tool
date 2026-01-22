@@ -10,25 +10,29 @@ dependencies = [
     "earthengine-api>=1.0.0",
     "geopandas>=1.1.1",
     "shapely>=2.1.2",
-
     # Testing
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
-
     # Linting
     "ruff>=0.14.5",
     #Environmental loading
-
     # Environmental loading
     "python-dotenv>=1.0.1",
+    "rasterio>=1.5.0",
+    "numpy>=2.3.5",
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["."] 
+
+# Ensure package data inside the package is included in the wheel
+[tool.setuptools.package-data]
+sapling_estimation = ["sampling_estimation/data/*"]
+
 
 [tool.setuptools]
 # This tells uv which folders to include as part of the 'gis' package
 # For backend to import
 packages = ["core", "config", "sapling_estimation"]
-
+include-package-data = true
