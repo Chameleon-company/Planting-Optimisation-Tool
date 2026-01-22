@@ -35,7 +35,35 @@
       </div>
     </header>
 
-    <main></main>
+    <main class="container species-container">
+      <section class="hero species-hero">
+        <h1>Species Information</h1>
+        <p>Understanding Your Species</p>
+      </section>
+
+      <section class="species-search">
+        <label class="search-label" for="speciesSearch">Search Species</label>
+        <div class="search-row">
+          <input
+            id="speciesSearch"
+            class="search-input"
+            type="search"
+            placeholder="Enter keywords here"
+          />
+          <button id="speciesSearchBtn" class="search-btn" type="button">
+            <span class="search-icon">🔍</span>
+            <span>Search</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="species-list" aria-label="Articles">
+        <div id="speciesArticles" class="species-grid"></div>
+        <div id="speciesEmpty" class="species-empty" hidden>
+          No species match your search. Try different keywords.
+        </div>
+      </section>
+    </main>
 
     <footer class="site-footer">
       <div class="footer-inner">
