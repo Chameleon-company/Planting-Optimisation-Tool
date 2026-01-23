@@ -1,6 +1,6 @@
 # Data Dictionary for Product Owner Datasets
 
-This document provides an overview of the datasets supplied by the Product Owners. It describes the purpose of each file and outlines the associated data schema, including column names, data types, units, and requirements. All datasets referenced in this document are stored in Microsoft Teams > Planting Optimisation Tool > Shared > Datasets.
+This document provides an overview of the datasets supplied by the Product Owners. It describes the purpose of each file and outlines the associated data schema, including column names, data types, units, and requirements. All datasets referenced in this document are stored in Microsoft Teams > Planting Optimisation Tool > Shared > Datasets. The information herein was verified by the Product Owner as accurate at the time of publication (23 January 2026) and represents the current state of the product.
 
 **Note:** Some filenames include a date and a unique identifier.
 
