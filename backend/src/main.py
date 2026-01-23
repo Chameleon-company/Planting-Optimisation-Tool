@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+import time
 from src.routers import (
     farm,
     soil_texture,
@@ -7,6 +8,7 @@ from src.routers import (
     species,
     auth,
     environmental_profile,
+    sapling_estimation,
 )
 from core.gee_client import init_gee
 
@@ -36,8 +38,22 @@ app.include_router(soil_texture.router)
 app.include_router(recommendation.router)
 app.include_router(species.router)
 app.include_router(environmental_profile.router)
+app.include_router(sapling_estimation.router)
 # Not created yet
 # app.include_router(user.router)
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    process_time = time.perf_counter() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+
+    # Log it to the terminal
+    print(f"Path: {request.url.path} | Time: {process_time:.4f}s")
+
+    return response
 
 
 @app.get("/")

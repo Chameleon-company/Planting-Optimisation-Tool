@@ -1,4 +1,49 @@
-# Not complete, just jotting notes
+# Backend README
+
+## Folder structure:
+
+```
+backend/
+├── alembic/                # Database migration scripts and history
+│   └── versions/           # Migration files
+├── init-db/                # Initial SQL scripts for container setup
+├── src/                    # Main application source code
+│   ├── domains/            # Domain data contracts for integration of features
+│   ├── keys/               # Service account credentials
+│   ├── models/             # SQLAlchemy database models
+│   ├── routers/            # FastAPI route definitions (API endpoints)
+│   ├── schemas/            # Pydantic models for data validation
+│   ├── scripts/            # Scripts for initial database ingestion
+│   │   └── data/           # Seeding data for scripts
+│   └── services/           # Service layer connectivity
+└── tests/                  # Pytest suite for automated testing
+├── ERD.md                  # Entity-Relationship Diagram of current database
+├── README.md               # This file
+├── SCHEMA.md               # Current database schema
+├── alembic.ini             # Alembic configuration file
+├── docker-compose.yaml     # Configuration file for the database container
+├── justfile                # Command runner for common project tasks/shortcuts
+├── pyproject.toml          # Project metadata and dependencies list
+└── uv.lock                 # Lockfile for python dependencies
+
+```
+
+
+## Infrastructure
+
+#### Database
+The database is a containerized PostGIS image - defined in docker-compose.yaml
+Some of the PostGIS extensions bundled with the image are removed by init-db/01-remove-extensions.sql
+
+The database migrations are handled by alembic and frequently used commands are defined in the justfile.
+Revisions are stored in alembic/versions and are timestamped with a revision message, defined in alembic.ini
+
+#### API
+
+#### 
+
+
+
 
 # Project Command References
 ## 1. Virtual Environment & Dependencies

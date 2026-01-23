@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: bash -c "cd backend && just test"
+        entry: just -f backend/justfile test
         language: system
         pass_filenames: false
         always_run: true
