@@ -1,48 +1,39 @@
 import geopandas as gpd
 import rasterio
+import numpy as np
 
 MAX_SLOPE = 15.0  # Slope threshold
 
-# The slope rules function accepts the rotated grid and slope raster of the given farm, and the output file.
+# The slope rules function accepts the slope array and rotated grid of the input farm.
 # The function first samples the slope values at every planting point
 # The points are then filtered by removing points that are on terrian steeper than the maximum threshold.
 
 
-def apply_slope_rules(rotated_grid_path: str, slope_raster_path: str, output_path: str):
-    # Load rotated planting grid data and checks if the file has a Coordinate Reference System (CRS)
-    planting_points = gpd.read_file(rotated_grid_path)
-    points_crs = planting_points.crs  # Reads CRS of rotated planting grid data
-    if points_crs is None:  # Prints an error if file does not have a CRS
-        raise ValueError(
-            "ERROR: Rotated planting grid has no CRS, please check rotated grid file."
-        )
+def apply_slope_rules(
+    slope_array: np.ndarray, rotated_grid: gpd.GeoDataFrame, slope_transform
+):
+    # Extract the coordinates of every point for sampling
+    xs = [point.x for point in rotated_grid.geometry]
+    ys = [point.y for point in rotated_grid.geometry]
 
-    # Load slope raster file
-    with rasterio.open(slope_raster_path) as src:
-        slope_crs = src.crs
-        if slope_crs is None:
-            raise ValueError(
-                "ERROR: Slope raster has no CRS, please check slope raster file."
-            )
+    # Sample the slope array using the transform (World coords -> Array indices)
+    rows, cols = rasterio.transform.rowcol(slope_transform, xs, ys)
 
-        # Reproject planting points to slope CRS if both have different CRS
-        if points_crs != slope_crs:
-            planting_points = planting_points.to_crs(slope_crs)
+    # Filter out points that might fall outside the raster bounds
+    valid_indices = []
+    slope_values = []
+    height, width = slope_array.shape
 
-        # Extract the coordinates of every point for sampling
-        coordinates = [(point.x, point.y) for point in planting_points.geometry]
-
-        # Samples the slope raster to extract slope values for every point into a list
-        slope_values = list(src.sample(coordinates))
-        slope_values = [
-            float(v[0]) for v in slope_values
-        ]  # Convert from nested array to list containing floats
+    for i, (r, c) in enumerate(zip(rows, cols)):
+        if 0 <= r < height and 0 <= c < width:
+            slope_values.append(slope_array[r, c])
+            valid_indices.append(i)
+        else:
+            # Point is technically outside the slope raster extent
+            slope_values.append(float("inf"))
 
     # Keep only points below the slope threshold
-    adjusted_points = planting_points[[s <= MAX_SLOPE for s in slope_values]]
+    keep_mask = [s <= MAX_SLOPE for s in slope_values]
+    adjusted_points = rotated_grid[keep_mask].copy()
 
-    # Save adjusted planting grid
-    adjusted_points.to_file(output_path)
-    print(f"Adjusted planting points saved to {output_path}")
-
-    return len(adjusted_points)
+    return adjusted_points

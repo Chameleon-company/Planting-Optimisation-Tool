@@ -20,7 +20,7 @@ The global configuration for the suitability scoring is contained (`config/recom
 * 1-step neighbours (e.g., loam ↔ sandy_loam) ≈ 0.8
 * 2-step ≈ 0.6
 * 3-step=0.4
-* >=4-step=0.3
+* \>=4-step=0.3
 * hard incompatibilities as 0.0.
 
 ![USDA soil texture triangle](suitability_scoring/docs/images/USDA_soil_texture_triangle.png)

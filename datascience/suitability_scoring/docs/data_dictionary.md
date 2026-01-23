@@ -95,4 +95,4 @@ These data dictionaries contains all variables for the recommendation system (su
 *   **Ranges must be ordered**: For species, `*_min` ≤ `*_max`.
 *   **Units normalization**: All numeric values should be converted to standard units (e.g., mm/year for rainfall, °C for temperature).
 *   **Categorical normalization**: Use canonical names (e.g., "Loam" not "loamy soil").
-*   **Missing values**: TBD if any missing values are allowed.
+*   **Missing values**: No missing values allowed. Whilst the suitability scoring handles missing data, it does so by normalising the score. This may result in a high score when values for an important feature is missing.
