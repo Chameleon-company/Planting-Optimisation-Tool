@@ -106,5 +106,5 @@
 | `species_id` | `Integer` | No | No | id |
 | `rank_overall` | `Integer` | No | No |  |
 | `score_mcda` | `Float` | No | No |  |
-| `key_reasons` | `ARRAY` | No | No |  | |
+| `key_reasons` | `ARRAY` | No | No |  |
 | `created_at` | `DateTime` | No | No |  |
