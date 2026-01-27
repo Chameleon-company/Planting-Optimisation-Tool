@@ -75,7 +75,7 @@ def main():
         current_env = os.environ.copy()
         test_url = current_env.get("TEST_DATABASE_URL")
         if not test_url:
-            test_url = f"postgresql://{POSTGRES_USER}@localhost:5432/{TEST_DB}"
+            test_url = f"postgresql+asyncpg://{POSTGRES_USER}@localhost:5432/{TEST_DB}"
 
         current_env["DATABASE_URL"] = test_url
 
