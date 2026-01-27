@@ -176,7 +176,6 @@ html {
 main.container {
   flex: 1 0 auto;
   margin: 0 100px;
-  max-width: 1200px;
   padding: 64px 20px 120px;
 }
 
