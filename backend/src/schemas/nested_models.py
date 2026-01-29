@@ -16,7 +16,7 @@ class AgroforestryTypeReadNested(BaseModel):
     """Schema for displaying M:M related agroforestry types."""
 
     id: int
-    name: str = Field(..., description="Name of the agroforestry type.")
+    type_name: str = Field(..., description="Name of the agroforestry type.")
 
     model_config = ConfigDict(from_attributes=True)
 

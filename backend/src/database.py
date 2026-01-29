@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
 )  # Required for asynchronous sessions and engine creation
 from sqlalchemy.orm import DeclarativeBase
 from typing import AsyncGenerator
-from .config import settings  # import the settings object from config.py
+from src.config import settings  # import the settings object from config.py
 
 
 class Base(DeclarativeBase):

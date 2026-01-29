@@ -1,10 +1,10 @@
 from sqlalchemy import ForeignKey, Float, Integer, String, DateTime, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..database import Base
+from src.database import Base
 from datetime import datetime
-from .farm import Farm
-from .species import Species
+from src.models.farm import Farm
+from src.models.species import Species
 
 
 class Recommendation(Base):

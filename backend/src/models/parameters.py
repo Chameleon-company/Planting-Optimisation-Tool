@@ -1,6 +1,6 @@
 # Species parameters table model and reference tables
 from sqlalchemy import ForeignKey
-from ..database import Base
+from src.database import Base
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .species import Species
+    from src.models.species import Species
 
 
 class Parameter(Base):

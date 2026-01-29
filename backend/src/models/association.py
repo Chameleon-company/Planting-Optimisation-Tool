@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, ForeignKey
-from ..database import Base  # 1 level higher
+from src.database import Base
 
 # Define the association table using the low-level Table construct
 # For Many-to-Many relationships

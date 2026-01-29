@@ -9,6 +9,7 @@ from httpx import AsyncClient, ASGITransport
 # --- Application Imports ---
 from src.config import Settings
 from src.dependencies import create_access_token
+from src.services.authentication import get_password_hash, Role
 from src.models.user import User
 from src.models.soil_texture import SoilTexture
 from src.main import app
@@ -87,10 +88,13 @@ async def async_client(async_session):
 
 # User Fixtures
 @pytest.fixture(scope="function")
-async def test_user_a(async_session: AsyncSession) -> User:
-    """Fixture for creating User A (Owner) and persisting them."""
+async def test_admin_user(async_session: AsyncSession) -> User:
+    """Fixture for creating an admin user."""
     user = User(
-        name="Alice Owner", email="alice.test@farm.com", hashed_password="secure_hash_a"
+        name="Admin User",
+        email="admin@test.com",
+        hashed_password=get_password_hash("adminpassword"),
+        role=Role.ADMIN.value,
     )
     user = await async_session.merge(user)
     await async_session.flush()
@@ -99,10 +103,28 @@ async def test_user_a(async_session: AsyncSession) -> User:
 
 
 @pytest.fixture(scope="function")
-async def test_user_b(async_session: AsyncSession) -> User:
-    """Fixture for creating User B (Intruder)."""
+async def test_supervisor_user(async_session: AsyncSession) -> User:
+    """Fixture for creating a supervisor user."""
     user = User(
-        name="Bob Intruder", email="bob.test@farm.com", hashed_password="secure_hash_b"
+        name="Supervisor User",
+        email="supervisor@test.com",
+        hashed_password=get_password_hash("supervisorpassword"),
+        role=Role.SUPERVISOR.value,
+    )
+    user = await async_session.merge(user)
+    await async_session.flush()
+    await async_session.refresh(user)
+    return user
+
+
+@pytest.fixture(scope="function")
+async def test_officer_user(async_session: AsyncSession) -> User:
+    """Fixture for creating an officer user."""
+    user = User(
+        name="Officer User",
+        email="officer@test.com",
+        hashed_password=get_password_hash("officerpassword"),
+        role=Role.OFFICER.value,
     )
     user = await async_session.merge(user)
     await async_session.flush()
@@ -112,21 +134,54 @@ async def test_user_b(async_session: AsyncSession) -> User:
 
 @pytest.fixture(scope="function")
 async def setup_soil_texture(async_session: AsyncSession):
-    """Ensures a SoilTexture record exists with a known ID for Farm FK constraints."""
-    texture = SoilTexture(id=1, name="Test Loam")
-    texture = await async_session.merge(texture)
+    """Ensures SoilTexture records exist with known IDs for tests."""
+    from sqlalchemy.future import select
+
+    textures_data = [
+        {"id": 1, "name": "Test Loam"},
+        {"id": 2, "name": "Test Clay"},
+        {"id": 4, "name": "Test Sandy"},
+    ]
+
+    created_textures = []
+    for texture_data in textures_data:
+        # Check if it already exists
+        result = await async_session.execute(
+            select(SoilTexture).where(SoilTexture.id == texture_data["id"])
+        )
+        existing = result.scalar_one_or_none()
+
+        if existing:
+            created_textures.append(existing)
+        else:
+            new_texture = SoilTexture(**texture_data)
+            async_session.add(new_texture)
+            created_textures.append(new_texture)
+
     await async_session.flush()
-    return texture
+    return created_textures
 
 
 # Authorization Header Fixtures
 @pytest.fixture(scope="function")
-def auth_user_headers(test_user_a: User) -> dict:
-    access_token = create_access_token(data={"sub": str(test_user_a.id)})
+def admin_auth_headers(test_admin_user: User) -> dict:
+    access_token = create_access_token(
+        data={"sub": str(test_admin_user.id), "role": test_admin_user.role}
+    )
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture(scope="function")
-def auth_user_b_headers(test_user_b: User) -> dict:
-    access_token = create_access_token(data={"sub": str(test_user_b.id)})
+def supervisor_auth_headers(test_supervisor_user: User) -> dict:
+    access_token = create_access_token(
+        data={"sub": str(test_supervisor_user.id), "role": test_supervisor_user.role}
+    )
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture(scope="function")
+def officer_auth_headers(test_officer_user: User) -> dict:
+    access_token = create_access_token(
+        data={"sub": str(test_officer_user.id), "role": test_officer_user.role}
+    )
     return {"Authorization": f"Bearer {access_token}"}

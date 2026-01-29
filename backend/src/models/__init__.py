@@ -1,13 +1,14 @@
-from .farm import Farm
-from .species import Species
-from .soil_texture import SoilTexture
-from .boundaries import FarmBoundary
-from .agroforestry_type import AgroforestryType
-from .association import farm_agroforestry_association
-from .association import species_agroforestry_association
-from .user import User
-from .parameters import Parameter
-from .recommendations import Recommendation
+from src.models.farm import Farm
+from src.models.species import Species
+from src.models.soil_texture import SoilTexture
+from src.models.boundaries import FarmBoundary
+from src.models.agroforestry_type import AgroforestryType
+from src.models.association import farm_agroforestry_association
+from src.models.association import species_agroforestry_association
+from src.models.user import User
+from src.models.parameters import Parameter
+from src.models.recommendations import Recommendation
+from src.models.audit_log import AuditLog
 
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "User",
     "Parameter",
     "Recommendation",
+    "AuditLog",
 ]

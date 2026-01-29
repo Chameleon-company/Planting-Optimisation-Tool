@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db_session
+from src.schemas.user import Role, UserRead
+from src.services.authentication import require_role
 from src.services.sapling_estimation import SaplingEstimationService
 from src.schemas.sapling_estimation import SaplingEstimationResponse
 
@@ -13,13 +15,19 @@ router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
     response_model_exclude_none=True,
 )
 async def get_sapling_estimation(
-    farm_id: int, db: AsyncSession = Depends(get_db_session)
+    farm_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
 ):
     """
-    Estimates the number of saplings that can be planted on farm.
+    - Estimates the number of saplings that can be planted on farm.
 
     - **farm_id**: The ID of the farm (must have an existing boundary)
     - **Returns**: id, sapling_count, optimal_angle.
+
+
+    Estimates sapling count for a farm based on boundary area.
+    Requires OFFICER role or higher.
     """
     service = SaplingEstimationService()
     estimation_data = await service.run_estimation(db, farm_id)

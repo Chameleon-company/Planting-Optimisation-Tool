@@ -2,9 +2,7 @@ import asyncio
 from sqlalchemy import select
 from src.database import AsyncSessionLocal, engine
 from src.models.user import User
-
-# We don't have password functionality yet, using plaintext
-# from src.auth.utils import get_password_hash
+from src.services.authentication import get_password_hash
 
 
 async def create_user():
@@ -18,10 +16,16 @@ async def create_user():
             print(f"User '{email}' already exists.")
             return
 
+        # Create test user with ADMIN role
+        # Admin role grants full system access including:
+        # - Create/read/update/delete all resources
+        # - Manage users with any role (officer, supervisor, admin)
+        # - Can view and create farms regardless of ownership
         user = User(
             name="Test User",
             email=email,
-            hashed_password="password123",
+            hashed_password=get_password_hash("password123"),
+            role="admin",  # ADMIN role for full access during testing
         )
 
         session.add(user)

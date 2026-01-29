@@ -1,5 +1,18 @@
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import Optional
+
+from src.schemas.constants import Role
+
+# Re-export Role for backward compatibility
+__all__ = [
+    "Role",
+    "UserBase",
+    "UserCreate",
+    "UserRead",
+    "UserLogin",
+    "Token",
+    "TokenData",
+]
 
 
 # Base model for validation
@@ -12,15 +25,23 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(
         ...,
-        min_length=8,
         description="The user's password (must be hashed before storage).",
     )
+    role: str = "officer"
+
+    @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        return v
 
 
 # This is what is returned after registration or when fetching the current user.
 # NEVER INCLUDE PASSWORD
 class UserRead(UserBase):
     id: int = Field(..., description="The unique database ID of the user.")
+    role: str = Field(..., description="The user's role.")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,3 +62,4 @@ class TokenData(BaseModel):
     """Schema for the JWT payload validation."""
 
     id: Optional[int] = None  # The user ID stored in the token's subject (sub) field
+    role: Optional[str] = None

@@ -16,7 +16,7 @@ from httpx import AsyncClient
 )
 @pytest.mark.asyncio
 async def test_species_create_constraints(
-    async_client: AsyncClient, auth_user_headers, field, invalid_value
+    async_client: AsyncClient, test_admin_user, admin_auth_headers, field, invalid_value
 ):
     """Verifies Pydantic Field constraints for Species creation."""
     payload = {
@@ -40,7 +40,7 @@ async def test_species_create_constraints(
     payload[field] = invalid_value
 
     response = await async_client.post(
-        "/species", json=payload, headers=auth_user_headers
+        "/species", json=payload, headers=admin_auth_headers
     )
 
     assert response.status_code == 422
@@ -60,7 +60,12 @@ async def test_species_create_constraints(
 )
 @pytest.mark.asyncio
 async def test_farm_create_constraints(
-    async_client: AsyncClient, auth_user_headers, field, invalid_value
+    async_client: AsyncClient,
+    test_admin_user,
+    admin_auth_headers,
+    setup_soil_texture,
+    field,
+    invalid_value,
 ):
     """Verifies Pydantic Field constraints for Farm creation."""
     payload = {
@@ -83,13 +88,15 @@ async def test_farm_create_constraints(
     payload[field] = invalid_value
 
     response = await async_client.post(
-        "/farms", json=payload, headers=auth_user_headers
+        "/farms", json=payload, headers=admin_auth_headers
     )
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_species_with_soil_textures(async_client: AsyncClient, auth_user_headers):
+async def test_species_with_soil_textures(
+    async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture
+):
     """Tests that a species can be created with multiple soil texture associations."""
     payload = {
         "name": "Casuarina",
@@ -111,7 +118,7 @@ async def test_species_with_soil_textures(async_client: AsyncClient, auth_user_h
     }
 
     response = await async_client.post(
-        "/species", json=payload, headers=auth_user_headers
+        "/species", json=payload, headers=admin_auth_headers
     )
     assert response.status_code == 201
 

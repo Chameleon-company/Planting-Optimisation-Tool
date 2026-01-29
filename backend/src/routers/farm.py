@@ -2,13 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas.farm import FarmCreate, FarmRead
-from src.schemas.user import UserRead
-from src.dependencies import CurrentActiveUser
+from src.schemas.user import Role, UserRead
+from src.services.authentication import require_role
 from src.database import get_db_session
 
 from src.services import farm as farm_service
 from src.services.farm import get_farm_by_id
-from src.models.user import User
 
 # The router instance
 router = APIRouter(prefix="/farms", tags=["Farms"])
@@ -23,14 +22,13 @@ async def create_farm_endpoint(
     # Validates the data against the pydantic model
     farm_data: FarmCreate,
     # Inject the authenticated user
-    current_user: UserRead = CurrentActiveUser,
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
     # Inject the real database session
     db: AsyncSession = Depends(get_db_session),
 ):
     """
-    Handles the POST request to create a new farm record.
-
-    Requires: Authentication (via CurrentActiveUser), and validated Farm data (FarmCreate).
+    Creates a new farm record with validated data.
+    Requires OFFICER role or higher.
     """
 
     # Pass validated Pydantic data, secure user ID, AND THE DB SESSION to the service layer
@@ -47,12 +45,15 @@ async def read_farm_endpoint(
     farm_id: int,
     db: AsyncSession = Depends(get_db_session),
     # Assuming CurrentActiveUser is configured to return the User ORM object (src.models.user.User)
-    current_user: User = CurrentActiveUser,
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
 ):
     """
-    Retrieves one or many farms by ID, ensuring the requesting user is the owner.
+    Retrieves a farm by ID, verifying ownership.
+    Requires OFFICER role or higher.
     """
-    farms = await get_farm_by_id(db, farm_ids=[farm_id], user_id=current_user.id)
+    farms = await get_farm_by_id(
+        db, farm_ids=[farm_id], user_id=current_user.id, user_role=current_user.role
+    )
 
     if not farms:
         raise HTTPException(
