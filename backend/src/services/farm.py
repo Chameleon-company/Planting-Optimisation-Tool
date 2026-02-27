@@ -45,7 +45,7 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
 
 
 async def get_farm_by_id(
-    db: AsyncSession, farm_ids: list[int], user_id: int
+    db: AsyncSession, farm_ids: list[int], user_id: int, user_role: str = "officer"
 ) -> list[Farm] | None:
     """
     Retrieves one or many Farm records, filtered by farm_id AND user_id
@@ -58,9 +58,15 @@ async def get_farm_by_id(
     # that the FarmRead schema needs to display.
     stmt = (
         select(Farm)
-        .options(selectinload(Farm.soil_texture), selectinload(Farm.agroforestry_type))
-        .where((Farm.id.in_(farm_ids)) & (Farm.user_id == user_id))
+        .options(
+            selectinload(Farm.soil_texture),
+            selectinload(Farm.agroforestry_type),
+            selectinload(Farm.farm_supervisor),
+        )
+        .where((Farm.id.in_(farm_ids)))
     )
+    if user_role == "officer":
+        stmt = stmt.where(Farm.user_id == user_id)
 
     result = await db.execute(stmt)
 

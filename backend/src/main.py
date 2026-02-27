@@ -9,6 +9,7 @@ from src.routers import (
     auth,
     environmental_profile,
     sapling_estimation,
+    user,
 )
 from core.gee_client import init_gee
 
@@ -33,14 +34,13 @@ app = FastAPI(
 )
 
 app.include_router(auth.router)
-app.include_router(farm.router)
-app.include_router(soil_texture.router)
-app.include_router(recommendation.router)
+app.include_router(user.router)  # included user router
 app.include_router(species.router)
+app.include_router(farm.router)
+app.include_router(recommendation.router)
+app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
-# Not created yet
-# app.include_router(user.router)
 
 
 @app.middleware("http")

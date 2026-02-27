@@ -93,7 +93,7 @@ class FarmBase(BaseModel):
     )
     agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None
     external_id: Optional[int] = Field(
-        None, title="Temporary identifier for CSV import"
+        default=None, title="Temporary identifier for CSV import"
     )
 
 
@@ -107,9 +107,9 @@ class FarmRead(FarmBase):
     # I think it is the fields being exposed to the end-user
     # Of which these existing values would be useless
     id: int = Field(..., description="The unique database ID of the farm.")
-    user_id: int = Field(..., description="User ID")
-    farm_supervisor: UserReadNested = Field(
-        ..., description="Details of the farm supervisor."
+    user_id: Optional[int] = Field(None, description="User ID")
+    farm_supervisor: Optional[UserReadNested] = Field(
+        None, description="Details of the farm supervisor."
     )
     soil_texture: SoilTextureReadNested = Field(
         ..., description="The soil texture name and ID."

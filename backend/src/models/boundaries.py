@@ -1,10 +1,10 @@
 from sqlalchemy import ForeignKey, Integer
-from ..database import Base
+from src.database import Base
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
-from .farm import Farm
+from src.models.farm import Farm
 
 
 class FarmBoundary(Base):

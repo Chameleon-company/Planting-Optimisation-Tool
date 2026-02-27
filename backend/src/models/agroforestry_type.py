@@ -1,16 +1,16 @@
 # Agroforestry types model and references tables
 from sqlalchemy import String
-from ..database import Base
+from src.database import Base
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
-from .association import farm_agroforestry_association
-from .association import species_agroforestry_association
+from src.models.association import farm_agroforestry_association
+from src.models.association import species_agroforestry_association
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .farm import Farm
-    from .species import Species
+    from src.models.farm import Farm
+    from src.models.species import Species
 
 
 class AgroforestryType(Base):

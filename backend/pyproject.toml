@@ -31,6 +31,7 @@ dependencies = [
     "pre-commit>=4.5.1",
     "earthengine-api>=1.7.4, !=1.7.9",
     "google-auth>=2.47.0",
+    "bcrypt==4.0.1",
 ]
 
 [tool.pytest.ini_options]

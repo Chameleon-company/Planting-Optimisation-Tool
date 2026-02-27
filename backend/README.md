@@ -126,13 +126,310 @@ Spatial Validation: Farm boundary files in `src/models/boundaries/` are validate
 
 ### API
 The API has been built with [FastAPI](https://fastapi.tiangolo.com/) with the endpoints defined in `src/routers/`.
-Commonly used operations of the API have been covered in the [justfile](#justfile-commands) for ease-of-use. 
+Commonly used operations of the API have been covered in the [justfile](#justfile-commands) for ease-of-use.
+
+#### Authentication & Authorization
+
+The application uses JWT (JSON Web Token) based authentication with role-based access control (RBAC).
+
+**Authentication Flow:**
+
+1. User logs in with email and password via `/auth/token` endpoint
+2. Password is verified against bcrypt hash in database
+3. JWT access token is returned for subsequent requests
+4. Token is sent in `Authorization: Bearer <token>` header
+
+**User Roles (Hierarchical):**
+
+- `officer` (level 1): Basic user permissions
+- `supervisor` (level 2): Can view/manage users and resources
+- `admin` (level 3): Full system access
+
+Higher roles inherit all permissions of lower roles.
+
+**Detailed Role Permissions:**
+
+**OFFICER (Level 1) - Basic User:**
+
+Can:
+
+- Create and view their own farms (ownership-based access control)
+- Generate environmental profiles for farm locations
+- Calculate sapling estimations
+- Generate and view planting recommendations
+- Create new user accounts (any role - requires authentication)
+- View their own profile information
+
+Cannot:
+
+- List or view other users' information
+- Update or delete any user accounts
+- Create new species in the system
+- Access farms owned by other users
+
+**SUPERVISOR (Level 2) - User Manager:**
+
+Can (in addition to all Officer permissions):
+
+- List all users in the system
+- View detailed information of any user
+- Create new species entries
+
+Cannot:
+
+- Update user information (including passwords and roles)
+- Delete user accounts
+
+**ADMIN (Level 3) - Full Administrator:**
+
+Can (in addition to all Supervisor and Officer permissions):
+
+- Update any user's information (email, name, password, role)
+- Delete user accounts
+- Full unrestricted access to all system endpoints
+
+Cannot:
+
+- Nothing - administrators have complete system access
+
+**Security Features:**
+
+- Passwords hashed with bcrypt (never stored in plain text)
+- JWT tokens for stateless authentication
+- Role-based permission checks via `require_role()` dependency
+- Audit logging for security events (login, user modifications, etc.)
+
+**User Registration:**
+
+To register a new user, send a POST request to `/auth/register`:
+
+```json
+{
+  "email": "user@example.com",
+  "name": "John Doe",
+  "password": "securepassword123",
+  "role": "officer"
+}
+```
+
+- `email`: Valid email address (required, must be unique)
+- `name`: User's full name (required)
+- `password`: Password with minimum 8 characters (required)
+- `role`: One of `officer`, `supervisor`, or `admin` (optional, defaults to `officer`)
+
+Response returns the created user (without password):
+
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "name": "John Doe",
+  "role": "officer"
+}
+```
+
+**Login:**
+
+To obtain an access token, send a POST request to `/auth/token` with form data:
+
+```text
+username=user@example.com&password=securepassword123
+```
+
+Response:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+Use the token in subsequent requests: `Authorization: Bearer <access_token>`
+
+**Role-Based Permission Checks:**
+
+The following endpoints have role-based access control implemented:
+
+| Endpoint | Method | Required Role | Description |
+| :--- | :--- | :--- | :--- |
+| `/users/` | GET | SUPERVISOR | List all users |
+| `/users/{user_id}` | GET | SUPERVISOR | Get user by ID |
+| `/users/{user_id}` | PUT | ADMIN | Update user information |
+| `/users/{user_id}` | DELETE | ADMIN | Delete user account |
+| `/farms/` | POST | OFFICER | Create new farm |
+| `/farms/{farm_id}` | GET | OFFICER | Read farm by ID (ownership verified) |
+| `/species/` | POST | SUPERVISOR | Create new species |
+| `/environmental-profile/` | POST | OFFICER | Get environmental profile |
+| `/sapling-estimation/` | POST | OFFICER | Calculate sapling estimation |
+| `/recommendations/` | POST | OFFICER | Generate recommendations |
+| `/recommendations/{farm_id}` | GET | OFFICER | Get farm recommendations |
+
+Notes:
+
+- Due to hierarchical permissions, higher roles can access lower-level endpoints
+- ADMIN can access SUPERVISOR and OFFICER endpoints
+- SUPERVISOR can access OFFICER endpoints
+- Protected endpoints return `403 Forbidden` if the user lacks required permissions
+
+**Key Files:**
+
+- [src/services/authentication.py](src/services/authentication.py): Password hashing, JWT validation, role checking
+- [src/models/user.py](src/models/user.py): User model with role field
+- [src/models/audit_log.py](src/models/audit_log.py): Audit log model for security events
+- [src/routers/auth.py](src/routers/auth.py): Login and authentication endpoints
+
+## Limitations & Future Improvements
+
+This section documents current system limitations, validation behaviour, and areas identified for future improvement. These points reflect **observed behaviour** in the existing implementation.
+
+---
+
+### Password Validation
+
+- Passwords must be at least 8 characters long.
+- Shorter passwords are rejected during request validation.
+- The API returns **422 Unprocessable Entity** with a meaningful validation message.
+- Affected endpoints:
+  - `POST /auth/register`
+  - `POST /users/`
+  - `PUT /users/{user_id}`
+
+**Future Improvements**
+- Enforce stronger password requirements (uppercase, lowercase, numeric, special characters).
+- Add password strength scoring and breach detection.
+
+---
+
+### Email Address Validation
+
+- Email validation is handled by **Pydantic `EmailStr`**.
+- Most malformed email formats are rejected with **422 validation errors**.
+- Structural validation only:
+  - No domain or MX record verification
+  - Disposable or temporary email providers are allowed
+
+**Future Improvements**
+- Domain verification
+- Email confirmation workflow
+- Blocking disposable email providers
+
+---
+
+### Duplicate Email Handling
+
+- Email addresses must be unique across the system.
+- Attempting to register with an existing email returns **400 – "Email already registered"**.
+- Affected endpoints:
+  - `POST /auth/register`
+  - `POST /users/`
+  - `PUT /users/{user_id}`
+
+---
+
+### Duplicate Name Constraint
+
+- User names must be globally unique.
+- Two users cannot share the same name, even if they belong to different farms.
+  - Example:
+    - `"John Smith"` at Farm A → allowed
+    - `"John Smith"` at Farm B → rejected
+- Duplicate names are not pre-validated and result in a database integrity error.
+- Affected endpoints:
+  - `POST /auth/register`
+  - `POST /users/`
+  - `PUT /users/{user_id}`
+
+**Future Improvements**
+- Scope name uniqueness per farm or organisation.
+- Add user-friendly error handling for duplicate names.
+
+---
+
+### Case Sensitivity – Email and Name
+
+- Email and name fields are case-sensitive.
+  - `"admin@example.com"` ≠ `"Admin@example.com"`
+  - `"John Smith"` ≠ `"john smith"`
+- Duplicate users can exist if casing differs.
+- This can lead to login confusion and inconsistent identity handling.
+- Affected endpoints:
+  - `POST /auth/register`
+  - `POST /users/`
+  - `POST /auth/token`
+  - `PUT /users/{user_id}`
+
+**Future Improvements**
+- Normalize email addresses to lowercase.
+- Normalize names to a standard format before storage and lookup.
+
+---
+
+### Role Validation
+
+- Role values accept any string.
+- Users can be assigned invalid roles (e.g. `"oficer" or "adminn"`).
+- Users with invalid roles can authenticate successfully but are blocked from protected endpoints (403 Forbidden).
+- Affected endpoints:
+  - `POST /auth/register`
+  - `POST /users/`
+  - `PUT /users/{user_id}`
+
+**Future Improvements**
+- Enforce valid role enums at the API and database levels.
+
+---
+
+### Role-Based Access Control Limitation
+
+- Any authenticated user (including officers) can create new users with any role via `POST /users/`.
+- Officers can create admin-level accounts despite role restrictions elsewhere.
+- This allows role hierarchy to be bypassed.
+- Affected endpoint:
+  - `POST /users/`
+
+**Future Improvements**
+- Restrict user creation based on role hierarchy or admin-only access.
+
+---
+
+### User Self-Access Limitation
+
+- Officers cannot access `GET /users/{user_id}`, even for their own user ID.
+- Users must access their own profile via `GET /auth/users/me`.
+- Affected endpoint:
+  - `GET /users/{user_id}`
+
+**Future Improvements**
+- Allow self-access via `/users/{user_id}` or redirect to `/auth/users/me`.
+
+---
+
+### Placeholder Admin Endpoint
+
+- `GET /auth/users/me/items` returns hardcoded placeholder data:
+  ```json
+  [
+    {
+      "item_id": "Foo",
+      "owner": "<admin name>"
+    }
+  ]
 
 
 ### Testing
 The [pytest](https://docs.pytest.org/en/stable/) v2 framework handles all of the backend test suite, current tests are in `tests/` and are mainly focused on database operations and integrity checks.
 
 Directly running `backend $ uv run pytest` will <u>**not**</u> work, because the `just test` target replicates the current live database to a standalone test database and then performs the tests on the test database to ensure data integrity of the live database.
+
+**Authentication Test Coverage:**
+
+- [tests/test_auth.py](tests/test_auth.py): User registration, login, duplicate email prevention, password validation (min 8 chars), token authentication
+- [tests/test_roles.py](tests/test_roles.py): Role-based permissions (Officer/Supervisor/Admin), hierarchical access control, user CRUD operations by role
+
+**Test User Creation:**
+
+The [src/scripts/create_test_user.py](src/scripts/create_test_user.py) script creates a test user with ADMIN role for development and testing. The script was updated to include the `role` field (set to "admin") to provide full system access for testing all endpoints. Test credentials: `testuser123@test.com` / `password123`.
 
 ### CI (Continuous integration testing)
 `Planting-Optimisation-Tool/.github/workflows/backend-ci.yml` is the GitHub actions workflow file that runs on a new pull request.

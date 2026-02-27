@@ -3,20 +3,40 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.farm import Farm
 from src.models.user import User
-from src.main import app
-from src.database import get_db_session
+from src.services.authentication import get_password_hash, Role
+from src.dependencies import create_access_token
 
 
 @pytest.mark.asyncio
 async def test_read_farm_success_and_authorization_check(
     async_client: AsyncClient,
     async_session: AsyncSession,
-    auth_user_headers: dict,
-    test_user_a: User,
-    test_user_b: User,
     setup_soil_texture,
 ):
-    app.dependency_overrides[get_db_session] = lambda: async_session
+    # Create two test users
+    user_a = User(
+        name="User A",
+        email="usera@test.com",
+        hashed_password=get_password_hash("passworda"),
+        role=Role.OFFICER.value,
+    )
+    user_b = User(
+        name="User B",
+        email="userb@test.com",
+        hashed_password=get_password_hash("passwordb"),
+        role=Role.OFFICER.value,
+    )
+
+    async_session.add_all([user_a, user_b])
+    await async_session.flush()
+    await async_session.refresh(user_a)
+    await async_session.refresh(user_b)
+
+    # Create auth headers for user_a
+    access_token = create_access_token(
+        data={"sub": str(user_a.id), "role": user_a.role}
+    )
+    auth_headers = {"Authorization": f"Bearer {access_token}"}
 
     # Setup: Create farms
     farm_data_a = {
@@ -36,32 +56,33 @@ async def test_read_farm_success_and_authorization_check(
         "slope": 10.0,
     }
 
-    farm_a = Farm(**farm_data_a, user_id=test_user_a.id)
-    farm_b = Farm(**farm_data_a, user_id=test_user_b.id)
+    farm_a = Farm(**farm_data_a, user_id=user_a.id)
+    farm_b = Farm(**farm_data_a, user_id=user_b.id)
 
     async_session.add_all([farm_a, farm_b])
     await async_session.commit()
     await async_session.refresh(farm_a)
+    await async_session.refresh(farm_b)
 
     farm_a_id = farm_a.id
     farm_b_id = farm_b.id
 
     # Test 1: SUCCESS (User A reads their own farm)
     url = f"/farms/{farm_a_id}"
-    response = await async_client.get(url, headers=auth_user_headers)
+    response = await async_client.get(url, headers=auth_headers)
 
     assert response.status_code == 200
 
     data = response.json()
 
-    # Check that we got a list back with one item
+    # Check that we got a single farm object back
     assert isinstance(data, dict), "Response should be a single farm object"
     assert data["id"] == farm_a_id
-    assert data["user_id"] == test_user_a.id
+    assert data["user_id"] == user_a.id
 
     # Test 2: AUTHORIZATION FAILURE (User A tries to read User B's farm)
     url = f"/farms/{farm_b_id}"
-    response = await async_client.get(url, headers=auth_user_headers)
+    response = await async_client.get(url, headers=auth_headers)
 
     assert response.status_code == 404
     assert "not found" in response.json()["detail"].lower()
@@ -70,5 +91,3 @@ async def test_read_farm_success_and_authorization_check(
     url = f"/farms/{farm_a_id}"
     response = await async_client.get(url)
     assert response.status_code == 401
-
-    app.dependency_overrides.clear()

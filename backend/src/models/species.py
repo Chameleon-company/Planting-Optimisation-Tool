@@ -1,6 +1,6 @@
 # Species table model and reference tables
 from sqlalchemy import ForeignKey
-from ..database import Base
+from src.database import Base
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -9,13 +9,13 @@ from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .soil_texture import SoilTexture
-    from .agroforestry_type import AgroforestryType
-from .association import (
+    from src.models.soil_texture import SoilTexture
+    from src.models.agroforestry_type import AgroforestryType
+from src.models.association import (
     species_agroforestry_association,
     species_soil_texture_association,
 )
-from .parameters import Parameter
+from src.models.parameters import Parameter
 
 
 class Species(Base):

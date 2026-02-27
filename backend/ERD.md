@@ -7,6 +7,14 @@ erDiagram
     VARCHAR(15) type_name UK
   }
 
+  audit_logs {
+    INTEGER id PK "indexed"
+    INTEGER user_id FK
+    VARCHAR details
+    VARCHAR event_type "indexed"
+    DATETIME timestamp
+  }
+
   boundary {
     INTEGER id PK,FK
     geometry(MULTIPOLYGON-4326) boundary
@@ -97,8 +105,10 @@ erDiagram
     VARCHAR(255) email UK "indexed"
     VARCHAR(255) hashed_password
     VARCHAR(255) name UK "indexed"
+    VARCHAR(50) role "indexed"
   }
 
+  users ||--o{ audit_logs : user_id
   farms ||--o| boundary : id
   farms ||--o| farm_agroforestry_association : farm_id
   agroforestry_types ||--o| farm_agroforestry_association : agroforestry_type_id

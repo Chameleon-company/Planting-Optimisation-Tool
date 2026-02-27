@@ -223,3 +223,24 @@ From the `frontend` directory:
 - `npm run lint:scripts` – lint TypeScript files with ESLint
 - `npm run lint:styles` – lint CSS/SCSS with Stylelint
 - `npm run format` – format scripts and styles with Prettier + Stylelint
+
+## Contentful SDK for CMS of Species Information
+
+This project uses [Contentful](https://www.contentful.com/) as a headless CMS to store and retrieve **Species Information**, including fields:
+
+- Name
+- Scientific Name
+- Description
+- Keywords
+- Image
+
+This enables easy keyword searching and displays the relevant species information cards in the Species page.
+
+## Configuration
+
+1.  Copy `.env.example` to a new file named `.env`.
+    ```bash
+    cp .env.example .env
+    ```
+2.  Fill in the `VITE_SPACE_ID` and `VITE_ACCESS_TOKEN` values in the `.env` file
+    _(Please ask the project lead or check the secure handover notes for these credentials)_.

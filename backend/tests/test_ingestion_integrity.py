@@ -2,13 +2,32 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from src.models.boundaries import FarmBoundary
+from src.models.user import User
+from src.services.authentication import get_password_hash, Role
+from src.dependencies import create_access_token
 
 
 @pytest.mark.asyncio
 async def test_farm_and_boundary_link(
-    async_client: AsyncClient, async_session, auth_user_headers, setup_soil_texture
+    async_client: AsyncClient, async_session, setup_soil_texture
 ):
     """Verify that a farm and boundary link correctly via shared PK and External ID."""
+
+    # Create a test user with SUPERVISOR role and auth headers
+    test_user = User(
+        name="Test User farm",
+        email="testuser@test.com",
+        hashed_password=get_password_hash("testpassword"),
+        role=Role.SUPERVISOR.value,  # Changed to SUPERVISOR
+    )
+    async_session.add(test_user)
+    await async_session.flush()
+    await async_session.refresh(test_user)
+
+    access_token = create_access_token(
+        data={"sub": str(test_user.id), "role": test_user.role}
+    )
+    auth_headers = {"Authorization": f"Bearer {access_token}"}
 
     # Create a Farm
     farm_payload = {
@@ -30,7 +49,7 @@ async def test_farm_and_boundary_link(
         "slope": 5.0,
     }
     farm_resp = await async_client.post(
-        "/farms", json=farm_payload, headers=auth_user_headers
+        "/farms", json=farm_payload, headers=auth_headers
     )
     assert farm_resp.status_code == 201, f"Farm creation failed: {farm_resp.text}"
     farm_id = farm_resp.json()["id"]
