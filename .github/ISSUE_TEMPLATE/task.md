@@ -1,7 +1,7 @@
 ---
 name: 'Task'
 about: 'Create a task to implement user needs and expectations'
-title: 'Task: <!-- short descriptive name -->'
+title: '<!-- short descriptive name -->'
 labels: ''
 assignees: ''
 ---
