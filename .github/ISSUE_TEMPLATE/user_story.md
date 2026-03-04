@@ -1,7 +1,7 @@
 ---
 name: 'User Story'
 about: 'Create a new user story to describe user needs and expected value'
-title: 'User Story: <!-- short descriptive name -->'
+title: 'US-XXX: <!-- short descriptive name -->'
 labels: ''
 assignees: ''
 
