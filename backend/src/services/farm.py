@@ -1,8 +1,9 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select
+
+from src.models import AgroforestryType, Farm
 from src.schemas.farm import FarmCreate
-from src.models import Farm, AgroforestryType
 
 
 async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: int):
@@ -20,9 +21,7 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
     if agroforestry_ids:
         # Find the actual 'AgroforestryType' objects in the DB
         # that match the IDs the user sent
-        result = await db.execute(
-            select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_ids))
-        )
+        result = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_ids)))
         selected_types = list(result.scalars().all())
 
         # Link them
@@ -44,11 +43,8 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
     return result.scalar_one()
 
 
-async def get_farm_by_id(
-    db: AsyncSession, farm_ids: list[int], user_id: int, user_role: str = "officer"
-) -> list[Farm] | None:
-    """
-    Retrieves one or many Farm records, filtered by farm_id AND user_id
+async def get_farm_by_id(db: AsyncSession, farm_ids: list[int], user_id: int, user_role: str = "officer") -> list[Farm] | None:
+    """Retrieves one or many Farm records, filtered by farm_id AND user_id
     to enforce ownership authorization.
 
     Includes selectinload for relationships to prevent MissingGreenlet errors

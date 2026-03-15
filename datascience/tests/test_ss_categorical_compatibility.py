@@ -1,4 +1,5 @@
 import pytest
+
 from suitability_scoring.scoring import categorical_compatibility_score
 
 
@@ -45,9 +46,7 @@ def basic_cfg():
         ("clay", ["Clay"], 0.0, "no_match"),
     ],
 )
-def test_matches_and_non_matches_default_score(
-    value, preferred_list, expected_score, expected_reason, basic_cfg
-):
+def test_matches_and_non_matches_default_score(value, preferred_list, expected_score, expected_reason, basic_cfg):
     """
     Checks the categorical compatibility scoring function returns the expected value for matching
       and non-matching conditions.
@@ -68,9 +67,7 @@ def test_matches_and_non_matches_default_score(
         ("loam", [], None, "missing species data"),
     ],
 )
-def test_missing_values_return_none(
-    value, preferred_list, expected_score, expected_reason, basic_cfg
-):
+def test_missing_values_return_none(value, preferred_list, expected_score, expected_reason, basic_cfg):
     """
     Checks missing values return None as a score. Tests for different types of missing.
     """

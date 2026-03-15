@@ -1,5 +1,6 @@
 import pytest
 import yaml
+
 from suitability_scoring.utils.config import load_yaml
 
 

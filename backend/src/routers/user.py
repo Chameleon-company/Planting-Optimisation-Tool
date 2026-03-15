@@ -1,5 +1,4 @@
-"""
-User Management Router
+"""User Management Router
 
 This module provides CRUD endpoints for user management with role-based access control:
 - Create users (no authentication required for self-registration)
@@ -11,20 +10,21 @@ This module provides CRUD endpoints for user management with role-based access c
 All administrative operations are logged for audit purposes.
 """
 
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List
 
 from src.database import get_db_session
+from src.models.user import User
+from src.schemas.user import Role, UserCreate, UserRead
 from src.services.authentication import (
-    require_role,
+    get_current_user,
     get_password_hash,
     log_audit_event,
-    get_current_user,
+    require_role,
 )
-from src.models.user import User
-from src.schemas.user import UserCreate, UserRead, Role
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -35,8 +35,7 @@ async def create_user(
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Create a new user account.
+    """Create a new user account.
 
     This endpoint allows authenticated users to create new user accounts.
     Previously restricted to admins only, now any authenticated user can create accounts
@@ -116,8 +115,7 @@ async def read_users(
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role(Role.SUPERVISOR)),
 ):
-    """
-    List all users with pagination.
+    """List all users with pagination.
 
     Retrieves a paginated list of all users in the system.
     Requires supervisor or admin role due to hierarchical permissions.
@@ -161,8 +159,7 @@ async def read_user(
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role(Role.SUPERVISOR)),
 ):
-    """
-    Get a specific user by ID.
+    """Get a specific user by ID.
 
     Retrieves detailed information about a single user.
     Requires supervisor or admin role.
@@ -198,9 +195,7 @@ async def read_user(
     result = await db.execute(select(User).filter(User.id == user_id))
     db_user = result.scalar_one_or_none()
     if db_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return db_user
 
 
@@ -211,8 +206,7 @@ async def update_user(
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role(Role.ADMIN)),
 ):
-    """
-    Update an existing user's information.
+    """Update an existing user's information.
 
     Allows admins to modify user accounts including email, name, password, and role.
     This is a privileged operation restricted to admin users only.
@@ -254,9 +248,7 @@ async def update_user(
     result = await db.execute(select(User).filter(User.id == user_id))
     db_user = result.scalar_one_or_none()
     if db_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # Update user fields
     db_user.email = user.email
@@ -288,8 +280,7 @@ async def delete_user(
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role(Role.ADMIN)),
 ):
-    """
-    Delete a user account.
+    """Delete a user account.
 
     Permanently removes a user from the system. This is a destructive operation
     restricted to admin users only.
@@ -327,9 +318,7 @@ async def delete_user(
     result = await db.execute(select(User).filter(User.id == user_id))
     db_user = result.scalar_one_or_none()
     if db_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # TODO: Consider preventing self-deletion
     # if db_user.id == current_user.id:

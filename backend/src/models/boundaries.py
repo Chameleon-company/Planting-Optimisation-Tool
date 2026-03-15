@@ -1,9 +1,8 @@
-from sqlalchemy import ForeignKey, Integer
-from src.database import Base
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
+from sqlalchemy import ForeignKey, Integer
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.database import Base
 from src.models.farm import Farm
 
 
@@ -15,11 +14,7 @@ class FarmBoundary(Base):
         primary_key=True,
         nullable=False,
     )
-    boundary: Mapped[str] = mapped_column(
-        Geometry(
-            geometry_type="MULTIPOLYGON", srid=4326, nullable=False, spatial_index=False
-        )
-    )
+    boundary: Mapped[str] = mapped_column(Geometry(geometry_type="MULTIPOLYGON", srid=4326, nullable=False, spatial_index=False))
     external_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True)
     # Relationships
     farm: Mapped["Farm"] = relationship(

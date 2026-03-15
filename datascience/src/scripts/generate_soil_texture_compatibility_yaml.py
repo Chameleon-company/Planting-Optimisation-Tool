@@ -9,8 +9,9 @@
 #   >=4-step=0.2
 #   Hard incompatibilities = 0.0.
 
-import yaml
 from collections import deque
+
+import yaml
 
 # 12 USDA classes
 CLASSES = [

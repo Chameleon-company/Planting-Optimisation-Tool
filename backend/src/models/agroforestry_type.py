@@ -1,12 +1,14 @@
 # Agroforestry types model and references tables
-from sqlalchemy import String
-from src.database import Base
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
-from src.models.association import farm_agroforestry_association
-from src.models.association import species_agroforestry_association
 from typing import TYPE_CHECKING
+
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.database import Base
+from src.models.association import (
+    farm_agroforestry_association,
+    species_agroforestry_association,
+)
 
 if TYPE_CHECKING:
     from src.models.farm import Farm
@@ -22,18 +24,13 @@ class AgroforestryType(Base):
     # Relationships
     # -------------
     # Links an AgroforestryType object back to a Farm object
-    farms: Mapped[list["Farm"]] = relationship(
-        secondary=farm_agroforestry_association, back_populates="agroforestry_type"
-    )
+    farms: Mapped[list["Farm"]] = relationship(secondary=farm_agroforestry_association, back_populates="agroforestry_type")
 
     # Links an AgroforestryType object back to a Farm object
-    species_agroforestry_type: Mapped[list["Species"]] = relationship(
-        secondary=species_agroforestry_association, back_populates="agroforestry_types"
-    )
+    species_agroforestry_type: Mapped[list["Species"]] = relationship(secondary=species_agroforestry_association, back_populates="agroforestry_types")
 
     def __repr__(self) -> str:
-        """
-        Returns the official string representation of the Agroforestry_types object.
+        """Returns the official string representation of the Agroforestry_types object.
         Used primarily for debugging, logging, inspection.
         """
         return f"Agroforestry_types(id={self.id!r}, type{self.type_name!r})"

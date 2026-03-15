@@ -5,10 +5,9 @@ if TYPE_CHECKING:
     from src.models.farm import Farm
     from src.models.species import Species
 from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from src.database import Base
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
 
 
 class SoilTexture(Base):
@@ -22,13 +21,10 @@ class SoilTexture(Base):
     # Links a SoilTexture object back to the Farm objects
     farms: Mapped[list["Farm"]] = relationship(back_populates="soil_texture")
 
-    soil_textures_for_species: Mapped[list["Species"]] = relationship(
-        secondary="species_soil_texture_association", back_populates="soil_textures"
-    )
+    soil_textures_for_species: Mapped[list["Species"]] = relationship(secondary="species_soil_texture_association", back_populates="soil_textures")
 
     def __repr__(self) -> str:
-        """
-        Returns the official string representation of the Agroforestry_types object.
+        """Returns the official string representation of the Agroforestry_types object.
         Used primarily for debugging, logging, inspection.
         """
         return f"soil_textures(id={self.id!r}, type{self.name!r})"

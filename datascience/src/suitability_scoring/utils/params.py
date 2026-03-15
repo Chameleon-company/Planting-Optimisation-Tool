@@ -52,9 +52,7 @@ def build_species_params_dict(species_params_rows, config):
     # For each row in the species_params dataframe
     for row in species_params_rows:
         # Get the species_id for this row
-        species_id = (
-            int(row[species_id_col]) if row[species_id_col] is not None else "unknown"
-        )
+        species_id = int(row[species_id_col]) if row[species_id_col] is not None else "unknown"
 
         # Get the feature name for this row
         feat = row["feature"]

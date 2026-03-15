@@ -1,18 +1,19 @@
 # ruff: noqa: F401,F403
-import sys
-from pathlib import Path
-from logging.config import fileConfig
 import os
-from dotenv import load_dotenv
+import sys
+from logging.config import fileConfig
+from pathlib import Path
 
+from dotenv import load_dotenv
+from sqlalchemy import event, pool, text
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import pool, event, text
 from sqlalchemy.schema import Index
+
+import src.models
 from alembic import context
 
 # Model discovery
 from src.database import Base
-import src.models
 
 load_dotenv()
 
@@ -25,9 +26,7 @@ target_metadata = Base.metadata
 
 # This stops alembic from trying to delete the PostGIS system tables
 def include_object(obj, name, type_, reflected, compare_to):
-    """
-    Excludes PostGIS system tables from Alembic's consideration.
-    """
+    """Excludes PostGIS system tables from Alembic's consideration."""
     # List of tables owned by PostGIS that alembic shouldn't touch
     if type_ == "table" and name in [
         "spatial_ref_sys",
@@ -45,7 +44,6 @@ def setup_ddl_listeners():
         @event.listens_for(Index, "before_create")
         def receive_before_create(target, connection, **kw):
             """Ensures an index is dropped if it exists before creation to avoid DuplicateTableError."""
-
             # Check if we are connected to PostgreSQL
             if connection.engine.name == "postgresql":
                 # Generate the DROP INDEX IF EXISTS SQL command
@@ -103,16 +101,12 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """
-    Run migrations in 'online' mode using the asynchronous engine.
-    """
+    """Run migrations in 'online' mode using the asynchronous engine."""
     # Get the URL from .env file
     db_url = os.environ.get("DATABASE_URL")
 
     if db_url is None:
-        raise Exception(
-            "DATABASE_URL env variable is not set, ensure it's in .env file"
-        )
+        raise Exception("DATABASE_URL env variable is not set, ensure it's in .env file")
 
     # Create the async Engine
     connectable = create_async_engine(

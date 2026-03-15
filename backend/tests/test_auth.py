@@ -9,8 +9,7 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_register_user(async_client: AsyncClient, async_session: AsyncSession):
-    """
-    Test user registration via /auth/register endpoint.
+    """Test user registration via /auth/register endpoint.
 
     Verifies that:
     - A new user can be created through the registration endpoint
@@ -35,17 +34,14 @@ async def test_register_user(async_client: AsyncClient, async_session: AsyncSess
     assert data["role"] == "officer"
 
     # Verify the user was actually created in the database
-    result = await async_session.execute(
-        select(User).filter(User.email == "registration_test_user@test.com")
-    )
+    result = await async_session.execute(select(User).filter(User.email == "registration_test_user@test.com"))
     db_user = result.scalar_one_or_none()
     assert db_user is not None
     assert db_user.name == "Registration Test User"
 
 
 async def test_login_for_access_token(async_client: AsyncClient, test_admin_user: User):
-    """
-    Test successful login via /auth/token endpoint.
+    """Test successful login via /auth/token endpoint.
 
     Verifies that:
     - Valid credentials return a JWT access token
@@ -63,8 +59,7 @@ async def test_login_for_access_token(async_client: AsyncClient, test_admin_user
 
 
 async def test_login_wrong_password(async_client: AsyncClient, test_admin_user: User):
-    """
-    Test login failure with incorrect password.
+    """Test login failure with incorrect password.
 
     Verifies that authentication fails (401 Unauthorized) when
     the email is correct but the password is wrong.
@@ -77,8 +72,7 @@ async def test_login_wrong_password(async_client: AsyncClient, test_admin_user: 
 
 
 async def test_login_wrong_username(async_client: AsyncClient, test_admin_user: User):
-    """
-    Test login failure with non-existent user.
+    """Test login failure with non-existent user.
 
     Verifies that authentication fails (401 Unauthorized) when
     attempting to login with an email that doesn't exist.
@@ -91,8 +85,7 @@ async def test_login_wrong_username(async_client: AsyncClient, test_admin_user: 
 
 
 async def test_get_current_user(async_client: AsyncClient, admin_auth_headers: dict):
-    """
-    Test retrieving current user information via /auth/users/me.
+    """Test retrieving current user information via /auth/users/me.
 
     Verifies that:
     - An authenticated user can retrieve their own information
@@ -111,11 +104,8 @@ async def test_get_current_user(async_client: AsyncClient, admin_auth_headers: d
 # ============================================================================
 
 
-async def test_register_duplicate_email_fails(
-    async_client: AsyncClient, async_session: AsyncSession
-):
-    """
-    Test that registering a user with an existing email fails.
+async def test_register_duplicate_email_fails(async_client: AsyncClient, async_session: AsyncSession):
+    """Test that registering a user with an existing email fails.
 
     Verifies that:
     - First registration succeeds
@@ -154,8 +144,7 @@ async def test_register_duplicate_email_fails(
 
 
 async def test_register_password_too_short(async_client: AsyncClient):
-    """
-    Test that registration fails with password shorter than 8 characters.
+    """Test that registration fails with password shorter than 8 characters.
 
     Verifies that:
     - Password must be at least 8 characters
@@ -177,8 +166,7 @@ async def test_register_password_too_short(async_client: AsyncClient):
 
 
 async def test_register_password_minimum_length(async_client: AsyncClient):
-    """
-    Test that password with exactly 8 characters is accepted.
+    """Test that password with exactly 8 characters is accepted.
 
     Verifies that:
     - Minimum password length of 8 characters is enforced
@@ -204,8 +192,7 @@ async def test_register_password_minimum_length(async_client: AsyncClient):
 
 
 async def test_access_protected_endpoint_without_token(async_client: AsyncClient):
-    """
-    Test that accessing protected endpoint without token fails.
+    """Test that accessing protected endpoint without token fails.
 
     Verifies that:
     - Protected endpoints require authentication
@@ -216,8 +203,7 @@ async def test_access_protected_endpoint_without_token(async_client: AsyncClient
 
 
 async def test_access_protected_endpoint_with_invalid_token(async_client: AsyncClient):
-    """
-    Test that accessing protected endpoint with invalid token fails.
+    """Test that accessing protected endpoint with invalid token fails.
 
     Verifies that:
     - Invalid JWT tokens are rejected

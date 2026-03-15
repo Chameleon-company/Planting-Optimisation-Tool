@@ -34,9 +34,7 @@ def build_species_recommendations(species_list):
     :returns: List of dictionaries ordered by the highest weighted score.
     """
     # Primary: total_score (desc), Secondary: species_id (asc)
-    ranked = sorted(
-        species_list, key=lambda x: (-x.get("mcda_score", 0), x.get("species_id", 0))
-    )
+    ranked = sorted(species_list, key=lambda x: (-x.get("mcda_score", 0), x.get("species_id", 0)))
 
     # Add tie breaking policy
     dense_ranks = assign_dense_ranks(ranked)

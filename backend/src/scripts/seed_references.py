@@ -1,9 +1,11 @@
 import asyncio
+
 from sqlalchemy import select
+
 from src.database import AsyncSessionLocal, engine
-from src.models.soil_texture import SoilTexture
 from src.models.agroforestry_type import AgroforestryType
-from src.schemas.constants import SoilTextureID, AgroforestryTypeID
+from src.models.soil_texture import SoilTexture
+from src.schemas.constants import AgroforestryTypeID, SoilTextureID
 
 
 async def seed_references():

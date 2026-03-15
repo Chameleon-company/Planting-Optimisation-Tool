@@ -1,10 +1,11 @@
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.dependencies import create_access_token
 from src.models.farm import Farm
 from src.models.user import User
-from src.services.authentication import get_password_hash, Role
-from src.dependencies import create_access_token
+from src.services.authentication import Role, get_password_hash
 
 
 @pytest.mark.asyncio
@@ -33,9 +34,7 @@ async def test_read_farm_success_and_authorization_check(
     await async_session.refresh(user_b)
 
     # Create auth headers for user_a
-    access_token = create_access_token(
-        data={"sub": str(user_a.id), "role": user_a.role}
-    )
+    access_token = create_access_token(data={"sub": str(user_a.id), "role": user_a.role})
     auth_headers = {"Authorization": f"Bearer {access_token}"}
 
     # Setup: Create farms

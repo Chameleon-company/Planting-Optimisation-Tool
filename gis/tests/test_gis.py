@@ -10,39 +10,39 @@ OpenLandMap pH:   r=0.18, MAE=1.21   - POOR (not recommended)
 
 """
 
-import pytest
 import pandas as pd
+import pytest
+
 from config.settings import (
-    SERVICE_ACCOUNT,
     KEY_PATH,
-    get_dataset_config,
+    SERVICE_ACCOUNT,
     TEXTURE_MAP,
+    get_dataset_config,
 )
-from core.gee_client import init_gee
 from core.extract_data import (
-    get_rainfall,
-    get_temperature,
-    get_ph,
-    get_area_ha,
-    get_elevation,
-    get_slope,
-    get_texture,
     _normalize_texture_name,
+    get_area_ha,
     get_centroid_lat_lon,
-)
-from core.geometry_parser import (
-    parse_point,
-    parse_multipoint,
-    parse_polygon,
-    parse_geometry,
+    get_elevation,
+    get_ph,
+    get_rainfall,
+    get_slope,
+    get_temperature,
+    get_texture,
 )
 from core.farm_profile import (
     build_farm_profile,
-    update_farm_profile,
     bulk_create_profiles,
     bulk_update_profiles,
+    update_farm_profile,
 )
-
+from core.gee_client import init_gee
+from core.geometry_parser import (
+    parse_geometry,
+    parse_multipoint,
+    parse_point,
+    parse_polygon,
+)
 
 # ============================================================================
 # SETUP AND FIXTURES
@@ -224,14 +224,10 @@ def test_get_texture(gee_initialized, test_point):
     # Currently using OpenLandMap pH as demonstration of GEE extraction
     # Returns numeric pH value (~5-6) rather than texture class name
     if texture is not None:
-        assert isinstance(texture, (int, float, str)), (
-            "Texture should be numeric or string"
-        )
+        assert isinstance(texture, (int, float, str)), "Texture should be numeric or string"
         print(f"SUCCESS: Soil Texture (demonstration): {texture}")
         print("  Note: Currently extracting pH value to demonstrate GEE capability")
-        print(
-            "  Replace soil_texture config with actual texture asset for production use"
-        )
+        print("  Replace soil_texture config with actual texture asset for production use")
     else:
         print("WARNING: Soil Texture: No data at this location")
 
@@ -251,9 +247,7 @@ def test_get_centroid(gee_initialized, test_polygon):
     lat, lon = get_centroid_lat_lon(test_polygon)
 
     assert lat is not None and lon is not None, "Centroid should not be None"
-    assert isinstance(lat, float) and isinstance(lon, float), (
-        "Coordinates should be floats"
-    )
+    assert isinstance(lat, float) and isinstance(lon, float), "Coordinates should be floats"
     assert -90 <= lat <= 90, f"Latitude {lat} out of range"
     assert -180 <= lon <= 180, f"Longitude {lon} out of range"
     print(f"SUCCESS: Centroid: ({lat}, {lon})")
@@ -359,12 +353,8 @@ def test_coastal_flag_logic(gee_initialized):
 
     # Coastal flag should be True if: elevation < 100 AND 500 <= rainfall <= 3000
     if profile["elevation_m"] is not None and profile["rainfall_mm"] is not None:
-        expected_coastal = (
-            profile["elevation_m"] < 100 and 500 <= profile["rainfall_mm"] <= 3000
-        )
-        assert profile["coastal"] == expected_coastal, (
-            f"Coastal flag mismatch: expected {expected_coastal}, got {profile['coastal']}"
-        )
+        expected_coastal = profile["elevation_m"] < 100 and 500 <= profile["rainfall_mm"] <= 3000
+        assert profile["coastal"] == expected_coastal, f"Coastal flag mismatch: expected {expected_coastal}, got {profile['coastal']}"
 
 
 # ============================================================================
@@ -382,20 +372,12 @@ def test_dataset_validation_quality(gee_initialized, test_point):
     # These should all return valid values (not None)
     assert rainfall is not None, "CHIRPS rainfall should return data (r=0.96, MAE=23mm)"
     assert elevation is not None, "SRTM elevation should return data (r=0.98, MAE=11m)"
-    assert temp is not None, (
-        "MODIS temperature should return data (r=0.87, MAE=1.5°C with correction)"
-    )
+    assert temp is not None, "MODIS temperature should return data (r=0.87, MAE=1.5°C with correction)"
 
     print("\nSUCCESS: EDA-Validated Data Quality Check:")
-    print(
-        f"  Rainfall (CHIRPS):     {rainfall} mm   [r=0.96, MAE=23mm]   SUCCESS: EXCELLENT"
-    )
-    print(
-        f"  Elevation (SRTM):      {elevation} m   [r=0.98, MAE=11m]    SUCCESS: EXCELLENT"
-    )
-    print(
-        f"  Temperature (MODIS):   {temp}°C        [r=0.87, MAE=1.5°C]  SUCCESS: GOOD (bias corrected)"
-    )
+    print(f"  Rainfall (CHIRPS):     {rainfall} mm   [r=0.96, MAE=23mm]   SUCCESS: EXCELLENT")
+    print(f"  Elevation (SRTM):      {elevation} m   [r=0.98, MAE=11m]    SUCCESS: EXCELLENT")
+    print(f"  Temperature (MODIS):   {temp}°C        [r=0.87, MAE=1.5°C]  SUCCESS: GOOD (bias corrected)")
     print("\n  Note: All values extracted using CENTROID method (EDA recommended)")
     print("        Polygon aggregation provides no improvement over centroid")
 
@@ -432,11 +414,7 @@ def test_eda_validation_summary(gee_initialized, test_point):
     get_ph(test_point)
 
     # Validation results table
-    print(
-        "\n{:<20} {:<15} {:<15} {:<12} {:<15}".format(
-            "Variable", "Dataset", "Correlation", "MAE", "Status"
-        )
-    )
+    print("\n{:<20} {:<15} {:<15} {:<12} {:<15}".format("Variable", "Dataset", "Correlation", "MAE", "Status"))
     print("-" * 70)
 
     datasets = [
@@ -448,9 +426,7 @@ def test_eda_validation_summary(gee_initialized, test_point):
     ]
 
     for var, dataset, corr, mae, status in datasets:
-        print(
-            "{:<20} {:<15} {:<15} {:<12} {:<15}".format(var, dataset, corr, mae, status)
-        )
+        print("{:<20} {:<15} {:<15} {:<12} {:<15}".format(var, dataset, corr, mae, status))
 
     print("\n" + "-" * 70)
     print("* Temperature requires -4.43°C bias correction (LST vs air temp)")
@@ -487,7 +463,7 @@ def test_invalid_geometry():
 )
 def test_missing_credentials_error():
     """Test that missing credentials raise appropriate error."""
-    from config.settings import SERVICE_ACCOUNT, KEY_PATH
+    from config.settings import KEY_PATH, SERVICE_ACCOUNT
 
     # This test just verifies credentials are loaded
     assert SERVICE_ACCOUNT is not None, "Set GEE_SERVICE_ACCOUNT in .env"
@@ -611,9 +587,7 @@ def test_bulk_create_profiles(gee_initialized):
 
     print(f"\nCreating profiles for {len(farms)} farms...")
 
-    profiles_df = bulk_create_profiles(
-        farms, geometry_field="geometry", id_field="farm_id", year=2024, max_workers=3
-    )
+    profiles_df = bulk_create_profiles(farms, geometry_field="geometry", id_field="farm_id", year=2024, max_workers=3)
 
     # Verify results
     assert len(profiles_df) == 3
@@ -637,11 +611,7 @@ def test_bulk_create_profiles(gee_initialized):
 
     # Display results
     print("\nProfiles created:")
-    print(
-        profiles_df[
-            ["id", "farmer_name", "rainfall_mm", "temperature_celsius", "status"]
-        ]
-    )
+    print(profiles_df[["id", "farmer_name", "rainfall_mm", "temperature_celsius", "status"]])
 
     assert success_count > 0, "At least one profile should succeed"
 
@@ -794,9 +764,7 @@ def test_custom_fields_preservation(gee_initialized, test_point):
     print(f"  crop_type: {profile['crop_type']}")
 
     # Update temporal fields
-    updated = update_farm_profile(
-        existing_profile=profile, geometry=test_point, fields=["rainfall_mm"], year=2025
-    )
+    updated = update_farm_profile(existing_profile=profile, geometry=test_point, fields=["rainfall_mm"], year=2025)
 
     # Custom fields should be preserved
     assert updated["farmer_name"] == "John Doe"

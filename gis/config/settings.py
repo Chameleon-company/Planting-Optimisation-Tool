@@ -5,6 +5,7 @@ Loads GEE authentication from .env and defines all dataset configurations.
 """
 
 import os
+
 from dotenv import load_dotenv
 
 # Path to .env inside the gis folder

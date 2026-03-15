@@ -1,10 +1,9 @@
-import csv
 import asyncio
+import csv
 
 from src.database import AsyncSessionLocal, engine
-
-from src.models.species import Species
 from src.models.parameters import Parameter
+from src.models.species import Species
 
 
 def to_float_or_none(value):

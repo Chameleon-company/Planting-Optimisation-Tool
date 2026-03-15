@@ -1,18 +1,16 @@
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
+
+from src.dependencies import create_access_token
 from src.models.boundaries import FarmBoundary
 from src.models.user import User
-from src.services.authentication import get_password_hash, Role
-from src.dependencies import create_access_token
+from src.services.authentication import Role, get_password_hash
 
 
 @pytest.mark.asyncio
-async def test_farm_and_boundary_link(
-    async_client: AsyncClient, async_session, setup_soil_texture
-):
+async def test_farm_and_boundary_link(async_client: AsyncClient, async_session, setup_soil_texture):
     """Verify that a farm and boundary link correctly via shared PK and External ID."""
-
     # Create a test user with SUPERVISOR role and auth headers
     test_user = User(
         name="Test User farm",
@@ -24,9 +22,7 @@ async def test_farm_and_boundary_link(
     await async_session.flush()
     await async_session.refresh(test_user)
 
-    access_token = create_access_token(
-        data={"sub": str(test_user.id), "role": test_user.role}
-    )
+    access_token = create_access_token(data={"sub": str(test_user.id), "role": test_user.role})
     auth_headers = {"Authorization": f"Bearer {access_token}"}
 
     # Create a Farm
@@ -48,9 +44,7 @@ async def test_farm_and_boundary_link(
         "bank_stabilising": False,
         "slope": 5.0,
     }
-    farm_resp = await async_client.post(
-        "/farms", json=farm_payload, headers=auth_headers
-    )
+    farm_resp = await async_client.post("/farms", json=farm_payload, headers=auth_headers)
     assert farm_resp.status_code == 201, f"Farm creation failed: {farm_resp.text}"
     farm_id = farm_resp.json()["id"]
 
@@ -61,8 +55,6 @@ async def test_farm_and_boundary_link(
     await async_session.commit()
 
     # Verify spatial retrieval
-    result = await async_session.execute(
-        select(FarmBoundary).where(FarmBoundary.id == farm_id)
-    )
+    result = await async_session.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
     retrieved = result.scalar_one()
     assert retrieved.external_id == 999

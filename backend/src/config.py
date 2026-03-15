@@ -1,15 +1,14 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """
-    Defines application settings. Loads values from environment variables
+    """Defines application settings. Loads values from environment variables
     or an .env file (which should be gitignored).
     """
 
     @property
-    def DATABASE_URL(self) -> str:
+    def DATABASE_URL(self) -> str:  # noqa: N802
         # Pydantic will construct the final URL using the variables
         # loaded from the .env file or the defaults defined.
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

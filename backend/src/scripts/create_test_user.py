@@ -1,5 +1,7 @@
 import asyncio
+
 from sqlalchemy import select
+
 from src.database import AsyncSessionLocal, engine
 from src.models.user import User
 from src.services.authentication import get_password_hash

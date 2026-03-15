@@ -311,14 +311,10 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     min_v, max_v, left_tol, right_tol = rule["args"]
 
                     # Score the farm value
-                    score, reason, params_out = numerical_trapezoid_score(
-                        farm_val, min_v, max_v, left_tol, right_tol
-                    )
+                    score, reason, params_out = numerical_trapezoid_score(farm_val, min_v, max_v, left_tol, right_tol)
 
                 else:  # No valid scoring method selected
-                    raise ValueError(
-                        f"Unknown numeric scoring method '{score_method}' for '{feat}'"
-                    )
+                    raise ValueError(f"Unknown numeric scoring method '{score_method}' for '{feat}'")
 
                 # Store explanation for this feature
                 feature_explain[feat] = {
@@ -350,13 +346,9 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     prefs, compat_dict = rule["args"]
 
                     # Score the farm value
-                    score, reason = categorical_compatibility_score(
-                        farm_val, prefs, compat_dict
-                    )
+                    score, reason = categorical_compatibility_score(farm_val, prefs, compat_dict)
                 else:  # No valid scoring method selected
-                    raise ValueError(
-                        f"Unknown categorical mode '{score_method}' for feature '{feat}'"
-                    )
+                    raise ValueError(f"Unknown categorical mode '{score_method}' for feature '{feat}'")
 
                 # Store explanation
                 feature_explain[feat] = {

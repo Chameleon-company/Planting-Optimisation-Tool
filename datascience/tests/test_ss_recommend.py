@@ -1,4 +1,5 @@
 import pytest
+
 from suitability_scoring.recommend import (
     assign_dense_ranks,
     build_species_recommendations,
@@ -15,9 +16,7 @@ def sample_species_list():
             "species_id": 101,
             "species_name": "Eucalyptus",
             "mcda_score": 0.8567,
-            "features": {
-                "rainfall": {"short_name": "rain", "reason": "Acceptable", "score": 1.0}
-            },
+            "features": {"rainfall": {"short_name": "rain", "reason": "Acceptable", "score": 1.0}},
         },
         {
             "species_id": 102,

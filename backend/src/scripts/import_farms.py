@@ -1,13 +1,14 @@
-import sys
-import csv
 import asyncio
+import csv
+import sys
+
 import httpx
 from sqlalchemy import select
 
 # Project imports
 from src.database import AsyncSessionLocal, engine
-from src.models.user import User
 from src.dependencies import create_access_token
+from src.models.user import User
 
 # Configuration
 BASE_URL = "http://127.0.0.1:8080"
@@ -21,9 +22,7 @@ async def get_test_user_token():
         user = result.scalar_one_or_none()
 
         if not user:
-            raise Exception(
-                f"User {USER_EMAIL} not found. Run create_test_user.py first."
-            )
+            raise Exception(f"User {USER_EMAIL} not found. Run create_test_user.py first.")
 
         token = create_access_token(data={"sub": str(user.id)})
         return token
@@ -34,9 +33,7 @@ async def ingest_farms():
         token = await get_test_user_token()
         headers = {"Authorization": f"Bearer {token}"}
 
-        with open(
-            "src/scripts/data/farms_20251219.csv", mode="r", encoding="utf-8-sig"
-        ) as f:
+        with open("src/scripts/data/farms_20251219.csv", mode="r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             count = 0
 
@@ -46,9 +43,7 @@ async def ingest_farms():
                     "rainfall_mm": int(float(row["rainfall_mm"])),
                     "temperature_celsius": int(float(row["temperature_celsius"])),
                     "elevation_m": int(float(row["elevation_m"])),
-                    "ph": str(
-                        round(float(row["ph"]), 1)
-                    ),  # Decimal needs string or float
+                    "ph": str(round(float(row["ph"]), 1)),  # Decimal needs string or float
                     "soil_texture_id": int(row["soil_texture_id"]),
                     "area_ha": str(round(float(row["area_ha"]), 3)),
                     "latitude": str(round(float(row["latitude"]), 5)),
@@ -62,9 +57,7 @@ async def ingest_farms():
                     "external_id": int(row["external_id"]),
                 }
 
-                response = await client.post(
-                    f"{BASE_URL}/farms", json=payload, headers=headers
-                )
+                response = await client.post(f"{BASE_URL}/farms", json=payload, headers=headers)
 
                 if response.status_code == 201:
                     count += 1
@@ -74,9 +67,7 @@ async def ingest_farms():
                         error_msg = response.json().get("detail")
                     except Exception:
                         # Fallback to the raw status and text if JSON parsing fails
-                        error_msg = (
-                            f"Status {response.status_code}: {response.text[:100]}"
-                        )
+                        error_msg = f"Status {response.status_code}: {response.text[:100]}"
 
                     print(f"ID {row['external_id']} Failed: {error_msg}")
 

@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
 from decimal import Decimal
-from src.schemas.constants import SoilTextureID
-from src.schemas.constants import AgroforestryTypeID
+from typing import List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from src.schemas.constants import AgroforestryTypeID, SoilTextureID
 from src.schemas.nested_models import AgroforestryTypeReadNested, SoilTextureReadNested
 
 
@@ -96,9 +97,7 @@ class SpeciesRead(SpeciesBase):
     id: int = Field(..., description="Unique database ID of the species.")
 
     # Shows the Names of the soil textures instead of the ID number
-    soil_textures: List[SoilTextureReadNested] = Field(
-        default_factory=list, description="List of compatible soil textures with names."
-    )
+    soil_textures: List[SoilTextureReadNested] = Field(default_factory=list, description="List of compatible soil textures with names.")
 
     # Shows the Names of the Agroforestry types instead of the ID number
     agroforestry_types: List[AgroforestryTypeReadNested] = Field(

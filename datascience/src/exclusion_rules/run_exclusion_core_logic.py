@@ -16,10 +16,7 @@ import pandas as pd
 
 from .exclusion_core_logic import run_exclusion_rules_records
 
-
-DEFAULT_CONFIG_PATH = (
-    Path(__file__).resolve().parents[2] / "exclusion_rules" / "exclusion_config.json"
-)
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "exclusion_rules" / "exclusion_config.json"
 
 
 def load_exclusion_config(path: Optional[Union[str, Path]] = None) -> Dict[str, Any]:
@@ -52,9 +49,7 @@ def run_exclusion_rules(
     -------
     {"candidate_ids": [...], "excluded_species": [...]}
     """
-    farm_dict = (
-        farm_data.to_dict() if isinstance(farm_data, pd.Series) else dict(farm_data)
-    )
+    farm_dict = farm_data.to_dict() if isinstance(farm_data, pd.Series) else dict(farm_data)
     cfg = config if config is not None else load_exclusion_config()
 
     species_rows = species_df.fillna(value=pd.NA).to_dict(orient="records")

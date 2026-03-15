@@ -34,3 +34,14 @@ where = ["src"]
 pythonpath = ["src"]
 testpaths = ["tests"]
 
+[tool.ruff]
+line-length = 200
+
+[tool.ruff.lint]
+select = [
+    "E",   # basic errors (spacing, syntax)
+    "F",   # undefined variables, unused imports
+    "I",   # import ordering (auto-fixable)
+    "N",   # naming: snake_case, PascalCase, UPPER_SNAKE_CASE
+]
+

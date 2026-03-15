@@ -1,14 +1,15 @@
 import os
 import sys
+
 from sqlalchemy import create_engine
 from sqlalchemy_schemadisplay import create_schema_graph
 
 # Adjust path to find modules when running from root directory
 sys.path.insert(0, os.getcwd())
 
+from src import models  # noqa: F401
 from src.config import settings
 from src.database import Base
-from src import models  # noqa: F401
 
 db_url_async = settings.DATABASE_URL
 # Using synchronous driver for compatibility with sqlalchemy_schemadisplay
@@ -32,9 +33,7 @@ graph = create_schema_graph(
     restrict_tables=target_tables,
 )
 
-graph.set_node_defaults(
-    shape="Mrecord", fontsize="10", bgcolor="lightyellow", fontname="Helvetica"
-)
+graph.set_node_defaults(shape="Mrecord", fontsize="10", bgcolor="lightyellow", fontname="Helvetica")
 
 graph.set("ranksep", "0.7")
 graph.set("nodesep", "0.4")

@@ -1,17 +1,16 @@
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.boundaries import FarmBoundary
 from geoalchemy2.shape import to_shape
 from sapling_estimation.estimate import sapling_estimation
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.models.boundaries import FarmBoundary
 
 
 class SaplingEstimationService:
     @staticmethod
     async def run_estimation(db: AsyncSession, farm_id: int):
         # Fetch boundary from DB
-        result = await db.execute(
-            select(FarmBoundary).where(FarmBoundary.id == farm_id)
-        )
+        result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
         boundary_record = result.scalar_one_or_none()
         if not boundary_record:
             return None
