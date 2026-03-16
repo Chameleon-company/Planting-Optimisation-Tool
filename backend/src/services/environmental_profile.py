@@ -1,18 +1,17 @@
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.boundaries import FarmBoundary
 from core.farm_profile import build_farm_profile
 from geoalchemy2.shape import to_shape
 from shapely.geometry import MultiPolygon, Polygon
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.models.boundaries import FarmBoundary
 
 
 class EnvironmentalProfileService:
     @staticmethod
     async def run_environmental_profile(db: AsyncSession, farm_id: int):
         # Fetch the boundary data
-        result = await db.execute(
-            select(FarmBoundary).where(FarmBoundary.id == farm_id)
-        )
+        result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
         boundary_record = result.scalar_one_or_none()
 
         if not boundary_record:
@@ -45,9 +44,7 @@ class EnvironmentalProfileService:
 
         # Round temp to int
         if profile.get("temperature_celsius") is not None:
-            profile["temperature_celsius"] = int(
-                round(float(profile["temperature_celsius"]))
-            )
+            profile["temperature_celsius"] = int(round(float(profile["temperature_celsius"])))
 
         # Round rainfall to int
         if profile.get("rainfall_mm") is not None:

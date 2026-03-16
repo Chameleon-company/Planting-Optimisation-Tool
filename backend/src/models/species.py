@@ -1,16 +1,15 @@
 # Species table model and reference tables
-from sqlalchemy import ForeignKey
-from src.database import Base
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
-
 # For type hinting only, not runtime
 from typing import TYPE_CHECKING
 
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.database import Base
+
 if TYPE_CHECKING:
-    from src.models.soil_texture import SoilTexture
     from src.models.agroforestry_type import AgroforestryType
+    from src.models.soil_texture import SoilTexture
 from src.models.association import (
     species_agroforestry_association,
     species_soil_texture_association,
@@ -54,13 +53,10 @@ class Species(Base):
     )
 
     # Links a species object to parameter object
-    parameters: Mapped[list["Parameter"]] = relationship(
-        back_populates="species", cascade="all, delete-orphan"
-    )
+    parameters: Mapped[list["Parameter"]] = relationship(back_populates="species", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        """
-        Returns the official string representation of the Species object.
+        """Returns the official string representation of the Species object.
         Used primarily for debugging, logging, inspection.
         """
         return f"Species(id={self.id!r}, name{self.name!r}, common_name{self.common_name!r})"

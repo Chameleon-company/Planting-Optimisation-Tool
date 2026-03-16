@@ -1,8 +1,8 @@
-import pytest
+import geopandas as gpd
 import numpy as np
+import pytest
 import rasterio
 from rasterio.transform import from_origin
-import geopandas as gpd
 from shapely.geometry import box
 
 from sapling_estimation.slope_raster import compute_farm_slope

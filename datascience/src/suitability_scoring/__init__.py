@@ -154,9 +154,9 @@ Stability & versioning
   without notice.
 """
 
-from .scoring import calculate_suitability
-from .utils import build_species_params_dict, build_rules_dict, load_yaml
 from .recommend import build_species_recommendations
+from .scoring import calculate_suitability
+from .utils import build_rules_dict, build_species_params_dict, load_yaml
 
 __all__ = [
     "calculate_suitability",

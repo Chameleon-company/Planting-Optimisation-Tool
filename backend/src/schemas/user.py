@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from src.schemas.constants import Role
 

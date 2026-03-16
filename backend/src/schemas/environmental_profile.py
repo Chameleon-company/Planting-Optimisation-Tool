@@ -1,6 +1,8 @@
-from pydantic import Field, ConfigDict, field_validator
-from typing import Optional
 from decimal import Decimal
+from typing import Optional
+
+from pydantic import ConfigDict, Field, field_validator
+
 from src.schemas.farm import FarmBase
 
 
@@ -33,9 +35,7 @@ class FarmProfileResponse(FarmBase):
 
     elevation_m: Optional[int] = None
     ph: Optional[Decimal] = Field(None, alias="ph", validation_alias="soil_ph")
-    slope: Optional[Decimal] = Field(
-        None, alias="slope", validation_alias="slope_degrees"
-    )
+    slope: Optional[Decimal] = Field(None, alias="slope", validation_alias="slope_degrees")
 
     riparian: Optional[bool] = None
     nitrogen_fixing: Optional[bool] = None

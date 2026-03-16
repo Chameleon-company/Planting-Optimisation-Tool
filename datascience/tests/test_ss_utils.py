@@ -187,17 +187,13 @@ def test_get_params_partial_fallback(species_params_rows, basic_cfg):
     params_dict = build_species_params_dict(species_params_rows, basic_cfg)
 
     # Species 2 has a soil_texture weight 0.8, method is None
-    result = get_feature_params(
-        params_dict, basic_cfg, species_id=2, feature="soil_texture"
-    )
+    result = get_feature_params(params_dict, basic_cfg, species_id=2, feature="soil_texture")
 
     assert result["weight"] == pytest.approx(0.8)  # Specific
     assert result["score_method"] == "cat_exact"  # Default (fallback)
 
     # Species 3 has a soil_texture weight np.nan, method is np.nan
-    result = get_feature_params(
-        params_dict, basic_cfg, species_id=3, feature="soil_texture"
-    )
+    result = get_feature_params(params_dict, basic_cfg, species_id=3, feature="soil_texture")
 
     assert result["weight"] == pytest.approx(0.5)  # Default (fallback)
     assert result["score_method"] == "cat_exact"  # Default (fallback)

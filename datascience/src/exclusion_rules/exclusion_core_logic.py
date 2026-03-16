@@ -38,7 +38,6 @@ Updates included:
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set
 
-
 # ============================================================
 # 1) Column mapping (edit here if headers change later)
 # ============================================================
@@ -471,9 +470,7 @@ def run_exclusion_rules_records(
     # -------------------------------
     # Task 8: Annotation config
     # -------------------------------
-    annotation_cfg = (
-        cfg.get("annotation", {}) if isinstance(cfg.get("annotation", {}), dict) else {}
-    )
+    annotation_cfg = cfg.get("annotation", {}) if isinstance(cfg.get("annotation", {}), dict) else {}
     include_values = bool(annotation_cfg.get("include_values", False))
 
     excluded: List[Dict[str, Any]] = []
@@ -522,11 +519,7 @@ def run_exclusion_rules_records(
                 # -------------------------------
                 # Task 8: richer annotation
                 # -------------------------------
-                reasons.append(
-                    _format_reason(
-                        rule, farm_val, sp_val, include_values=include_values
-                    )
-                )
+                reasons.append(_format_reason(rule, farm_val, sp_val, include_values=include_values))
 
         if reasons:
             excluded.append(
@@ -568,9 +561,7 @@ def run_exclusion_rules_records(
                     excluded_by_id[focal_id] = {
                         "id": focal_id,
                         "species_name": sp.get(SPECIES_COL["species_name"]),
-                        "species_common_name": sp.get(
-                            SPECIES_COL["species_common_name"]
-                        ),
+                        "species_common_name": sp.get(SPECIES_COL["species_common_name"]),
                         "reasons": [dep.reason],
                     }
 

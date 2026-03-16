@@ -1,4 +1,5 @@
 import pytest
+
 from suitability_scoring.scoring import calculate_suitability
 from suitability_scoring.utils.params import build_rules_dict
 
@@ -263,16 +264,10 @@ def test_missing_categorical(basic_cfg, params_index):
     explanations, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
 
     # First species should report missing or no preference for the soil_texture score
-    assert (
-        explanations[0]["features"]["soil_texture"]["reason"]
-        == "missing or no preference"
-    )
+    assert explanations[0]["features"]["soil_texture"]["reason"] == "missing or no preference"
 
     # Second species should report missing or no preference for the soil_texture score
-    assert (
-        explanations[1]["features"]["soil_texture"]["reason"]
-        == "missing or no preference"
-    )
+    assert explanations[1]["features"]["soil_texture"]["reason"] == "missing or no preference"
 
 
 def test_zero_denominator(basic_cfg, params_index):
@@ -322,9 +317,7 @@ def test_unknown_numeric_scorer(farms, species, params_index):
 
     rules = build_rules_dict(species, params_index, cfg)
 
-    with pytest.raises(
-        ValueError, match="Unknown numeric scoring method 'magic' for 'ph'"
-    ):
+    with pytest.raises(ValueError, match="Unknown numeric scoring method 'magic' for 'ph'"):
         scores, explanations = calculate_suitability(farms[0], species, rules, cfg)
 
 
@@ -348,9 +341,7 @@ def test_unknown_categorical_scorer(farms, species, params_index):
 
     rules = build_rules_dict(species, params_index, cfg)
 
-    with pytest.raises(
-        ValueError, match="Unknown categorical mode 'magic' for feature 'soil_texture'"
-    ):
+    with pytest.raises(ValueError, match="Unknown categorical mode 'magic' for feature 'soil_texture'"):
         scores, explanations = calculate_suitability(farms[0], species, rules, cfg)
 
 
@@ -416,10 +407,7 @@ def test_numerical_trapezoid(params_index):
     explanations, scores = calculate_suitability(farms[0], species, rules, cfg)
 
     # First species should report missing data for the ph score
-    assert (
-        explanations[0]["features"]["rainfall_mm"]["reason"]
-        == "within plateau [750.0, 1500.0]"
-    )
+    assert explanations[0]["features"]["rainfall_mm"]["reason"] == "within plateau [750.0, 1500.0]"
     # Expect 1.0 because rainfall is within plateau  AND clay == clay
     assert scores[0][1] == pytest.approx(1.0)
 
@@ -466,9 +454,6 @@ def test_categorical_compatibility(params_index):
     explanations, scores = calculate_suitability(farms[0], species, rules, cfg)
 
     # First species should report missing data for the ph score
-    assert (
-        explanations[0]["features"]["soil_texture"]["reason"]
-        == "closest compatibility match loam at 0.30. closest compatibility match silt at 0.30"
-    )
+    assert explanations[0]["features"]["soil_texture"]["reason"] == "closest compatibility match loam at 0.30. closest compatibility match silt at 0.30"
     # Expect 0.3 because  clay:loam == 0.3
     assert scores[0][1] == pytest.approx(0.3)

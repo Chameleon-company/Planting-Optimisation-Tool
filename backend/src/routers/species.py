@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from src.database import get_db_session
-from src.models.soil_texture import SoilTexture
 from src.models.agroforestry_type import AgroforestryType
+from src.models.soil_texture import SoilTexture
+from src.models.species import Species
 from src.schemas.species import SpeciesCreate
 from src.schemas.user import Role, UserRead
 from src.services.authentication import require_role
-from src.models.species import Species
 
 router = APIRouter(prefix="/species", tags=["Species"])
 
@@ -19,8 +20,7 @@ async def create_species(
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.SUPERVISOR)),
 ):
-    """
-    Creates a new species with characteristics and parameters.
+    """Creates a new species with characteristics and parameters.
     Requires SUPERVISOR role or higher.
     """
     # Instantiate the new_species object first
@@ -44,17 +44,11 @@ async def create_species(
 
     # Resolve IDs to objects
     if payload.soil_textures:
-        res = await db.execute(
-            select(SoilTexture).where(SoilTexture.id.in_(payload.soil_textures))
-        )
+        res = await db.execute(select(SoilTexture).where(SoilTexture.id.in_(payload.soil_textures)))
         new_species.soil_textures = list(res.scalars().all())
 
     if payload.agroforestry_types:
-        res = await db.execute(
-            select(AgroforestryType).where(
-                AgroforestryType.id.in_(payload.agroforestry_types)
-            )
-        )
+        res = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(payload.agroforestry_types)))
         new_species.agroforestry_types = list(res.scalars().all())
 
     # Save to database

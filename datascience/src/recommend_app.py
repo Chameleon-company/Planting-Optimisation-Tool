@@ -35,9 +35,7 @@ def parse_int_list(token):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(
-        description="Get recommendations for farms (single or batch)."
-    )
+    parser = argparse.ArgumentParser(description="Get recommendations for farms (single or batch).")
 
     group = parser.add_mutually_exclusive_group(required=True)
 
@@ -57,14 +55,7 @@ def build_parser():
         "--farm-ids",
         nargs="+",
         type=parse_int_list,  # allows comma-separated and ranges in each token
-        help=(
-            "One or more farm IDs. Supports space-/comma-separated and ranges.\n"
-            "Examples:\n"
-            "  --farm-ids 1 2 3\n"
-            "  --farm-ids 1,2,3\n"
-            "  --farm-ids 1-1000\n"
-            "  --farm-ids 5,10,20-25"
-        ),
+        help=("One or more farm IDs. Supports space-/comma-separated and ranges.\nExamples:\n  --farm-ids 1 2 3\n  --farm-ids 1,2,3\n  --farm-ids 1-1000\n  --farm-ids 5,10,20-25"),
     )
 
     return parser

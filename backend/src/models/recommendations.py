@@ -1,8 +1,10 @@
-from sqlalchemy import ForeignKey, Float, Integer, String, DateTime, func
+from datetime import datetime
+
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from src.database import Base
-from datetime import datetime
 from src.models.farm import Farm
 from src.models.species import Species
 
@@ -12,13 +14,9 @@ class Recommendation(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    farm_id: Mapped[int] = mapped_column(
-        ForeignKey("farms.id", ondelete="CASCADE"), nullable=False
-    )
+    farm_id: Mapped[int] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"), nullable=False)
 
-    species_id: Mapped[int] = mapped_column(
-        ForeignKey("species.id", ondelete="CASCADE"), nullable=False
-    )
+    species_id: Mapped[int] = mapped_column(ForeignKey("species.id", ondelete="CASCADE"), nullable=False)
 
     rank_overall: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -28,9 +26,7 @@ class Recommendation(Base):
     key_reasons: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
 
     # timestamp
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     farm: Mapped["Farm"] = relationship(back_populates="recommendations")

@@ -1,7 +1,7 @@
+import geopandas as gpd
 import numpy as np
 import rasterio
 from rasterio.mask import mask
-import geopandas as gpd
 
 # The slope raster function accepts the DEM and boundary data (polygon) of the input farm.
 # The function first finds the farm polygon based on its coordinates and clips the DEM data onto the polygon.
@@ -14,21 +14,15 @@ def compute_farm_slope(dem_src, farm_gdf: gpd.GeoDataFrame):
     if dem_src.crs is None:
         raise ValueError("ERROR: DEM data has no CRS, please check DEM file.")
     if farm_gdf.crs is None:
-        raise ValueError(
-            "ERROR: Input farm polygon has no CRS, please check farm polygon file."
-        )
+        raise ValueError("ERROR: Input farm polygon has no CRS, please check farm polygon file.")
 
-    farm_poly_dem = farm_gdf.to_crs(dem_src.crs).geometry.iloc[
-        0
-    ]  # Reprojects polygon to DEM CRS
+    farm_poly_dem = farm_gdf.to_crs(dem_src.crs).geometry.iloc[0]  # Reprojects polygon to DEM CRS
 
     # Clips DEM to the farm polygon extent using the mask function
     # Returns Array dem_clipped containing elevation values for the farm polygon,
     # And Mapping dem_transform for mapping array to coordinates
     dem_clipped, dem_transform = mask(dem_src, [farm_poly_dem], crop=True)
-    elevation = dem_clipped[0].astype(
-        float
-    )  # Extract elevation data in first layer of DEM file
+    elevation = dem_clipped[0].astype(float)  # Extract elevation data in first layer of DEM file
 
     # Compute slope in degrees on the clipped DEM only
     width, height = dem_src.res  # Get size(resolution) of a single pixel

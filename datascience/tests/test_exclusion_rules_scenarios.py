@@ -91,10 +91,7 @@ def test_task11_dynamic_operator_rule_temperature_gt_15():
     assert 102 not in out["candidate_ids"]
 
     excluded_102 = next(e for e in out["excluded_species"] if e["id"] == 102)
-    assert any(
-        "excluded: temperature not above threshold" in r
-        for r in excluded_102["reasons"]
-    )
+    assert any("excluded: temperature not above threshold" in r for r in excluded_102["reasons"])
 
 
 # ------------------------------------------------------------

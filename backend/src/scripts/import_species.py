@@ -1,13 +1,14 @@
-import csv
 import asyncio
+import csv
+
 import httpx
 from sqlalchemy import select
 
 # Project imports
 from src.database import AsyncSessionLocal, engine
-from src.models.user import User
 from src.dependencies import create_access_token
-from src.schemas.constants import SoilTextureID, AgroforestryTypeID
+from src.models.user import User
+from src.schemas.constants import AgroforestryTypeID, SoilTextureID
 
 # Configuration
 BASE_URL = "http://127.0.0.1:8080"
@@ -21,9 +22,7 @@ async def get_test_user_token():
         user = result.scalar_one_or_none()
 
         if not user:
-            raise Exception(
-                f"User {USER_EMAIL} not found. Run create_test_user.py first."
-            )
+            raise Exception(f"User {USER_EMAIL} not found. Run create_test_user.py first.")
 
         token = create_access_token(data={"sub": str(user.id)})
         return token
@@ -38,9 +37,7 @@ async def ingest_species():
         headers = {"Authorization": f"Bearer {token}"}
         url = f"{BASE_URL}/species"
 
-        with open(
-            "src/scripts/data/species_20251222.csv", mode="r", encoding="utf-8-sig"
-        ) as f:
+        with open("src/scripts/data/species_20251222.csv", mode="r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             count = 0
 
@@ -49,11 +46,7 @@ async def ingest_species():
                 def map_names_to_ids(csv_value, lookup_table):
                     if not csv_value or str(csv_value).lower() == "nan":
                         return []
-                    names = [
-                        n.strip().lower()
-                        for n in str(csv_value).split("|")
-                        if n.strip()
-                    ]
+                    names = [n.strip().lower() for n in str(csv_value).split("|") if n.strip()]
                     return [lookup_table[n] for n in names if n in lookup_table]
 
                 payload = {
@@ -72,12 +65,8 @@ async def ingest_species():
                     "nitrogen_fixing": row["nitrogen_fixing"].lower() == "true",
                     "shade_tolerant": row["shade_tolerant"].lower() == "true",
                     "bank_stabilising": row["bank_stabilising"].lower() == "true",
-                    "soil_textures": map_names_to_ids(
-                        row.get("preferred_soil_texture"), soil_map
-                    ),
-                    "agroforestry_types": map_names_to_ids(
-                        row.get("agroforestry_type"), agro_map
-                    ),
+                    "soil_textures": map_names_to_ids(row.get("preferred_soil_texture"), soil_map),
+                    "agroforestry_types": map_names_to_ids(row.get("agroforestry_type"), agro_map),
                 }
 
                 # Retry logic for intermittent Windows/FastAPI connection drops
@@ -95,16 +84,12 @@ async def ingest_species():
                                 await asyncio.sleep(1)
                             else:
                                 # Only print the full error if it fails 3 times in a row
-                                print(
-                                    f"\nFailed {row['name']} after {max_retries} attempts: {response.status_code}"
-                                )
+                                print(f"\nFailed {row['name']} after {max_retries} attempts: {response.status_code}")
                             if attempt < max_retries - 1:
                                 await asyncio.sleep(1)  # Wait before retry
 
                     except (httpx.RemoteProtocolError, httpx.ConnectError) as e:
-                        print(
-                            f"Connection error for {row['name']} (Attempt {attempt + 1}): {e}"
-                        )
+                        print(f"Connection error for {row['name']} (Attempt {attempt + 1}): {e}")
                         if attempt < max_retries - 1:
                             await asyncio.sleep(1)
                         else:

@@ -9,9 +9,7 @@ pytestmark = pytest.mark.asyncio
 
 
 # Test user creation endpoint
-async def test_create_user_by_admin(
-    async_client: AsyncClient, test_admin_user, admin_auth_headers: dict
-):
+async def test_create_user_by_admin(async_client: AsyncClient, test_admin_user, admin_auth_headers: dict):
     response = await async_client.post(
         "/users/",  # Added trailing slash
         json={
@@ -25,11 +23,8 @@ async def test_create_user_by_admin(
     assert response.status_code == 201
 
 
-async def test_create_user_by_supervisor_success(
-    async_client: AsyncClient, test_supervisor_user, supervisor_auth_headers: dict
-):
-    """
-    Test that supervisors CAN create users.
+async def test_create_user_by_supervisor_success(async_client: AsyncClient, test_supervisor_user, supervisor_auth_headers: dict):
+    """Test that supervisors CAN create users.
 
     Note: This endpoint was changed to allow any authenticated user to create users,
     not just admins. If you want to restrict user creation to admins only,
@@ -53,40 +48,24 @@ async def test_create_user_by_supervisor_success(
 
 
 # Test reading user information
-async def test_read_users_by_supervisor(
-    async_client: AsyncClient, test_supervisor_user, supervisor_auth_headers: dict
-):
-    response = await async_client.get(
-        "/users/", headers=supervisor_auth_headers
-    )  # Added trailing slash
+async def test_read_users_by_supervisor(async_client: AsyncClient, test_supervisor_user, supervisor_auth_headers: dict):
+    response = await async_client.get("/users/", headers=supervisor_auth_headers)  # Added trailing slash
     assert response.status_code == 200
 
 
-async def test_read_users_by_admin(
-    async_client: AsyncClient, test_admin_user, admin_auth_headers: dict
-):
-    response = await async_client.get(
-        "/users/", headers=admin_auth_headers
-    )  # Added trailing slash
+async def test_read_users_by_admin(async_client: AsyncClient, test_admin_user, admin_auth_headers: dict):
+    response = await async_client.get("/users/", headers=admin_auth_headers)  # Added trailing slash
     assert response.status_code == 200
 
 
-async def test_read_users_by_officer_fail(
-    async_client: AsyncClient, test_officer_user, officer_auth_headers: dict
-):
-    response = await async_client.get(
-        "/users/", headers=officer_auth_headers
-    )  # Added trailing slash
+async def test_read_users_by_officer_fail(async_client: AsyncClient, test_officer_user, officer_auth_headers: dict):
+    response = await async_client.get("/users/", headers=officer_auth_headers)  # Added trailing slash
     assert response.status_code == 403
 
 
 # Test role hierarchy
-async def test_admin_can_access_supervisor_endpoint(
-    async_client: AsyncClient, test_admin_user, admin_auth_headers: dict
-):
-    response = await async_client.get(
-        "/users/", headers=admin_auth_headers
-    )  # Added trailing slash
+async def test_admin_can_access_supervisor_endpoint(async_client: AsyncClient, test_admin_user, admin_auth_headers: dict):
+    response = await async_client.get("/users/", headers=admin_auth_headers)  # Added trailing slash
     assert response.status_code == 200
 
 
@@ -101,16 +80,13 @@ async def test_officer_cannot_get_user_by_id(
     test_supervisor_user: User,
     officer_auth_headers: dict,
 ):
-    """
-    Test that officers cannot access GET /users/{user_id} endpoint.
+    """Test that officers cannot access GET /users/{user_id} endpoint.
 
     Verifies that:
     - Officer role cannot view specific user details
     - Returns 403 Forbidden
     """
-    response = await async_client.get(
-        f"/users/{test_supervisor_user.id}", headers=officer_auth_headers
-    )
+    response = await async_client.get(f"/users/{test_supervisor_user.id}", headers=officer_auth_headers)
     assert response.status_code == 403
 
 
@@ -120,8 +96,7 @@ async def test_officer_cannot_update_user(
     test_supervisor_user: User,
     officer_auth_headers: dict,
 ):
-    """
-    Test that officers cannot update users (PUT /users/{user_id}).
+    """Test that officers cannot update users (PUT /users/{user_id}).
 
     Verifies that:
     - Officer role cannot update user information
@@ -147,17 +122,14 @@ async def test_officer_cannot_delete_user(
     test_supervisor_user: User,
     officer_auth_headers: dict,
 ):
-    """
-    Test that officers cannot delete users (DELETE /users/{user_id}).
+    """Test that officers cannot delete users (DELETE /users/{user_id}).
 
     Verifies that:
     - Officer role cannot delete users
     - Returns 403 Forbidden
     - Only ADMIN can delete users
     """
-    response = await async_client.delete(
-        f"/users/{test_supervisor_user.id}", headers=officer_auth_headers
-    )
+    response = await async_client.delete(f"/users/{test_supervisor_user.id}", headers=officer_auth_headers)
     assert response.status_code == 403
 
 
@@ -172,16 +144,13 @@ async def test_supervisor_can_get_user_by_id(
     test_officer_user: User,
     supervisor_auth_headers: dict,
 ):
-    """
-    Test that supervisors CAN view specific user details.
+    """Test that supervisors CAN view specific user details.
 
     Verifies that:
     - SUPERVISOR role has access to GET /users/{user_id}
     - Returns 200 OK with user data
     """
-    response = await async_client.get(
-        f"/users/{test_officer_user.id}", headers=supervisor_auth_headers
-    )
+    response = await async_client.get(f"/users/{test_officer_user.id}", headers=supervisor_auth_headers)
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == test_officer_user.id
@@ -193,8 +162,7 @@ async def test_supervisor_cannot_update_user(
     test_officer_user: User,
     supervisor_auth_headers: dict,
 ):
-    """
-    Test that supervisors CANNOT update users.
+    """Test that supervisors CANNOT update users.
 
     Verifies that:
     - SUPERVISOR role cannot update user information
@@ -220,17 +188,14 @@ async def test_supervisor_cannot_delete_user(
     test_officer_user: User,
     supervisor_auth_headers: dict,
 ):
-    """
-    Test that supervisors CANNOT delete users.
+    """Test that supervisors CANNOT delete users.
 
     Verifies that:
     - SUPERVISOR role cannot delete users
     - Returns 403 Forbidden
     - Only ADMIN can delete users
     """
-    response = await async_client.delete(
-        f"/users/{test_officer_user.id}", headers=supervisor_auth_headers
-    )
+    response = await async_client.delete(f"/users/{test_officer_user.id}", headers=supervisor_auth_headers)
     assert response.status_code == 403
 
 
@@ -245,16 +210,13 @@ async def test_admin_can_get_user_by_id(
     test_officer_user: User,
     admin_auth_headers: dict,
 ):
-    """
-    Test that admins CAN view specific user details.
+    """Test that admins CAN view specific user details.
 
     Verifies that:
     - ADMIN role has access to GET /users/{user_id}
     - Returns 200 OK with user data
     """
-    response = await async_client.get(
-        f"/users/{test_officer_user.id}", headers=admin_auth_headers
-    )
+    response = await async_client.get(f"/users/{test_officer_user.id}", headers=admin_auth_headers)
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == test_officer_user.id
@@ -266,8 +228,7 @@ async def test_admin_can_update_user(
     test_officer_user: User,
     admin_auth_headers: dict,
 ):
-    """
-    Test that admins CAN update users.
+    """Test that admins CAN update users.
 
     Verifies that:
     - ADMIN role can update user information
@@ -297,8 +258,7 @@ async def test_admin_can_delete_user(
     async_session: AsyncSession,
     admin_auth_headers: dict,
 ):
-    """
-    Test that admins CAN delete users.
+    """Test that admins CAN delete users.
 
     Verifies that:
     - ADMIN role can delete users
@@ -320,9 +280,7 @@ async def test_admin_can_delete_user(
     user_id = user_to_delete.id
 
     # Delete the user
-    response = await async_client.delete(
-        f"/users/{user_id}", headers=admin_auth_headers
-    )
+    response = await async_client.delete(f"/users/{user_id}", headers=admin_auth_headers)
     assert response.status_code == 204
 
     # Verify user is deleted
@@ -336,11 +294,8 @@ async def test_admin_can_delete_user(
 # ============================================================================
 
 
-async def test_create_user_duplicate_email_via_users_endpoint(
-    async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict
-):
-    """
-    Test that creating a user via /users/ endpoint with duplicate email fails.
+async def test_create_user_duplicate_email_via_users_endpoint(async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict):
+    """Test that creating a user via /users/ endpoint with duplicate email fails.
 
     Verifies that:
     - First user creation succeeds
@@ -379,11 +334,8 @@ async def test_create_user_duplicate_email_via_users_endpoint(
 # ============================================================================
 
 
-async def test_create_user_password_too_short(
-    async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict
-):
-    """
-    Test that creating user via /users/ fails with short password.
+async def test_create_user_password_too_short(async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict):
+    """Test that creating user via /users/ fails with short password.
 
     Verifies password validation is enforced on user creation endpoint.
     """

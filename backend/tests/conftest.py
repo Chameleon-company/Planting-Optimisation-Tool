@@ -1,18 +1,22 @@
-import pytest
 import asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+
+import pytest
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import (
+    AsyncConnection,  # noqa: F401
+    AsyncSession,
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool
-from src.database import get_db_session
-from sqlalchemy.ext.asyncio import AsyncConnection  # noqa: F401
-from httpx import AsyncClient, ASGITransport
 
 # --- Application Imports ---
 from src.config import Settings
+from src.database import get_db_session
 from src.dependencies import create_access_token
-from src.services.authentication import get_password_hash, Role
-from src.models.user import User
-from src.models.soil_texture import SoilTexture
 from src.main import app
+from src.models.soil_texture import SoilTexture
+from src.models.user import User
+from src.services.authentication import Role, get_password_hash
 
 settings = Settings()
 
@@ -47,8 +51,7 @@ async def setup_database(db_engine):
 # Transactional Session Fixture
 @pytest.fixture(scope="function")
 async def async_session(db_engine):
-    """
-    Transactional session that rolls back after every test.
+    """Transactional session that rolls back after every test.
     Runs on replicated DB.
     """
     async with db_engine.connect() as connection:
@@ -77,9 +80,7 @@ async def async_client(async_session):
     # Link the override to your project's dependency name
     app.dependency_overrides[get_db_session] = _get_test_db
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
     # Clean up after the test so production code isn't affected
@@ -146,9 +147,7 @@ async def setup_soil_texture(async_session: AsyncSession):
     created_textures = []
     for texture_data in textures_data:
         # Check if it already exists
-        result = await async_session.execute(
-            select(SoilTexture).where(SoilTexture.id == texture_data["id"])
-        )
+        result = await async_session.execute(select(SoilTexture).where(SoilTexture.id == texture_data["id"]))
         existing = result.scalar_one_or_none()
 
         if existing:
@@ -165,23 +164,17 @@ async def setup_soil_texture(async_session: AsyncSession):
 # Authorization Header Fixtures
 @pytest.fixture(scope="function")
 def admin_auth_headers(test_admin_user: User) -> dict:
-    access_token = create_access_token(
-        data={"sub": str(test_admin_user.id), "role": test_admin_user.role}
-    )
+    access_token = create_access_token(data={"sub": str(test_admin_user.id), "role": test_admin_user.role})
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture(scope="function")
 def supervisor_auth_headers(test_supervisor_user: User) -> dict:
-    access_token = create_access_token(
-        data={"sub": str(test_supervisor_user.id), "role": test_supervisor_user.role}
-    )
+    access_token = create_access_token(data={"sub": str(test_supervisor_user.id), "role": test_supervisor_user.role})
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture(scope="function")
 def officer_auth_headers(test_officer_user: User) -> dict:
-    access_token = create_access_token(
-        data={"sub": str(test_officer_user.id), "role": test_officer_user.role}
-    )
+    access_token = create_access_token(data={"sub": str(test_officer_user.id), "role": test_officer_user.role})
     return {"Authorization": f"Bearer {access_token}"}

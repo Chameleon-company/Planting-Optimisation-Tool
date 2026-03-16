@@ -1,12 +1,14 @@
-import suitability_scoring
 from pathlib import Path
-from sqlalchemy.ext.asyncio import AsyncSession
+
+import suitability_scoring
+from exclusion_rules.run_exclusion_core_logic import load_exclusion_config
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from suitability_scoring import load_yaml
-from exclusion_rules.run_exclusion_core_logic import load_exclusion_config
-from src.models.species import Species
+
 from src.domains.suitability_scoring import SuitabilitySpecies
+from src.models.species import Species
 
 
 def get_recommend_config():
@@ -43,17 +45,11 @@ async def get_all_species_for_engine(db: AsyncSession) -> list[SuitabilitySpecie
     return [SuitabilitySpecies.from_db_model(sp) for sp in result.scalars().all()]
 
 
-async def get_species_by_ids(
-    db: AsyncSession, ids: list[int], order_by_id: bool = True
-) -> list[SuitabilitySpecies]:
+async def get_species_by_ids(db: AsyncSession, ids: list[int], order_by_id: bool = True) -> list[SuitabilitySpecies]:
     if not ids:
         return []
 
-    stmt = (
-        select(Species)
-        .options(selectinload(Species.soil_textures))
-        .where(Species.id.in_(ids))
-    )
+    stmt = select(Species).options(selectinload(Species.soil_textures)).where(Species.id.in_(ids))
     if order_by_id:
         stmt = stmt.order_by(Species.id)
 

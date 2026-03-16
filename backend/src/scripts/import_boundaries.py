@@ -1,9 +1,11 @@
-import csv
 import asyncio
+import csv
+
 from sqlalchemy import select
+
 from src.database import AsyncSessionLocal, engine
-from src.models.farm import Farm
 from src.models.boundaries import FarmBoundary
+from src.models.farm import Farm
 
 
 async def import_boundaries():

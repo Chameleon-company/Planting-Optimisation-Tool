@@ -1,5 +1,4 @@
-"""
-Dependency Injection Module
+"""Dependency Injection Module
 
 This module provides reusable FastAPI dependencies for authentication and authorization.
 It includes JWT token creation, validation, and user retrieval functions.
@@ -8,17 +7,18 @@ This is the primary module for token-based authentication operations.
 The authentication.py module in domains/ provides complementary functions.
 """
 
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, HTTPException, status, Security
-from sqlalchemy.ext.asyncio import AsyncSession
-import jwt
-from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta, timezone
 
+import jwt
+from fastapi import Depends, HTTPException, Security, status
+from fastapi.security import OAuth2PasswordBearer
+from jwt.exceptions import InvalidTokenError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.config import settings
 from src.database import get_db_session
 from src.schemas.user import UserRead
 from src.services.user import get_user_by_id
-from src.config import settings
 
 # OAuth2 password bearer scheme for extracting JWT tokens from Authorization header
 # Token URL points to the login endpoint that issues tokens
@@ -26,8 +26,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    """
-    Creates a JWT access token with timezone-aware expiration.
+    """Creates a JWT access token with timezone-aware expiration.
 
     This is the primary token creation function used throughout the application.
     It generates a signed JWT token containing user identification and claims.
@@ -66,9 +65,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     # Add expiration claim to token payload
     to_encode.update({"exp": expire})
@@ -81,8 +78,7 @@ async def get_current_active_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db_session),
 ) -> UserRead:
-    """
-    FastAPI dependency to get the currently authenticated user from a JWT token.
+    """FastAPI dependency to get the currently authenticated user from a JWT token.
 
     This is the primary authentication dependency used across the application.
     It extracts the JWT token from the Authorization header, validates it,
@@ -140,9 +136,7 @@ async def get_current_active_user(
     try:
         # Decode and validate the JWT token
         # PyJWT automatically handles the 'exp' (expiration) check during decode
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
 
         # Extract user ID from the "sub" (subject) claim
         user_id_str = payload.get("sub")

@@ -1,0 +1,8 @@
+# Normalize all line endings to LF on commit
+* text=auto eol=lf
+
+# Force these files to always be LF
+*.ts linguist-language=TypeScript eol=lf
+*.py eol=lf
+*.env eol=lf
+*.env.example eol=lf

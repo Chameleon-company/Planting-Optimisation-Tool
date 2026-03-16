@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy import text
-from src.config import Settings
 from sqlalchemy.ext.asyncio import AsyncEngine  # Import the engine type
 
+from src.config import Settings
 
 # Instantiate settings once for testing purposes
 settings = Settings()

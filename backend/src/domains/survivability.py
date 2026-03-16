@@ -1,11 +1,10 @@
-from pydantic import BaseModel, ConfigDict
 from typing import List
+
+from pydantic import BaseModel, ConfigDict
 
 
 class Survivability(BaseModel):
-    """
-    Contract for calculating species survival rate.
-    """
+    """Contract for calculating species survival rate."""
 
     model_config = ConfigDict(from_attributes=True)
 

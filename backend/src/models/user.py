@@ -1,28 +1,23 @@
-"""
-User Model
+"""User Model
 
 SQLAlchemy model representing users in the system with authentication and authorization.
 Users have hierarchical roles (officer, supervisor, admin) that determine their permissions.
 """
 
-from typing import List
-from sqlalchemy import ForeignKey
-from sqlalchemy import String
-from src.database import Base
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
-
 # For type hinting only, not runtime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.database import Base
 
 if TYPE_CHECKING:
     from .farm import Farm
 
 
 class User(Base):
-    """
-    User database model for authentication and authorization.
+    """User database model for authentication and authorization.
 
     Stores user credentials and role information for the planting optimization system.
     Users are assigned roles that determine their access level through a hierarchical

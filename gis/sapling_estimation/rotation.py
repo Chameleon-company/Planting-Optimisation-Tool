@@ -1,7 +1,7 @@
-import numpy as np
 import geopandas as gpd
-from shapely.geometry import Point
+import numpy as np
 from shapely.affinity import rotate
+from shapely.geometry import Point
 
 # The rotation function accepts the polygon and planting grid of the input farm, along with spacing rule (in meters).
 # The function first generates a base grid, and planting points are created based on spacing rules (3x3 spacing).
@@ -10,15 +10,11 @@ from shapely.affinity import rotate
 
 
 def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float):
-    farm_poly_series = gpd.GeoSeries(
-        [farm_polygon], crs=planting_grid.crs
-    )  # Extract farm polygon as Geoseries
+    farm_poly_series = gpd.GeoSeries([farm_polygon], crs=planting_grid.crs)  # Extract farm polygon as Geoseries
 
     # Generate a regular grid inside polygon bounds
     xmin, ymin, xmax, ymax = farm_poly_series.total_bounds
-    farm_poly_shp = farm_poly_series.iloc[
-        0
-    ]  # Extract shapely geometry from farm polygon Geoseries
+    farm_poly_shp = farm_poly_series.iloc[0]  # Extract shapely geometry from farm polygon Geoseries
 
     # Create x and y coordinates for planting points based on 3x3 spacing_m
     xs = np.arange(xmin, xmax, spacing_m)
@@ -30,14 +26,10 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float)
         for y in ys:  # Loop through y coordinates
             base_points.append(Point(x, y))  # Add point into array
 
-    base_grid = gpd.GeoDataFrame(
-        geometry=base_points, crs=planting_grid.crs
-    )  # Convert to GeoDataFrame
+    base_grid = gpd.GeoDataFrame(geometry=base_points, crs=planting_grid.crs)  # Convert to GeoDataFrame
 
     # Initialization for rotation mechanism
-    center = (
-        farm_poly_shp.centroid
-    )  # Mark the center of the farm polygon as the rotation origin
+    center = farm_poly_shp.centroid  # Mark the center of the farm polygon as the rotation origin
     optimal_angle = 0  # Stores the optimal rotation angle
     highest_count = -1  # Stores the highest point count
 
@@ -45,12 +37,8 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float)
     for angle in range(0, 91, 1):
         # Copy base grid and rotate at origin
         rotated = base_grid.copy()
-        rotated["geometry"] = rotated.geometry.apply(
-            lambda g: rotate(g, angle, origin=center)
-        )
-        count = rotated.within(
-            farm_poly_shp
-        ).sum()  # Count number of points within the rotated farm polygon
+        rotated["geometry"] = rotated.geometry.apply(lambda g: rotate(g, angle, origin=center))
+        count = rotated.within(farm_poly_shp).sum()  # Count number of points within the rotated farm polygon
 
         # Update new optimal angle and highest count if more points fall within the current rotated farm polygon
         if count > highest_count:
@@ -59,12 +47,8 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float)
 
     # Apply final rotation on the original base grid using optimal angle
     final_grid = base_grid.copy()
-    final_grid["geometry"] = final_grid.geometry.apply(
-        lambda g: rotate(g, optimal_angle, origin=center)
-    )
-    final_grid = final_grid[
-        final_grid.within(farm_poly_shp)
-    ]  # Keep only the points within the polygon
+    final_grid["geometry"] = final_grid.geometry.apply(lambda g: rotate(g, optimal_angle, origin=center))
+    final_grid = final_grid[final_grid.within(farm_poly_shp)]  # Keep only the points within the polygon
 
     return final_grid, optimal_angle
 
@@ -78,9 +62,7 @@ def rotation_tester(rotated_grid: gpd.GeoDataFrame, planting_grid: gpd.GeoDataFr
 
     # Point count check
     if len(rotated_grid) < len(planting_grid):
-        raise ValueError(
-            "ERROR: Rotated grid cannot have fewer planting points than the initial planting grid"
-        )
+        raise ValueError("ERROR: Rotated grid cannot have fewer planting points than the initial planting grid")
         valid = False
 
     return valid

@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.database import get_db_session
 from src.schemas.farm import FarmCreate, FarmRead
 from src.schemas.user import Role, UserRead
-from src.services.authentication import require_role
-from src.database import get_db_session
-
 from src.services import farm as farm_service
+from src.services.authentication import require_role
 from src.services.farm import get_farm_by_id
 
 # The router instance
@@ -26,15 +25,11 @@ async def create_farm_endpoint(
     # Inject the real database session
     db: AsyncSession = Depends(get_db_session),
 ):
-    """
-    Creates a new farm record with validated data.
+    """Creates a new farm record with validated data.
     Requires OFFICER role or higher.
     """
-
     # Pass validated Pydantic data, secure user ID, AND THE DB SESSION to the service layer
-    new_farm_data = await farm_service.create_farm_record(
-        db=db, farm_data=farm_data, user_id=current_user.id
-    )
+    new_farm_data = await farm_service.create_farm_record(db=db, farm_data=farm_data, user_id=current_user.id)
 
     # FastAPI serializes the returned ORM object into the FarmRead contract.
     return new_farm_data
@@ -47,13 +42,10 @@ async def read_farm_endpoint(
     # Assuming CurrentActiveUser is configured to return the User ORM object (src.models.user.User)
     current_user: UserRead = Depends(require_role(Role.OFFICER)),
 ):
-    """
-    Retrieves a farm by ID, verifying ownership.
+    """Retrieves a farm by ID, verifying ownership.
     Requires OFFICER role or higher.
     """
-    farms = await get_farm_by_id(
-        db, farm_ids=[farm_id], user_id=current_user.id, user_role=current_user.role
-    )
+    farms = await get_farm_by_id(db, farm_ids=[farm_id], user_id=current_user.id, user_role=current_user.role)
 
     if not farms:
         raise HTTPException(

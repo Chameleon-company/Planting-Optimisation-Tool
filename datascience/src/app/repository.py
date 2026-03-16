@@ -1,5 +1,7 @@
-import pandas as pd
 import csv
+
+import pandas as pd
+
 from suitability_scoring.utils.config import load_yaml
 from suitability_scoring.utils.params import build_species_params_dict
 

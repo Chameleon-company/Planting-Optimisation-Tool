@@ -1,6 +1,7 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List
 from datetime import datetime
+from typing import List
+
+from pydantic import BaseModel, ConfigDict
 
 
 class RecommendationReportEntry(BaseModel):
@@ -29,8 +30,7 @@ class FarmReportMetadata(BaseModel):
 
 
 class FarmReportContract(BaseModel):
-    """
-    The 'Contract' for reporting.py.
+    """The 'Contract' for reporting.py.
     Contains everything needed to generate a comprehensive farm summary.
     """
 
@@ -42,9 +42,7 @@ class FarmReportContract(BaseModel):
 
     @classmethod
     def from_db_data(cls, farm_obj, recommendation_objs):
-        """
-        Adapter to assemble the report from multiple DB entities.
-        """
+        """Adapter to assemble the report from multiple DB entities."""
         recs = [
             RecommendationReportEntry(
                 species_id=r.species_id,

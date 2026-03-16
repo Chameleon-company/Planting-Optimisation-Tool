@@ -1,5 +1,4 @@
-"""
-Authentication and Authorization Module
+"""Authentication and Authorization Module
 
 This module handles user authentication, password hashing, JWT token generation,
 and role-based access control (RBAC) for the application.
@@ -13,8 +12,9 @@ Key Components:
 """
 
 from typing import Optional
-import jwt
+
 import bcrypt
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,8 +25,7 @@ from src.database import get_db_session
 from src.dependencies import get_current_active_user
 from src.models.audit_log import AuditLog
 from src.models.user import User
-from src.schemas.user import TokenData, UserRead, Role
-
+from src.schemas.user import Role, TokenData, UserRead
 
 # OAuth2 password bearer scheme for token-based authentication
 # This extracts the token from the Authorization header (format: "Bearer <token>")
@@ -34,8 +33,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def get_password_hash(password: str) -> str:
-    """
-    Hashes a plain text password using bcrypt.
+    """Hashes a plain text password using bcrypt.
 
     Args:
         password: The plain text password to hash
@@ -54,8 +52,7 @@ def get_password_hash(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verifies a plain password against a hashed password.
+    """Verifies a plain password against a hashed password.
 
     Args:
         plain_password: The plain text password to verify
@@ -68,16 +65,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         Used during login to authenticate users by comparing their input
         password with the stored hash.
     """
-    return bcrypt.checkpw(
-        plain_password.encode("utf-8"), hashed_password.encode("utf-8")
-    )
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 
-async def authenticate_user(
-    db: AsyncSession, email: str, password: str
-) -> Optional[User]:
-    """
-    Authenticates a user by verifying email and password.
+async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[User]:
+    """Authenticates a user by verifying email and password.
 
     Args:
         db: Async database session
@@ -102,11 +94,8 @@ async def authenticate_user(
     return user
 
 
-async def get_current_user(
-    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db_session)
-) -> User:
-    """
-    FastAPI dependency to extract and validate the current user from a JWT token.
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db_session)) -> User:
+    """FastAPI dependency to extract and validate the current user from a JWT token.
 
     Args:
         token: JWT token extracted from the Authorization header by oauth2_scheme
@@ -130,9 +119,7 @@ async def get_current_user(
     )
     try:
         # Decode and validate the JWT token
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: int = payload.get("sub")
         if user_id is None:
             raise credentials_exception
@@ -168,8 +155,7 @@ role_hierarchy = {
 
 
 def require_role(required_role: Role):
-    """
-    FastAPI dependency factory for role-based access control.
+    """FastAPI dependency factory for role-based access control.
 
     This function creates a dependency that checks if the authenticated user
     has sufficient permissions (role level) to access a protected endpoint.
@@ -202,8 +188,7 @@ def require_role(required_role: Role):
     def role_checker(
         current_user: User = Depends(get_current_user),
     ) -> User:
-        """
-        Inner function that performs the actual role validation.
+        """Inner function that performs the actual role validation.
 
         Args:
             current_user: The authenticated user (injected by get_current_user dependency)
@@ -230,8 +215,7 @@ def require_role(required_role: Role):
 
 
 async def require_role_async(required_role: Role):
-    """
-    Async version of require_role for compatibility with async dependencies.
+    """Async version of require_role for compatibility with async dependencies.
 
     This function provides the same role-based access control as require_role
     but works with the async get_current_active_user dependency.
@@ -253,8 +237,7 @@ async def require_role_async(required_role: Role):
     async def role_checker(
         current_user: UserRead = Depends(get_current_active_user),
     ) -> UserRead:
-        """
-        Inner async function that performs the role validation.
+        """Inner async function that performs the role validation.
 
         Args:
             current_user: The authenticated user as UserRead schema
@@ -286,8 +269,7 @@ async def log_audit_event(
     event_type: str,
     details: str,
 ):
-    """
-    Records a security audit event to the database for compliance and monitoring.
+    """Records a security audit event to the database for compliance and monitoring.
 
     Args:
         db: Async database session

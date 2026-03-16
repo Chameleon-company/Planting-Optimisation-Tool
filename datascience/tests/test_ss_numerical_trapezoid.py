@@ -1,5 +1,7 @@
 import re
+
 import pytest
+
 from suitability_scoring.scoring import (
     derive_trapezoid_from_minmax,
     numerical_trapezoid_score,

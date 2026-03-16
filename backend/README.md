@@ -32,6 +32,8 @@ https://docs.docker.com/desktop/setup/install/windows-install/
 
 Ensure it is open and running before proceeding
 
+**⚠️ Windows users: If you have Postgres installed natively, it will conflict with the Docker container on port 5432. Either disable it (Stop-Service postgresql*) or change the Docker port to 5433 before running `just setup`.**
+
 
 #### Linux/macOS:
 https://docs.docker.com/get-started/get-docker/

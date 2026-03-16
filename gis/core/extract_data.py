@@ -5,9 +5,9 @@ Uses config/settings.py for all dataset configurations.
 """
 
 import ee
-from config.settings import get_dataset_config, TEXTURE_MAP
-from core.geometry_parser import parse_geometry
 
+from config.settings import TEXTURE_MAP, get_dataset_config
+from core.geometry_parser import parse_geometry
 
 # ============================================================================
 # UTILITY FUNCTIONS

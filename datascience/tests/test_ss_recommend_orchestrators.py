@@ -1,8 +1,10 @@
-import pytest
 from datetime import datetime, timezone
+
+import pytest
+
 from app.orchestrators import (
-    get_recommendations_service,
     get_batch_recommendations_service,
+    get_recommendations_service,
 )
 
 
@@ -16,9 +18,7 @@ def sample_species_list():
             "species_id": 101,
             "species_name": "Eucalyptus",
             "mcda_score": 0.8567,
-            "features": {
-                "rainfall": {"short_name": "rain", "reason": "Acceptable", "score": 1.0}
-            },
+            "features": {"rainfall": {"short_name": "rain", "reason": "Acceptable", "score": 1.0}},
         },
         {
             "species_id": 102,

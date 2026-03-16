@@ -1,4 +1,5 @@
 import pytest
+
 from suitability_scoring.scoring import categorical_exact_score
 
 
