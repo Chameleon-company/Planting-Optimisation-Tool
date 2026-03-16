@@ -1,6 +1,7 @@
 import pytest
-from suitability_scoring.utils.accessors import get_val
+
 from suitability_scoring.scoring import calculate_suitability
+from suitability_scoring.utils.accessors import get_val
 from suitability_scoring.utils.params import build_rules_dict
 
 
@@ -79,9 +80,7 @@ def test_full_engine_agnosticism(farm_type, species_type, sample_data, base_conf
         "rainfall_min": sample_data["rainfall_min"],
         "rainfall_max": sample_data["rainfall_max"],
     }
-    species_list_input = [
-        species_raw if species_type == "dict" else MockORM(**species_raw)
-    ]
+    species_list_input = [species_raw if species_type == "dict" else MockORM(**species_raw)]
 
     # Build rules (this tests get_val inside params.py)
     rules = build_rules_dict(species_list_input, {}, base_config)

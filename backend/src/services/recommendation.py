@@ -58,9 +58,7 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
             exclusions = exclusion_runner(farm_profile.model_dump(), species_dicts, exclusion_cfg)
 
             # Get species information from database
-            candidate_species = await get_species_by_ids(
-                db, exclusions["candidate_ids"]
-            )
+            candidate_species = await get_species_by_ids(db, exclusions["candidate_ids"])
 
             # Run the engine and compute fresh recommendations
             result_list, _ = calculate_suitability(
