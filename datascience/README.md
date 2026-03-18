@@ -13,6 +13,35 @@
 └── tests pyTest files for exclusion rules and suitability scoring libraries.
 ```
 
+# Getting started
+
+Install `uv` for your chosen OS from:
+```
+https://docs.astral.sh/uv/getting-started/installation/
+```
+and confirm it is installed with `uv --version`.
+You should see something like 
+```console
+C:\...\Planting-Optimisation-Tool > uv --version
+> uv 0.8.14
+```
+Then 
+```bash
+cd ..
+cd datascience
+```
+Run `uv sync` to install all requirements from `pyproject.toml` for the datascience directory.
+
+If there are additional python packages you require, run `uv add packagename` to add it to the project.
+
+This project uses Ruff linter and formatter (https://docs.astral.sh/ruff/tutorial/) to enforce PEP 8 style guide for python (https://peps.python.org/pep-0008/)
+
+To run, from the base directory of your team, enter `uv run ruff check` and it will test your code for issues. 
+
+You can also choose to run `uv run ruff check --fix` to automatically fix any linting issues.
+
+
+
 # Configuration
 The global configuration for the suitability scoring is contained (`config/recommend.yaml`). The soil texture compatibility map in that file has been generated with the script `src/scripts/generate_soil_texture_compatibility_yaml`. The compatibility scores are set by adjacency on the texture triangle:
 
