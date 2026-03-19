@@ -23,14 +23,14 @@ The global configuration for the suitability scoring is contained (`config/recom
 * \>=4-step=0.3
 * hard incompatibilities as 0.0.
 
-![USDA soil texture triangle](suitability_scoring/docs/images/USDA_soil_texture_triangle.png)
+![USDA soil texture triangle](docs/images/USDA_soil_texture_triangle.png)
 
 The rationale of this approach is that scores are monotonic with textural proximity, aligning with agronomic intuition (coarser textures differ in water holding and nutrient retention vs finer textures).
 
 Species-specific overrides (`species_params`) are built into the database and in the current version cannot be changed once the database is initialised. Before database ingestion the parameters can be edited in the `..\src\scripts\data\species_params20260112.csv` file.
 
 
-For a full description of how to configure the suitability scoring library documentation (`suitability_scoring/docs/scoring_design.md`).
+For a full description of how to configure the suitability scoring library documentation (`docs/scoring_design.md`).
 
 # Usage as a library
 ```{python}
