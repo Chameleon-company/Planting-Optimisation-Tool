@@ -1,3 +1,6 @@
+from suitability_scoring.utils.accessors import get_val
+
+
 def to_float_or_none(value):
     """
     Convert value to float or None. Handles exception if the value cannot be converted
@@ -39,7 +42,7 @@ def build_species_params_dict(species_params_rows, config):
 
     Each row is for a species x feature.
 
-    :param species_rows: List of dictionaries.
+    :param species_rows: List of dictionaries or ORM objects.
     :param config: Configuration dictionary
     :returns index: Nested dictionary with the species parameters.
     """
@@ -180,7 +183,7 @@ def build_rules_dict(species_list, params, cfg):
     rules = {}
 
     for sp in species_list:
-        sp_id = sp.get(species_id_col)
+        sp_id = get_val(sp, species_id_col)
         rules_list = []
 
         for feat, meta in features_cfg.items():
@@ -200,27 +203,27 @@ def build_rules_dict(species_list, params, cfg):
             }
 
             if score_method == "num_range":
-                min_v = sp.get(f"{feat}_min")
-                max_v = sp.get(f"{feat}_max")
+                min_v = get_val(sp, f"{feat}_min")
+                max_v = get_val(sp, f"{feat}_max")
                 rule_data["params_out"] = {"min": min_v, "max": max_v}
                 rule_data["args"] = (min_v, max_v)
 
             elif score_method == "trapezoid":
-                min_v = sp.get(f"{feat}_min")
-                max_v = sp.get(f"{feat}_max")
+                min_v = get_val(sp, f"{feat}_min")
+                max_v = get_val(sp, f"{feat}_max")
                 left_tol = combined_params["trap_left_tol"]
                 right_tol = combined_params["trap_right_tol"]
                 rule_data["args"] = (min_v, max_v, left_tol, right_tol)
 
             elif score_method == "cat_exact":
                 # Note: In the database the column name is feature+'s'
-                prefs = parse_prefs(sp.get(f"{feat}s"))
+                prefs = parse_prefs(get_val(sp, f"{feat}s"))
                 cat_cfg = meta.get("categorical", {}) or {}
                 rule_data["preferred"] = prefs
                 rule_data["args"] = prefs
 
             elif score_method == "cat_compatibility":
-                prefs = parse_prefs(sp.get(f"{feat}s"))
+                prefs = parse_prefs(get_val(sp, f"{feat}s"))
                 rule_data["preferred"] = prefs
                 cat_cfg = meta.get("compatibility_pairs", {}) or {}
                 rule_data["args"] = (prefs, cat_cfg)

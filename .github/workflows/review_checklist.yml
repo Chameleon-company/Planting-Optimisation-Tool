@@ -1,0 +1,92 @@
+name: Post Review Checklist
+
+on:
+  pull_request_target:
+    types: [review_requested]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  post-checklist:
+    runs-on: ubuntu-latest
+    # Only fire when the PR is ready for review (not draft PR)
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Post review checklist comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reviewer = context.payload.requested_reviewer.login;
+            const author   = context.payload.pull_request.user.login;
+
+            const body = `
+            ## PR Review Checklist
+
+            Hey @${reviewer}, you've been assigned to review this PR by @${author}!
+            Please work through the checklist below before approving.
+
+            ---
+
+            ### Reviewer Guidelines
+            - Reviewers are allocated primarily by **domain knowledge**, aligning with each member's course background (e.g. someone studying Data Science/AI will primarily review ML/data science contributions).
+            - If this PR touches multiple domains, or you need a second opinion, you can **request additional reviewers** before approving.
+            - All team members are welcome to **read and comment** on any PR regardless of whether they are assigned.
+            - **Merges** of approved PRs will be performed by the GitHub lead.
+
+            ---
+
+            ### Review Checklist
+            - [ ] PR template has been completed
+            - [ ] All CI checks are passing
+            - [ ] **Logic Check:** Does the code actually solve the User Story?
+            - [ ] **Quality Check:** Are variables named correctly? Is the code readable?
+            - [ ] **Test Verification:** Do the tests cover edge cases?
+            - [ ] **Security/Safety:** No secrets or credentials exposed in code
+            - [ ] **Privacy:** No personal information exposed in commits
+
+            ---
+
+            ### Definition of Done
+            Before approving, confirm the author's PR satisfies the following:
+
+            **Task checklist**
+            - [ ] Code style adheres to \`CONTRIBUTING.md\` guidelines
+            - [ ] Complex logic is commented
+            - [ ] Feature branch merges cleanly with \`master\` (no conflicts)
+            - [ ] Unit tests created and passing (not just CI compliance)
+            - [ ] Documentation updated (if applicable)
+            - [ ] Local data locations documented (if applicable)
+            - [ ] Task in Planner is linked to this PR (e.g. \`Closes #123\`)
+            - [ ] Reviewed and approved <- _that's you!_
+
+            **If this PR is for a User Story, also confirm:**
+            - [ ] All related tasks are Done as per the above
+            - [ ] All acceptance criteria are met
+
+            ---
+
+            > Not sure about something? Leave a comment on the relevant line and tag the author — that's what reviews are for!
+            `;
+
+            // Avoid duplicate comments if a reviewer is unassigned and re-assigned.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+
+            const alreadyPosted = comments.some(
+              c => c.user.login === 'github-actions[bot]' && c.body.includes('Review Checklist')
+            );
+
+            if (!alreadyPosted) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: body.trim()
+              });
+            }
