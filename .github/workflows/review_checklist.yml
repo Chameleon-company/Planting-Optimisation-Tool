@@ -11,10 +11,8 @@ permissions:
 jobs:
   post-checklist:
     runs-on: ubuntu-latest
-    # Only fire when the assigned reviewer is NOT one of the project leads.
-    if: |
-      github.event.requested_reviewer.login != 'leecopland' &&
-      github.event.requested_reviewer.login != 'dwstephens'
+    # Only fire when the PR is ready for review (not draft PR)
+    if: github.event.pull_request.draft == false
 
     steps:
       - name: Post review checklist comment
