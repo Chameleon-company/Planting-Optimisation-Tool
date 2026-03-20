@@ -5,30 +5,30 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    #GEE
     # GEE + Geospatial
     "earthengine-api>=1.0.0",
     "geopandas>=1.1.1",
     "shapely>=2.1.2",
-
     # Testing
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
-
     # Linting
     "ruff>=0.14.5",
-    #Environmental loading
-
     # Environmental loading
     "python-dotenv>=1.0.1",
+    "scipy>=1.17.1",
+    "scikit-learn>=1.8.0",
+    "matplotlib>=3.10.8",
+    "seaborn>=0.13.2",
 ]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["core", "config", "sapling_estimation"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-
-[tool.setuptools]
-# This tells uv which folders to include as part of the 'gis' package
-# For backend to import
-packages = ["core", "config", "sapling_estimation"]
-
