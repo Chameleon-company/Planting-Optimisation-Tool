@@ -77,7 +77,7 @@ an `.env` file must be present including:
 
 `.env.example` has been included in the repository, and an `.env` file will be created via the `ensure-env` target when a [just](#justfile-commands) command is run for the first time.
 
-To successfully run the `generate_environmental_profile` feature from the `GIS` subdirectory, a Google Earth Engine service account must be registered (keys included in handover documentation).
+To successfully run the `generate_environmental_profile` feature from the `GIS` subdirectory, a Google Earth Engine service account must be registered (service account details included in handover documentation).
 
 #### Once this is complete, please proceed to [justfile](#justfile-commands) for initial data ingestion.
 
