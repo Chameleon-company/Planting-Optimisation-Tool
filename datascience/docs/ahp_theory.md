@@ -105,25 +105,25 @@ W =
 The corresponding Eigenvalues are the diagonal of matrix $\lambda$
 
 
-$$
+```math
 \lambda =
   \begin{bmatrix}
     3.065 \\
     -0.032 -0.445i  \\
     -0.032 + 0.445i 
   \end{bmatrix}
-$$
+```
 
 The principal Eigenvector is the Eigenvector that corresponds to the highest Eigenvalue. 
 
-$$
+```math
 W^* =
   \begin{bmatrix}
     0.2790  \\
     0.6491  \\
     0.0719 
   \end{bmatrix}
-$$
+```
 The normalised principal Eigenvector is also called priority vector. Since it is normalised, the sum of all elements in priority vector is 1. The priority vector shows relative weights among the things 
 that we compare. In our example above, Rainfall is 27.90%, Temperature is 64.91% and Soli Texture is 7.19%. Darrin believes that Mahogany most preferable factor is Temperature, followed by Rainfall and Soil Texture. In this case, we know more than their ranking. In fact, the relative weight is a ratio scale that we can divide among them. For example, we can say that Mahogany likes temperature 2.33 $(=64.91/27.90)$ times more than rainfall and it also like temperature so much 9.03 $(=64.91/7.19)$ times more than soil texture. 
 
