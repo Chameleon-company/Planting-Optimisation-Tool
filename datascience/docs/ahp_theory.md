@@ -147,14 +147,14 @@ A comparison matrix A is said to be consistent if $a_{ij} a_{jk} = a_{i
 Saaty [2] proved that for consistent reciprocal matrix, the largest Eigenvalue is equal to the size of comparison matrix, or $max \lambda = n$. Then he gave a measure of consistency, called Consistency 
 Index as deviation or degree of consistency using the following formula
 
-$$
+```math
 CI = \frac{\lambda_{max}-n}{n-1}
-$$
+```
 
 Thus in our previous example, we have $\lambda_{max} =3.0967$ and the size of comparison matrix is $n = 3$, thus the consistency index is
-$$
+```math
 CI = \frac{\lambda_{max}-n}{n-1}=\frac{3.0967-3}{2}=0.0484
-$$
+```
 
 Knowing the Consistency Index, the next question is how do we use this index? Again, Saaty [2] proposed that we use this index by comparing it with the appropriate one. The appropriate Consistency index is called Random Consistency Index (RI). He randomly generated reciprocal matrix using scale $1/9$,$1/8$, …, $1$, …, $8$, $9$ and get the random consistency index to see if it is about 10% or less. The average 
 random consistency index is shown in the table below [3]
@@ -165,16 +165,16 @@ random consistency index is shown in the table below [3]
 
 Then, he proposed what is called Consistency Ratio, which is a comparison between Consistency Index and Random Consistency Index, or in formula
 
-$$
+```math
 CR = \frac{CI}{RI}
-$$
+```
 
 If the value of Consistency Ratio is smaller or equal to 10%, the inconsistency is acceptable. If the Consistency Ratio is greater than 10%, we need to revise the subjective judgment. 
 
 For our previous example, we have $CI = 0.0484$ and $RI$ for $n = 3$ is 0.58, then we have
-$$
+```math
 CR = \frac{CI}{RI}=\frac{0.0484}{0.58}=8.3\% <10\%
-$$
+```
 
 Thus, Darrin's subjective evaluation about Mahogany factor preference is consistent. 
 
