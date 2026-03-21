@@ -94,15 +94,14 @@ $$
 ## Priority vectors 
 Having a comparison matrix, now we would like to compute priority vector, which is the normalised Eigenvector of the matrix.
 The Eigenvectors of the comparison matrix are
-
-$$
+```math
 W =
   \begin{bmatrix}
     3.878 & -1.939 +3.359i & -1.939 -3.359i \\
     9.025 & -4.512 -7.816i & -4.512 + 7.816i \\
     1 & 1 & 1
   \end{bmatrix}
-$$
+```
 The corresponding Eigenvalues are the diagonal of matrix $\lambda$
 
 
