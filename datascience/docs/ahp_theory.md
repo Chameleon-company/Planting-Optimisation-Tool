@@ -64,7 +64,7 @@ A =
 $$
 
 
-To fill the lower triangular matrix, we use the reciprocal values of the upper diagonal. If $a_{ij}$ is the element of row i column j of the matrix, then the lower diagonal is filled using this formula
+To fill the lower triangular matrix, we use the reciprocal values of the upper diagonal. If $`a_{ij}`$ is the element of row i column j of the matrix, then the lower diagonal is filled using this formula
 
 $$
 A =
