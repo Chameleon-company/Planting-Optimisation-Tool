@@ -44,9 +44,9 @@ A =
 \begin{array}{c c}
   &
   \begin{array}{ccc}
-    \text{rainfall}\phantom{00} &
-    \text{temperature}\phantom{0} &
-    \text{soil}\phantom{00}
+    \text{rainfall}\quad &
+    \text{temperature}\quad &
+    \text{soil}\quad
   \end{array}
   \\
   \begin{array}{c}
@@ -56,9 +56,9 @@ A =
   \end{array}
   &
   \begin{bmatrix}
-    1\phantom{0000000000} & \tfrac{1}{3}\phantom{00000000} & 5\phantom{00} \\
-                  & 1\phantom{00000000}           & 7\phantom{00} \\
-                  &                         & 1\phantom{00}
+    1\qquad\qquad\qquad & \tfrac{1}{3}\qquad\qquad\qquad & 5\quad \\
+                  & 1\qquad\qquad\qquad           & 7\quad \\
+                  &                         & 1\quad
   \end{bmatrix}
 \end{array}
 ```
@@ -71,9 +71,9 @@ A =
 \begin{array}{c c}
   &
   \begin{array}{ccc}
-    \text{rainfall}\phantom{00} &
-    \text{temperature}\phantom{0} &
-    \text{soil}\phantom{00}
+    \text{rainfall}\quad &
+    \text{temperature}\quad &
+    \text{soil}\phantom\quad
   \end{array}
   \\
   \begin{array}{c}
@@ -83,9 +83,9 @@ A =
   \end{array}
   &
   \begin{bmatrix}
-    1\phantom{0000000000}            & \tfrac{1}{3}\phantom{00000000} & 5\phantom{00} \\
-    3\phantom{0000000000}            & 1\phantom{00000000}            & 7\phantom{00} \\
-    \tfrac{1}{5}\phantom{0000000000} & \tfrac{1}{7}\phantom{00000000} & 1\phantom{00}
+    1\qquad\qquad\qquad            & \tfrac{1}{3}\qquad\qquad & 5\quad \\
+    3\qquad\qquad\qquad            & 1\qquad\qquad            & 7\quad \\
+    \tfrac{1}{5}\qquad\qquad\qquad & \tfrac{1}{7}\qquad\qquad & 1\quad
   \end{bmatrix}
 \end{array}
 ```
