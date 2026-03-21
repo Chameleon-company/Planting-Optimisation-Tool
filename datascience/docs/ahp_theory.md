@@ -64,7 +64,7 @@ A =
 $$
 
 
-To fill the lower triangular matrix, we use the reciprocal values of the upper diagonal. If $a_{ij}$ is the element of row $i$ column $j$ of the matrix, then the lower diagonal is filled using this formula
+To fill the lower triangular matrix, we use the reciprocal values of the upper diagonal. If $a_{ij}$ is the element of row i column j of the matrix, then the lower diagonal is filled using this formula
 
 $$
 A =
@@ -102,9 +102,7 @@ W =
     1 & 1 & 1
   \end{bmatrix}
 ```
-The corresponding Eigenvalues are the diagonal of matrix $\lambda$
-
-
+The corresponding Eigenvalues are the diagonal of matrix
 ```math
 \lambda =
   \begin{bmatrix}
@@ -125,7 +123,7 @@ W^* =
   \end{bmatrix}
 ```
 The normalised principal Eigenvector is also called priority vector. Since it is normalised, the sum of all elements in priority vector is 1. The priority vector shows relative weights among the things 
-that we compare. In our example above, Rainfall is 27.90%, Temperature is 64.91% and Soli Texture is 7.19%. Darrin believes that Mahogany most preferable factor is Temperature, followed by Rainfall and Soil Texture. In this case, we know more than their ranking. In fact, the relative weight is a ratio scale that we can divide among them. For example, we can say that Mahogany likes temperature 2.33 $(=64.91/27.90)$ times more than rainfall and it also like temperature so much 9.03 $(=64.91/7.19)$ times more than soil texture. 
+that we compare. In our example above, Rainfall is 27.90%, Temperature is 64.91% and Soil Texture is 7.19%. Darrin believes that Mahogany most preferable factor is Temperature, followed by Rainfall and Soil Texture. In this case, we know more than their ranking. In fact, the relative weight is a ratio scale that we can divide among them. For example, we can say that Mahogany likes temperature 2.33 (=64.91/27.90) times more than rainfall and it also like temperature so much 9.03 (=64.91/7.19) times more than soil texture. 
 
 Aside from the relative weight, we can also check the consistency of Darrin’s answer. To do that, we need the called Principal Eigenvalue.
 
@@ -137,11 +135,11 @@ Let us look again on Darrin’s judgment that we discussed in the pr
 
 ![Pair-wise comparison for three factors for Mahogany](images/ahp_figure4.png)
 
-First he thinks Mahogany prefers Temperature to Rainfall. Thus we say that for Mahogany, Temperature has greater value than Rainfall. We write it as $B > A$. Next, Darrin believes Mahogany prefers Rainfall to Soil texture. For it, Rainfall has greater value than Soil texture. We write it as $A > C$. 
+First he thinks Mahogany prefers Temperature to Rainfall. Thus we say that for Mahogany, Temperature has greater value than Rainfall. We write it as B > A. Next, Darrin believes Mahogany prefers Rainfall to Soil texture. For it, Rainfall has greater value than Soil texture. We write it as A > C. 
 
-Since $B > A$ and $A > C$, logically, we hope that $B > C$ or Temperature must be preferable than Soil texture. This logic of preference is called transitive property. If Darrin answers in the last comparison is transitive (that he  thinks Mahogany likes Temperature more than Soil texture), then his judgment is consistent. On the contrary, if Darrin thinks Mahogany prefers Soil texture to Temperature then his answer is inconsistent. Thus consistency is closely related to the transitive property. 
+Since B > A and A > C, logically, we hope that B > C or Temperature must be preferable than Soil texture. This logic of preference is called transitive property. If Darrin answers in the last comparison is transitive (that he  thinks Mahogany likes Temperature more than Soil texture), then his judgment is consistent. On the contrary, if Darrin thinks Mahogany prefers Soil texture to Temperature then his answer is inconsistent. Thus consistency is closely related to the transitive property. 
 
-A comparison matrix A is said to be consistent if $a_{ij} a_{jk} = a_{ik}$ for all $i$, $j$ and $k$. However, we shall not force the consistency. For example, $B > A$  has value $3 > 1$ and $A > C$ has value $5 > 1$, we shall not insist that $B > C$ must have value $15 > 1$. This too much consistency is undesirable because we are dealing with human judgment. To be called consistent, the rank can be transitive but the values of judgment are not necessarily forced to multiplication formula $a_{ij} a_{jk} =a_{ik}$
+A comparison matrix A is said to be consistent if $a_{ij} a_{jk} = a_{ik}$ for all i, j and k. However, we shall not force the consistency. For example, B > A  has value 3 > 1 and A > C has value 5 > 1, we shall not insist that B > C must have value 15 > 1. This too much consistency is undesirable because we are dealing with human judgment. To be called consistent, the rank can be transitive but the values of judgment are not necessarily forced to multiplication formula $a_{ij} a_{jk} =a_{ik}$
 
 
 Saaty [2] proved that for consistent reciprocal matrix, the largest Eigenvalue is equal to the size of comparison matrix, or $max \lambda = n$. Then he gave a measure of consistency, called Consistency 
@@ -151,12 +149,12 @@ Index as deviation or degree of consistency using the following formul
 CI = \frac{\lambda_{max}-n}{n-1}
 ```
 
-Thus in our previous example, we have $\lambda_{max} =3.0967$ and the size of comparison matrix is $n = 3$, thus the consistency index is
+Thus in our previous example, we have $\lambda_{max}=3.0967$ and the size of comparison matrix is n = 3, thus the consistency index is
 ```math
 CI = \frac{\lambda_{max}-n}{n-1}=\frac{3.0967-3}{2}=0.0484
 ```
 
-Knowing the Consistency Index, the next question is how do we use this index? Again, Saaty [2] proposed that we use this index by comparing it with the appropriate one. The appropriate Consistency index is called Random Consistency Index (RI). He randomly generated reciprocal matrix using scale $1/9$,$1/8$, …, $1$, …, $8$, $9$ and get the random consistency index to see if it is about 10% or less. The average 
+Knowing the Consistency Index, the next question is how do we use this index? Again, Saaty [2] proposed that we use this index by comparing it with the appropriate one. The appropriate Consistency index is called Random Consistency Index (RI). He randomly generated reciprocal matrix using scale 1/9,1/7, …, 1, …, 7, 9 and get the random consistency index to see if it is about 10% or less. The average 
 random consistency index is shown in the table below [3]
 
 | n  | 1 | 2 | 3    | 4   | 5    | 6    | 7   | 8   | 9   | 10  | 
@@ -171,7 +169,7 @@ CR = \frac{CI}{RI}
 
 If the value of Consistency Ratio is smaller or equal to 10%, the inconsistency is acceptable. If the Consistency Ratio is greater than 10%, we need to revise the subjective judgment. 
 
-For our previous example, we have $CI=0.0484$ and $RI$ for $n=3$ is 0.58, then we have
+For our previous example, we have CI=0.0484 and RI for n=3 is 0.58, then we have
 ```math
 CR = \frac{CI}{RI}=\frac{0.0484}{0.58}=8.3\% <10\%
 ```
