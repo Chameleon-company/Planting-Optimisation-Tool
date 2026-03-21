@@ -37,9 +37,9 @@ up the upper triangular matrix. How to fill up the upper triangular 
 1. If the judgment value is on the left side of 1, we put the actual judgment value. 
 2. If the judgment value is on the right side of 1, we put the reciprocal value. 
 
-Comparing rainfall and temperature, Darrin thinks Mahogany slightly favour Temperature, thus we put $1/3$ in the row 1 column 2 of the matrix. Comparing Rainfall and Soil Texture, Darrin believes Mahogany strongly likes Soil Texture, thus we put actual judgment 5 on the first row, last column of the matrix. Comparing Temperature and Soil Texture, Temperature is dominant. Thus we put Darrin's actual judgment on the second row, last column of the matrix. Then based on his preference values above, we have a reciprocal matrix like this
+Comparing rainfall and temperature, Darrin thinks Mahogany slightly favour Temperature, thus we put 1/3 in the row 1 column 2 of the matrix. Comparing Rainfall and Soil Texture, Darrin believes Mahogany strongly likes Soil Texture, thus we put actual judgment 5 on the first row, last column of the matrix. Comparing Temperature and Soil Texture, Temperature is dominant. Thus we put Darrin's actual judgment on the second row, last column of the matrix. Then based on his preference values above, we have a reciprocal matrix like this
 
-$$
+```math
 A =
 \begin{array}{c c}
   &
@@ -61,12 +61,12 @@ A =
                   &                         & 1\phantom{00}
   \end{bmatrix}
 \end{array}
-$$
+```
 
 
 To fill the lower triangular matrix, we use the reciprocal values of the upper diagonal. If $`a_{ij}`$ is the element of row i column j of the matrix, then the lower diagonal is filled using this formula
 
-$$
+```math
 A =
 \begin{array}{c c}
   &
@@ -88,7 +88,7 @@ A =
     \tfrac{1}{5}\phantom{0000000000} & \tfrac{1}{7}\phantom{00000000} & 1\phantom{00}
   \end{bmatrix}
 \end{array}
-$$
+```
 
 
 ## Priority vectors 
@@ -139,10 +139,10 @@ First he thinks Mahogany prefers Temperature to Rainfall. Thus we say t
 
 Since B > A and A > C, logically, we hope that B > C or Temperature must be preferable than Soil texture. This logic of preference is called transitive property. If Darrin answers in the last comparison is transitive (that he  thinks Mahogany likes Temperature more than Soil texture), then his judgment is consistent. On the contrary, if Darrin thinks Mahogany prefers Soil texture to Temperature then his answer is inconsistent. Thus consistency is closely related to the transitive property. 
 
-A comparison matrix A is said to be consistent if $a_{ij} a_{jk} = a_{ik}$ for all i, j and k. However, we shall not force the consistency. For example, B > A  has value 3 > 1 and A > C has value 5 > 1, we shall not insist that B > C must have value 15 > 1. This too much consistency is undesirable because we are dealing with human judgment. To be called consistent, the rank can be transitive but the values of judgment are not necessarily forced to multiplication formula $a_{ij} a_{jk} =a_{ik}$
+A comparison matrix A is said to be consistent if $`a_{ij} a_{jk} = a_{ik}`$ for all i, j and k. However, we shall not force the consistency. For example, B > A  has value 3 > 1 and A > C has value 5 > 1, we shall not insist that B > C must have value 15 > 1. This too much consistency is undesirable because we are dealing with human judgment. To be called consistent, the rank can be transitive but the values of judgment are not necessarily forced to multiplication formula $`a_{ij} a_{jk} =a_{ik}`$
 
 
-Saaty [2] proved that for consistent reciprocal matrix, the largest Eigenvalue is equal to the size of comparison matrix, or $max \lambda = n$. Then he gave a measure of consistency, called Consistency 
+Saaty [2] proved that for consistent reciprocal matrix, the largest Eigenvalue is equal to the size of comparison matrix, or $`max \lambda = n`$. Then he gave a measure of consistency, called Consistency 
 Index as deviation or degree of consistency using the following formula
 
 ```math
