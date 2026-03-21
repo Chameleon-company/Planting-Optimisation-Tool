@@ -171,7 +171,7 @@ CR = \frac{CI}{RI}
 
 If the value of Consistency Ratio is smaller or equal to 10%, the inconsistency is acceptable. If the Consistency Ratio is greater than 10%, we need to revise the subjective judgment. 
 
-For our previous example, we have $CI = 0.0484$ and $RI$ for $n = 3$ is 0.58, then we have
+For our previous example, we have $CI=0.0484$ and $RI$ for $n=3$ is 0.58, then we have
 ```math
 CR = \frac{CI}{RI}=\frac{0.0484}{0.58}=8.3\% <10\%
 ```
