@@ -73,7 +73,7 @@ A =
   \begin{array}{ccc}
     \text{rainfall}\quad &
     \text{temperature}\quad &
-    \text{soil}\phantom\quad
+    \text{soil}\quad
   \end{array}
   \\
   \begin{array}{c}
