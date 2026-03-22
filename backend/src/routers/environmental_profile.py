@@ -30,7 +30,12 @@ async def get_farm_profile(
     Requires OFFICER role or higher.
     """
     service = EnvironmentalProfileService()
-    profile_data = await service.run_environmental_profile(db, farm_id)
+    profile_data = await service.run_environmental_profile(
+        db=db,
+        farm_id=farm_id,
+        user_id=current_user.id,
+        user_role=current_user.role,
+    )
 
     if not profile_data:
         raise HTTPException(status_code=404, detail=f"Farm boundary not found for farm_id: {farm_id}")

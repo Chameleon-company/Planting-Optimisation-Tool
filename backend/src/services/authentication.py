@@ -263,6 +263,18 @@ async def require_role_async(required_role: Role):
     return role_checker
 
 
+def require_ownership_or_admin(current_user: User, requested_user_id: int) -> User:
+    """Allow admins and supervisors to access any user record.
+    Officers may only access their own record.
+    """
+    if current_user.role == Role.OFFICER.value and current_user.id != requested_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this user",
+        )
+    return current_user
+
+
 async def log_audit_event(
     db: AsyncSession,
     user_id: int,

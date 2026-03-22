@@ -23,6 +23,7 @@ from src.services.authentication import (
     get_current_user,
     get_password_hash,
     log_audit_event,
+    require_ownership_or_admin,
     require_role,
 )
 
@@ -157,7 +158,7 @@ async def read_users(
 async def read_user(
     user_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(require_role(Role.SUPERVISOR)),
+    current_user: User = Depends(get_current_user),
 ):
     """Get a specific user by ID.
 
@@ -196,6 +197,9 @@ async def read_user(
     db_user = result.scalar_one_or_none()
     if db_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    require_ownership_or_admin(current_user, user_id)
+
     return db_user
 
 

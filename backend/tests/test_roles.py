@@ -133,6 +133,22 @@ async def test_officer_cannot_delete_user(
     assert response.status_code == 403
 
 
+async def test_officer_can_get_own_user_record(
+    async_client: AsyncClient,
+    test_officer_user: User,
+    officer_auth_headers: dict,
+):
+    response = await async_client.get(
+        f"/users/{test_officer_user.id}",
+        headers=officer_auth_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == test_officer_user.id
+    assert data["email"] == test_officer_user.email
+
+
 # ============================================================================
 # SUPERVISOR ROLE RESTRICTION TESTS
 # ============================================================================
