@@ -118,7 +118,7 @@ async def test_register_duplicate_email_fails(async_client: AsyncClient, async_s
         json={
             "email": "duplicate_test_user@test.com",
             "name": "Duplicate Test First User",
-            "password": "password123",
+            "password": "Password1!",
             "role": "officer",
         },
     )
@@ -130,12 +130,69 @@ async def test_register_duplicate_email_fails(async_client: AsyncClient, async_s
         json={
             "email": "duplicate_test_user@test.com",
             "name": "Duplicate Test Second User",
-            "password": "password456",
+            "password": "Password2!",
             "role": "officer",
         },
     )
     assert response2.status_code == 400
     assert "already registered" in response2.json()["detail"].lower()
+
+
+async def test_register_email_is_normalized_to_lowercase(async_client: AsyncClient):
+    response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "CaseTest@Gmail.com",
+            "name": "Email Test One",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["email"] == "casetest@gmail.com"
+
+
+async def test_register_duplicate_email_different_case_fails(async_client: AsyncClient):
+    first_response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "CaseTestDup@Gmail.com",
+            "name": "Duplicate Email First User",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+    assert first_response.status_code == 200
+
+    second_response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "casetestdup@gmail.com",
+            "name": "Duplicate Email Second User",
+            "password": "Password2!",
+            "role": "officer",
+        },
+    )
+    assert second_response.status_code == 400
+    assert "already registered" in second_response.json()["detail"].lower()
+
+
+async def test_register_unique_email_still_succeeds(async_client: AsyncClient):
+    response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "differentcasecheck@gmail.com",
+            "name": "Email Test Four",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["email"] == "differentcasecheck@gmail.com"
 
 
 # ============================================================================
@@ -177,7 +234,7 @@ async def test_register_password_minimum_length(async_client: AsyncClient):
         json={
             "email": "min_password_test@test.com",
             "name": "Minimum Password Test User",
-            "password": "pass1234",  # Exactly 8 characters
+            "password": "Password1!",  # Exactly 8 characters
             "role": "officer",
         },
     )

@@ -26,7 +26,7 @@ __pycache__/
 # Environment variables & secrets
 .env
 keys/
-
+backend/src/keys/*
 # Assets & temporary data
 assets/
 
@@ -44,5 +44,7 @@ tests/.pytest_cache/
 # Egg info
 *.egg-info/
 
+
 # Intellij project files
 .idea
+

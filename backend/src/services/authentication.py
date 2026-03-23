@@ -69,28 +69,19 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[User]:
-    """Authenticates a user by verifying email and password.
+    """Authenticates a user by verifying email and password."""
 
-    Args:
-        db: Async database session
-        email: User's email address
-        password: Plain text password to verify
+    email = email.strip().lower()
 
-    Returns:
-        User object if authentication succeeds, None otherwise
-
-    Note:
-        This function performs two checks:
-        1. User exists with the given email
-        2. Password matches the stored hash
-        Returns None if either check fails (timing-safe against enumeration attacks).
-    """
     result = await db.execute(select(User).filter(User.email == email))
     user = result.scalar_one_or_none()
+
     if not user:
         return None
+
     if not verify_password(password, user.hashed_password):
         return None
+
     return user
 
 

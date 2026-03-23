@@ -32,6 +32,7 @@ dependencies = [
     "earthengine-api>=1.7.4, !=1.7.9",
     "google-auth>=2.47.0",
     "bcrypt==4.0.1",
+    "diff-cover>=9.2.0",
 ]
 
 [tool.pytest.ini_options]
@@ -48,6 +49,8 @@ testpaths = [
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
+addopts = "--cov=src --cov-report=xml"
+filterwarnings = ["ignore:urllib3.*doesn't match a supported version:Warning"]
 
 [tool.ruff]
 line-length = 200
