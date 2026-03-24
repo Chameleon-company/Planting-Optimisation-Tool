@@ -38,7 +38,6 @@ Updates included:
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set
 
-
 # ============================================================
 # 1) Column mapping (edit here if headers change later)
 # ============================================================
@@ -444,8 +443,8 @@ def parse_dependencies_rows(
 
 
 def run_exclusion_rules_records(
-    farm_data: Dict[str, Any],
-    species_rows: List[Dict[str, Any]],
+    farm_data: Any,
+    species_rows: List[Any],
     config: Optional[Dict[str, Any]] = None,
     dependencies_rows: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
@@ -471,20 +470,18 @@ def run_exclusion_rules_records(
     # -------------------------------
     # Task 8: Annotation config
     # -------------------------------
-    annotation_cfg = (
-        cfg.get("annotation", {}) if isinstance(cfg.get("annotation", {}), dict) else {}
-    )
+    annotation_cfg = cfg.get("annotation", {}) if isinstance(cfg.get("annotation", {}), dict) else {}
     include_values = bool(annotation_cfg.get("include_values", False))
 
     excluded: List[Dict[str, Any]] = []
     candidates: List[int] = []
 
     name_to_id: Dict[str, int] = {}
-    id_to_species: Dict[int, Dict[str, Any]] = {}
+    id_to_species: Dict[int, Any] = {}
 
     for sp in species_rows:
-        sp_id_raw = sp.get(SPECIES_COL["id"])
-        sp_name = _norm_str(sp.get(SPECIES_COL["species_name"]))
+        sp_id_raw = _get_val(sp, SPECIES_COL["id"], None)
+        sp_name = _norm_str(_get_val(sp, SPECIES_COL["species_name"], None))
 
         if sp_id_raw is None:
             continue
@@ -510,8 +507,8 @@ def run_exclusion_rules_records(
             if not farm_col or not species_col:
                 continue
 
-            farm_val = farm_data.get(farm_col)
-            sp_val = sp.get(species_col)
+            farm_val = _get_val(farm_data, farm_col, None)
+            sp_val = _get_val(sp, species_col, None)
 
             # Task 9: missing data => None => skip
             res = _compare(farm_val, str(rule.get("op", "")), sp_val)
@@ -522,18 +519,14 @@ def run_exclusion_rules_records(
                 # -------------------------------
                 # Task 8: richer annotation
                 # -------------------------------
-                reasons.append(
-                    _format_reason(
-                        rule, farm_val, sp_val, include_values=include_values
-                    )
-                )
+                reasons.append(_format_reason(rule, farm_val, sp_val, include_values=include_values))
 
         if reasons:
             excluded.append(
                 {
                     "id": sp_id,
-                    "species_name": sp.get(SPECIES_COL["species_name"]),
-                    "species_common_name": sp.get(SPECIES_COL["species_common_name"]),
+                    "species_name": _get_val(sp, SPECIES_COL["species_name"], None),
+                    "species_common_name": _get_val(sp, SPECIES_COL["species_common_name"], None),
                     "reasons": reasons,
                 }
             )
@@ -567,10 +560,8 @@ def run_exclusion_rules_records(
                     sp = id_to_species.get(focal_id, {})
                     excluded_by_id[focal_id] = {
                         "id": focal_id,
-                        "species_name": sp.get(SPECIES_COL["species_name"]),
-                        "species_common_name": sp.get(
-                            SPECIES_COL["species_common_name"]
-                        ),
+                        "species_name": _get_val(sp, SPECIES_COL["species_name"], None),
+                        "species_common_name": _get_val(sp, SPECIES_COL["species_common_name"], None),
                         "reasons": [dep.reason],
                     }
 
@@ -581,3 +572,11 @@ def run_exclusion_rules_records(
         "candidate_ids": candidates,
         "excluded_species": excluded,
     }
+
+
+def _get_val(obj, key, default=None):
+    if obj is None:
+        return default
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return getattr(obj, key, default)

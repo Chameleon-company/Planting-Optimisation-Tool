@@ -1,8 +1,9 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select
+
+from src.models import AgroforestryType, Farm
 from src.schemas.farm import FarmCreate
-from src.models import Farm, AgroforestryType
 
 
 async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: int):
@@ -20,15 +21,13 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
     if agroforestry_ids:
         # Find the actual 'AgroforestryType' objects in the DB
         # that match the IDs the user sent
-        result = await db.execute(
-            select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_ids))
-        )
+        result = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_ids)))
         selected_types = list(result.scalars().all())
 
         # Link them
         db_farm.agroforestry_type = selected_types
 
-    # 5. Persist
+    # Commit to db
     db.add(db_farm)
     await db.commit()
 
@@ -44,18 +43,10 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
     return result.scalar_one()
 
 
-async def get_farm_by_id(
-    db: AsyncSession, farm_ids: list[int], user_id: int, user_role: str = "officer"
-) -> list[Farm] | None:
+async def get_farm_by_id(db: AsyncSession, farm_ids: list[int], user_id: int | None = None) -> list[Farm]:
+    """Retrieves one or many Farm records by ID.
+    If user_id is provided, results are filtered to that owner only.
     """
-    Retrieves one or many Farm records, filtered by farm_id AND user_id
-    to enforce ownership authorization.
-
-    Includes selectinload for relationships to prevent MissingGreenlet errors
-    during Pydantic serialization.
-    """
-    # We add .options(selectinload(...)) for every relationship
-    # that the FarmRead schema needs to display.
     stmt = (
         select(Farm)
         .options(
@@ -63,11 +54,25 @@ async def get_farm_by_id(
             selectinload(Farm.agroforestry_type),
             selectinload(Farm.farm_supervisor),
         )
-        .where((Farm.id.in_(farm_ids)))
+        .where(Farm.id.in_(farm_ids))
     )
-    if user_role == "officer":
+    if user_id is not None:
         stmt = stmt.where(Farm.user_id == user_id)
 
     result = await db.execute(stmt)
+    return list(result.scalars().all())
 
+
+async def list_farms_by_user(db: AsyncSession, user_id: int) -> list[Farm]:
+    """Retrieves all Farm records belonging to a specific user."""
+    stmt = (
+        select(Farm)
+        .options(
+            selectinload(Farm.soil_texture),
+            selectinload(Farm.agroforestry_type),
+            selectinload(Farm.farm_supervisor),
+        )
+        .where(Farm.user_id == user_id)
+    )
+    result = await db.execute(stmt)
     return list(result.scalars().all())

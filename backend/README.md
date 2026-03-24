@@ -32,6 +32,8 @@ https://docs.docker.com/desktop/setup/install/windows-install/
 
 Ensure it is open and running before proceeding
 
+**⚠️ Windows users: If you have Postgres installed natively, it will conflict with the Docker container on port 5432. Either disable it (Stop-Service postgresql*) or change the Docker port to 5433 before running `just setup`.**
+
 
 #### Linux/macOS:
 https://docs.docker.com/get-started/get-docker/
@@ -43,10 +45,9 @@ Docker Compose version v2.40.3-desktop.1
 
 Make sure [just](https://github.com/casey/just) is installed, confirm with:
 ```bash
-backend $ just help
+backend $ just --list
 Available recipes:
     erd              # Generates an Entity-Relationship Diagram of the current database
-    help             # Displays all available justfile targets
     kill-api         # Stops the API server
     ...
 ```
@@ -75,7 +76,7 @@ an `.env` file must be present including:
 
 `.env.example` has been included in the repository, and an `.env` file will be created via the `ensure-env` target when a [just](#justfile-commands) command is run for the first time.
 
-To successfully run the `generate_environmental_profile` feature from the `GIS` subdirectory, a Google Earth Engine service account must be registered (keys included in handover documentation).
+To successfully run the `generate_environmental_profile` feature from the `GIS` subdirectory, a Google Earth Engine service account must be registered (service account details included in handover documentation).
 
 #### Once this is complete, please proceed to [justfile](#justfile-commands) for initial data ingestion.
 
@@ -274,7 +275,8 @@ Notes:
 
 **Key Files:**
 
-- [src/services/authentication.py](src/services/authentication.py): Password hashing, JWT validation, role checking
+- [src/dependencies.py](src/dependencies.py): JWT token validation, `get_current_user`, `require_role` dependency
+- [src/services/authentication.py](src/services/authentication.py): Password hashing and user authentication (`authenticate_user`, `log_audit_event`)
 - [src/models/user.py](src/models/user.py): User model with role field
 - [src/models/audit_log.py](src/models/audit_log.py): Audit log model for security events
 - [src/routers/auth.py](src/routers/auth.py): Login and authentication endpoints
@@ -405,16 +407,9 @@ This section documents current system limitations, validation behaviour, and are
 
 ---
 
-### Placeholder Admin Endpoint
+### Auth Items Endpoint
 
-- `GET /auth/users/me/items` returns hardcoded placeholder data:
-  ```json
-  [
-    {
-      "item_id": "Foo",
-      "owner": "<admin name>"
-    }
-  ]
+- `GET /auth/users/me/items` returns the list of farms owned by the currently authenticated user.
 
 
 ### Testing
@@ -472,12 +467,11 @@ run `just [target]` in `/backend` to execute.
 
 | Target | Purpose | Shell Commands Executed |
 | :--- | :--- | :--- |
-| **`help`** | Shows all available `just` commands | `just --list`. Iterates over all targets and outputs to the terminal |
 | **`stop`** | Stops the PostgreSQL container. | `docker compose down` |
 | **`start`** | Starts the PostgreSQL container service in detached mode. | 1. `docker compose up -d` <br> 2. `sleep 5` |
-| **`reset`** | Destroys existing database volume and starts new (via `start`) | 1. `docker compose down -v` <br> 2. `docker compose up -d db` | 
-| **`setup`** | Initializes the database container from scratch (`stop`, `start`, `migrate`), starts the service and applies all pending Alembic migrations. | 1. `docker compose down` (via `stop`)<br> 2. `docker compose up -d db` (via `start`)<br> 3. `sleep 5` <br> 4. **`uv run dotenv run alembic upgrade head` (via `migrate`)** |
-| **`revision`** | **GENERATES** a new Alembic migration script based on changes detected in your Python models. **Requires `M="message"`**. After running, you must **review the script** before running `just migrate`. | `uv run dotenv run alembic revision --autogenerate -m "message"` |
+| **`reset`** | Destroys existing database volume, starts fresh, and applies migrations | 1. `docker compose down -v` <br> 2. `docker compose up -d db` <br> 3. `uv run alembic upgrade head` |
+| **`setup`** | Restarts the DB container and applies any pending migrations. Data volumes are preserved. | 1. `docker compose down` (via `stop`)<br> 2. `docker compose up -d db` (via `start`)<br> 3. `sleep 5` <br> 4. `uv run alembic upgrade head` (via `migrate`) |
+| **`revision`** | **GENERATES** a new Alembic migration script based on changes detected in your Python models. Called as `just revision "message"`. After running, you must **review the script** before running `just migrate`. | `uv run alembic revision --autogenerate -m "message"` |
 | **`migrate`** | Applies any pending Alembic migration scripts to upgrade the database schema to the latest version. This is the final step after creating and reviewing a script. | `uv run dotenv run alembic upgrade head` |
 | **`populate`** | Wipes the DB, migrates, and ingests all CSV data. Outputs state of database setup statistics to terminal | Runs `setup_import_db.py` |
 | **`test`** | Executes the full test suite using Pytest on the contents of the `tests/` directory. | `uv run dotenv run pytest tests/` |

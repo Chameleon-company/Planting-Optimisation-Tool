@@ -1,5 +1,7 @@
 import asyncio
+
 from sqlalchemy import text
+
 from src.database import AsyncSessionLocal
 
 

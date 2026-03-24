@@ -1,3 +1,6 @@
+from suitability_scoring.utils.accessors import get_val
+
+
 ########################################################################################
 # Scoring functions
 ########################################################################################
@@ -219,8 +222,8 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
     contributed to the final score, including the raw values used, the specific scoring
     rule triggered (e.g., "below minimum", "exact match"), and any missing data warnings.
 
-    :param farms_data: Dictionary containing the farm's features (farm profile).
-    :param species_list: List of dictionaries (species profile), each representing a valid
+    :param farm_data: Dictionary or ORM object containing the farm's features (farm profile).
+    :param species_list: List of dictionaries or ORM objects (species profile), each representing a valid
       candidate species.
     :param optimised_rules: Dictionary of scoring rules for each species.
     :param cfg: Configuration dictionary containing feature metadata.
@@ -241,13 +244,13 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
     # Loop through each tree species in the filtered dataframe
     for sp in species_list:
         # Get species dictionary
-        species_id = sp.get(species_id_col)
+        species_id = get_val(sp, species_id_col)
 
         # Get the current species name
-        species_name = sp.get(species_name_col)
+        species_name = get_val(sp, species_name_col)
 
         # Get the current species common name
-        species_cname = sp.get(species_cname_col)
+        species_cname = get_val(sp, species_cname_col)
 
         # Grab the pre-computer rules for this species
         rules = optimised_rules[species_id]
@@ -270,7 +273,7 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
             feat = rule["feat"]
 
             # Get the farm's value for this feature
-            farm_val = farm_data.get(feat)
+            farm_val = get_val(farm_data, feat)
 
             # Get scoring method for this feature
             score_method = rule["score_method"]
@@ -311,14 +314,10 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     min_v, max_v, left_tol, right_tol = rule["args"]
 
                     # Score the farm value
-                    score, reason, params_out = numerical_trapezoid_score(
-                        farm_val, min_v, max_v, left_tol, right_tol
-                    )
+                    score, reason, params_out = numerical_trapezoid_score(farm_val, min_v, max_v, left_tol, right_tol)
 
                 else:  # No valid scoring method selected
-                    raise ValueError(
-                        f"Unknown numeric scoring method '{score_method}' for '{feat}'"
-                    )
+                    raise ValueError(f"Unknown numeric scoring method '{score_method}' for '{feat}'")
 
                 # Store explanation for this feature
                 feature_explain[feat] = {
@@ -350,13 +349,9 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
                     prefs, compat_dict = rule["args"]
 
                     # Score the farm value
-                    score, reason = categorical_compatibility_score(
-                        farm_val, prefs, compat_dict
-                    )
+                    score, reason = categorical_compatibility_score(farm_val, prefs, compat_dict)
                 else:  # No valid scoring method selected
-                    raise ValueError(
-                        f"Unknown categorical mode '{score_method}' for feature '{feat}'"
-                    )
+                    raise ValueError(f"Unknown categorical mode '{score_method}' for feature '{feat}'")
 
                 # Store explanation
                 feature_explain[feat] = {

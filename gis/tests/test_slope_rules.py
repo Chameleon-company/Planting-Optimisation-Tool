@@ -1,11 +1,11 @@
-import pytest
+import geopandas as gpd
 import numpy as np
+import pytest
 import rasterio
 from rasterio.transform import from_origin
-import geopandas as gpd
 from shapely.geometry import Point
 
-from sapling_estimation.slope_rules import apply_slope_rules, MAX_SLOPE
+from sapling_estimation.slope_rules import MAX_SLOPE, apply_slope_rules
 
 
 @pytest.fixture
@@ -47,9 +47,7 @@ def test_apply_slope_rules_basic(create_slope_raster, create_planting_points):
     filtered = apply_slope_rules(slope_array, create_planting_points, transform)
 
     # Slope rules check
-    assert isinstance(
-        filtered, gpd.GeoDataFrame
-    )  # Ensure the function returns a GeoDataFrame
+    assert isinstance(filtered, gpd.GeoDataFrame)  # Ensure the function returns a GeoDataFrame
     assert len(filtered) == 3  # Ensure only the 3 points remains
 
     # Ensure the 3 remaining points are the ones inside raster and on low slope

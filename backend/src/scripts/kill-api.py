@@ -1,5 +1,6 @@
 import os
 import signal
+
 import psutil
 
 
@@ -10,9 +11,7 @@ def kill_process_on_port(port):
             connections = proc.net_connections(kind="inet")
             for conn in connections:
                 if conn.laddr.port == port:
-                    print(
-                        f"Stopping API process {proc.info['pid']} ({proc.info['name']}) on port {port}..."
-                    )
+                    print(f"Stopping API process {proc.info['pid']} ({proc.info['name']}) on port {port}...")
                     if os.name == "nt":  # Windows
                         os.kill(proc.info["pid"], signal.SIGTERM)
                     else:  # Linux/WSL

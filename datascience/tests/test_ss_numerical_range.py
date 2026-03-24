@@ -1,4 +1,5 @@
 import pytest
+
 from suitability_scoring.scoring import numerical_range_score
 
 

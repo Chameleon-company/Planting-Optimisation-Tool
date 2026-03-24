@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # Nested model for the User/supervisor
@@ -26,8 +26,6 @@ class SoilTextureReadNested(BaseModel):
     """Schema for displaying the soil texture name."""
 
     id: int
-    name: str = Field(
-        ..., description="Name of the soil texture type (e.g., 'Clay', 'Loam')."
-    )
+    name: str = Field(..., description="Name of the soil texture type (e.g., 'Clay', 'Loam').")
 
     model_config = ConfigDict(from_attributes=True)

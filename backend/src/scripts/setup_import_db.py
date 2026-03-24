@@ -1,8 +1,8 @@
-import subprocess
-import time
-import sys
-import os
 import http.client
+import os
+import subprocess
+import sys
+import time
 
 # Colors for terminal output
 BLUE = "\033[0;34m"
@@ -81,9 +81,7 @@ def main():
         print(f"{RED}Ingestion failed during: {e}{NC}")
         sys.exit(1)
     finally:
-        print(
-            f"\n{BLUE}Shutting down background API handle (PID: {api_proc.pid})...{NC}"
-        )
+        print(f"\n{BLUE}Shutting down background API handle (PID: {api_proc.pid})...{NC}")
         api_proc.terminate()
         api_proc.wait()
 

@@ -1,5 +1,5 @@
-import pytest
 import geopandas as gpd
+import pytest
 from shapely.geometry import box
 
 from sapling_estimation.planting_points import generate_planting_points
@@ -28,13 +28,9 @@ def test_generate_planting_points(create_farm_polygon):
     )
 
     # Planting grid checks
-    assert isinstance(
-        planting_grid, gpd.GeoDataFrame
-    )  # Ensure the output is a GeoDataFrame
+    assert isinstance(planting_grid, gpd.GeoDataFrame)  # Ensure the output is a GeoDataFrame
     assert len(planting_grid) > 0  # Ensure at least one planting point was generated
-    assert planting_grid.within(
-        create_farm_polygon
-    ).all()  # Ensure all points lie within the polygon
+    assert planting_grid.within(create_farm_polygon).all()  # Ensure all points lie within the polygon
 
     # Expected number of grid points inside the 10x10 square with spacing 3
     # Grid coordinates: 3, 6, 9  >  3 x 3 = 9

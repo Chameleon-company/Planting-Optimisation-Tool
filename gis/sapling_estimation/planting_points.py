@@ -1,5 +1,5 @@
-import numpy as np
 import geopandas as gpd
+import numpy as np
 from shapely.geometry import Point
 
 # The planting points function accepts the polygon and bounds of the input farm, along with spacing rule (in meters).
@@ -8,12 +8,8 @@ from shapely.geometry import Point
 # Each point is tested to ensure it falls within the farm polygon.
 
 
-def generate_planting_points(
-    farm_polygon, target_crs, slope_bounds: tuple, spacing_m: float
-):
-    farm_poly_dem = gpd.GeoSeries([farm_polygon], crs=target_crs).iloc[
-        0
-    ]  # Reprojects polygon
+def generate_planting_points(farm_polygon, target_crs, slope_bounds: tuple, spacing_m: float):
+    farm_poly_dem = gpd.GeoSeries([farm_polygon], crs=target_crs).iloc[0]  # Reprojects polygon
 
     # Generate a regular grid inside polygon bounds
     xmin, ymin, xmax, ymax = slope_bounds

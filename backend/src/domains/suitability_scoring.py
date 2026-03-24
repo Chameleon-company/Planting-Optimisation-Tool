@@ -2,8 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class SuitabilityFarm(BaseModel):
-    """
-    The 'Contract' for the Recommendation Engine.
+    """The 'Contract' for the Recommendation Engine.
     Only includes fields necessary for scoring.
     """
 
@@ -18,9 +17,7 @@ class SuitabilityFarm(BaseModel):
 
     @classmethod
     def from_db_model(cls, farm_obj):
-        """
-        An 'Adapter' method to flatten the complex SQLAlchemy object.
-        """
+        """An 'Adapter' method to flatten the complex SQLAlchemy object."""
         return cls(
             id=farm_obj.id,
             rainfall_mm=farm_obj.rainfall_mm,
@@ -28,9 +25,7 @@ class SuitabilityFarm(BaseModel):
             elevation_m=farm_obj.elevation_m,
             ph=float(farm_obj.ph),
             # Flattening the nested soil_texture object to a simple string
-            soil_texture=farm_obj.soil_texture.name.lower()
-            if farm_obj.soil_texture
-            else "unknown",
+            soil_texture=farm_obj.soil_texture.name.lower() if farm_obj.soil_texture else "unknown",
         )
 
 

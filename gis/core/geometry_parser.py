@@ -52,9 +52,7 @@ def parse_geometry(geom_raw):
         return parse_point(geom_raw[0], geom_raw[1])
 
     # MultiPoint
-    if isinstance(geom_raw, list) and all(
-        isinstance(p, tuple) and len(p) == 2 for p in geom_raw
-    ):
+    if isinstance(geom_raw, list) and all(isinstance(p, tuple) and len(p) == 2 for p in geom_raw):
         return parse_multipoint(geom_raw)
 
     # Polygon

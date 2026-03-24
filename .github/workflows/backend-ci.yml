@@ -1,146 +1,159 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
-          
-          
-name: POT Back-end Testing 
-          
-          
+
+
+name: POT Back-end Testing
+
+
 on:
   push:
-    branches: "**"
+    branches-ignore: ["master"]
   pull_request:
-    branches: [ "master" ]
-          
-          
+    branches: ["master"]
+
+
 permissions:
   contents: read
-          
-          
+  pull-requests: write
+
+
 jobs:
   build:
-    
+
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
-    
+
     # ====================================================================
-    # 1. DATABASE SERVICE SETUP
-    # Starts the PostgreSQL container and exposes it to the runner.
-    # The 'options' are set on a single line to avoid YAML parsing bugs.
+    # DATABASE SERVICE
     # ====================================================================
     services:
-      postgres_db: # Service name
+      postgres_db:
         image: postgis/postgis:15-3.4-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: devpassword
           POSTGRES_DB: POT_db
         ports:
-          # Expose the port so the runner can connect via 'localhost:5432'
           - 5432:5432
         options: "--health-cmd \"pg_isready -U postgres\" --health-interval 10s --health-timeout 5s --health-retries 5"
-    
-    # ====================================================================
-    # 2. WORKFLOW STEPS
-    # ====================================================================
+
     steps:
     - uses: actions/checkout@v4
-    
+      with:
+        fetch-depth: 0
+
     - name: Install uv
       uses: astral-sh/setup-uv@v6
-      with: 
-          version: "0.9.11"
-          enable-cache: true
-    
+      with:
+        version: "0.9.11"
+        enable-cache: true
+
     - name: Set up Python
-      run: uv python install 
-    
+      run: uv python install
+
+    - name: Cache virtualenv
+      uses: actions/cache@v4
+      with:
+        path: backend/.venv
+        key: venv-${{ runner.os }}-${{ hashFiles('backend/uv.lock') }}
+
     - name: Install Backend dependencies
-      run: |
-        uv sync
-    
+      run: uv sync
+
+    # ====================================================================
+    # 1. LINT AND FORMAT
+    # ====================================================================
+    - name: Lint with ruff
+      run: uv run ruff check .
+
+    - name: Format check with ruff
+      run: uv run ruff format --check .
+
+    # ====================================================================
+    # 2. DATABASE SETUP
+    # ====================================================================
     - name: Set DB Environment Variables for CI
       run: |
-        # Set individual components
         echo "POSTGRES_USER=postgres" >> $GITHUB_ENV
         echo "POSTGRES_PASSWORD=devpassword" >> $GITHUB_ENV
         echo "POSTGRES_DB=POT_db" >> $GITHUB_ENV
-        echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV 
+        echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV
         echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
+        # Points at POT_db for alembic; the test step overrides this to pot_test_db
         echo "DATABASE_URL=postgresql+asyncpg://postgres:devpassword@localhost:5432/POT_db" >> $GITHUB_ENV
-        
-    - name: Wait for PostgreSQL Service to be Healthy
-      run: |
-        SERVICE_HOST="localhost" # Runner connects to the exposed port via localhost
-        SERVICE_PORT=5432
-        MAX_ATTEMPTS=15
-        ATTEMPT=0
-        
-        echo "Waiting for DB service to open port ${SERVICE_PORT}..."
-        
-        # Loop until netcat (nc) successfully connects to the host/port
-        # 'nc -z' checks for open port without sending data
-        until nc -z $SERVICE_HOST $SERVICE_PORT; do
-          if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
-            echo "Error: PostgreSQL service did not open port ${SERVICE_PORT} within 60 seconds."
-            exit 1
-          fi
-          
-          echo "Attempt $((ATTEMPT + 1)) of ${MAX_ATTEMPTS}: Port is not yet open. Waiting..."
-          sleep 4
-          ATTEMPT=$((ATTEMPT + 1))
-        done
-        
-        echo "PostgreSQL service is now reachable!"
 
     - name: Enable PostGIS Extension
       run: |
-        # Construct a psql connection string using the environment variables.
-        # Authenticates the psql client to facilitate PostGIS extension.
         PSQL_URI="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-        
-        # Execute the command using the constructed URI
         psql $PSQL_URI -c "CREATE EXTENSION IF NOT EXISTS postgis;"
         echo "PostGIS extension successfully enabled."
 
-    # 4. APPLY MIGRATIONS
     - name: Apply Alembic Migrations
-      run: |
-        uv run alembic upgrade head
+      run: uv run alembic upgrade head
 
-    # 5. Seed reference data
     - name: Seed Reference Data
+      run: uv run python -m src.scripts.seed_references
+
+    - name: Sync Sequences After Seeding
       run: |
         PSQL_URI="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-        psql $PSQL_URI -c "INSERT INTO soil_textures (id, name) VALUES (1, 'Sandy'), (2, 'Loamy'), (4, 'Clay') ON CONFLICT DO NOTHING;"
-    
-    # 5. REPLICATE DATABASE FOR TESTS
+        psql $PSQL_URI -c "DO \$\$ DECLARE r RECORD; BEGIN FOR r IN (SELECT table_name, column_name FROM information_schema.columns WHERE column_default LIKE 'nextval%' AND table_schema = 'public') LOOP EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''' || r.column_name || '''), COALESCE(MAX(' || r.column_name || '), 1)) FROM ' || r.table_name; END LOOP; END \$\$;"
+
+    # ====================================================================
+    # 3. REPLICATE DATABASE FOR TESTS
+    # Clones POT_db into pot_test_db so tests run against isolated data.
+    # ====================================================================
     - name: Create pot_test_db from Template
       run: |
-        # Define the URI for the main database
         PSQL_ROOT="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/postgres"
-        
-        # Force close connections and clone
         psql $PSQL_ROOT -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'pot_test_db';"
         psql $PSQL_ROOT -c "DROP DATABASE IF EXISTS pot_test_db;"
         psql $PSQL_ROOT -c "CREATE DATABASE pot_test_db WITH TEMPLATE \"POT_db\";"
 
-    - name: Sync Sequences on Test DB
-      run: |
-        PSQL_TEST="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/pot_test_db"
-        psql $PSQL_TEST -c "DO \$\$ DECLARE r RECORD; BEGIN FOR r IN (SELECT table_name, column_name FROM information_schema.columns WHERE column_default LIKE 'nextval%' AND table_schema = 'public') LOOP EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''' || r.column_name || '''), COALESCE(MAX(' || r.column_name || '), 1)) FROM ' || r.table_name; END LOOP; END \$\$;"
-    
-    # 6. LINT AND FORMAT
-    - name: Lint with ruff
-      run: |
-        uv run ruff check .
-    
-    - name: Format check with ruff
-      run: |
-        uv run ruff format --check .
-    
-    # 7. RUN TESTS
+    # ====================================================================
+    # 4. RUN TESTS WITH COVERAGE
+    # ====================================================================
     - name: Test with pytest
       run: |
         export DATABASE_URL="postgresql+asyncpg://postgres:devpassword@localhost:5432/pot_test_db"
         uv run pytest
+
+    - name: Fetch base branch and check for backend changes
+      id: backend-changes
+      if: github.event_name == 'pull_request'
+      run: |
+        git fetch origin
+        CHANGED=$(git diff --name-only origin/master...HEAD -- '**/*.py' | wc -l)
+        echo "has_changes=$([ "$CHANGED" -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+    - name: Diff coverage report
+      id: diff-cover
+      if: github.event_name == 'pull_request' && steps.backend-changes.outputs.has_changes == 'true'
+      run: uv run diff-cover coverage.xml --compare-branch=origin/master --format markdown:diff-coverage.md
+
+    - name: Trim coverage report to summary only
+      if: github.event_name == 'pull_request' && steps.diff-cover.outcome == 'success'
+      run: |
+        python3 << 'EOF'
+        import re
+        with open('diff-coverage.md') as f:
+            content = f.read()
+        content = re.split(r'\n{2,}## backend/', content)[0].strip()
+        with open('diff-coverage.md', 'w') as f:
+            f.write(content)
+        EOF
+
+    - name: Save PR number
+      if: github.event_name == 'pull_request'
+      run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+
+    - name: Upload diff-coverage artifacts
+      if: github.event_name == 'pull_request' && steps.diff-cover.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: diff-coverage
+        path: |
+          backend/diff-coverage.md
+          backend/pr_number.txt
+        retention-days: 1

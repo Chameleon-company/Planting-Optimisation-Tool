@@ -9,8 +9,7 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_register_user(async_client: AsyncClient, async_session: AsyncSession):
-    """
-    Test user registration via /auth/register endpoint.
+    """Test user registration via /auth/register endpoint.
 
     Verifies that:
     - A new user can be created through the registration endpoint
@@ -35,17 +34,14 @@ async def test_register_user(async_client: AsyncClient, async_session: AsyncSess
     assert data["role"] == "officer"
 
     # Verify the user was actually created in the database
-    result = await async_session.execute(
-        select(User).filter(User.email == "registration_test_user@test.com")
-    )
+    result = await async_session.execute(select(User).filter(User.email == "registration_test_user@test.com"))
     db_user = result.scalar_one_or_none()
     assert db_user is not None
     assert db_user.name == "Registration Test User"
 
 
 async def test_login_for_access_token(async_client: AsyncClient, test_admin_user: User):
-    """
-    Test successful login via /auth/token endpoint.
+    """Test successful login via /auth/token endpoint.
 
     Verifies that:
     - Valid credentials return a JWT access token
@@ -63,8 +59,7 @@ async def test_login_for_access_token(async_client: AsyncClient, test_admin_user
 
 
 async def test_login_wrong_password(async_client: AsyncClient, test_admin_user: User):
-    """
-    Test login failure with incorrect password.
+    """Test login failure with incorrect password.
 
     Verifies that authentication fails (401 Unauthorized) when
     the email is correct but the password is wrong.
@@ -77,8 +72,7 @@ async def test_login_wrong_password(async_client: AsyncClient, test_admin_user: 
 
 
 async def test_login_wrong_username(async_client: AsyncClient, test_admin_user: User):
-    """
-    Test login failure with non-existent user.
+    """Test login failure with non-existent user.
 
     Verifies that authentication fails (401 Unauthorized) when
     attempting to login with an email that doesn't exist.
@@ -91,8 +85,7 @@ async def test_login_wrong_username(async_client: AsyncClient, test_admin_user: 
 
 
 async def test_get_current_user(async_client: AsyncClient, admin_auth_headers: dict):
-    """
-    Test retrieving current user information via /auth/users/me.
+    """Test retrieving current user information via /auth/users/me.
 
     Verifies that:
     - An authenticated user can retrieve their own information
@@ -111,11 +104,8 @@ async def test_get_current_user(async_client: AsyncClient, admin_auth_headers: d
 # ============================================================================
 
 
-async def test_register_duplicate_email_fails(
-    async_client: AsyncClient, async_session: AsyncSession
-):
-    """
-    Test that registering a user with an existing email fails.
+async def test_register_duplicate_email_fails(async_client: AsyncClient, async_session: AsyncSession):
+    """Test that registering a user with an existing email fails.
 
     Verifies that:
     - First registration succeeds
@@ -128,7 +118,7 @@ async def test_register_duplicate_email_fails(
         json={
             "email": "duplicate_test_user@test.com",
             "name": "Duplicate Test First User",
-            "password": "password123",
+            "password": "Password1!",
             "role": "officer",
         },
     )
@@ -140,12 +130,69 @@ async def test_register_duplicate_email_fails(
         json={
             "email": "duplicate_test_user@test.com",
             "name": "Duplicate Test Second User",
-            "password": "password456",
+            "password": "Password2!",
             "role": "officer",
         },
     )
     assert response2.status_code == 400
     assert "already registered" in response2.json()["detail"].lower()
+
+
+async def test_register_email_is_normalized_to_lowercase(async_client: AsyncClient):
+    response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "CaseTest@Gmail.com",
+            "name": "Email Test One",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["email"] == "casetest@gmail.com"
+
+
+async def test_register_duplicate_email_different_case_fails(async_client: AsyncClient):
+    first_response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "CaseTestDup@Gmail.com",
+            "name": "Duplicate Email First User",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+    assert first_response.status_code == 200
+
+    second_response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "casetestdup@gmail.com",
+            "name": "Duplicate Email Second User",
+            "password": "Password2!",
+            "role": "officer",
+        },
+    )
+    assert second_response.status_code == 400
+    assert "already registered" in second_response.json()["detail"].lower()
+
+
+async def test_register_unique_email_still_succeeds(async_client: AsyncClient):
+    response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "differentcasecheck@gmail.com",
+            "name": "Email Test Four",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["email"] == "differentcasecheck@gmail.com"
 
 
 # ============================================================================
@@ -154,8 +201,7 @@ async def test_register_duplicate_email_fails(
 
 
 async def test_register_password_too_short(async_client: AsyncClient):
-    """
-    Test that registration fails with password shorter than 8 characters.
+    """Test that registration fails with password shorter than 8 characters.
 
     Verifies that:
     - Password must be at least 8 characters
@@ -171,14 +217,12 @@ async def test_register_password_too_short(async_client: AsyncClient):
         },
     )
     assert response.status_code == 422
-    errors = response.json()["detail"]
-    # Check that there's a validation error for password field
-    assert any("password" in str(error).lower() for error in errors)
+    errors = response.json()["errors"]
+    assert any("password" in error["field"] for error in errors)
 
 
 async def test_register_password_minimum_length(async_client: AsyncClient):
-    """
-    Test that password with exactly 8 characters is accepted.
+    """Test that password with exactly 8 characters is accepted.
 
     Verifies that:
     - Minimum password length of 8 characters is enforced
@@ -189,7 +233,7 @@ async def test_register_password_minimum_length(async_client: AsyncClient):
         json={
             "email": "min_password_test@test.com",
             "name": "Minimum Password Test User",
-            "password": "pass1234",  # Exactly 8 characters
+            "password": "Password1!",  # Exactly 8 characters
             "role": "officer",
         },
     )
@@ -204,8 +248,7 @@ async def test_register_password_minimum_length(async_client: AsyncClient):
 
 
 async def test_access_protected_endpoint_without_token(async_client: AsyncClient):
-    """
-    Test that accessing protected endpoint without token fails.
+    """Test that accessing protected endpoint without token fails.
 
     Verifies that:
     - Protected endpoints require authentication
@@ -216,8 +259,7 @@ async def test_access_protected_endpoint_without_token(async_client: AsyncClient
 
 
 async def test_access_protected_endpoint_with_invalid_token(async_client: AsyncClient):
-    """
-    Test that accessing protected endpoint with invalid token fails.
+    """Test that accessing protected endpoint with invalid token fails.
 
     Verifies that:
     - Invalid JWT tokens are rejected

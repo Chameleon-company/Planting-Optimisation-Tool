@@ -1,8 +1,9 @@
 # ruff: noqa: F401
-import sys
 import os
-from src.database import Base
+import sys
+
 import src.models
+from src.database import Base
 
 # Add model directory to path (necessary for importing all models)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "models")))
@@ -10,16 +11,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "mode
 
 def generate_schema_report():
     """Prints the database schema in a clean Markdown table format."""
-
     output = ["# POT Database Schema Definition (SQLAlchemy ORM)\n"]
 
     for table_name, table in Base.metadata.tables.items():
         output.append(f"## TABLE: `{table_name}`\n")
 
         # Create table header
-        output.append(
-            "| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |"
-        )
+        output.append("| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |")
         output.append("| :--- | :--- | :--- | :--- | :--- |")
 
         for column in table.columns:

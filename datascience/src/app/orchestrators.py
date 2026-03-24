@@ -1,10 +1,10 @@
 import timeit
 from datetime import datetime, timezone
-from app import repository
 
+from app import repository
+from suitability_scoring.recommend import build_species_recommendations
 from suitability_scoring.scoring import calculate_suitability
 from suitability_scoring.utils.params import build_rules_dict
-from suitability_scoring.recommend import build_species_recommendations
 
 
 ########################################################################################
@@ -85,23 +85,15 @@ def get_batch_recommendations_service(farm_id_list):
 
         # EXCLUSION GOES HERE
         # Determine which trees are valid candidates vs excluded
-        candidate_species_ids, excluded_results = get_valid_tree_ids_and_reasons(
-            farm_data, all_species
-        )
+        candidate_species_ids, excluded_results = get_valid_tree_ids_and_reasons(farm_data, all_species)
 
         # If candidate_species_ids is not empty, create candidate list
         if candidate_species_ids:
             # Filter the master list to create a candidate list for this farm
-            candidate_species = [
-                all_species_map[sp_id]
-                for sp_id in candidate_species_ids
-                if sp_id in all_species_map
-            ]
+            candidate_species = [all_species_map[sp_id] for sp_id in candidate_species_ids if sp_id in all_species_map]
 
         # Score these candidate species for this farm
-        scored_results, _ = calculate_suitability(
-            farm_data, candidate_species, optimised_rules, cfg
-        )
+        scored_results, _ = calculate_suitability(farm_data, candidate_species, optimised_rules, cfg)
 
         # Format recommendations and rank
         formatted_recs = build_species_recommendations(scored_results)

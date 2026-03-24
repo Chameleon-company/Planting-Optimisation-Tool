@@ -9,15 +9,16 @@ This document will help you set up your environment and start contributing to th
 First fork the repo to create your own copy:
 https://github.com/Chameleon-company/Planting-Optimisation-Tool/fork
 
-Then clone your fork locally
+Then clone your fork to your local development environment
 ```bash
 git clone https://github.com/<your-username>/Planting-Optimisation-Tool.git  # Replace <your-username> with your github username.
 cd Planting-Optimisation-Tool
 ```
-Add the project repo as remote to keep your fork up to date
+Add the project repo as remote (upstream) to keep your fork up to date with the project repository
 ```bash
 git remote add upstream https://github.com/Chameleon-company/Planting-Optimisation-Tool.git
 git remote -v
+git fetch upstream
 ```
 #### To work on a feature, create a branch for it.
 ```bash
@@ -33,16 +34,17 @@ A few important points to keep in mind to make sure your contributions are safe,
 
 2. **Run linting and formatting** – make sure your code follows the project’s style guidelines before committing:  
    ```bash
-   npm run lint       # frontend
-   npm run format     # frontend
-   ruff check .       # backend / Data Science
+   npm run lint             # frontend
+   npm run format           # frontend
+   uv run ruff check --fix       # backend / Data Science / GIS
+   uv run ruff format            # backend / Data Science / GIS
    ```  
 
 3. **Write clear commit messages** – short but descriptive messages make reviewing and tracking changes easier.  
 
-4. **Keep PRs focused** – one feature, bugfix, or documentation change per PR. Avoid unrelated changes.
+4. **Keep PRs focused** – one feature, bugfix, or documentation change per PR. Try to avoid unrelated changes.
 
-5. **Sync with the main repository** – regularly pull from `upstream/master` to avoid merge conflicts:  
+5. **Sync with the main repository** – regularly fetch from `upstream/master` to avoid merge conflicts:  
    ```bash
    git fetch upstream
    git checkout master
@@ -55,9 +57,7 @@ A few important points to keep in mind to make sure your contributions are safe,
 
 7. **Document important changes** – if your contribution affects setup, usage, or configuration, update the README or other documentation.  
 
-8. **Check for sensitive information in comments or logs** – remove passwords, internal URLs, or secret tokens.  
-
-9. **Tag the affected team / area in your PR** – Frontend, Backend, Data Science, Documentation, etc., to help reviewers know who should look at it.  
+8. **Check for sensitive information in comments or logs** – Remove any identifying personal information, passwords, internal URLs, or secret tokens.  
 
 Following these guidelines ensures that contributions are safe, consistent, and easy to review.
 
@@ -66,6 +66,8 @@ Following these guidelines ensures that contributions are safe, consistent, and 
 Stage your changes with 
 ```
 git add .
+or
+git add c:/file/changed/1.txt
 ```
 
 Then commit your changes with 
@@ -88,87 +90,11 @@ Once you have confirmed:
 
 Open a Pull request - https://github.com/Chameleon-company/Planting-Optimisation-Tool/compare
 
-Fill out the PR template and click Create Pull request. Then mark off your task on the MS Teams planner [here](https://teams.microsoft.com/l/entity/com.microsoft.teamspace.tab.planner/_djb2_msteams_prefix_4285208193?context=%7B%22channelId%22%3A%2219%3A040b4a55d7084ae0b2426a200c20ac53%40thread.tacv2%22%7D&tenantId=d02378ec-1688-46d5-8540-1c28b5f470f6).
+Fill out the PR template and click Create Pull request.
 
 # Setups
 
-## 1. Front-end setup
-
-The front-end is built with React. Make sure you have **Node.js (v24+)**  and **npm** installed.
-
-[Download Node.js](https://nodejs.org/en/download)
-
-Confirm installation with:
-```bash
-node -v # should return >24.0
-npm -v
-```
-
-then
-```bash
-cd frontend
-npm install # to install dependencies
-```
-then to start the development server
-```bash
-npm run dev
-```
-
-If you get errors or white screen after pulling new changes, run `npm install` again to update dependencies.
-
-### Testing
-
-The front end uses **Vitest** for testing
-
-```bash
-npm run test # runs tests
-npm run test -- --coverage # runs tests with coverage
-```
-Your code must include tests and pass existing tests before submitting a PR.  
-
-The front end uses [ESlint](https://eslint.org/docs/latest/use/getting-started) for linting
-```bash
-npm run lint:scripts # checks code
-npm run lint:styles  # checks css
-``` 
-
-[Prettier](https://prettier.io/docs/) for code formatting
-```bash
-npm run format:scripts  # format code
-npm run format:styles   # format CSS/SCSS 
-npm run format           # formats everything
-```
-
-[Husky](https://github.com/typicode/husky) is set up for pre-commit hooks. When you commit, lint-staged will run to ensure your staged files are properly linted and formatted. You do not need to run it manually.
-
-
-## 2. Back-end and Data Science setup
-
-Install `uv` for your chosen OS from:
-```
-https://docs.astral.sh/uv/getting-started/installation/
-```
-and confirm it is installed with `uv --version`.
-You should see something like 
-```console
-C:\...\Planting-Optimisation-Tool > uv --version
-> uv 0.8.14
-```
-Then 
-```bash
-cd backend
-```
-Run `uv sync` to install all requirements from `pyproject.toml` for the backend.
-```bash
-cd ..
-cd datascience
-```
-Run `uv sync` to install all requirements from `pyproject.toml` for the datascience directory.
-
-If there are additional python packages you require, run `uv add packagename` to add it to the project.
-
-This project uses Ruff linter and formatter (https://docs.astral.sh/ruff/tutorial/) to enforce PEP 8 style guide for python (https://peps.python.org/pep-0008/)
-
-To run, from the base directory of your team, enter `ruff check` and it will test your code for issues. 
-
-You can also choose to run `ruff check --fix` to automatically fix any linting issues.
+Frontend - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/frontend#how-to-run-the-frontend
+Backend - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/backend#getting-started
+Data Science - https://github.com/Chameleon-company/Planting-Optimisation-Tool/blob/master/datascience/README.md
+GIS - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/gis/docs

@@ -1,0 +1,53 @@
+name: Post Coverage Comment
+
+on:
+  workflow_run:
+    workflows: ["POT Back-end Testing"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    steps:
+    - name: Check for coverage artifact
+      id: check
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            run_id: ${{ github.event.workflow_run.id }}
+          });
+          const found = artifacts.data.artifacts.find(a => a.name === 'diff-coverage');
+          return found ? 'true' : 'false';
+        result-encoding: string
+
+    - name: Download diff-coverage artifacts
+      if: steps.check.outputs.result == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        name: diff-coverage
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Read PR number
+      id: pr
+      if: steps.check.outputs.result == 'true'
+      run: echo "number=$(cat pr_number.txt)" >> $GITHUB_OUTPUT
+
+    - name: Post coverage comment
+      if: steps.check.outputs.result == 'true'
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: diff-coverage
+        number: ${{ steps.pr.outputs.number }}
+        path: diff-coverage.md

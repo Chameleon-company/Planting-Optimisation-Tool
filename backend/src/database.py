@@ -1,18 +1,18 @@
 # SQLAlchemy engine
+from typing import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    async_sessionmaker,
     AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
 )  # Required for asynchronous sessions and engine creation
 from sqlalchemy.orm import DeclarativeBase
-from typing import AsyncGenerator
+
 from src.config import settings  # import the settings object from config.py
 
 
 class Base(DeclarativeBase):
-    """
-    All SQLAlchemy models inherit from this base class.
-    """
+    """All SQLAlchemy models inherit from this base class."""
 
     pass
 

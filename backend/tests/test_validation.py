@@ -15,9 +15,7 @@ from httpx import AsyncClient
     ],
 )
 @pytest.mark.asyncio
-async def test_species_create_constraints(
-    async_client: AsyncClient, test_admin_user, admin_auth_headers, field, invalid_value
-):
+async def test_species_create_constraints(async_client: AsyncClient, test_admin_user, admin_auth_headers, field, invalid_value):
     """Verifies Pydantic Field constraints for Species creation."""
     payload = {
         "name": "Test Species",
@@ -39,9 +37,7 @@ async def test_species_create_constraints(
 
     payload[field] = invalid_value
 
-    response = await async_client.post(
-        "/species", json=payload, headers=admin_auth_headers
-    )
+    response = await async_client.post("/species", json=payload, headers=admin_auth_headers)
 
     assert response.status_code == 422
     assert field in response.text
@@ -87,16 +83,12 @@ async def test_farm_create_constraints(
 
     payload[field] = invalid_value
 
-    response = await async_client.post(
-        "/farms", json=payload, headers=admin_auth_headers
-    )
+    response = await async_client.post("/farms", json=payload, headers=admin_auth_headers)
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_species_with_soil_textures(
-    async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture
-):
+async def test_species_with_soil_textures(async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture):
     """Tests that a species can be created with multiple soil texture associations."""
     payload = {
         "name": "Casuarina",
@@ -117,9 +109,7 @@ async def test_species_with_soil_textures(
         "soil_textures": [1, 2, 4],
     }
 
-    response = await async_client.post(
-        "/species", json=payload, headers=admin_auth_headers
-    )
+    response = await async_client.post("/species", json=payload, headers=admin_auth_headers)
     assert response.status_code == 201
 
     data = response.json()

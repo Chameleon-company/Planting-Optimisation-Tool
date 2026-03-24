@@ -1,19 +1,19 @@
-"""
-Audit Log Model
+"""Audit Log Model
 
 SQLAlchemy model for tracking security-relevant events and user actions.
 Provides an immutable audit trail for compliance, security monitoring, and forensics.
 """
 
-from sqlalchemy import ForeignKey, DateTime
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from src.database import Base
 from datetime import datetime, timezone
+
+from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.database import Base
 
 
 class AuditLog(Base):
-    """
-    Audit log database model for security and compliance tracking.
+    """Audit log database model for security and compliance tracking.
 
     Records important user actions and system events for accountability,
     security monitoring, and regulatory compliance. Audit logs should be
@@ -82,9 +82,7 @@ class AuditLog(Base):
     details: Mapped[str] = mapped_column()
 
     # When the event occurred (UTC, auto-set on creation)
-    timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationship to User model
     user = relationship("User")

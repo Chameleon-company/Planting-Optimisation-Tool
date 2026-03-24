@@ -1,6 +1,7 @@
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.models.farm import Farm
 from src.models.soil_texture import SoilTexture
 from src.models.user import User
@@ -8,17 +9,14 @@ from src.models.user import User
 
 @pytest.mark.asyncio
 async def test_foreign_key_cascade_delete(async_session: AsyncSession):
-    """
-    Verifies that deleting a SoilTexture record automatically cascades
+    """Verifies that deleting a SoilTexture record automatically cascades
     and deletes dependent Farm records.
     """
     session = async_session
 
     # Insert Parent and Child Records
     # 1a Create user
-    test_user = User(
-        name="John Doe", email="test_user@test.com", hashed_password="password999999"
-    )
+    test_user = User(name="John Doe", email="test_user@test.com", hashed_password="password999999")
     session.add(test_user)
     await session.flush()
     user_id = test_user.id
@@ -54,11 +52,7 @@ async def test_foreign_key_cascade_delete(async_session: AsyncSession):
     await session.execute(delete(SoilTexture).where(SoilTexture.id == soil_id))
 
     # 3. VERIFICATION: Check Child Record
-    farm_check = await session.execute(
-        select(Farm).where(Farm.soil_texture_id == soil_id)
-    )
+    farm_check = await session.execute(select(Farm).where(Farm.soil_texture_id == soil_id))
 
     # If CASCADE is working, the result list must be empty.
-    assert farm_check.scalars().first() is None, (
-        "CASCADE delete failed: Farm record still exists after parent SoilTexture was deleted."
-    )
+    assert farm_check.scalars().first() is None, "CASCADE delete failed: Farm record still exists after parent SoilTexture was deleted."

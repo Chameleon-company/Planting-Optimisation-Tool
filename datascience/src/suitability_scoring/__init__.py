@@ -12,8 +12,8 @@ keeps internal helpers encapsulated behind a clean public API.
 Public API
 -------------------------------------------------------------------------------
 - calculate_suitability(
-    farm_data: dict,
-    species_list: list[dict],
+    farm_data: dict | ORM object,
+    species_list: list[dict] | list[ORM objects],
     optimised_rules: dict,
     cfg: dict
   ) -> tuple[list[dict], list[tuple[int | str, float]]]
@@ -71,7 +71,7 @@ Public API
     Values are coerced using internal converters (e.g., to_*_or_none) for robust parsing.
 
 - build_rules_dict(
-    species_list: list[dict],
+    species_list: list[dict]|list[ORM objects],
     params: dict,
     cfg: dict
   ) -> dict[int | str, list[dict]]
@@ -154,9 +154,9 @@ Stability & versioning
   without notice.
 """
 
-from .scoring import calculate_suitability
-from .utils import build_species_params_dict, build_rules_dict, load_yaml
 from .recommend import build_species_recommendations
+from .scoring import calculate_suitability
+from .utils import build_rules_dict, build_species_params_dict, load_yaml
 
 __all__ = [
     "calculate_suitability",

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from src.schemas.constants import Role
 
@@ -8,6 +9,7 @@ __all__ = [
     "Role",
     "UserBase",
     "UserCreate",
+    "UserUpdate",
     "UserRead",
     "UserLogin",
     "Token",
@@ -19,6 +21,11 @@ __all__ = [
 class UserBase(BaseModel):
     email: EmailStr = Field(..., description="The user's unique email address.")
     name: str = Field(..., description="The user's full name.")
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        return v.strip().lower()
 
 
 # Used for registration (requires password input)
@@ -33,6 +40,21 @@ class UserCreate(UserBase):
     @classmethod
     def password_min_length(cls, v: str) -> str:
         if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        return v
+
+
+# Used for updating user details (all fields optional)
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str | None) -> str | None:
+        if v is not None and len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
         return v
 

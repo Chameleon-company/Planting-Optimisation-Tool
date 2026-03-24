@@ -1,5 +1,4 @@
-"""
-Authentication Router
+"""Authentication Router
 
 This module provides API endpoints for user authentication and authorization:
 - Token-based login (OAuth2 password flow)
@@ -9,21 +8,20 @@ This module provides API endpoints for user authentication and authorization:
 All endpoints use JWT tokens for stateless authentication.
 """
 
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 from src.database import get_db_session
-from src.dependencies import create_access_token  # Use the timezone-aware version
-from src.services.authentication import (
-    authenticate_user,
-    get_current_user,
-    get_password_hash,
-    require_role,
-)
+from src.dependencies import create_access_token, get_current_user, require_role
 from src.models import User
-from src.schemas.user import Role, Token, UserRead, UserCreate
+from src.schemas.farm import FarmRead
+from src.schemas.user import Role, Token, UserCreate, UserRead
+from src.services import authentication as authentication_service
+from src.services import farm as farm_service
+from src.services import user as user_service
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -33,8 +31,7 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """
-    OAuth2 compatible token login endpoint.
+    """OAuth2 compatible token login endpoint.
 
     Authenticates a user using email (as username) and password, then returns
     a JWT access token for subsequent API requests.
@@ -61,9 +58,7 @@ async def login_for_access_token(
             "token_type": "bearer"
         }
     """
-    user = await authenticate_user(
-        db, email=form_data.username, password=form_data.password
-    )
+    user = await authentication_service.authenticate_user(db, email=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -77,8 +72,7 @@ async def login_for_access_token(
 
 @router.post("/register", response_model=UserRead)
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db_session)):
-    """
-    Register a new user account.
+    """Register a new user account.
 
     Creates a new user with the provided email, name, password, and role.
     This is a public endpoint that allows self-registration.
@@ -109,35 +103,18 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db_sess
             "role": "officer"
         }
     """
-    # Check if email already exists
-    result = await db.execute(select(User).filter(User.email == user.email))
-    db_user = result.scalar_one_or_none()
-    if db_user:
+    try:
+        return await user_service.create_user(db, user)
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
+            detail=str(e),
         )
-
-    # Hash the password before storing
-    hashed_password = get_password_hash(user.password)
-
-    # Create new user
-    db_user = User(
-        email=user.email,
-        name=user.name,
-        hashed_password=hashed_password,
-        role=user.role,
-    )
-    db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
-    return db_user
 
 
 @router.get("/users/me", response_model=UserRead)
 async def read_users_me(current_user: User = Depends(get_current_user)):
-    """
-    Get the currently authenticated user's information.
+    """Get the currently authenticated user's information.
 
     Returns the profile of the user making the request based on their JWT token.
 
@@ -165,25 +142,10 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@router.get("/users/me/items")
-async def read_own_items(current_user: User = Depends(require_role(Role.ADMIN))):
-    """
-    Example endpoint demonstrating admin-only access.
-
-    This is a placeholder endpoint showing how to restrict access to admin users only.
-    In production, replace with actual business logic.
-
-    Args:
-        current_user: Authenticated admin user
-
-    Returns:
-        List of items owned by the current admin user
-
-    Requires:
-        Valid JWT token with admin role
-
-    Note:
-        This endpoint is restricted to admins only. Officers and supervisors
-        will receive a 403 Forbidden response.
-    """
-    return [{"item_id": "Foo", "owner": current_user.name}]
+@router.get("/users/me/items", response_model=List[FarmRead])
+async def read_own_items(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_role(Role.OFFICER)),
+):
+    """Returns all farms associated with the currently authenticated user."""
+    return await farm_service.list_farms_by_user(db, current_user.id)

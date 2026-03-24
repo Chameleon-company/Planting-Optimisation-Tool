@@ -1,4 +1,5 @@
-from sqlalchemy import Table, Column, ForeignKey
+from sqlalchemy import Column, ForeignKey, Table
+
 from src.database import Base
 
 # Define the association table using the low-level Table construct
@@ -28,9 +29,7 @@ species_agroforestry_association = Table(
 species_soil_texture_association = Table(
     "species_soil_texture_association",
     Base.metadata,
-    Column(
-        "species_id", ForeignKey("species.id", ondelete="CASCADE"), primary_key=True
-    ),
+    Column("species_id", ForeignKey("species.id", ondelete="CASCADE"), primary_key=True),
     Column(
         "soil_texture_id",
         ForeignKey("soil_textures.id", ondelete="CASCADE"),

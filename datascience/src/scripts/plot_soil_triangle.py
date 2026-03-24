@@ -1,8 +1,9 @@
 from pathlib import Path
+
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator, AutoMinorLocator
-import seaborn as sns
 import numpy as np
+import seaborn as sns
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 
 # Use mpltern's ternary projection and the official USDA polygon dataset
 from mpltern.datasets import soil_texture_classes
@@ -41,9 +42,7 @@ def calculate_centroid(vertices):
     if np.allclose(v[0], v[-1]):
         v = v[:-1]
         if v.shape[0] < 3:
-            raise ValueError(
-                "After removing duplicate last vertex, not enough points remain."
-            )
+            raise ValueError("After removing duplicate last vertex, not enough points remain.")
 
     # Roll to pair (v_i, v_{i+1})
     vi = v
@@ -54,9 +53,7 @@ def calculate_centroid(vertices):
 
     area = 0.5 * np.sum(cross)
     if np.isclose(area, 0.0):
-        raise ValueError(
-            "Degenerate polygon: area is zero or numerically close to zero."
-        )
+        raise ValueError("Degenerate polygon: area is zero or numerically close to zero.")
 
     centroid = np.sum((vi + vj) * cross[:, None], axis=0) / (6.0 * area)
     return centroid

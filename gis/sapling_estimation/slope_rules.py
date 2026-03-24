@@ -1,6 +1,6 @@
 import geopandas as gpd
-import rasterio
 import numpy as np
+import rasterio
 
 MAX_SLOPE = 15.0  # Slope threshold
 
@@ -9,9 +9,7 @@ MAX_SLOPE = 15.0  # Slope threshold
 # The points are then filtered by removing points that are on terrian steeper than the maximum threshold.
 
 
-def apply_slope_rules(
-    slope_array: np.ndarray, rotated_grid: gpd.GeoDataFrame, slope_transform
-):
+def apply_slope_rules(slope_array: np.ndarray, rotated_grid: gpd.GeoDataFrame, slope_transform):
     # Extract the coordinates of every point for sampling
     xs = [point.x for point in rotated_grid.geometry]
     ys = [point.y for point in rotated_grid.geometry]
