@@ -15,9 +15,7 @@ class SaplingEstimationService:
     async def run_estimation(db: AsyncSession, farm_id: int, spacing_m: float = 3.0):
 
         # Get farm boundary
-        result = await db.execute(
-            select(FarmBoundary).where(FarmBoundary.id == farm_id)
-        )
+        result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
         boundary = result.scalar_one_or_none()
 
         if not boundary:
@@ -66,24 +64,19 @@ class SaplingEstimationService:
         final_grid = result["final_grid"]
         slope_array = result["slope_array"]
 
-        # Save to planting_estimates 
+        # Save to planting_estimates
         if "geometry" not in final_grid.columns:
             return {"status": "failed", "message": "No geometry column in final grid"}
 
         for pt in final_grid["geometry"]:
             # Convert point → raster index
-            row, col = rasterio.transform.rowcol(
-                dem_transform, pt.x, pt.y
-            )
+            row, col = rasterio.transform.rowcol(dem_transform, pt.x, pt.y)
 
             # Check bounds
-            if (
-                0 <= row < slope_array.shape[0]
-                and 0 <= col < slope_array.shape[1]
-            ):
+            if 0 <= row < slope_array.shape[0] and 0 <= col < slope_array.shape[1]:
                 slope_value = float(slope_array[row][col])
             else:
-                slope_value = None  
+                slope_value = None
 
             db.add(
                 PlantingEstimate(

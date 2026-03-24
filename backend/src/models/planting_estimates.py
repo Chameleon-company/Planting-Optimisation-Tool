@@ -20,10 +20,7 @@ class PlantingEstimate(Base):
 
     slope: Mapped[float] = mapped_column(Float, nullable=True)
 
-    geometry: Mapped[str] = mapped_column(
-        Geometry(geometry_type="POINT", srid=4326),
-        nullable=False
-    )
+    geometry: Mapped[str] = mapped_column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
 
     def __repr__(self):
         return f"PlantingEstimate(id={self.id}, farm_id={self.farm_id})"

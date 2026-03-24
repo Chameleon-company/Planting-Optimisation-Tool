@@ -68,6 +68,7 @@ def slope_tester(slope_array: np.ndarray):
 
     return valid
 
+
 def compute_slope_from_array(elevation_array, pixel_width=1.0, pixel_height=1.0):
     """
     Compute slope from DEM numpy array (used when DEM comes from DB).
