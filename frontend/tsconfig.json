@@ -10,7 +10,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "strict": true,
     "sourceMap": true,
     "resolveJsonModule": true,
@@ -23,5 +23,5 @@
     "types": ["vite/client", "node"]
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "node_modules", "src/test/**", ".history/**"]
+  "exclude": ["**/*.test.tsx", "node_modules", "src/test/**", ".history/**"]
 }
