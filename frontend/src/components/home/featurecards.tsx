@@ -9,12 +9,7 @@ interface FeatureCardProps {
 }
 
 // Set entire card as link, while displaying prop content
-export default function FeatureCard({
-  icon,
-  title,
-  text,
-  href,
-}: FeatureCardProps) {
+export default function FeatureCard({ icon, title, text, href,}: FeatureCardProps) {
   return (
     <Link to={href} className="featureCard">
       <div className="defaultContent">

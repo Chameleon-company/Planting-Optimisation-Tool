@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } finally {
         setIsLoading(false);
       }
-      // Empty dependency array means this function is only created once on mount
+      // Empty dependency array means this function is only created on mount
     },
     []
   );

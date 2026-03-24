@@ -8,10 +8,7 @@ interface SpeciesGridProps {
   onCardClick: (item: Species) => void;
 }
 
-export default function SpeciesGrid({
-  species,
-  onCardClick,
-}: SpeciesGridProps) {
+export default function SpeciesGrid({ species, onCardClick, }: SpeciesGridProps) {
   // If the species array handed by SpeciesPage is empty, hand back empty <p>
   if (species.length === 0) {
     return (
