@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": ".",
+    "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"],
       "@@/*": ["./*"]
@@ -22,5 +23,5 @@
     "types": ["vite/client", "node"]
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "node_modules", "test/**", ".history/**"]
+  "exclude": ["**/*.test.ts", "node_modules", "src/test/**", ".history/**"]
 }
