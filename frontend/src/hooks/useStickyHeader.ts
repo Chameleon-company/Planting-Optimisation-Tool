@@ -14,7 +14,7 @@ export function useStickyHeader() {
       if (window.scrollY > 4) {
         header.classList.add("is-scrolled");
         setIsScrolled(true);
-      } 
+      }
       // Otherwise remove is-scrolled from header
       else {
         header.classList.remove("is-scrolled");

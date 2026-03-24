@@ -21,7 +21,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
       ? (error as BackendError)
       : null;
 
-  // Set detail as that of detail in error schema, otherwise if null, and error is an instance of the 
+  // Set detail as that of detail in error schema, otherwise if null, and error is an instance of the
   // Error class from TS, if so, set detail as error.message, if not, set backup string as detail
   const detail =
     backendError?.detail ??
@@ -34,7 +34,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 
   // Return TSX component as fallback UI
   // Map fieldEroors to grid as Detail: Message | Detail: Message, etc.
-  // With button to reset the ErrorBoundary and see if it works 
+  // With button to reset the ErrorBoundary and see if it works
   return (
     <div className="global-error-boundary-text" role="alert">
       <h2>Something went wrong</h2>
