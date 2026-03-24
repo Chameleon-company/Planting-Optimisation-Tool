@@ -9,6 +9,7 @@ __all__ = [
     "Role",
     "UserBase",
     "UserCreate",
+    "UserUpdate",
     "UserRead",
     "UserLogin",
     "Token",
@@ -39,6 +40,21 @@ class UserCreate(UserBase):
     @classmethod
     def password_min_length(cls, v: str) -> str:
         if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        return v
+
+
+# Used for updating user details (all fields optional)
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str | None) -> str | None:
+        if v is not None and len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
         return v
 

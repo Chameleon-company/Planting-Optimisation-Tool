@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
 from src.schemas.soil_texture import SoilTextureRead
-from src.services.soil_texture import get_all_textures
+from src.services import soil_texture as soil_texture_service
 
 router = APIRouter(
     prefix="/soil-textures",
@@ -25,7 +25,7 @@ async def read_soil_textures(
     Public endpoint - no authentication required.
     """
     # Call the service layer function
-    db_textures = await get_all_textures(db)
+    db_textures = await soil_texture_service.get_all_textures(db)
 
     # FastAPI automatically serializes the list of ORM objects
     # (db_textures) using the SoilTextureRead Pydantic schema.

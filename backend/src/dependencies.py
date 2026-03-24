@@ -1,24 +1,21 @@
 """Dependency Injection Module
 
-This module provides reusable FastAPI dependencies for authentication and authorization.
-It includes JWT token creation, validation, and user retrieval functions.
-
-This is the primary module for token-based authentication operations.
-The authentication.py module in domains/ provides complementary functions.
+FastAPI dependencies for authentication and authorisation.
+All functions in this module are intended to be injected into route handlers via Depends().
 """
 
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from src.config import settings
 from src.database import get_db_session
-from src.schemas.user import UserRead
-from src.services.user import get_user_by_id
+from src.models.user import User
+from src.schemas.user import Role, TokenData
 
 # OAuth2 password bearer scheme for extracting JWT tokens from Authorization header
 # Token URL points to the login endpoint that issues tokens
@@ -28,143 +25,115 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     """Creates a JWT access token with timezone-aware expiration.
 
-    This is the primary token creation function used throughout the application.
-    It generates a signed JWT token containing user identification and claims.
-
     Args:
         data: Dictionary of claims to encode in the token.
               Standard format: {"sub": str(user_id), "role": user_role}
-              - "sub" (subject): User ID as string (JWT standard)
-              - "role": User's role for authorization checks
         expires_delta: Optional custom expiration duration.
                       If not provided, uses ACCESS_TOKEN_EXPIRE_MINUTES from settings
 
     Returns:
         str: Encoded JWT token string ready for use in Authorization headers
-
-    Note:
-        - Uses timezone-aware UTC datetime for proper expiration handling
-        - Token expiration ("exp" claim) is automatically validated by PyJWT during decode
-        - Tokens are signed with HMAC using the SECRET_KEY from application settings
-        - The "sub" claim should be a string representation of the user ID (JWT standard)
-
-    Example:
-        token = create_access_token(
-            data={"sub": "123", "role": "admin"}
-        )
-        # Returns: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-
-    Security:
-        - Keep SECRET_KEY secure and rotate periodically
-        - Use appropriate expiration times (shorter is more secure)
-        - Consider using refresh tokens for long-lived sessions
     """
     to_encode = data.copy()
 
-    # Use timezone-aware UTC for consistency and proper expiration handling
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    # Add expiration claim to token payload
     to_encode.update({"exp": expire})
-
-    # Encode and sign the token
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-async def get_current_active_user(
+async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db_session),
-) -> UserRead:
-    """FastAPI dependency to get the currently authenticated user from a JWT token.
-
-    This is the primary authentication dependency used across the application.
-    It extracts the JWT token from the Authorization header, validates it,
-    and returns the authenticated user as a Pydantic schema.
+) -> User:
+    """FastAPI dependency to extract and validate the current user from a JWT token.
 
     Args:
-        token: JWT token extracted from "Authorization: Bearer <token>" header
-               by the oauth2_scheme dependency
-        db: Async database session for user lookup
+        token: JWT token extracted from the Authorization header by oauth2_scheme
+        db: Async database session
 
     Returns:
-        UserRead: Pydantic schema of the authenticated user (excludes password)
+        User: The authenticated user ORM object
 
     Raises:
-        HTTPException: 401 Unauthorized in these cases:
-            - Token is missing or malformed
-            - Token signature is invalid
-            - Token has expired
-            - User ID in token doesn't exist in database
-            - Token lacks required "sub" (subject) claim
-
-    Process Flow:
-        1. Extract token from Authorization header (handled by oauth2_scheme)
-        2. Decode and verify token signature
-        3. Check token expiration (automatic in PyJWT)
-        4. Extract user ID from "sub" claim
-        5. Retrieve user from database
-        6. Return user as UserRead schema
-
-    Usage:
-        @router.get("/protected")
-        async def protected_endpoint(
-            current_user: UserRead = Depends(get_current_active_user)
-        ):
-            return {"user": current_user.email}
-
-    Note:
-        - Returns UserRead (Pydantic schema) instead of User (SQLAlchemy model)
-        - User ID is stored as string in token ("sub" claim) per JWT standard
-        - PyJWT automatically validates expiration during decode
-        - InvalidTokenError covers expired, malformed, and invalid signature cases
-
-    Security:
-        - Always use HTTPS in production to protect tokens in transit
-        - Tokens are stateless (not stored server-side)
-        - Compromised tokens remain valid until expiration
-        - Consider implementing token blacklisting for logout functionality
+        HTTPException: 401 Unauthorized if token is invalid, expired, or user not found
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
     try:
-        # Decode and validate the JWT token
-        # PyJWT automatically handles the 'exp' (expiration) check during decode
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-
-        # Extract user ID from the "sub" (subject) claim
-        user_id_str = payload.get("sub")
-        if user_id_str is None:
+        user_id: int = payload.get("sub")
+        if user_id is None:
             raise credentials_exception
-
-        # Convert the string ID from the token to integer for database lookup
-        user_id_int = int(user_id_str)
-
-    except (InvalidTokenError, ValueError):
-        # InvalidTokenError covers expired, malformed, or wrong-signature tokens
-        # ValueError occurs if user ID can't be converted to integer
-        raise credentials_exception
-    except Exception:
-        # Catch-all for other unexpected issues during token processing
+        token_data = TokenData(id=user_id)
+    except jwt.PyJWTError:
         raise credentials_exception
 
-    # Look up the user in the database by ID
-    user = await get_user_by_id(db, user_id=user_id_int)
+    result = await db.execute(select(User).filter(User.id == token_data.id))
+    user = result.scalar_one_or_none()
+
     if user is None:
-        # User ID from token doesn't exist (user may have been deleted)
         raise credentials_exception
-
-    # Convert SQLAlchemy model to Pydantic schema and return
-    return UserRead.model_validate(user)
+    return user
 
 
-# Security dependency for use with FastAPI's Security() instead of Depends()
-# Provides the same functionality as get_current_active_user but can be used
-# in OpenAPI documentation to show security requirements
-CurrentActiveUser = Security(get_current_active_user)
+# Role hierarchy mapping: defines permission levels for each role.
+# Higher numbers indicate greater permissions, enabling hierarchical access control
+# where higher-level roles automatically have all permissions of lower-level roles.
+role_hierarchy = {
+    "officer": 1,
+    "supervisor": 2,
+    "admin": 3,
+}
+
+
+def require_ownership_or_admin(current_user: User, requested_user_id: int) -> None:
+    """Raises 403 if an officer attempts to access another user's record.
+    Supervisors and admins may access any record.
+    """
+    if current_user.role == Role.OFFICER.value and current_user.id != requested_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this user",
+        )
+
+
+def require_role(required_role: Role):
+    """FastAPI dependency factory for role-based access control.
+
+    Creates a dependency that checks the authenticated user has sufficient
+    permissions to access a protected endpoint.
+
+    Args:
+        required_role: The minimum role required to access the endpoint
+
+    Returns:
+        A dependency function that performs the role check and returns the current user
+
+    Raises:
+        HTTPException: 403 Forbidden if the user's role level is below the required level
+
+    Usage:
+        @router.get("/admin-only")
+        async def admin_endpoint(user: User = Depends(require_role(Role.ADMIN))):
+            pass
+    """
+
+    def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        user_role_level = role_hierarchy.get(current_user.role, 0)
+        required_role_level = role_hierarchy.get(required_role.value, 0)
+
+        if user_role_level < required_role_level:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="The user does not have adequate permissions.",
+            )
+        return current_user
+
+    return role_checker

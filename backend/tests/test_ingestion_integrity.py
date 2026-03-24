@@ -5,7 +5,8 @@ from sqlalchemy import select
 from src.dependencies import create_access_token
 from src.models.boundaries import FarmBoundary
 from src.models.user import User
-from src.services.authentication import Role, get_password_hash
+from src.schemas.user import Role
+from src.utils.security import get_password_hash
 
 
 @pytest.mark.asyncio

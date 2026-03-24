@@ -16,7 +16,8 @@ from src.dependencies import create_access_token
 from src.main import app
 from src.models.soil_texture import SoilTexture
 from src.models.user import User
-from src.services.authentication import Role, get_password_hash
+from src.schemas.user import Role
+from src.utils.security import get_password_hash
 
 settings = Settings()
 

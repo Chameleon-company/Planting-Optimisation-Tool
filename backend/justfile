@@ -10,21 +10,8 @@ PYTHON          := if os() == "windows" { "python" } else { "python3" }
 UV_RUNNER       := "uv run"
 ALEMBIC_CMD     := UV_RUNNER + " alembic"
 
-# OS-Specific Background Command Logic
-RUN_BG_API      := if os() == "windows" {
-    "Start-Process uv -ArgumentList 'run', 'fastapi', 'run', 'src/main.py', '--port', '8080' -WindowStyle Hidden; Write-Host 'API starting, waiting 5s for warm-up'; Start-Sleep -s 5"
-} else {
-    "uv run fastapi run src/main.py --port 8080 & sleep 5"
-}
-
 SERVICE_NAME    := "db"
 CONTAINER_NAME  := "pot_postgres_db"
-TEST_RUNNER := if os() == "windows" { 
-    "set DATABASE_URL=%TEST_DATABASE_URL% && " 
-} else { 
-    "DATABASE_URL=$TEST_DATABASE_URL " 
-}
-PYTEST_CMD      := UV_RUNNER + " pytest"
 
 FASTAPI_TARGET  := "src/main.py"
 FASTAPI_CMD     := "fastapi dev " + FASTAPI_TARGET + " --port 8080 --host 0.0.0.0"
@@ -36,11 +23,7 @@ ensure-env:
     not os.path.exists('.env') and os.path.exists('.env.example') and \
     (shutil.copy('.env.example', '.env'), print('--- Created .env from .env.example ---'))"
 
-# Displays all available justfile targets
-help:
-    @just --list
-
-# Stops and creates a new migrated database
+# Restarts the DB container and applies any pending migrations (data is preserved)
 setup: ensure-env stop start migrate
     @echo "--- Setup/Update Complete ---"
 
@@ -63,11 +46,12 @@ migrate: ensure-env
     @{{ALEMBIC_CMD}} upgrade head
     @echo "--- Schema Migrated ---"
 
-# Destroys the database to a clean slate
-reset:
+# Destroys the database to a clean slate and applies migrations
+reset: ensure-env
     @echo "--- WARNING: Wiping Database and Volumes ---"
     @docker compose down -v
     @just start
+    @just migrate
 
 # Generates a revision script (For structural changes to the DB)
 revision message: ensure-env
@@ -75,9 +59,10 @@ revision message: ensure-env
     @{{ALEMBIC_CMD}} revision --autogenerate -m "{{message}}"
     @echo "--- Migration Script generated---"
 
-# Manually changes column names
+# Generates an empty migration for manual edits (e.g. column renames).
+# After running, open the generated file in alembic/versions/ and fill in the upgrade/downgrade functions, then run just migrate.
 rename-column: ensure-env
-    @echo "--- STARTING MANUAL RENAME PROCEDURE ---"
+    @echo "--- Generating empty migration for manual edit ---"
     @{{ALEMBIC_CMD}} revision -m "MANUAL_RENAME_REQUIRED"
 
 # Clones the database and runs the pytest suite
@@ -106,11 +91,10 @@ erd: ensure-env
 run-api: ensure-env
     -@{{UV_RUNNER}} {{FASTAPI_CMD}}
 
-# Runs the data ingestions scripts to populate the database
+# WARNING: Destructive. Wipes the database and re-populates from scratch.
 populate: ensure-env
     @echo "Preparing data ingestion environment..."
     @just reset
-    @just migrate
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.seed_references
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.create_test_user
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.setup_import_db

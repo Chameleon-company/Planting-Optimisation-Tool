@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
+from src.dependencies import require_role
 from src.schemas.sapling_estimation import SaplingEstimationResponse
 from src.schemas.user import Role, UserRead
-from src.services.authentication import require_role
-from src.services.sapling_estimation import SaplingEstimationService
+from src.services import farm as farm_service
+from src.services import sapling_estimation as sapling_estimation_service
 
 router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
 
@@ -29,7 +30,16 @@ async def get_sapling_estimation(
     Estimates sapling count for a farm based on boundary area.
     Requires OFFICER role or higher.
     """
-    service = SaplingEstimationService()
+    if current_user.role == Role.OFFICER:
+        user_id_filter = current_user.id
+    else:
+        user_id_filter = None
+
+    farms = await farm_service.get_farm_by_id(db, [farm_id], user_id=user_id_filter)
+    if not farms:
+        raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id} not found.")
+
+    service = sapling_estimation_service.SaplingEstimationService()
     estimation_data = await service.run_estimation(db, farm_id)
 
     if not estimation_data:

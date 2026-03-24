@@ -64,9 +64,13 @@ async def ingest_farms():
                 else:
                     # Check if the response is actually JSON before parsing
                     try:
-                        error_msg = response.json().get("detail")
+                        body = response.json()
+                        errors = body.get("errors")
+                        if errors:
+                            error_msg = "; ".join(f"{e['field']}: {e['message']}" for e in errors)
+                        else:
+                            error_msg = body.get("detail", f"Status {response.status_code}")
                     except Exception:
-                        # Fallback to the raw status and text if JSON parsing fails
                         error_msg = f"Status {response.status_code}: {response.text[:100]}"
 
                     print(f"ID {row['external_id']} Failed: {error_msg}")

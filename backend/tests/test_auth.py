@@ -217,9 +217,8 @@ async def test_register_password_too_short(async_client: AsyncClient):
         },
     )
     assert response.status_code == 422
-    errors = response.json()["detail"]
-    # Check that there's a validation error for password field
-    assert any("password" in str(error).lower() for error in errors)
+    errors = response.json()["errors"]
+    assert any("password" in error["field"] for error in errors)
 
 
 async def test_register_password_minimum_length(async_client: AsyncClient):

@@ -282,7 +282,7 @@ async def test_admin_can_delete_user(
     - User is actually removed from database
     """
     # Create a user to delete
-    from src.services.authentication import get_password_hash
+    from src.utils.security import get_password_hash
 
     user_to_delete = User(
         name="User To Delete",
