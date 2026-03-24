@@ -8,7 +8,13 @@ interface AboutSectionProps {
 }
 
 // Display AboutSection as headings and paragraphs dependent on props handed to component
-export default function AboutSection({ logoSrc, logoAlt, tagline, title, description,}: AboutSectionProps) {
+export default function AboutSection({
+  logoSrc,
+  logoAlt,
+  tagline,
+  title,
+  description,
+}: AboutSectionProps) {
   return (
     <section className="aboutSection">
       <div className="aboutLeft">

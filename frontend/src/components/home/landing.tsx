@@ -8,7 +8,12 @@ interface LandingProps {
   exploreButton: string;
 }
 
-export default function Landing({ video, tagline, subtitle, exploreButton,}: LandingProps) {
+export default function Landing({
+  video,
+  tagline,
+  subtitle,
+  exploreButton,
+}: LandingProps) {
   const navigate = useNavigate();
 
   // Display information handed by props, explore button heads to profile page

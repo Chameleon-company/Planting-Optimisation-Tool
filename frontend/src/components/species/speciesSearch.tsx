@@ -7,7 +7,10 @@ interface SpeciesSearchProps {
   isLoading: boolean;
 }
 
-export default function SpeciesSearch({ onSearch, isLoading,}: SpeciesSearchProps) {
+export default function SpeciesSearch({
+  onSearch,
+  isLoading,
+}: SpeciesSearchProps) {
   // UseState searchInput and setSearchInput
   const [searchInput, setSearchInput] = useState("");
 
