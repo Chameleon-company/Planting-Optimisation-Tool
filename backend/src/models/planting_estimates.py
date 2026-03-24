@@ -1,5 +1,5 @@
 from geoalchemy2 import Geometry
-from sqlalchemy import Integer, Float, ForeignKey
+from sqlalchemy import Float, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import Base

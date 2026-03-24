@@ -1,8 +1,8 @@
 import geopandas as gpd
 import numpy as np
 import pytest
-from shapely.geometry import Polygon
 from rasterio.transform import from_origin
+from shapely.geometry import Polygon
 
 from sapling_estimation.estimate import sapling_estimation
 
