@@ -13,7 +13,6 @@ from src.models.planting_estimates import PlantingEstimate
 class SaplingEstimationService:
     @staticmethod
     async def run_estimation(db: AsyncSession, farm_id: int, spacing_m: float = 3.0):
-
         # Get farm boundary
         result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
         boundary = result.scalar_one_or_none()
