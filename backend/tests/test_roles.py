@@ -366,3 +366,54 @@ async def test_create_user_password_too_short(async_client: AsyncClient, test_ad
         headers=admin_auth_headers,
     )
     assert response.status_code == 422
+
+
+async def test_create_user_invalid_role(async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict):
+    response = await async_client.post(
+        "/users/",
+        json={
+            "email": "invalid_role@test.com",
+            "name": "Invalid Role User",
+            "password": "ValidPass123!",
+            "role": "hacker",
+        },
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 422
+
+
+async def test_create_user_default_role(async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict):
+    response = await async_client.post(
+        "/users/",
+        json={
+            "email": "default_role@test.com",
+            "name": "Default Role User",
+            "password": "ValidPass123!",
+        },
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["role"] == "officer"
+
+
+async def test_update_user_invalid_role(
+    async_client: AsyncClient,
+    test_admin_user: User,
+    test_officer_user: User,
+    admin_auth_headers: dict,
+):
+    response = await async_client.put(
+        f"/users/{test_officer_user.id}",
+        json={
+            "email": "test@test.com",
+            "name": "Test",
+            "password": "ValidPass123!",
+            "role": "invalid_role",
+        },
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 422

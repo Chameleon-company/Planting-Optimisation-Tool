@@ -34,7 +34,7 @@ class UserCreate(UserBase):
         ...,
         description="The user's password (must be hashed before storage).",
     )
-    role: str = "officer"
+    role: Role = Role.OFFICER
 
     @field_validator("password")
     @classmethod
@@ -43,13 +43,20 @@ class UserCreate(UserBase):
             raise ValueError("Password must be at least 8 characters long")
         return v
 
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: Role) -> Role:
+        if v not in Role:
+            raise ValueError("Invalid role")
+        return v
+
 
 # Used for updating user details (all fields optional)
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     name: Optional[str] = None
     password: Optional[str] = None
-    role: Optional[str] = None
+    role: Optional[Role] = None
 
     @field_validator("password")
     @classmethod
@@ -63,7 +70,7 @@ class UserUpdate(BaseModel):
 # NEVER INCLUDE PASSWORD
 class UserRead(UserBase):
     id: int = Field(..., description="The unique database ID of the user.")
-    role: str = Field(..., description="The user's role.")
+    role: Role = Field(..., description="The user's role.")
 
     model_config = ConfigDict(from_attributes=True)
 
