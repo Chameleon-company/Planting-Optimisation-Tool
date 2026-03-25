@@ -15,7 +15,7 @@ async def test_create_user_by_admin(async_client: AsyncClient, test_admin_user, 
         json={
             "email": "admin_created_officer@test.com",
             "name": "Admin Created Officer User",
-            "password": "testpassword",
+            "password": "TestPass1!",
             "role": "officer",
         },
         headers=admin_auth_headers,
@@ -35,7 +35,7 @@ async def test_create_user_by_supervisor_success(async_client: AsyncClient, test
         json={
             "email": "supervisor_created_officer@test.com",
             "name": "Supervisor Created Officer User",
-            "password": "testpassword",
+            "password": "TestPass1!",
             "role": "officer",
         },
         headers=supervisor_auth_headers,
@@ -256,7 +256,7 @@ async def test_admin_can_update_user(
         json={
             "email": "updated_officer@test.com",
             "name": "Updated Officer Name",
-            "password": "newpassword123",
+            "password": "NewPass123!",
             "role": "supervisor",
         },
         headers=admin_auth_headers,
@@ -282,7 +282,7 @@ async def test_admin_can_delete_user(
     - User is actually removed from database
     """
     # Create a user to delete
-    from src.services.authentication import get_password_hash
+    from src.utils.security import get_password_hash
 
     user_to_delete = User(
         name="User To Delete",
@@ -323,7 +323,7 @@ async def test_create_user_duplicate_email_via_users_endpoint(async_client: Asyn
         json={
             "email": "duplicate_via_users_endpoint@test.com",
             "name": "First Users Endpoint User",
-            "password": "password123",
+            "password": "Password123!",
             "role": "officer",
         },
         headers=admin_auth_headers,
@@ -336,7 +336,7 @@ async def test_create_user_duplicate_email_via_users_endpoint(async_client: Asyn
         json={
             "email": "duplicate_via_users_endpoint@test.com",
             "name": "Second Users Endpoint User",
-            "password": "password456",
+            "password": "Password456!",
             "role": "supervisor",
         },
         headers=admin_auth_headers,
@@ -365,4 +365,55 @@ async def test_create_user_password_too_short(async_client: AsyncClient, test_ad
         },
         headers=admin_auth_headers,
     )
+    assert response.status_code == 422
+
+
+async def test_create_user_invalid_role(async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict):
+    response = await async_client.post(
+        "/users/",
+        json={
+            "email": "invalid_role@test.com",
+            "name": "Invalid Role User",
+            "password": "ValidPass123!",
+            "role": "hacker",
+        },
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 422
+
+
+async def test_create_user_default_role(async_client: AsyncClient, test_admin_user: User, admin_auth_headers: dict):
+    response = await async_client.post(
+        "/users/",
+        json={
+            "email": "default_role@test.com",
+            "name": "Default Role User",
+            "password": "ValidPass123!",
+        },
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["role"] == "officer"
+
+
+async def test_update_user_invalid_role(
+    async_client: AsyncClient,
+    test_admin_user: User,
+    test_officer_user: User,
+    admin_auth_headers: dict,
+):
+    response = await async_client.put(
+        f"/users/{test_officer_user.id}",
+        json={
+            "email": "test@test.com",
+            "name": "Test",
+            "password": "ValidPass123!",
+            "role": "invalid_role",
+        },
+        headers=admin_auth_headers,
+    )
+
     assert response.status_code == 422

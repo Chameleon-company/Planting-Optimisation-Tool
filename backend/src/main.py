@@ -1,17 +1,22 @@
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
 import time
+from contextlib import asynccontextmanager
+
+from core.gee_client import init_gee
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
+
 from src.routers import (
-    farm,
-    soil_texture,
-    recommendation,
-    species,
     auth,
     environmental_profile,
+    farm,
+    recommendation,
     sapling_estimation,
+    soil_texture,
+    species,
     user,
 )
-from core.gee_client import init_gee
 
 
 @asynccontextmanager
@@ -41,6 +46,18 @@ app.include_router(recommendation.router)
 app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = [{"field": ".".join(str(loc) for loc in err["loc"] if loc != "body"), "message": err["msg"]} for err in exc.errors()]
+    return JSONResponse(status_code=422, content={"detail": "Validation failed", "errors": errors})
+
+
+@app.exception_handler(ValidationError)
+async def pydantic_validation_exception_handler(request: Request, exc: ValidationError):
+    errors = [{"field": ".".join(str(loc) for loc in err["loc"]), "message": err["msg"]} for err in exc.errors()]
+    return JSONResponse(status_code=422, content={"detail": "Validation failed", "errors": errors})
 
 
 @app.middleware("http")

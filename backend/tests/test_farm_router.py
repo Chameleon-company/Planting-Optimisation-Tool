@@ -7,7 +7,25 @@ from src.dependencies import create_access_token
 from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
 from src.models.user import User
-from src.services.authentication import Role, get_password_hash
+from src.schemas.user import Role
+from src.utils.security import get_password_hash
+
+VALID_FARM_PAYLOAD = {
+    "rainfall_mm": 1500,
+    "temperature_celsius": 22,
+    "elevation_m": 500,
+    "ph": 6.5,
+    "soil_texture_id": 1,
+    "area_ha": 5.0,
+    "latitude": -8.5,
+    "longitude": 126.5,
+    "coastal": False,
+    "riparian": False,
+    "nitrogen_fixing": False,
+    "shade_tolerant": False,
+    "bank_stabilising": False,
+    "slope": 10.5,
+}
 
 
 @pytest.mark.asyncio
@@ -94,6 +112,7 @@ async def test_read_farm_success_and_authorization_check(
     assert response.status_code == 401
 
 
+@pytest.mark.asyncio
 async def test_profile_owner_access(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -218,4 +237,82 @@ async def test_profile_blocks_non_owner(
     )
 
     # Your service returns None → router returns 404
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_farm_success(
+    async_client: AsyncClient,
+    test_officer_user: User,
+    officer_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Officer creates a farm; verifies 201 and that user_id is set to the officer's ID."""
+    response = await async_client.post("/farms", json=VALID_FARM_PAYLOAD, headers=officer_auth_headers)
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["user_id"] == test_officer_user.id
+
+
+@pytest.mark.asyncio
+async def test_create_farm_unauthenticated(
+    async_client: AsyncClient,
+    setup_soil_texture,
+):
+    """Unauthenticated request to create a farm returns 401."""
+    response = await async_client.post("/farms", json=VALID_FARM_PAYLOAD)
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_supervisor_can_read_any_farm(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    test_supervisor_user: User,
+    supervisor_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Supervisor can read a farm belonging to a different user (no ownership filter applied)."""
+    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    response = await async_client.get(f"/farms/{farm.id}", headers=supervisor_auth_headers)
+
+    assert response.status_code == 200
+    assert response.json()["id"] == farm.id
+
+
+@pytest.mark.asyncio
+async def test_admin_can_read_any_farm(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Admin can read a farm belonging to a different user (no ownership filter applied)."""
+    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    response = await async_client.get(f"/farms/{farm.id}", headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert response.json()["id"] == farm.id
+
+
+@pytest.mark.asyncio
+async def test_read_farm_not_found(
+    async_client: AsyncClient,
+    officer_auth_headers: dict,
+    test_officer_user: User,
+):
+    """Reading a non-existent farm returns 404."""
+    response = await async_client.get("/farms/99999999", headers=officer_auth_headers)
     assert response.status_code == 404

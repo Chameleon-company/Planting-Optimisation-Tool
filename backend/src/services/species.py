@@ -8,7 +8,10 @@ from sqlalchemy.orm import selectinload
 from suitability_scoring import load_yaml
 
 from src.domains.suitability_scoring import SuitabilitySpecies
+from src.models.agroforestry_type import AgroforestryType
+from src.models.soil_texture import SoilTexture
 from src.models.species import Species
+from src.schemas.species import SpeciesCreate
 
 
 def get_recommend_config():
@@ -56,3 +59,37 @@ async def get_species_by_ids(db: AsyncSession, ids: list[int], order_by_id: bool
     result = await db.execute(stmt)
     species_rows = result.scalars().all()
     return [SuitabilitySpecies.from_db_model(sp) for sp in species_rows]
+
+
+async def create_species(db: AsyncSession, payload: SpeciesCreate) -> Species:
+    new_species = Species(
+        name=payload.name,
+        common_name=payload.common_name,
+        rainfall_mm_min=payload.rainfall_mm_min,
+        rainfall_mm_max=payload.rainfall_mm_max,
+        temperature_celsius_min=payload.temperature_celsius_min,
+        temperature_celsius_max=payload.temperature_celsius_max,
+        elevation_m_min=payload.elevation_m_min,
+        elevation_m_max=payload.elevation_m_max,
+        ph_min=payload.ph_min,
+        ph_max=payload.ph_max,
+        coastal=payload.coastal,
+        riparian=payload.riparian,
+        nitrogen_fixing=payload.nitrogen_fixing,
+        shade_tolerant=payload.shade_tolerant,
+        bank_stabilising=payload.bank_stabilising,
+    )
+
+    if payload.soil_textures:
+        res = await db.execute(select(SoilTexture).where(SoilTexture.id.in_(payload.soil_textures)))
+        new_species.soil_textures = list(res.scalars().all())
+
+    if payload.agroforestry_types:
+        res = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(payload.agroforestry_types)))
+        new_species.agroforestry_types = list(res.scalars().all())
+
+    db.add(new_species)
+    await db.commit()
+
+    result = await db.execute(select(Species).where(Species.id == new_species.id).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)))
+    return result.scalar_one()

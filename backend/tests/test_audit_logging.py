@@ -27,7 +27,7 @@ async def test_audit_log_on_user_creation(
         json={
             "email": "audituser@example.com",
             "name": "Audit User",
-            "password": "auditpassword",
+            "password": "AuditPass1!",
             "role": "officer",
         },
         headers=admin_auth_headers,
