@@ -1,7 +1,6 @@
 import numpy as np
 import rasterio
 from geoalchemy2.shape import from_shape, to_shape
-from rasterio.transform import from_origin
 from sapling_estimation.estimate import sapling_estimation
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,64 +13,78 @@ class SaplingEstimationService:
     @staticmethod
     async def run_estimation(db: AsyncSession, farm_id: int, spacing_m: float = 3.0):
         # Get farm boundary
-        result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
-        boundary = result.scalar_one_or_none()
+        boundary_result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
+        boundary = boundary_result.scalar_one_or_none()
 
         if not boundary:
             return {"status": "failed", "message": "Farm not found"}
 
         farm_polygon = to_shape(boundary.boundary)
+        farm_wkt = farm_polygon.wkt
 
         # Get DEM values + transform from PostGIS
-        dem_query = text("""
+        dem_query = text(
+            """
+            WITH merged AS (
+                SELECT ST_Union(rast) AS rast
+                FROM dem_table
+                WHERE ST_Intersects(
+                    rast,
+                    ST_Transform(ST_GeomFromText(:farm_wkt, 4326), ST_SRID(rast))
+                )
+            )
             SELECT
                 (ST_DumpValues(rast)).valarray AS valarray,
                 ST_UpperLeftX(rast) AS ulx,
                 ST_UpperLeftY(rast) AS uly,
                 ST_ScaleX(rast) AS scalex,
                 ST_ScaleY(rast) AS scaley
-            FROM dem_table
-            LIMIT 1
-        """)
+            FROM merged;
+            """
+        )
 
-        dem_result = await db.execute(dem_query)
+        dem_result = await db.execute(dem_query, {"farm_wkt": farm_wkt})
         dem_row = dem_result.first()
 
         if not dem_row:
-            return {"status": "failed", "message": "DEM not found"}
+            return {"status": "failed", "message": "DEM not found for this farm"}
 
         dem_array = np.array(dem_row.valarray, dtype=float)
 
-        # Real raster transform
-        dem_transform = from_origin(
+        pixel_width = abs(float(dem_row.scalex))
+        pixel_height = abs(float(dem_row.scaley))
+
+        dem_transform = rasterio.transform.from_origin(
             dem_row.ulx,
             dem_row.uly,
-            abs(dem_row.scalex),
-            abs(dem_row.scaley),
+            pixel_width,
+            pixel_height,
         )
 
         # Run estimation
-        result = sapling_estimation(
+        estimation_result = sapling_estimation(
             farm_polygon=farm_polygon,
             spacing_m=spacing_m,
             farm_boundary_crs="EPSG:4326",
-            debug=True,
+            debug=False,
             dem_array=dem_array,
             dem_transform=dem_transform,
+            pixel_width=pixel_width,
+            pixel_height=pixel_height,
         )
 
-        final_grid = result["final_grid"]
-        slope_array = result["slope_array"]
+        # return results
+        final_grid = estimation_result["final_grid"]
+        slope_array = estimation_result["slope_array"]
+        optimal_angle = estimation_result["optimal_angle"]
 
         # Save to planting_estimates
         if "geometry" not in final_grid.columns:
             return {"status": "failed", "message": "No geometry column in final grid"}
 
         for pt in final_grid["geometry"]:
-            # Convert point → raster index
             row, col = rasterio.transform.rowcol(dem_transform, pt.x, pt.y)
 
-            # Check bounds
             if 0 <= row < slope_array.shape[0] and 0 <= col < slope_array.shape[1]:
                 slope_value = float(slope_array[row][col])
             else:
@@ -87,10 +100,18 @@ class SaplingEstimationService:
                 )
             )
 
-        await db.commit()
+        # ERROR HANDLING
+        try:
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            return {
+                "status": "failed",
+                "message": f"Database commit failed: {str(e)}",
+            }
 
         return {
             "id": farm_id,
             "sapling_count": len(final_grid),
-            "optimal_angle": result["optimal_angle"],
+            "optimal_angle": optimal_angle,
         }
