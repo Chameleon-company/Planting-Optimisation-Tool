@@ -36,11 +36,25 @@ class UserCreate(UserBase):
     )
     role: Role = Role.OFFICER
 
-    @field_validator("password")
+    @field_validator("password", mode="before")
     @classmethod
-    def password_min_length(cls, v: str) -> str:
+    def validate_password_complexity(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
+
+        if not any(char.isupper() for char in v):
+            raise ValueError("Password must contain at least one uppercase letter")
+
+        if not any(char.islower() for char in v):
+            raise ValueError("Password must contain at least one lowercase letter")
+
+        if not any(char.isdigit() for char in v):
+            raise ValueError("Password must contain at least one number")
+
+        special_characters = r"!@#$%^&*()_+-=[]{}|;:',.<>/?`~\"\\"
+        if not any(char in special_characters for char in v):
+            raise ValueError("Password must contain at least one special character")
+
         return v
 
     @field_validator("role")
@@ -58,11 +72,28 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     role: Optional[Role] = None
 
-    @field_validator("password")
+    @field_validator("password", mode="before")
     @classmethod
-    def password_min_length(cls, v: str | None) -> str | None:
-        if v is not None and len(v) < 8:
+    def validate_password_complexity_update(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+
+        if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
+
+        if not any(char.isupper() for char in v):
+            raise ValueError("Password must contain at least one uppercase letter")
+
+        if not any(char.islower() for char in v):
+            raise ValueError("Password must contain at least one lowercase letter")
+
+        if not any(char.isdigit() for char in v):
+            raise ValueError("Password must contain at least one number")
+
+        special_characters = r"!@#$%^&*()_+-=[]{}|;:',.<>/?`~\"\\"
+        if not any(char in special_characters for char in v):
+            raise ValueError("Password must contain at least one special character")
+
         return v
 
 

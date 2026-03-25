@@ -21,7 +21,7 @@ async def test_register_user(async_client: AsyncClient, async_session: AsyncSess
         json={
             "email": "registration_test_user@test.com",
             "name": "Registration Test User",
-            "password": "newpassword",
+            "password": "Password1!",
             "role": "officer",
         },
     )

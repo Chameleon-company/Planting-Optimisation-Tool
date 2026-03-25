@@ -15,7 +15,7 @@ async def test_create_user_by_admin(async_client: AsyncClient, test_admin_user, 
         json={
             "email": "admin_created_officer@test.com",
             "name": "Admin Created Officer User",
-            "password": "testpassword",
+            "password": "TestPass1!",
             "role": "officer",
         },
         headers=admin_auth_headers,
@@ -35,7 +35,7 @@ async def test_create_user_by_supervisor_success(async_client: AsyncClient, test
         json={
             "email": "supervisor_created_officer@test.com",
             "name": "Supervisor Created Officer User",
-            "password": "testpassword",
+            "password": "TestPass1!",
             "role": "officer",
         },
         headers=supervisor_auth_headers,
@@ -256,7 +256,7 @@ async def test_admin_can_update_user(
         json={
             "email": "updated_officer@test.com",
             "name": "Updated Officer Name",
-            "password": "newpassword123",
+            "password": "NewPass123!",
             "role": "supervisor",
         },
         headers=admin_auth_headers,
@@ -323,7 +323,7 @@ async def test_create_user_duplicate_email_via_users_endpoint(async_client: Asyn
         json={
             "email": "duplicate_via_users_endpoint@test.com",
             "name": "First Users Endpoint User",
-            "password": "password123",
+            "password": "Password123!",
             "role": "officer",
         },
         headers=admin_auth_headers,
@@ -336,7 +336,7 @@ async def test_create_user_duplicate_email_via_users_endpoint(async_client: Asyn
         json={
             "email": "duplicate_via_users_endpoint@test.com",
             "name": "Second Users Endpoint User",
-            "password": "password456",
+            "password": "Password456!",
             "role": "supervisor",
         },
         headers=admin_auth_headers,
