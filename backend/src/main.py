@@ -16,6 +16,7 @@ from src.routers import (
     soil_texture,
     species,
     user,
+    ahp,
 )
 
 
@@ -46,6 +47,7 @@ app.include_router(recommendation.router)
 app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
+app.include_router(ahp.router)
 
 
 @app.exception_handler(RequestValidationError)
