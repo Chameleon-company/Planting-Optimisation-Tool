@@ -127,3 +127,12 @@ class SpeciesUpdate(SpeciesBase):
     bank_stabilising: Optional[bool] = None
     soil_textures: Optional[List[SoilTextureID]] = None
     agroforestry_types: Optional[List[AgroforestryTypeID]] = None
+
+
+class SpeciesDropdownRead(BaseModel):
+    # This is a simplified version of the SpeciesRead model, intended for use in dropdown menus or lists where only basic information is needed.
+    id: int
+    name: str
+    common_name: str
+
+    model_config = ConfigDict(from_attributes=True)
