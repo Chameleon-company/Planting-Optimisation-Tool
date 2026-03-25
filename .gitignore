@@ -28,6 +28,7 @@ __pycache__/
 keys/
 backend/src/keys/*
 # Assets & temporary data
+assets/
 
 # Local scripts not needed in repo
 main.py
