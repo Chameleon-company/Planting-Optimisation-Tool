@@ -106,38 +106,29 @@ jobs:
               }
             }' -f projectId="$PROJECT_ID")
 
-          # ── Fetch blocking relationships via issue timeline ───────────────
-          # "blocked by" relationships appear as CROSS_REFERENCE events where
-          # the source issue has a "blocks" relationship to this issue.
-          TIMELINE=$(gh api graphql -f query='
+          # ── Fetch blocking relationships via native issue relationships ────
+          BLOCKERS=$(gh api graphql \
+            -H "GraphQL-Features: issue_types" \
+            -f query='
             query($id: ID!) {
               node(id: $id) {
                 ... on Issue {
-                  timelineItems(first: 50, itemTypes: [CROSS_REFERENCED_EVENT]) {
+                  blockedBy(first: 20) {
                     nodes {
-                      ... on CrossReferencedEvent {
-                        source {
-                          ... on Issue {
-                            number
-                            title
-                            state
-                            id
-                          }
-                        }
-                        willCloseTarget
-                      }
+                      number
+                      title
+                      state
                     }
                   }
                 }
               }
             }' -f id="$ISSUE_NODE_ID")
 
-          # Extract issue numbers of open blockers (cross-referenced issues
-          # that are still OPEN — proxy for "blocks this issue and isn't done")
-          OPEN_BLOCKERS=$(echo "$TIMELINE" | jq -r '
-            .data.node.timelineItems.nodes[]
-            | select(.source.state == "OPEN")
-            | "#\(.source.number) \(.source.title)"
+          # Extract open issues that are directly blocking this one
+          OPEN_BLOCKERS=$(echo "$BLOCKERS" | jq -r '
+            .data.node.blockedBy.nodes[]
+            | select(.state == "OPEN")
+            | "#\(.number) \(.title)"
           ')
 
           # Also check project board status for those blocker issues
