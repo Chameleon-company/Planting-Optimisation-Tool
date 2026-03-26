@@ -11,6 +11,170 @@ jobs:
   cascade-to-sub-issues:
     runs-on: ubuntu-latest
     steps:
+      # ── GUARD: Reject assignment if issue is blocked ─────────────────────
+      - name: Check for incomplete blockers
+        if: github.event.action == 'assigned'
+        env:
+          GH_TOKEN: ${{ secrets.BOARD_STATUS_CHANGER }}
+          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          ASSIGNEE: ${{ github.event.assignee.login }}
+          PROJECT_NUMBER: 3
+        run: |
+          echo "Checking for incomplete blockers on issue #$ISSUE_NUMBER..."
+
+          # ── Fetch project ID and Done status option ID ───────────────────
+          PROJECT_DATA=$(gh api graphql -f query='
+            query($owner: String!, $number: Int!) {
+              user(login: $owner) {
+                projectV2(number: $number) {
+                  id
+                  fields(first: 20) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options { id name }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f owner="$REPO_OWNER" -F number="$PROJECT_NUMBER" 2>/dev/null || \
+          gh api graphql -f query='
+            query($owner: String!, $number: Int!) {
+              organization(login: $owner) {
+                projectV2(number: $number) {
+                  id
+                  fields(first: 20) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options { id name }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f owner="$REPO_OWNER" -F number="$PROJECT_NUMBER")
+
+          PROJECT_ID=$(echo "$PROJECT_DATA" | jq -r '.. | .projectV2?.id? // empty' | head -1)
+          DONE_OPTION_ID=$(echo "$PROJECT_DATA" | jq -r '
+            .. | .fields?.nodes[]? | select(.name=="Status") | .options[]? | select(.name=="Done") | .id // empty
+          ' | head -1)
+
+          echo "Project ID: $PROJECT_ID"
+          echo "Done option ID: $DONE_OPTION_ID"
+
+          if [ -z "$PROJECT_ID" ] || [ -z "$DONE_OPTION_ID" ]; then
+            echo "WARNING: Could not resolve project or Done status -- skipping blocker check"
+            exit 0
+          fi
+
+          # ── Fetch all items in the project with their Status ─────────────
+          # GitHub Projects v2 doesn't expose blocking relationships via GraphQL
+          # directly, so we resolve them through the issue's timeline events,
+          # which record "marked as blocked by" cross-references.
+          ALL_ITEMS=$(gh api graphql -f query='
+            query($projectId: ID!) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  items(first: 100) {
+                    nodes {
+                      id
+                      fieldValues(first: 20) {
+                        nodes {
+                          ... on ProjectV2ItemFieldSingleSelectValue {
+                            optionId
+                            field { ... on ProjectV2SingleSelectField { name } }
+                          }
+                        }
+                      }
+                      content {
+                        ... on Issue {
+                          number
+                          id
+                          title
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f projectId="$PROJECT_ID")
+
+          # ── Fetch blocking relationships via native issue relationships ────
+          BLOCKERS=$(gh api graphql \
+            -H "GraphQL-Features: issue_types" \
+            -f query='
+            query($id: ID!) {
+              node(id: $id) {
+                ... on Issue {
+                  blockedBy(first: 20) {
+                    nodes {
+                      number
+                      title
+                      state
+                    }
+                  }
+                }
+              }
+            }' -f id="$ISSUE_NODE_ID")
+
+          # Extract open issues that are directly blocking this one
+          OPEN_BLOCKERS=$(echo "$BLOCKERS" | jq -r '
+            .data.node.blockedBy.nodes[]
+            | select(.state == "OPEN")
+            | "#\(.number) \(.title)"
+          ')
+
+          # Also check project board status for those blocker issues
+          # (they may be open but already marked Done on the board)
+          INCOMPLETE_BLOCKERS=""
+          while IFS= read -r blocker_line; do
+            [ -z "$blocker_line" ] && continue
+            BLOCKER_NUM=$(echo "$blocker_line" | grep -o '#[0-9]*' | tr -d '#')
+
+            BOARD_STATUS=$(echo "$ALL_ITEMS" | jq -r --argjson num "$BLOCKER_NUM" '
+              .data.node.items.nodes[]
+              | select(.content.number == $num)
+              | .fieldValues.nodes[]
+              | select(.field.name == "Status")
+              | .optionId
+            ' 2>/dev/null | head -1)
+
+            if [ "$BOARD_STATUS" != "$DONE_OPTION_ID" ]; then
+              INCOMPLETE_BLOCKERS="$INCOMPLETE_BLOCKERS\n- $blocker_line"
+            fi
+          done <<< "$OPEN_BLOCKERS"
+
+          if [ -n "$INCOMPLETE_BLOCKERS" ]; then
+            echo "Blocked by incomplete issues -- reverting assignment..."
+
+            # Revert the assignment
+            echo "{\"assignees\": [\"$ASSIGNEE\"]}" | \
+            gh api --method DELETE \
+              "/repos/$REPO_OWNER/$REPO_NAME/issues/$ISSUE_NUMBER/assignees" \
+              --input -
+
+            # Post a comment explaining the revert
+            BLOCKER_LIST=$(printf "$INCOMPLETE_BLOCKERS")
+            COMMENT_BODY=$(printf '**Assignment reverted — this issue is blocked**\n\n@%s this issue cannot be picked up yet because the following issue(s) must be completed first:\n\n%s\n\nPlease check the project board for the current status of these blockers.' "$ASSIGNEE" "$BLOCKER_LIST")
+            gh api --method POST \
+              "/repos/$REPO_OWNER/$REPO_NAME/issues/$ISSUE_NUMBER/comments" \
+              -f body="$COMMENT_BODY"
+
+            echo "Assignment reverted and comment posted"
+            # Exit with failure so the cascade step does not run
+            exit 1
+          fi
+
+          echo "No incomplete blockers -- proceeding with assignment"
+
+      # ── ORIGINAL STEP: Cascade assignment and board status to sub-issues ─
       - name: Cascade assignment and board status to sub-issues
         env:
           GH_TOKEN: ${{ secrets.BOARD_STATUS_CHANGER }}
@@ -23,7 +187,7 @@ jobs:
           PROJECT_NUMBER: 3
         run: |
           # ── 1. Fetch project ID, Status field ID, and option IDs ──────────
-          echo "📊 Fetching project data..."
+          echo "Fetching project data..."
           PROJECT_DATA=$(gh api graphql -f query='
             query($owner: String!, $number: Int!) {
               user(login: $owner) {
@@ -70,10 +234,10 @@ jobs:
           SPRINT_BACKLOG_ID=$(echo "$PROJECT_DATA" | jq -r '.. | .fields?.nodes[]? | select(.name=="Status") | .options[]? | select(.name=="Sprint Backlog") | .id // empty' | head -1)
           IN_PROGRESS_ID=$(echo "$PROJECT_DATA" | jq -r '.. | .fields?.nodes[]? | select(.name=="Status") | .options[]? | select(.name=="In progress") | .id // empty' | head -1)
 
-          echo "✅ Project ID: $PROJECT_ID"
-          echo "✅ Status field ID: $STATUS_FIELD_ID"
-          echo "✅ Sprint Backlog ID: $SPRINT_BACKLOG_ID"
-          echo "✅ In Progress ID: $IN_PROGRESS_ID"
+          echo "Project ID: $PROJECT_ID"
+          echo "Status field ID: $STATUS_FIELD_ID"
+          echo "Sprint Backlog ID: $SPRINT_BACKLOG_ID"
+          echo "In Progress ID: $IN_PROGRESS_ID"
 
           # ── 2. Determine target status ────────────────────────────────────
           if [ "$EVENT_ACTION" = "assigned" ]; then
@@ -84,19 +248,19 @@ jobs:
             TARGET_STATUS_NAME="Sprint Backlog"
           fi
 
-          echo "🎯 Target status: $TARGET_STATUS_NAME ($TARGET_STATUS_ID)"
+          echo "Target status: $TARGET_STATUS_NAME ($TARGET_STATUS_ID)"
 
           # ── 3. Update parent issue status ─────────────────────────────────
           if [ -n "$PROJECT_ID" ] && [ -n "$STATUS_FIELD_ID" ] && [ -n "$TARGET_STATUS_ID" ]; then
-            echo "📝 Updating parent issue #$ISSUE_NUMBER status to $TARGET_STATUS_NAME..."
-            
+            echo "Updating parent issue #$ISSUE_NUMBER status to $TARGET_STATUS_NAME..."
+
             # Get the project item ID for the parent issue
             PARENT_QUERY=$(gh api graphql -f query='
               query($id: ID!) {
                 node(id: $id) {
                   ... on Issue {
                     projectItems(first: 20) {
-                      nodes { 
+                      nodes {
                         id
                         project {
                           id
@@ -106,17 +270,17 @@ jobs:
                   }
                 }
               }' -f id="$ISSUE_NODE_ID" 2>&1)
-            
+
             if [ $? -ne 0 ]; then
-              echo "  ❌ Failed to query parent project items:"
+              echo "  FAILED: Failed to query parent project items:"
               echo "$PARENT_QUERY"
             else
               # Extract the item ID
               PARENT_ITEM_ID=$(echo "$PARENT_QUERY" | jq -r --arg pid "$PROJECT_ID" '.data.node.projectItems.nodes[] | select(.project.id==$pid) | .id' 2>/dev/null || echo "")
-              
+
               if [ -n "$PARENT_ITEM_ID" ] && [ "$PARENT_ITEM_ID" != "null" ]; then
-                echo "  ✅ Found parent project item: $PARENT_ITEM_ID"
-                
+                echo "  Found parent project item: $PARENT_ITEM_ID"
+
                 PARENT_UPDATE=$(gh api graphql -f query='
                   mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                     updateProjectV2ItemFieldValue(input: {
@@ -134,15 +298,15 @@ jobs:
                   -f itemId="$PARENT_ITEM_ID" \
                   -f fieldId="$STATUS_FIELD_ID" \
                   -f optionId="$TARGET_STATUS_ID" 2>&1)
-                
+
                 if [ $? -eq 0 ]; then
-                  echo "  ✅ Parent issue status updated to $TARGET_STATUS_NAME"
+                  echo "  Parent issue status updated to $TARGET_STATUS_NAME"
                 else
-                  echo "  ❌ Failed to update parent issue status"
+                  echo "  FAILED: Failed to update parent issue status"
                   echo "  Error: $PARENT_UPDATE"
                 fi
               else
-                echo "  ⚠️ Parent issue not found in project board"
+                echo "  WARNING: Parent issue not found in project board"
                 echo "  Debug: Available projects for parent issue:"
                 echo "$PARENT_QUERY" | jq -r '.data.node.projectItems.nodes[] | "    - Project: \(.project.id)"' 2>/dev/null || echo "    No projects found"
               fi
@@ -150,7 +314,7 @@ jobs:
           fi
 
           # ── 4. Fetch sub-issues ───────────────────────────────────────────
-          echo "🔍 Fetching sub-issues..."
+          echo "Fetching sub-issues..."
           SUB_ISSUES=$(gh api graphql \
             -H "GraphQL-Features: sub_issues" \
             -f query='
@@ -158,9 +322,9 @@ jobs:
                 node(id: $id) {
                   ... on Issue {
                     subIssues(first: 50) {
-                      nodes { 
-                        number 
-                        nodeId: id 
+                      nodes {
+                        number
+                        nodeId: id
                       }
                     }
                   }
@@ -171,58 +335,58 @@ jobs:
             --jq '.data.node.subIssues.nodes' 2>/dev/null)
 
           if [ "$SUB_ISSUES" = "[]" ] || [ -z "$SUB_ISSUES" ] || [ "$SUB_ISSUES" = "null" ]; then
-            echo "ℹ️ No sub-issues found for issue #$ISSUE_NUMBER"
+            echo "No sub-issues found for issue #$ISSUE_NUMBER"
             exit 0
           fi
 
           # ── 5. Store sub-issues in array ──────────────────────────────────
           mapfile -t SUB_ISSUES_ARRAY < <(echo "$SUB_ISSUES" | jq -c '.[] // empty' 2>/dev/null)
-          
+
           if [ ${#SUB_ISSUES_ARRAY[@]} -eq 0 ]; then
-            echo "ℹ️ No sub-issues to process"
+            echo "No sub-issues to process"
             exit 0
           fi
 
-          echo "📊 Found ${#SUB_ISSUES_ARRAY[@]} sub-issues to process"
+          echo "Found ${#SUB_ISSUES_ARRAY[@]} sub-issues to process"
 
           # ── 6. Loop through sub-issues ────────────────────────────────────
           for sub in "${SUB_ISSUES_ARRAY[@]}"; do
             SUB_NUMBER=$(echo "$sub" | jq -r '.number // empty')
             SUB_NODE_ID=$(echo "$sub" | jq -r '.nodeId // empty')
-            
+
             if [ -z "$SUB_NUMBER" ] || [ -z "$SUB_NODE_ID" ]; then
-              echo "⚠️ Skipping invalid sub-issue entry"
+              echo "WARNING: Skipping invalid sub-issue entry"
               continue
             fi
 
             echo "─────────────────────────────────────"
-            echo "🔄 Processing sub-issue #$SUB_NUMBER"
+            echo "Processing sub-issue #$SUB_NUMBER"
 
             # Assign or unassign
             if [ "$EVENT_ACTION" = "assigned" ]; then
-              echo "  👤 Assigning #$SUB_NUMBER to $ASSIGNEE"
+              echo "  Assigning #$SUB_NUMBER to $ASSIGNEE"
               gh api --method POST \
                 "/repos/$REPO_OWNER/$REPO_NAME/issues/$SUB_NUMBER/assignees" \
-                -f "assignees[]=$ASSIGNEE" && echo "  ✅ Assigned successfully" || echo "  ❌ Failed to assign"
+                -f "assignees[]=$ASSIGNEE" && echo "  Assigned successfully" || echo "  FAILED: Failed to assign"
             else
-              echo "  👤 Unassigning $ASSIGNEE from #$SUB_NUMBER"
+              echo "  Unassigning $ASSIGNEE from #$SUB_NUMBER"
               echo "{\"assignees\": [\"$ASSIGNEE\"]}" | \
               gh api --method DELETE \
                 "/repos/$REPO_OWNER/$REPO_NAME/issues/$SUB_NUMBER/assignees" \
-                --input - && echo "  ✅ Unassigned successfully" || echo "  ❌ Failed to unassign"
+                --input - && echo "  Unassigned successfully" || echo "  FAILED: Failed to unassign"
             fi
 
             # Update sub-issue project board status
             if [ -n "$PROJECT_ID" ] && [ -n "$STATUS_FIELD_ID" ] && [ -n "$TARGET_STATUS_ID" ]; then
-              echo "  🔍 Looking for sub-issue #$SUB_NUMBER in project board..."
-              
+              echo "  Looking for sub-issue #$SUB_NUMBER in project board..."
+
               # Get the project item ID
               SUB_QUERY=$(gh api graphql -f query='
                 query($id: ID!) {
                   node(id: $id) {
                     ... on Issue {
                       projectItems(first: 20) {
-                        nodes { 
+                        nodes {
                           id
                           project {
                             id
@@ -232,21 +396,21 @@ jobs:
                     }
                   }
                 }' -f id="$SUB_NODE_ID" 2>&1)
-              
+
               # Check if the query succeeded
               if [ $? -ne 0 ]; then
-                echo "  ❌ Failed to query project items:"
+                echo "  FAILED: Failed to query project items:"
                 echo "$SUB_QUERY"
                 continue
               fi
-              
+
               # Extract the item ID
               ITEM_ID=$(echo "$SUB_QUERY" | jq -r --arg pid "$PROJECT_ID" '.data.node.projectItems.nodes[] | select(.project.id==$pid) | .id' 2>/dev/null || echo "")
 
               if [ -n "$ITEM_ID" ] && [ "$ITEM_ID" != "null" ]; then
-                echo "  ✅ Found project item: $ITEM_ID for #$SUB_NUMBER"
-                echo "  🏷️ Setting #$SUB_NUMBER status to $TARGET_STATUS_NAME"
-                
+                echo "  Found project item: $ITEM_ID for #$SUB_NUMBER"
+                echo "  Setting #$SUB_NUMBER status to $TARGET_STATUS_NAME"
+
                 UPDATE_RESULT=$(gh api graphql -f query='
                   mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                     updateProjectV2ItemFieldValue(input: {
@@ -264,15 +428,15 @@ jobs:
                   -f itemId="$ITEM_ID" \
                   -f fieldId="$STATUS_FIELD_ID" \
                   -f optionId="$TARGET_STATUS_ID" 2>&1)
-                
+
                 if [ $? -eq 0 ]; then
-                  echo "  ✅ Status updated successfully"
+                  echo "  Status updated successfully"
                 else
-                  echo "  ❌ Failed to update status"
+                  echo "  FAILED: Failed to update status"
                   echo "  Error: $UPDATE_RESULT"
                 fi
               else
-                echo "  ⚠️ Sub-issue #$SUB_NUMBER not found in project board"
+                echo "  WARNING: Sub-issue #$SUB_NUMBER not found in project board"
                 echo "  Debug: Available projects for this issue:"
                 echo "$SUB_QUERY" | jq -r '.data.node.projectItems.nodes[] | "    - Project: \(.project.id)"' 2>/dev/null || echo "    No projects found"
               fi
@@ -280,4 +444,4 @@ jobs:
           done
 
           echo "─────────────────────────────────────"
-          echo "✅ Cascade operation completed!"
+          echo "Cascade operation completed!"

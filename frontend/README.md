@@ -13,11 +13,12 @@ It is a multi-page Vite + TypeScript application that provides:
 
 ## Tech Stack
 
-- **Build tool:** Vite 7 (multi-page setup)
-- **Language:** TypeScript (no framework, vanilla TS)
-- **Styling:** CSS (global styles in `src/style.css` and page‑specific CSS)
+- **Build tool:** Vite 7
+- **Language:** TypeScript
+- **Framework:** React 18+
+- **Styling:** CSS (global styles in `src/style.css`)
 - **Testing / tooling:**
-  - Vitest
+  - Vitest + React Testing Library
   - ESLint, Stylelint
   - Prettier
 
@@ -27,21 +28,19 @@ It is a multi-page Vite + TypeScript application that provides:
 
 Key files:
 
-- `index.html` – Home page
-- `profile.html` – Environmental Profile page (To be updated)
-- `calculator.html` – Sapling Calculator page (To be updated)
-- `recommendation.html` - Agroforestry Recommendation page (To be updated)
-- `species.html` – Species page (To be updated)
+- `index.html` – Single HTML entry point
+- `src/main.tsx` – React app entry point
+- `src/App.tsx` – Root component, routing, and error boundary
 
-Main TypeScript entry points:
+Source structure:
 
-- `src/home.ts` – Home page logic (navigation)
-- `src/profile.ts` – Environmental profile generation logic (To be updated)
-- `src/calculator.ts` – Sapling Calculator (To be updated)
-- `src/recommendation.ts` – Agroforestry Recommendation (To be updated)
-- `src/species.ts` – Searching species information based on keywords (To be updated)
-
-Vite is configured in `vite.config.ts` to treat these HTML files as separate entry points.
+- `src/components/` – Reusable UI components grouped by feature
+- `src/pages/` – Top level page components
+- `src/hooks/` – Custom React hooks
+- `src/contexts/` – React Context providers
+- `src/errors/` – Error boundary components
+- `src/utils/` – Utility functions and API clients
+- `src/test/` – Vitest + React Testing Library test files
 
 ---
 
@@ -91,8 +90,11 @@ A few important points to keep in mind to make sure your contributions are safe,
 2. **Run linting and formatting** – make sure your code follows the project’s style guidelines before committing:
 
    ```bash
-   npm run lint       # frontend
-   npm run format     # frontend
+   npm run lint:scripts # checks code
+   npm run lint:styles  # checks css
+   npm run format:scripts  # format code
+   npm run format:styles   # format CSS
+   npm run format           # formats everything
    ```
 
 3. **Write clear commit messages** – short but descriptive messages make reviewing and tracking changes easier.
