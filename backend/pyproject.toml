@@ -33,6 +33,7 @@ dependencies = [
     "google-auth>=2.47.0",
     "bcrypt==4.0.1",
     "diff-cover>=9.2.0",
+    "slowapi>=0.1.9",
 ]
 
 [tool.pytest.ini_options]
