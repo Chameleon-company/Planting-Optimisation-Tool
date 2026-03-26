@@ -15,34 +15,37 @@ dependencies = [
     "pytest-mock>=3.15.1",
     # Linting
     "ruff>=0.14.5",
-    #Environmental loading
     # Environmental loading
     "python-dotenv>=1.0.1",
     "rasterio>=1.5.0",
     "numpy>=2.3.5",
+    "scipy>=1.17.1",
+    "scikit-learn>=1.8.0",
+    "matplotlib>=3.10.8",
+    "seaborn>=0.13.2",
 ]
 
-[tool.pytest.ini_options]
-pythonpath = ["."] 
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
 
-# Ensure package data inside the package is included in the wheel
 [tool.setuptools.package-data]
 sapling_estimation = ["sampling_estimation/data/*"]
 
-
 [tool.setuptools]
-# This tells uv which folders to include as part of the 'gis' package
-# For backend to import
 packages = ["core", "config", "sapling_estimation"]
 include-package-data = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 200
 
 [tool.ruff.lint]
 select = [
-    "E",   # basic errors (spacing, syntax)
-    "F",   # undefined variables, unused imports
-    "I",   # import ordering (auto-fixable)
-    "N",   # naming: snake_case, PascalCase, UPPER_SNAKE_CASE
+    "E",
+    "F",
+    "I",
+    "N",
 ]

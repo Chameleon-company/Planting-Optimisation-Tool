@@ -10,12 +10,12 @@ All endpoints use JWT tokens for stateless authentication.
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
-from src.dependencies import create_access_token, get_current_user, require_role
+from src.dependencies import create_access_token, get_current_user, limiter, require_role
 from src.models import User
 from src.schemas.farm import FarmRead
 from src.schemas.user import Role, Token, UserCreate, UserRead
@@ -27,7 +27,9 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/token", response_model=Token)
+@limiter.limit("10/minute")
 async def login_for_access_token(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -71,7 +73,8 @@ async def login_for_access_token(
 
 
 @router.post("/register", response_model=UserRead)
-async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db_session)):
+@limiter.limit("10/minute")
+async def register_user(request: Request, user: UserCreate, db: AsyncSession = Depends(get_db_session)):
     """Register a new user account.
 
     Creates a new user with the provided email, name, password, and role.
