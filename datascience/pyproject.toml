@@ -45,3 +45,6 @@ select = [
     "N",   # naming: snake_case, PascalCase, UPPER_SNAKE_CASE
 ]
 
+[dependency-groups]
+dev = []
+
