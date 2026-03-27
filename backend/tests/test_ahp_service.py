@@ -67,3 +67,47 @@ async def test_ahp_service_upsert(mock_get_config, ahp_service, async_session):
     assert len(saved_parameters) == 2
     assert round(param_dict["rainfall_mm"].weight, 2) == 0.75
     assert round(param_dict["temperature_celsius"].weight, 2) == 0.25
+
+
+@pytest.mark.asyncio
+@patch("src.services.ahp_service.get_recommend_config")
+async def test_ahp_service_missing_features(mock_get_config, ahp_service, async_session):
+    """
+    Ensures the service raises a ValueError if the YAML config is empty or missing features.
+    """
+    # Mock an empty config
+    mock_get_config.return_value = {}
+
+    with pytest.raises(ValueError, match="No features found in recommend.yaml configuration."):
+        await ahp_service.calculate_and_save_ahp_weights(async_session, matrix=[[1.0]], species_id=1)
+
+
+@pytest.mark.asyncio
+@patch("src.services.ahp_service.get_recommend_config")
+async def test_ahp_service_invalid_matrix_dimensions(mock_get_config, ahp_service, async_session):
+    """
+    Ensures the service raises a ValueError if matrix dimensions mismatch config.
+    """
+    mock_get_config.return_value = {"features": {"rainfall_mm": {}, "temperature_celsius": {}}}
+
+    # 3x3 matrix for 2 features
+    invalid_matrix = [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]
+
+    with pytest.raises(ValueError, match="Matrix size 3 does not match 2 features."):
+        await ahp_service.calculate_and_save_ahp_weights(async_session, invalid_matrix, species_id=1)
+
+
+@pytest.mark.asyncio
+@patch("src.services.ahp_service.get_recommend_config")
+async def test_ahp_service_inconsistent_matrix_returns_correct_payload(mock_get_config, ahp_service, async_session):
+    """
+    Ensures the service identifies an inconsistent matrix and skips the save block.
+    """
+    mock_get_config.return_value = {"features": {"f1": {}, "f2": {}, "f3": {}}}
+
+    inconsistent_matrix = [[1.0, 9.0, 0.111], [0.111, 1.0, 9.0], [9.0, 0.111, 1.0]]
+
+    result = await ahp_service.calculate_and_save_ahp_weights(async_session, inconsistent_matrix, species_id=1)
+
+    assert result["is_consistent"] is False
+    assert result["message"] == "Inconsistent Judgments - Not Saved"
