@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Project Imports
 from src.database import get_db_session
-from src.dependencies import limiter, require_role
+from src.dependencies import get_user_id, limiter, require_role
 from src.schemas.user import Role, UserRead
 from src.services import farm as farm_service
 from src.services import recommendation as recommendation_service
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
 
 
 @router.get("/{farm_id}")
-@limiter.limit("10/minute")
+@limiter.limit("10/minute", key_func=get_user_id)
 async def get_farm_recs(
     request: Request,
     farm_id: int,
@@ -44,7 +44,7 @@ async def get_farm_recs(
 
 
 @router.post("/batch")
-@limiter.limit("10/minute")
+@limiter.limit("10/minute", key_func=get_user_id)
 async def get_batch_recs(
     request: Request,
     farm_ids: list[int],  # Expects JSON body like [1, 2, 3]
