@@ -11,7 +11,11 @@ from src.services.sapling_estimation import SaplingEstimationService
 async def test_run_estimation_basic(async_session, setup_soil_texture):
     """Test sapling estimation service with minimal DEM + boundary."""
 
-    # Ensure dem_table exists in the test DB
+    # Enable PostGIS + Raster (FIXED)
+    await async_session.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
+    await async_session.execute(text("CREATE EXTENSION IF NOT EXISTS postgis_raster;"))
+
+    # Ensure dem_table exists
     await async_session.execute(
         text("""
         CREATE TABLE IF NOT EXISTS dem_table (
@@ -24,7 +28,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     # Clean DEM table
     await async_session.execute(text("DELETE FROM dem_table;"))
 
-    # Insert a very small raster
+    # Insert small DEM raster
     await async_session.execute(
         text("""
         INSERT INTO dem_table (rast)
@@ -38,7 +42,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
 
     await async_session.commit()
 
-    # Create farm first (boundary has FK to farms.id)
+    # Create FARM
     farm = Farm(
         id=1,
         rainfall_mm=1000,
@@ -61,15 +65,17 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
 
     # Insert boundary
     wkt = "MULTIPOLYGON (((0 0, 0 50, 50 50, 50 0, 0 0)))"
+
     boundary = FarmBoundary(
         id=1,
         external_id=123,
         boundary=WKTElement(wkt, srid=4326),
     )
+
     async_session.add(boundary)
     await async_session.commit()
 
-    # Run service in lightweight test mode
+    # Run service (test mode)
     result = await SaplingEstimationService.run_estimation(
         async_session,
         farm_id=1,
