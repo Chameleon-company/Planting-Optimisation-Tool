@@ -41,3 +41,9 @@ tests/.pytest_cache/
 # Intellij project files
 .idea
 
+
+anaconda_projects/
+
+.ipynb_checkpoints/
+
+**/.ipynb_checkpoints/
