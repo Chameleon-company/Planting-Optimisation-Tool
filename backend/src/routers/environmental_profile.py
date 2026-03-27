@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
-from src.dependencies import require_role
+from src.dependencies import get_user_id, limiter, require_role
 from src.schemas.environmental_profile import FarmProfileResponse
 from src.schemas.user import Role, UserRead
 from src.services import environmental_profile as environmental_profile_service
@@ -16,7 +16,9 @@ router = APIRouter(prefix="/profile", tags=["Environmental Profile"])
     response_model=FarmProfileResponse,
     response_model_exclude_none=True,
 )
+@limiter.limit("10/minute", key_func=get_user_id)
 async def get_farm_profile(
+    request: Request,
     farm_id: int,
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.OFFICER)),

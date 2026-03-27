@@ -16,7 +16,7 @@ class FarmBase(BaseModel):
     rainfall_mm: int = Field(
         title="Annual rainfall in millimetres",
         description="Annual rainfall in millimetres",
-        ge=1000,  # ge means greater than or equal to, >=
+        ge=500,  # ge means greater than or equal to, >=
         le=3000,  # le means less than or equal to, <=
     )
     temperature_celsius: int = Field(
