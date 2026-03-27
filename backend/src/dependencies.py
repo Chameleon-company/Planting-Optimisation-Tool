@@ -7,8 +7,10 @@ All functions in this module are intended to be injected into route handlers via
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -20,6 +22,18 @@ from src.schemas.user import Role, TokenData
 # OAuth2 password bearer scheme for extracting JWT tokens from Authorization header
 # Token URL points to the login endpoint that issues tokens
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+
+# SlowAPI limiter, default 60/min and declared explicitly for expensive endpoints
+limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
+
+
+def get_user_id(request: Request) -> str:
+    token = request.headers.get("Authorization", "").removeprefix("Bearer ")
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return str(payload.get("sub"))
+    except Exception:
+        return get_remote_address(request)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):

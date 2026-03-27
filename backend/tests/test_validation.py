@@ -47,7 +47,7 @@ async def test_species_create_constraints(async_client: AsyncClient, test_admin_
 @pytest.mark.parametrize(
     "field, invalid_value",
     [
-        ("rainfall_mm", 500),
+        ("rainfall_mm", 400),
         ("ph", 9.5),
         ("area_ha", 150),
         ("latitude", 100),
