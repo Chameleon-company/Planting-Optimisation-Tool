@@ -16,16 +16,16 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float)
     xmin, ymin, xmax, ymax = farm_poly_series.total_bounds
     farm_poly_shp = farm_poly_series.iloc[0]  # Extract shapely geometry from farm polygon Geoseries
 
-    # Create x and y coordinates for planting points based on 3x3 spacing_m
+    # Generate x and y coordinates for planting points based on 3x3 spacing_m
     xs = np.arange(xmin, xmax, spacing_m)
     ys = np.arange(ymin, ymax, spacing_m)
 
-    # Generate planting points for the base grid
-    base_points = []
-    for x in xs:  # Loop through x coordinates
-        for y in ys:  # Loop through y coordinates
-            base_points.append(Point(x, y))  # Add point into array
+    # Create a full grid of x and y coordinates
+    xx, yy = np.meshgrid(xs, ys)
+    coords = np.column_stack([xx.ravel(), yy.ravel()])  # Flatten grid into coordinate pairs
 
+    # Build the base grid using the coordinates
+    base_points = [Point(x, y) for x, y in coords]
     base_grid = gpd.GeoDataFrame(geometry=base_points, crs=planting_grid.crs)  # Convert to GeoDataFrame
 
     # Initialization for rotation mechanism
@@ -33,12 +33,10 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float)
     optimal_angle = 0  # Stores the optimal rotation angle
     highest_count = -1  # Stores the highest point count
 
-    # Loops through every degree from 0 to 90
-    for angle in range(0, 91, 1):
-        # Copy base grid and rotate at origin
-        rotated = base_grid.copy()
-        rotated["geometry"] = rotated.geometry.apply(lambda g: rotate(g, angle, origin=center))
-        count = rotated.within(farm_poly_shp).sum()  # Count number of points within the rotated farm polygon
+    # Loops through every degree from 0 to 90 and rotates the polygon
+    for angle in range(0, 91):
+        rotated_polygon = rotate(farm_poly_shp, -angle, origin=center)  # Rotates polygon
+        count = base_grid.within(rotated_polygon).sum()  # Count number of points within the rotated farm polygon
 
         # Update new optimal angle and highest count if more points fall within the current rotated farm polygon
         if count > highest_count:
