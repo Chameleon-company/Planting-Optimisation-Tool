@@ -11,7 +11,7 @@ from src.models.farm import Farm
 async def import_boundaries():
     async with AsyncSessionLocal() as session:
         # Path to csv
-        csv_path = "src/scripts/data/boundaries_20251219.csv"
+        csv_path = "src/scripts/data/farm_boundaries_master.csv"
 
         try:
             with open(csv_path, mode="r", encoding="utf-8-sig") as f:

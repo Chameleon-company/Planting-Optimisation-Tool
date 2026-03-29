@@ -36,6 +36,8 @@ def wait_for_api(url="127.0.0.1", port=8080, timeout=15):
 
 
 def main():
+    subprocess.run(["uv", "run", "python", "-m", "src.scripts.kill-api"], check=False)
+
     print(f"{BLUE}===================================================={NC}")
     print(f"{BLUE} Starting Database Initialization{NC}")
     print(f"{BLUE}===================================================={NC}")
@@ -44,6 +46,7 @@ def main():
     env["PYTHONUTF8"] = "1"
     env["NO_COLOR"] = "1"
     env["TERM"] = "dumb"
+    env["RATELIMIT_ENABLED"] = "false"
 
     with open("api_log.txt", "w", encoding="utf-8") as log_file:
         api_proc = subprocess.Popen(

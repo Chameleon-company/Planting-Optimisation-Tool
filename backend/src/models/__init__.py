@@ -12,6 +12,8 @@ from src.models.soil_texture import SoilTexture
 from src.models.species import Species
 from src.models.user import User
 
+from .auth_token import AuthToken
+
 __all__ = [
     "SoilTexture",
     "AgroforestryType",
@@ -24,4 +26,5 @@ __all__ = [
     "Parameter",
     "Recommendation",
     "AuditLog",
+    "AuthToken",
 ]
