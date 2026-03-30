@@ -9,42 +9,32 @@ from src.services.sapling_estimation import SaplingEstimationService
 
 @pytest.mark.asyncio
 async def test_run_estimation_basic(async_session, setup_soil_texture):
-    """Test sapling estimation service with minimal DEM + boundary."""
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
 
-    # Enable PostGIS + Raster (FIXED)
-    await async_session.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
-    await async_session.execute(text("CREATE EXTENSION IF NOT EXISTS postgis_raster;"))
-
-    # Ensure dem_table exists
     await async_session.execute(
-        text("""
-        CREATE TABLE IF NOT EXISTS dem_table (
-            rid SERIAL PRIMARY KEY,
-            rast RASTER
-        );
-    """)
+        text(
+            """
+            INSERT INTO dem_table (rast)
+            VALUES (
+                ST_AddBand(
+                    ST_MakeEmptyRaster(
+                        5, 5,
+                        125, -8.9995,
+                        0.001, -0.001,
+                        0, 0,
+                        4326
+                    ),
+                    1,
+                    '32BF',
+                    100
+                )
+            );
+            """
+        )
     )
-
-    # Clean DEM table
-    await async_session.execute(text("DELETE FROM dem_table;"))
-
-    # Insert small DEM raster
-    await async_session.execute(
-        text("""
-        INSERT INTO dem_table (rast)
-        SELECT ST_AddBand(
-            ST_MakeEmptyRaster(10, 10, 0, 100, 10, -10, 0, 0, 4326),
-            '32BF'::text,
-            1
-        );
-    """)
-    )
-
     await async_session.commit()
 
-    # Create FARM
     farm = Farm(
-        id=1,
         rainfall_mm=1000,
         temperature_celsius=25,
         elevation_m=100,
@@ -62,28 +52,29 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     )
     async_session.add(farm)
     await async_session.commit()
-
-    # Insert boundary
-    wkt = "MULTIPOLYGON (((0 0, 0 50, 50 50, 50 0, 0 0)))"
+    await async_session.refresh(farm)
 
     boundary = FarmBoundary(
-        id=1,
+        id=farm.id,
         external_id=123,
-        boundary=WKTElement(wkt, srid=4326),
+        boundary=WKTElement(
+            "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))",
+            srid=4326,
+        ),
     )
-
     async_session.add(boundary)
     await async_session.commit()
 
-    # Run service (test mode)
-    result = await SaplingEstimationService.run_estimation(
-        async_session,
-        farm_id=1,
-        spacing_m=100,
-        test_mode=True,
-    )
+    result = await SaplingEstimationService.run_estimation(async_session, farm_id=farm.id, spacing_m=10)
 
     assert result is not None
+    assert result.get("status") != "failed", f"Service failed: {result}"
     assert "sapling_count" in result
-    assert result["sapling_count"] >= 0
-    assert "optimal_angle" in result
+    assert result["sapling_count"] > 0
+
+    rows = await async_session.execute(
+        text("SELECT COUNT(*) FROM planting_estimates WHERE farm_id = :id"),
+        {"id": farm.id},
+    )
+
+    assert rows.scalar_one() == result["sapling_count"]

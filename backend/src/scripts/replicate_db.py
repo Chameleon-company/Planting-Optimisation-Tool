@@ -54,6 +54,8 @@ def main():
 
         run_docker_psql(f"DROP DATABASE IF EXISTS {TEST_DB};")
         run_docker_psql(f'CREATE DATABASE {TEST_DB} WITH TEMPLATE "{SOURCE_DB}";')
+        run_docker_psql("CREATE EXTENSION IF NOT EXISTS postgis;", database=TEST_DB)
+        run_docker_psql("CREATE EXTENSION IF NOT EXISTS postgis_raster;", database=TEST_DB)
 
         sync_sql = """
         DO $$ 

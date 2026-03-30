@@ -2,29 +2,31 @@ import geopandas as gpd
 import numpy as np
 import rasterio
 
-MAX_SLOPE = 15.0  # Slope threshold
+MAX_SLOPE = 15.0
 
 
-def apply_slope_rules(slope_array: np.ndarray, rotated_grid: gpd.GeoDataFrame, slope_transform):
-    # Extract coordinates
+def apply_slope_rules(
+    slope_array: np.ndarray,
+    rotated_grid: gpd.GeoDataFrame,
+    slope_transform,
+):
     xs = [point.x for point in rotated_grid.geometry]
     ys = [point.y for point in rotated_grid.geometry]
 
-    # Convert world coordinates to raster row/col
     rows, cols = rasterio.transform.rowcol(slope_transform, xs, ys)
 
     height, width = slope_array.shape
-    slope_values = []
+    kept_indices = []
+    kept_slopes = []
 
-    for r, c in zip(rows, cols):
+    for idx, (r, c) in enumerate(zip(rows, cols)):
         if 0 <= r < height and 0 <= c < width:
-            slope_values.append(slope_array[r, c])
-        else:
-            slope_values.append(float("inf"))
+            slope_value = float(slope_array[r, c])
+            if slope_value <= MAX_SLOPE:
+                kept_indices.append(idx)
+                kept_slopes.append(slope_value)
 
-    # Keep only points below threshold
-    keep_mask = [s <= MAX_SLOPE for s in slope_values]
-    adjusted_points = rotated_grid.loc[keep_mask].copy()
+    adjusted_points = rotated_grid.iloc[kept_indices].copy()
 
     adjusted_points = gpd.GeoDataFrame(
         adjusted_points,
@@ -32,4 +34,4 @@ def apply_slope_rules(slope_array: np.ndarray, rotated_grid: gpd.GeoDataFrame, s
         crs=rotated_grid.crs,
     )
 
-    return adjusted_points
+    return adjusted_points, kept_slopes

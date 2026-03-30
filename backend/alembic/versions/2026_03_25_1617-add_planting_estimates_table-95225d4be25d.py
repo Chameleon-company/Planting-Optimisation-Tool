@@ -11,7 +11,6 @@ import sqlalchemy as sa
 from alembic import op
 from geoalchemy2 import Geometry
 
-# revision identifiers, used by Alembic.
 revision: str = "95225d4be25d"
 down_revision: Union[str, Sequence[str], None] = "769fc9c97e25"
 branch_labels: Union[str, Sequence[str], None] = None
@@ -19,8 +18,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Create planting_estimates table with spatial index."""
-
     op.create_table(
         "planting_estimates",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
@@ -30,8 +27,6 @@ def upgrade() -> None:
             sa.ForeignKey("farms.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("x_coord", sa.Float(), nullable=False),
-        sa.Column("y_coord", sa.Float(), nullable=False),
         sa.Column("slope", sa.Float(), nullable=True),
         sa.Column(
             "geometry",
@@ -40,7 +35,6 @@ def upgrade() -> None:
         ),
     )
 
-    # Add spatial index
     op.create_index(
         "idx_planting_estimates_geom",
         "planting_estimates",
@@ -50,9 +44,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Drop planting_estimates table and index safely."""
-
-    # no error if index not exists)
     op.execute("DROP INDEX IF EXISTS idx_planting_estimates_geom")
-
     op.drop_table("planting_estimates")
