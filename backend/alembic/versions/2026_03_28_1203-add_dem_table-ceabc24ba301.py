@@ -16,6 +16,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    op.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+    op.execute("CREATE EXTENSION IF NOT EXISTS postgis_raster;")
+    
     op.execute(
         """
         CREATE TABLE IF NOT EXISTS dem_table (

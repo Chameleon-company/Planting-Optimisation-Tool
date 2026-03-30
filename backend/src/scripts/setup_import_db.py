@@ -80,7 +80,6 @@ def main():
         run_module("src.scripts.import_boundaries")
         run_module("src.scripts.import_species_parameters")
         run_module("src.scripts.import_dem")
-        run_module("src.scripts.run_estimation_all")
 
     except subprocess.CalledProcessError as e:
         print(f"{RED}Ingestion failed during: {e}{NC}")

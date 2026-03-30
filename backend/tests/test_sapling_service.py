@@ -56,7 +56,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
 
     boundary = FarmBoundary(
         id=farm.id,
-        external_id=123,
+        external_id=farm.id,
         boundary=WKTElement(
             "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))",
             srid=4326,
