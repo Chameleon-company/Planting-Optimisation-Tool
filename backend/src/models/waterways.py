@@ -11,19 +11,19 @@ from src.database import Base
 class Waterway(Base):
     __tablename__ = "waterways"
 
-    id      : Mapped[int]            = mapped_column(primary_key=True)
-    name    : Mapped[Optional[str]]  = mapped_column(nullable=True)   
-    waterway: Mapped[Optional[str]]  = mapped_column(nullable=True)   
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[Optional[str]] = mapped_column(nullable=True)
+    waterway: Mapped[Optional[str]] = mapped_column(nullable=True)
 
     # PostGIS LINESTRING geometry in WGS84 (EPSG:4326)
     geometry: Mapped[object] = mapped_column(
         geoalchemy2.types.Geometry(
-            geometry_type='LINESTRING',
+            geometry_type="LINESTRING",
             srid=4326,
             dimension=2,
             spatial_index=False,
-            from_text='ST_GeomFromEWKT',
-            name='geometry',
+            from_text="ST_GeomFromEWKT",
+            name="geometry",
             nullable=False,
         ),
         nullable=False,

@@ -63,7 +63,7 @@ async def ingest_waterways():
                     "name": row.get("name") or None,
                     "waterway": row.get("waterway") or None,
                     "geometry": ewkt,
-                }
+                },
             )
             count += 1
 
@@ -73,7 +73,7 @@ async def ingest_waterways():
 
         await session.commit()
 
-        print(f"\nIngestion complete!")
+        print("\nIngestion complete!")
         print(f"  Inserted : {count}")
         print(f"  Skipped  : {failed} (null geometry)")
 

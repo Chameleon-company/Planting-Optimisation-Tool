@@ -33,12 +33,13 @@ async def create_farm(
 
     # FastAPI serializes the returned ORM object into the FarmRead contract.
 
-    #Riparian flag
+    # Riparian flag
     riparian_result = await get_riparian_flags(db, latitude=float(farm.latitude), longitude=float(farm.longitude))
     farm.riparian = riparian_result["riparian"]
     await db.commit()
- 
+
     return farm
+
 
 @router.get("/{farm_id}", response_model=FarmRead)
 async def read_farm(

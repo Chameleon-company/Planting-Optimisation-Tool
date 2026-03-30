@@ -1,27 +1,29 @@
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.models.waterways import Waterway
 
 RIPARIAN_BUFFER_M: float = 15.0
 
+
 async def get_riparian_flags(
-        db: AsyncSession,
-        latitude: float,
-        longitude: float,
+    db: AsyncSession,
+    latitude: float,
+    longitude: float,
 ) -> dict:
     """
     Check if a farm location falls within a riparian zone.
- 
+
     Queries the waterways table using PostGIS ST_Distance to find the
     distance from the farm point to the nearest waterway line.
     Both geometries are transformed to UTM Zone 52S (EPSG:32752) for
     metre-accurate distance calculations.
- 
+
     Args:
         db:        Async database session.
         latitude:  Farm latitude (WGS84).
         longitude: Farm longitude (WGS84).
- 
+
     Returns:
         {
             "riparian": bool,
@@ -56,7 +58,7 @@ async def get_riparian_flags(
             "riparian": False,
             "distance_to_nearest_waterway_m": None,
         }
-    
+
     distance_m = float(row.distance_m)
 
     return {
