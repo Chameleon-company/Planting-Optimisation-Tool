@@ -15,7 +15,7 @@ def create_farm_polygon():
 @pytest.fixture
 def create_dem_array():
     # Creates a simple DEM (10x10 grid)
-    return np.ones((10, 10), dtype=np.float32) * 10  
+    return np.ones((10, 10), dtype=np.float32) * 10
 
 
 def test_sapling_estimation(create_farm_polygon, create_dem_array):
@@ -43,7 +43,7 @@ def test_sapling_estimation(create_farm_polygon, create_dem_array):
     # Ensure output type
     assert isinstance(final_grid, gpd.GeoDataFrame)
 
-    # Ensure points generated 
+    # Ensure points generated
     assert len(final_grid) > 0
 
     # Ensure angle is valid

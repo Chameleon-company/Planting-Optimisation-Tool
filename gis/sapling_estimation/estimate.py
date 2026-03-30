@@ -40,21 +40,13 @@ def sapling_estimation(
         pixel_height,
     )
 
-    farm_poly_projected = (
-        gpd.GeoSeries([farm_polygon], crs=farm_boundary_crs)
-        .to_crs("EPSG:3857")
-        .iloc[0]
-    )
+    farm_poly_projected = gpd.GeoSeries([farm_polygon], crs=farm_boundary_crs).to_crs("EPSG:3857").iloc[0]
 
     bounds = farm_poly_projected.bounds
 
-    initial_grid = generate_planting_points(
-        farm_poly_projected, "EPSG:3857", bounds, spacing_m
-    )
+    initial_grid = generate_planting_points(farm_poly_projected, "EPSG:3857", bounds, spacing_m)
 
-    rotated_grid, optimal_angle = rotate_grid(
-        farm_poly_projected, initial_grid, spacing_m
-    )
+    rotated_grid, optimal_angle = rotate_grid(farm_poly_projected, initial_grid, spacing_m)
 
     if not rotation_tester(rotated_grid, initial_grid):
         raise ValueError("Rotated grid failed validation")
