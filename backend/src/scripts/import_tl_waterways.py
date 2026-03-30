@@ -13,7 +13,7 @@ from sqlalchemy import text
 from src.database import AsyncSessionLocal, engine
 
 # Path to the waterways GeoPackage file
-WATERWAYS_PATH = Path(".src/scripts/data/hotosm_tls_waterways_lines_gpkg.gpkg")
+WATERWAYS_PATH = Path("src/scripts/data/hotosm_tls_waterways_lines_gpkg.gpkg")
 
 
 async def ingest_waterways():

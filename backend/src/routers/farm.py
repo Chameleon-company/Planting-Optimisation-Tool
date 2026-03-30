@@ -6,6 +6,7 @@ from src.dependencies import require_role
 from src.schemas.farm import FarmCreate, FarmRead
 from src.schemas.user import Role, UserRead
 from src.services import farm as farm_service
+from src.services.riparian import get_riparian_flags
 
 # The router instance
 router = APIRouter(prefix="/farms", tags=["Farms"])
@@ -28,10 +29,16 @@ async def create_farm(
     Requires OFFICER role or higher.
     """
     # Pass validated Pydantic data, secure user ID, AND THE DB SESSION to the service layer
-    return await farm_service.create_farm_record(db=db, farm_data=farm_data, user_id=current_user.id)
+    farm = await farm_service.create_farm_record(db=db, farm_data=farm_data, user_id=current_user.id)
 
     # FastAPI serializes the returned ORM object into the FarmRead contract.
 
+    #Riparian flag
+    riparian_result = await get_riparian_flags(db, latitude=float(farm.latitude), longitude=float(farm.longitude))
+    farm.riparian = riparian_result["riparian"]
+    await db.commit()
+ 
+    return farm
 
 @router.get("/{farm_id}", response_model=FarmRead)
 async def read_farm(
