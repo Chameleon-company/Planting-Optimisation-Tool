@@ -25,7 +25,6 @@ from core.extract_data import (
     get_temperature,
     get_texture_id,
 )
-from core.riparian import get_riparian_flags
 
 # ============================================================================
 # INDIVIDUAL FARM OPERATIONS
@@ -36,6 +35,7 @@ def build_farm_profile(
     geometry,
     year: Optional[int] = None,
     farm_id: Optional[int] = None,
+    riparian: Optional[bool] = None,
     **additional_fields,
 ) -> Dict[str, Any]:
     """
@@ -49,6 +49,8 @@ def build_farm_profile(
         geometry:          Farm geometry (point, polygon, or coordinates).
         year:              Year for temporal data extraction (default: 2024).
         farm_id:           Unique farm identifier (None for new/candidate farms).
+        riparian:          Riparian flag computed externally (e.g. PostGIS in backend).
+                           Pass None if unknown — profile will still include the field.
         **additional_fields: Any additional custom fields (e.g., farmer_name).
 
     Returns:
@@ -76,9 +78,6 @@ def build_farm_profile(
         texture_id = get_texture_id(geometry)
         lat, lon = get_centroid_lat_lon(geometry)
 
-        # --- US-018: Riparian zone (local vector, not GEE) ---
-        riparian = get_riparian_flags(geometry)
-
         # --- Derived flags ---
         if elevation is not None and rainfall is not None:
             coastal_flag = elevation < 100 and 500 <= rainfall <= 3000
@@ -99,9 +98,8 @@ def build_farm_profile(
             "latitude": lat,
             "longitude": lon,
             "coastal": coastal_flag,
-            # US-018 fields
-            "riparian": riparian["is_riparian"],
-            "distance_to_nearest_waterway_m": riparian["distance_to_nearest_waterway_m"],
+            # US-018: riparian flag passed in from backend PostGIS result
+            "riparian": riparian,
             "updated_at": datetime.now().isoformat(),
             "status": "success",
         }
@@ -144,17 +142,6 @@ def update_farm_profile(
     if fields is None:
         return build_farm_profile(geometry, year, farm_id)
 
-    # Riparian is computed at creation and can be explicitly re-triggered on update
-    # (e.g. if the waterways dataset is refreshed or a farm boundary is corrected).
-    # Both fields share a single get_riparian_flags() call via the _riparian closure
-    # to avoid loading/querying the waterways dataset twice in one update.
-    _riparian: Dict = {}
-
-    def _get_riparian(key: str):
-        if not _riparian:
-            _riparian.update(get_riparian_flags(geometry))
-        return _riparian.get(key)
-
     field_extractors = {
         "rainfall_mm": lambda: get_rainfall(geometry, year=year),
         "temperature_celsius": lambda: get_temperature(geometry, year=year),
@@ -163,8 +150,6 @@ def update_farm_profile(
         "slope_degrees": lambda: get_slope(geometry, year=year),
         "area_ha": lambda: get_area_ha(geometry),
         "soil_texture_id": lambda: get_texture_id(geometry),
-        "riparian": lambda: _get_riparian("is_riparian"),
-        "distance_to_nearest_waterway_m": lambda: _get_riparian("distance_to_nearest_waterway_m"),
     }
 
     updated_profile = existing_profile.copy()

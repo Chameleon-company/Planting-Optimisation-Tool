@@ -639,17 +639,25 @@ def test_riparian_missing_dataset_returns_none_sentinel(monkeypatch):
 
 
 def test_farm_profile_includes_riparian_fields(gee_initialized, waterways_available, test_point):
-    """RIPARIAN AC3: build_farm_profile output includes is_riparian and distance fields."""
-    profile = build_farm_profile(geometry=test_point, year=2024, farm_id=1)
+    """RIPARIAN AC3: build_farm_profile output includes riparian field.
 
+    riparian is now passed in as a parameter from the backend PostGIS query,
+    not computed via GEE. When not provided, it defaults to None.
+    """
+    # Without riparian passed in — should be None
+    profile = build_farm_profile(geometry=test_point, year=2024, farm_id=1)
     assert profile["status"] == "success"
     assert "riparian" in profile, "Profile must include 'riparian'"
-    assert "distance_to_nearest_waterway_m" in profile, "Profile must include 'distance_to_nearest_waterway_m'"
-    assert isinstance(profile["riparian"], bool), "riparian must be bool"
-    assert isinstance(profile["distance_to_nearest_waterway_m"], float), "distance must be float"
+    assert profile["riparian"] is None, "riparian should be None when not passed in"
 
-    status = "RIPARIAN" if profile["riparian"] else "NOT RIPARIAN"
-    print(f"\nSUCCESS: Profile riparian fields — {status}, distance={profile['distance_to_nearest_waterway_m']}m")
+    # With riparian passed in from backend
+    profile_with_riparian = build_farm_profile(geometry=test_point, year=2024, farm_id=1, riparian=True)
+    assert profile_with_riparian["riparian"] is True, "riparian should be True when passed in as True"
+
+    profile_not_riparian = build_farm_profile(geometry=test_point, year=2024, farm_id=1, riparian=False)
+    assert profile_not_riparian["riparian"] is False, "riparian should be False when passed in as False"
+
+    print("\nSUCCESS: Profile riparian field — correctly uses passed-in value")
 
 
 def test_farm_profile_riparian_none_when_asset_missing(gee_initialized, monkeypatch):
@@ -668,44 +676,51 @@ def test_farm_profile_riparian_none_when_asset_missing(gee_initialized, monkeypa
 
 
 def test_update_farm_profile_riparian_fields(gee_initialized, waterways_available, test_point):
-    """RIPARIAN AC3: update_farm_profile can selectively update riparian fields."""
-    profile = build_farm_profile(geometry=test_point, year=2024, farm_id=1)
-    assert profile["status"] == "success"
+    """RIPARIAN AC3: update_farm_profile preserves riparian value from existing profile.
 
-    # Selectively update only riparian fields
+    riparian is no longer a GEE-computed field in farm_profile — it is passed in
+    from the backend PostGIS query. update_farm_profile preserves it unchanged
+    when not explicitly in the fields list.
+    """
+    profile = build_farm_profile(geometry=test_point, year=2024, farm_id=1, riparian=True)
+    assert profile["status"] == "success"
+    assert profile["riparian"] is True
+
+    # Update only temporal fields — riparian should be preserved from existing profile
     updated = update_farm_profile(
         existing_profile=profile,
         geometry=test_point,
-        fields=["riparian", "distance_to_nearest_waterway_m"],
+        fields=["rainfall_mm", "temperature_celsius"],
     )
 
     assert updated["status"] == "success"
-    assert isinstance(updated["riparian"], bool)
-    assert isinstance(updated["distance_to_nearest_waterway_m"], float)
-    # Non-riparian fields should be unchanged
-    assert updated["rainfall_mm"] == profile["rainfall_mm"]
+    assert updated["riparian"] is True, "riparian should be preserved from existing profile"
+    assert updated["rainfall_mm"] is not None
 
-    print(f"\nSUCCESS: Selective riparian update — riparian={updated['riparian']}, distance={updated['distance_to_nearest_waterway_m']}m")
+    print(f"\nSUCCESS: riparian preserved after selective update — riparian={updated['riparian']}")
 
 
 def test_bulk_create_profiles_includes_riparian(gee_initialized, waterways_available):
-    """RIPARIAN AC3: bulk_create_profiles output DataFrame includes riparian columns."""
+    """RIPARIAN AC3: bulk_create_profiles output DataFrame includes riparian column.
+
+    riparian is now passed in from the backend — when not provided it is None.
+    The column must exist in the DataFrame but values may be None.
+    """
     farms = [
-        {"farm_id": 1, "geometry": (-8.55, 125.57)},
-        {"farm_id": 2, "geometry": (-8.56, 125.58)},
+        {"farm_id": 1, "geometry": (-8.55, 125.57), "riparian": True},
+        {"farm_id": 2, "geometry": (-8.56, 125.58), "riparian": False},
     ]
 
     profiles_df = bulk_create_profiles(farms, year=2024, max_workers=2)
 
     assert "riparian" in profiles_df.columns, "DataFrame must have 'riparian' column"
-    assert "distance_to_nearest_waterway_m" in profiles_df.columns
 
     successful = profiles_df[profiles_df["status"] == "success"]
     if len(successful) > 0:
         assert successful["riparian"].apply(lambda x: isinstance(x, bool)).all(), "All successful profiles must have bool riparian"
 
     print("\nSUCCESS: Bulk riparian results:")
-    print(profiles_df[["id", "riparian", "distance_to_nearest_waterway_m", "status"]])
+    print(profiles_df[["id", "riparian", "status"]])
 
 
 # ============================================================================
