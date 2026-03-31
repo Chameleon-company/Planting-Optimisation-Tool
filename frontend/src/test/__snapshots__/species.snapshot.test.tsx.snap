@@ -1,0 +1,73 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Snapshot Tests > matches snapshot for SpeciesGrid with data 1`] = `
+<div>
+  <div
+    class="species-grid"
+  >
+    <article
+      class="article-card"
+    >
+      <div
+        class="article-media"
+      >
+        <img
+          alt="Test Tree"
+          src="https://placehold.co/600x400?text=No+Image"
+        />
+      </div>
+      <div
+        class="article-body"
+      >
+        <h3
+          class="article-title"
+        >
+          Test Tree
+        </h3>
+        <div
+          class="article-actions"
+        >
+          <button
+            class="btn-outline"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>
+`;
+
+exports[`Snapshot Tests > matches snapshot for empty SpeciesModal 1`] = `<div />`;
+
+exports[`Snapshot Tests > matches snapshot for open SpeciesModal 1`] = `
+<div>
+  <div
+    class="side-modal active"
+  >
+    <div
+      class="modal-overlay"
+    />
+    <div
+      class="modal-panel"
+    >
+      <button
+        class="close-modal-btn"
+      >
+        ×
+      </button>
+      <div
+        class="modal-content-body"
+      >
+        <h2>
+          Test Tree
+        </h2>
+        <div
+          class="modal-rich-text"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
