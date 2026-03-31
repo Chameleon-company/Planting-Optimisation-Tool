@@ -51,7 +51,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
         slope=5,
     )
     async_session.add(farm)
-    await async_session.commit()
+    await async_session.flush()
     await async_session.refresh(farm)
 
     boundary = FarmBoundary(
