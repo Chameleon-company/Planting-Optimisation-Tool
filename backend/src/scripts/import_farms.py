@@ -33,7 +33,7 @@ async def ingest_farms():
         token = await get_test_user_token()
         headers = {"Authorization": f"Bearer {token}"}
 
-        with open("src/scripts/data/farms_20251219.csv", mode="r", encoding="utf-8-sig") as f:
+        with open("src/scripts/data/farm_master.csv", mode="r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             count = 0
 

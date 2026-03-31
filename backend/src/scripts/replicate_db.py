@@ -78,6 +78,7 @@ def main():
             test_url = f"postgresql+asyncpg://{POSTGRES_USER}@localhost:5432/{TEST_DB}"
 
         current_env["DATABASE_URL"] = test_url
+        current_env["TESTING"] = "true"
 
         result = subprocess.run(["uv", "run", "pytest"], env=current_env, check=False)
 

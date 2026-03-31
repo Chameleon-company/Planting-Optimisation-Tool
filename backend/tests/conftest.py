@@ -10,16 +10,13 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import NullPool
 
 # --- Application Imports ---
-from src.config import Settings
 from src.database import get_db_session
-from src.dependencies import create_access_token
+from src.dependencies import create_access_token, limiter
 from src.main import app
 from src.models.soil_texture import SoilTexture
 from src.models.user import User
 from src.schemas.user import Role
 from src.utils.security import get_password_hash
-
-settings = Settings()
 
 
 # Event Loop
@@ -30,6 +27,12 @@ def event_loop():
     loop = policy.new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset the rate limiter before each test so accumulated counts from one test do not affect the next."""
+    limiter.reset()
 
 
 # Database Engine
@@ -43,7 +46,6 @@ async def db_engine():
     await engine.dispose()
 
 
-# Database Setup Fixture
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(db_engine):
     yield
@@ -97,6 +99,7 @@ async def test_admin_user(async_session: AsyncSession) -> User:
         email="admin@test.com",
         hashed_password=get_password_hash("adminpassword"),
         role=Role.ADMIN.value,
+        is_verified=True,
     )
     user = await async_session.merge(user)
     await async_session.flush()
@@ -112,6 +115,7 @@ async def test_supervisor_user(async_session: AsyncSession) -> User:
         email="supervisor@test.com",
         hashed_password=get_password_hash("supervisorpassword"),
         role=Role.SUPERVISOR.value,
+        is_verified=True,
     )
     user = await async_session.merge(user)
     await async_session.flush()
@@ -127,6 +131,7 @@ async def test_officer_user(async_session: AsyncSession) -> User:
         email="officer@test.com",
         hashed_password=get_password_hash("officerpassword"),
         role=Role.OFFICER.value,
+        is_verified=True,
     )
     user = await async_session.merge(user)
     await async_session.flush()

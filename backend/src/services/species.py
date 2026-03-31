@@ -93,3 +93,41 @@ async def create_species(db: AsyncSession, payload: SpeciesCreate) -> Species:
 
     result = await db.execute(select(Species).where(Species.id == new_species.id).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)))
     return result.scalar_one()
+
+
+async def get_species_for_dropdown(db: AsyncSession):
+    """
+    Fetches a lightweight list of species IDs and names.
+    Optimised to only query the required columns.
+    """
+    # Select only the needed columns and order alphabetically by common name
+    stmt = select(Species.id, Species.name, Species.common_name).order_by(Species.common_name)
+
+    result = await db.execute(stmt)
+
+    return result.all()
+
+
+def get_recommendation_features() -> list[str]:
+    """
+    Returns only the 'short' names of features for frontend display.
+    Example: ['Rinfall', 'Temperature', 'pH']
+    """
+    # Use existing config loader
+    config_data = get_recommend_config()
+
+    features_dict = config_data.get("features", {})
+
+    # Extract only the 'short' string from each feature config
+    short_names = []
+    for feature_cfg in features_dict.values():
+        if "short" in feature_cfg:
+            raw_short = str(feature_cfg["short"])
+
+            # Check for pH case-insensitively
+            if raw_short.lower() == "ph":
+                short_names.append("pH")
+            else:
+                short_names.append(raw_short.title())
+
+    return short_names

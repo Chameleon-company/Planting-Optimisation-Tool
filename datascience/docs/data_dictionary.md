@@ -7,7 +7,7 @@ These data dictionaries contains all variables for the recommendation system (su
 | Column Name          | Type        | Unit     | Description                     | Constraints                        |
 | -------------------- | ----------- | -------- | ------------------------------- | ---------------------------------- |
 | `id`            | Integer      | —        | Unique identifier for each farm | Required, unique                   |
-| `rainfall_mm`    | Integer       | `mm` | Annual average rainfall         | Required, Range: `1000`–`3000`             |
+| `rainfall_mm`    | Integer       | `mm` | Annual average rainfall         | Required, Range: `500`–`3000`             |
 | `temperature_celsius` | Integer       | `celsius` | Annual average temperature      | Required, Range: `15`–`30`             |
 | `elevation_m`    | Integer       | `m` | Elevation above sea level       | Required, Range: `0`–`2963`             |
 | `ph`                 | Float       | pH units | Soil acidity/alkalinity         | Required, Range: `4.0`–`8.5`             |

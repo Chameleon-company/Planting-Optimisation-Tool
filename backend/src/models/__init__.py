@@ -13,6 +13,8 @@ from src.models.species import Species
 from src.models.user import User
 from src.models.waterways import Waterway
 
+from .auth_token import AuthToken
+
 __all__ = [
     "SoilTexture",
     "AgroforestryType",
@@ -25,4 +27,5 @@ __all__ = [
     "Parameter",
     "Recommendation",
     "AuditLog",
+    "AuthToken",
 ]

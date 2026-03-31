@@ -49,3 +49,6 @@ select = [
     "I",
     "N",
 ]
+
+[dependency-groups]
+dev = []

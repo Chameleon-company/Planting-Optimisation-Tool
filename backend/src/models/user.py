@@ -25,7 +25,7 @@ class User(Base):
 
     Attributes:
         id: Primary key, unique identifier for the user
-        name: User's full name (unique, indexed for fast lookups)
+        name: User's full name (indexed for fast lookups)
         email: User's email address (unique, indexed, used for login)
         hashed_password: Bcrypt-hashed password (never store plain text!)
         role: User's role - one of: "officer", "supervisor", "admin" (indexed)
@@ -57,9 +57,10 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     # User information
-    name: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
+    is_verified: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     # Authorization - role determines user's permission level
     role: Mapped[str] = mapped_column(String(50), index=True, default="officer")

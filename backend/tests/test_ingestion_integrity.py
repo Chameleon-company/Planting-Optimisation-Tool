@@ -28,7 +28,7 @@ async def test_farm_and_boundary_link(async_client: AsyncClient, async_session, 
 
     # Create a Farm
     farm_payload = {
-        "external_id": 999,
+        "external_id": 99999,
         "name": "Spatial Farm",
         "soil_texture_id": 1,
         "area_ha": 10.5,
@@ -51,11 +51,11 @@ async def test_farm_and_boundary_link(async_client: AsyncClient, async_session, 
 
     # Directly create a Boundary (simulating the import_boundaries script)
     wkt = "MULTIPOLYGON (((126.67 -8.56, 126.68 -8.56, 126.68 -8.57, 126.67 -8.56)))"
-    boundary = FarmBoundary(id=farm_id, external_id=999, boundary=f"SRID=4326;{wkt}")
+    boundary = FarmBoundary(id=farm_id, external_id=99999, boundary=f"SRID=4326;{wkt}")
     async_session.add(boundary)
     await async_session.commit()
 
     # Verify spatial retrieval
     result = await async_session.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
     retrieved = result.scalar_one()
-    assert retrieved.external_id == 999
+    assert retrieved.external_id == 99999
