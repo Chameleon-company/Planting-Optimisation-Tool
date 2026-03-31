@@ -108,7 +108,12 @@ def build_farm_profile(
         return profile
 
     except Exception as e:
-        raise RuntimeError(f"Failed to build farm profile for farm_id={farm_id}: {e}") from e
+        return {
+            "id": farm_id,
+            "year": year,
+            "status": "failed",
+            "error": str(e),
+        }
 
 
 def update_farm_profile(
@@ -172,7 +177,9 @@ def update_farm_profile(
         return updated_profile
 
     except Exception as e:
-        raise RuntimeError(f"Failed to update farm profile for farm_id={updated_profile.get('id')}: {e}") from e
+        updated_profile["status"] = "partial_update"
+        updated_profile["error"] = str(e)
+        return updated_profile
 
 
 # ============================================================================

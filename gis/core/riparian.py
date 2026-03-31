@@ -5,17 +5,6 @@ The waterways dataset (HOT OSM) is uploaded as a GEE FeatureCollection asset,
 eliminating the need for any local file. This integrates naturally with the
 existing GEE service account setup used by all other extractors.
 
-AC1: Dataset ingested into GEE as a FeatureCollection asset (one-time upload).
-AC2: get_riparian_flags() performs the geospatial intersection check via GEE.
-AC3: Returns is_riparian (bool) and distance_to_nearest_waterway_m (float).
-
-GEE Asset setup (one-time):
-    earthengine upload table \
-        --asset_id=projects/<your-project>/assets/tls_waterways_lines \
-        assets/hotosm_tls_waterways_lines_gpkg.gpkg
-
-    Then set in .env:
-        WATERWAYS_ASSET_ID=projects/<your-project>/assets/tls_waterways_lines
 """
 
 from __future__ import annotations
