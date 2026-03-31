@@ -28,7 +28,7 @@ def upgrade() -> None:
     sa.Column(
         'geometry',
         geoalchemy2.types.Geometry(
-            geometry_type='LINESTRING',
+            geometry_type='GEOMETRY',
             srid=4326,
             dimension=2,
             spatial_index=False,
