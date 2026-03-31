@@ -18,7 +18,7 @@ class Waterway(Base):
     # PostGIS LINESTRING geometry in WGS84 (EPSG:4326)
     geometry: Mapped[object] = mapped_column(
         geoalchemy2.types.Geometry(
-            geometry_type="LINESTRING",
+            geometry_type="GEOMETRY",
             srid=4326,
             dimension=2,
             spatial_index=False,
