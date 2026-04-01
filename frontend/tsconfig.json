@@ -20,8 +20,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node", "vitest/globals"]
   },
-  "include": ["src"],
-  "exclude": ["**/*.test.tsx", "node_modules", "src/test/**", ".history/**"]
+  "include": ["src", "vite.config.ts", "src/test"],
+  "exclude": ["node_modules", ".history/**"]
 }
