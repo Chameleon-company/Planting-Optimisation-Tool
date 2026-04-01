@@ -46,6 +46,13 @@ async def get_riparian_flags(
                 func.ST_Transform(Waterway.geometry, 32752),
             ).label("distance_m")
         )
+        .where(
+            func.ST_DWithin(
+                func.ST_Transform(Waterway.geometry, 32752),
+                farm_point,
+                RIPARIAN_BUFFER_M,
+            )
+        )
         .order_by("distance_m")
         .limit(1)
     )
