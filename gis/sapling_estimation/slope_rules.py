@@ -2,36 +2,36 @@ import geopandas as gpd
 import numpy as np
 import rasterio
 
-MAX_SLOPE = 15.0  # Slope threshold
-
-# The slope rules function accepts the slope array and rotated grid of the input farm.
-# The function first samples the slope values at every planting point
-# The points are then filtered by removing points that are on terrian steeper than the maximum threshold.
+MAX_SLOPE = 15.0
 
 
-def apply_slope_rules(slope_array: np.ndarray, rotated_grid: gpd.GeoDataFrame, slope_transform):
-    # Extract the coordinates of every point for sampling
+def apply_slope_rules(
+    slope_array: np.ndarray,
+    rotated_grid: gpd.GeoDataFrame,
+    slope_transform,
+):
     xs = [point.x for point in rotated_grid.geometry]
     ys = [point.y for point in rotated_grid.geometry]
 
-    # Sample the slope array using the transform (World coords -> Array indices)
     rows, cols = rasterio.transform.rowcol(slope_transform, xs, ys)
 
-    # Filter out points that might fall outside the raster bounds
-    valid_indices = []
-    slope_values = []
     height, width = slope_array.shape
+    kept_indices = []
+    kept_slopes = []
 
-    for i, (r, c) in enumerate(zip(rows, cols)):
+    for idx, (r, c) in enumerate(zip(rows, cols)):
         if 0 <= r < height and 0 <= c < width:
-            slope_values.append(slope_array[r, c])
-            valid_indices.append(i)
-        else:
-            # Point is technically outside the slope raster extent
-            slope_values.append(float("inf"))
+            slope_value = float(slope_array[r, c])
+            if slope_value <= MAX_SLOPE:
+                kept_indices.append(idx)
+                kept_slopes.append(slope_value)
 
-    # Keep only points below the slope threshold
-    keep_mask = [s <= MAX_SLOPE for s in slope_values]
-    adjusted_points = rotated_grid[keep_mask].copy()
+    adjusted_points = rotated_grid.iloc[kept_indices].copy()
 
-    return adjusted_points
+    adjusted_points = gpd.GeoDataFrame(
+        adjusted_points,
+        geometry=rotated_grid.geometry.name,
+        crs=rotated_grid.crs,
+    )
+
+    return adjusted_points, kept_slopes
