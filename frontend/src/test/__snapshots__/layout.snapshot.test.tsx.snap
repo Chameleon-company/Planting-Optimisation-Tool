@@ -1,0 +1,161 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Layout Snapshot > matches snapshot 1`] = `
+<div>
+  <header
+    class="topbar home-topbar"
+  >
+    <div
+      class="topbar-inner"
+    >
+      <div
+        class="brand"
+      >
+        <img
+          alt="Logo"
+          class="aboutLogo"
+          src="/assets/images/logo2.svg"
+        />
+      </div>
+      <nav
+        class="nav"
+      >
+        <a
+          aria-current="page"
+          class="nav-link active"
+          data-discover="true"
+          href="/"
+        >
+          Home
+        </a>
+        <a
+          class="nav-link "
+          data-discover="true"
+          href="/profile"
+        >
+          Environmental Profile
+        </a>
+        <a
+          class="nav-link "
+          data-discover="true"
+          href="/calculator"
+        >
+          Sapling Calculator
+        </a>
+        <a
+          class="nav-link "
+          data-discover="true"
+          href="/recommendation"
+        >
+          Agroforestry Recommendation
+        </a>
+        <a
+          class="nav-link "
+          data-discover="true"
+          href="/species"
+        >
+          Species
+        </a>
+      </nav>
+      <div
+        class="actions"
+      />
+    </div>
+  </header>
+  <main>
+    <div>
+      Home
+    </div>
+  </main>
+  <footer
+    class="site-footer"
+  >
+    <div
+      class="footer-inner"
+    >
+      <div
+        class="footer-col footer-brand"
+      >
+        <img
+          alt="Logo"
+          class="aboutLogo"
+          src="/assets/images/logo2.svg"
+        />
+        <div
+          class="product"
+        >
+          <div
+            class="product-title"
+          >
+            Planting Optimisation Tool
+          </div>
+          <p
+            class="product-desc"
+          >
+            The tool helps farmers and agronomists optimise farm species, soil, and sapling recommendations for maximum yield and sustainability.
+          </p>
+        </div>
+      </div>
+      <div
+        class="footer-col"
+      >
+        <div
+          class="footer-heading"
+        >
+          Explore
+        </div>
+        <ul
+          class="footer-links"
+        >
+          <li>
+            <a
+              aria-current="page"
+              class="active"
+              data-discover="true"
+              href="/"
+            >
+              Home
+            </a>
+          </li>
+          <li>
+            <a
+              class=""
+              data-discover="true"
+              href="/profile"
+            >
+              Environmental Profile
+            </a>
+          </li>
+          <li>
+            <a
+              class=""
+              data-discover="true"
+              href="/calculator"
+            >
+              Sapling Calculator
+            </a>
+          </li>
+          <li>
+            <a
+              class=""
+              data-discover="true"
+              href="/recommendation"
+            >
+              Agroforestry Recommendation
+            </a>
+          </li>
+          <li>
+            <a
+              class=""
+              data-discover="true"
+              href="/species"
+            >
+              Species
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+</div>
+`;

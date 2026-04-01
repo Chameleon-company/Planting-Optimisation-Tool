@@ -118,3 +118,12 @@
 | `event_type` | `String` | No | No |  |
 | `details` | `String` | No | No |  |
 | `timestamp` | `DateTime` | No | No |  |
+
+## TABLE: `waterways`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `name` | `String` | Yes | No |  |
+| `waterway` | `String` | Yes | No |  |
+| `geometry` | `Geometry` | No | No |  |

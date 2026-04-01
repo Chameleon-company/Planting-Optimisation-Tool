@@ -1,0 +1,66 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SpeciesPage Snapshot > matches snapshot after data loads 1`] = `
+<div>
+  <div>
+    <section
+      class="species-container"
+    >
+      <div
+        class="hero"
+      >
+        <div
+          class="hero species-hero"
+        >
+          <h1>
+            Species Information
+          </h1>
+          <p>
+            Understanding Your Species
+          </p>
+        </div>
+      </div>
+    </section>
+    <section
+      class="species-container"
+    >
+      <div
+        class="species-search"
+      >
+        <label
+          class="search-label"
+        >
+          Search species
+        </label>
+        <div
+          class="search-row"
+        >
+          <input
+            class="search-input"
+            placeholder="Enter keywords like '2000mm' or 'boundary systems"
+            type="text"
+            value=""
+          />
+          <button
+            class="search-btn"
+          >
+            <span
+              class="search-icon"
+            >
+              🔍
+            </span>
+            <span>
+              Search
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
+    <p
+      class="species-empty"
+    >
+      No species found matching your criteria.
+    </p>
+  </div>
+</div>
+`;

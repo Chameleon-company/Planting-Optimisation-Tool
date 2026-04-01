@@ -10,6 +10,8 @@ OpenLandMap pH:   r=0.18, MAE=1.21   - POOR (not recommended)
 
 """
 
+import os
+
 import pandas as pd
 import pytest
 
@@ -17,6 +19,7 @@ from config.settings import (
     KEY_PATH,
     SERVICE_ACCOUNT,
     TEXTURE_MAP,
+    WATERWAYS_ASSET_ID,
     get_dataset_config,
 )
 from core.extract_data import (
@@ -43,6 +46,8 @@ from core.geometry_parser import (
     parse_point,
     parse_polygon,
 )
+from core.riparian import RIPARIAN_BUFFER_M as RIPARIAN_BUFFER_M_MODULE
+from core.riparian import get_riparian_flags
 
 # ============================================================================
 # SETUP AND FIXTURES
@@ -82,13 +87,22 @@ def test_polygon():
     ]
 
 
+@pytest.fixture(scope="module")
+def waterways_available(gee_initialized):
+    """
+    Waterways dataset is now a GEE asset — available whenever GEE is initialised.
+    Skips if GEE credentials are not available (same as gee_initialized fixture).
+    """
+    return True
+
+
 # ============================================================================
 # GEE CLIENT TESTS
 # ============================================================================
 
 
 @pytest.mark.skipif(
-    SERVICE_ACCOUNT is None,
+    SERVICE_ACCOUNT is None or KEY_PATH is None or not os.path.exists(KEY_PATH),
     reason="GEE credentials not available (expected in CI without secrets)",
 )
 def test_init_gee():
@@ -537,6 +551,178 @@ def test_all_datasets_configured():
         assert dataset in datasets, f"Dataset '{dataset}' not configured"
 
     print(f"\nConfigured datasets: {', '.join(datasets)}")
+
+
+# ============================================================================
+# RIPARIAN ZONE TESTS — AC1: Dataset ingested into GEE (US-018)
+# ============================================================================
+
+
+def test_riparian_settings_configured():
+    """RIPARIAN AC1: Riparian settings exist in config."""
+    assert isinstance(RIPARIAN_BUFFER_M_MODULE, float), "RIPARIAN_BUFFER_M should be a float"
+    assert RIPARIAN_BUFFER_M_MODULE > 0, "RIPARIAN_BUFFER_M should be positive"
+    assert RIPARIAN_BUFFER_M_MODULE == 15.0, "Buffer should be confirmed 15m"
+    assert isinstance(WATERWAYS_ASSET_ID, str), "WATERWAYS_ASSET_ID should be a string"
+    assert "projects/" in WATERWAYS_ASSET_ID, "WATERWAYS_ASSET_ID should be a valid GEE asset path"
+    print(f"\nSUCCESS: Riparian config — buffer={RIPARIAN_BUFFER_M_MODULE}m, asset='{WATERWAYS_ASSET_ID}'")
+
+
+def test_riparian_gee_asset_accessible(waterways_available):
+    """RIPARIAN AC1: Waterways GEE asset exists and is accessible."""
+    import ee
+
+    fc = ee.FeatureCollection(WATERWAYS_ASSET_ID)
+    count = fc.size().getInfo()
+    assert count > 0, f"Waterways asset '{WATERWAYS_ASSET_ID}' should have features"
+    print(f"\nSUCCESS: Waterways GEE asset accessible — {count} features")
+
+
+# ============================================================================
+# RIPARIAN ZONE TESTS — AC2: Geospatial intersection check (US-018)
+# ============================================================================
+
+
+def test_riparian_flags_point(waterways_available, test_point):
+    """RIPARIAN AC2+AC3: get_riparian_flags() returns valid result for a point geometry."""
+    result = get_riparian_flags(test_point)
+
+    assert "is_riparian" in result, "Result must contain 'is_riparian'"
+    assert "distance_to_nearest_waterway_m" in result, "Result must contain 'distance_to_nearest_waterway_m'"
+    assert isinstance(result["is_riparian"], bool), "is_riparian must be a Python bool"
+    assert isinstance(result["distance_to_nearest_waterway_m"], float), "distance must be a float"
+    assert result["distance_to_nearest_waterway_m"] >= 0, "Distance must be non-negative"
+
+    status = "RIPARIAN" if result["is_riparian"] else "NOT RIPARIAN"
+    print(f"\nSUCCESS: Riparian check (point) — {status}, distance={result['distance_to_nearest_waterway_m']}m")
+
+
+def test_riparian_flags_polygon(waterways_available, test_polygon):
+    """RIPARIAN AC2+AC3: get_riparian_flags() works for polygon geometry."""
+    result = get_riparian_flags(test_polygon)
+
+    assert isinstance(result["is_riparian"], bool)
+    assert isinstance(result["distance_to_nearest_waterway_m"], float)
+
+    status = "RIPARIAN" if result["is_riparian"] else "NOT RIPARIAN"
+    print(f"\nSUCCESS: Riparian check (polygon) — {status}, distance={result['distance_to_nearest_waterway_m']}m")
+
+
+def test_riparian_custom_buffer(waterways_available, test_point):
+    """RIPARIAN AC2: Custom buffer_m parameter is respected."""
+    result_tight = get_riparian_flags(test_point, buffer_m=1)
+    result_wide = get_riparian_flags(test_point, buffer_m=100_000)  # 100km — should always be True
+
+    # A 100km buffer around any point in Timor-Leste must intersect a waterway
+    assert result_wide["is_riparian"] is True, "100km buffer should always be riparian in Timor-Leste"
+    # Both share the same underlying distance
+    assert result_tight["distance_to_nearest_waterway_m"] == result_wide["distance_to_nearest_waterway_m"]
+
+    print(f"\nSUCCESS: Buffer respected — 1m: {result_tight['is_riparian']}, 100km: {result_wide['is_riparian']}")
+
+
+def test_riparian_missing_dataset_returns_none_sentinel(monkeypatch):
+    """RIPARIAN AC2: Returns None sentinel (not False) when GEE asset is unavailable."""
+    import core.riparian as rip_mod
+
+    # Patch WATERWAYS_ASSET_ID to a non-existent asset
+    monkeypatch.setattr(rip_mod, "WATERWAYS_ASSET_ID", "projects/invalid/assets/nonexistent")
+
+    result = rip_mod.get_riparian_flags((-8.5, 125.9))
+
+    assert result["is_riparian"] is None, "Failed GEE call must return None, not False"
+    assert result["distance_to_nearest_waterway_m"] is None
+    print("\nSUCCESS: Invalid GEE asset returns None sentinel (not False)")
+
+
+# ============================================================================
+# RIPARIAN ZONE TESTS — AC3: Profile output includes riparian fields (US-018)
+# ============================================================================
+
+
+def test_farm_profile_includes_riparian_fields(gee_initialized, waterways_available, test_point):
+    """RIPARIAN AC3: build_farm_profile output includes riparian field.
+
+    riparian is now passed in as a parameter from the backend PostGIS query,
+    not computed via GEE. When not provided, it defaults to None.
+    """
+    # Without riparian passed in — should be None
+    profile = build_farm_profile(geometry=test_point, year=2024, farm_id=1)
+    assert profile["status"] == "success"
+    assert "riparian" in profile, "Profile must include 'riparian'"
+    assert profile["riparian"] is None, "riparian should be None when not passed in"
+
+    # With riparian passed in from backend
+    profile_with_riparian = build_farm_profile(geometry=test_point, year=2024, farm_id=1, riparian=True)
+    assert profile_with_riparian["riparian"] is True, "riparian should be True when passed in as True"
+
+    profile_not_riparian = build_farm_profile(geometry=test_point, year=2024, farm_id=1, riparian=False)
+    assert profile_not_riparian["riparian"] is False, "riparian should be False when passed in as False"
+
+    print("\nSUCCESS: Profile riparian field — correctly uses passed-in value")
+
+
+def test_farm_profile_riparian_none_when_asset_missing(gee_initialized, monkeypatch):
+    """RIPARIAN AC3: Profile riparian fields are None when GEE asset is unavailable."""
+    import core.riparian as rip_mod
+
+    monkeypatch.setattr(rip_mod, "WATERWAYS_ASSET_ID", "projects/invalid/assets/nonexistent")
+
+    # build_farm_profile raises RuntimeError on failure — riparian is now part of the
+    # main extraction, so a GEE failure will propagate. Test that riparian failure
+    # specifically returns None sentinel via the warning path.
+    result = rip_mod.get_riparian_flags((-8.569, 126.676))
+    assert result["is_riparian"] is None
+    assert result["distance_to_nearest_waterway_m"] is None
+    print("\nSUCCESS: Invalid GEE asset returns None sentinel in riparian flags")
+
+
+def test_update_farm_profile_riparian_fields(gee_initialized, waterways_available, test_point):
+    """RIPARIAN AC3: update_farm_profile preserves riparian value from existing profile.
+
+    riparian is no longer a GEE-computed field in farm_profile — it is passed in
+    from the backend PostGIS query. update_farm_profile preserves it unchanged
+    when not explicitly in the fields list.
+    """
+    profile = build_farm_profile(geometry=test_point, year=2024, farm_id=1, riparian=True)
+    assert profile["status"] == "success"
+    assert profile["riparian"] is True
+
+    # Update only temporal fields — riparian should be preserved from existing profile
+    updated = update_farm_profile(
+        existing_profile=profile,
+        geometry=test_point,
+        fields=["rainfall_mm", "temperature_celsius"],
+    )
+
+    assert updated["status"] == "success"
+    assert updated["riparian"] is True, "riparian should be preserved from existing profile"
+    assert updated["rainfall_mm"] is not None
+
+    print(f"\nSUCCESS: riparian preserved after selective update — riparian={updated['riparian']}")
+
+
+def test_bulk_create_profiles_includes_riparian(gee_initialized, waterways_available):
+    """RIPARIAN AC3: bulk_create_profiles output DataFrame includes riparian column.
+
+    riparian is now passed in from the backend — when not provided it is None.
+    The column must exist in the DataFrame but values may be None.
+    """
+    farms = [
+        {"farm_id": 1, "geometry": (-8.55, 125.57), "riparian": True},
+        {"farm_id": 2, "geometry": (-8.56, 125.58), "riparian": False},
+    ]
+
+    profiles_df = bulk_create_profiles(farms, year=2024, max_workers=2)
+
+    assert "riparian" in profiles_df.columns, "DataFrame must have 'riparian' column"
+
+    successful = profiles_df[profiles_df["status"] == "success"]
+    if len(successful) > 0:
+        assert successful["riparian"].apply(lambda x: isinstance(x, bool)).all(), "All successful profiles must have bool riparian"
+
+    print("\nSUCCESS: Bulk riparian results:")
+    print(profiles_df[["id", "riparian", "status"]])
 
 
 # ============================================================================

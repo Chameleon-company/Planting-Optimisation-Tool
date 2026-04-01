@@ -44,7 +44,7 @@ def create_planting_points():
 def test_apply_slope_rules_basic(create_slope_raster, create_planting_points):
     # Create the slope raster and apply the slope rules
     slope_array, transform = create_slope_raster
-    filtered = apply_slope_rules(slope_array, create_planting_points, transform)
+    filtered, slope_values = apply_slope_rules(slope_array, create_planting_points, transform)
 
     # Slope rules check
     assert isinstance(filtered, gpd.GeoDataFrame)  # Ensure the function returns a GeoDataFrame

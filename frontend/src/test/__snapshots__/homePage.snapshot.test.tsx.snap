@@ -1,0 +1,214 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HomePage Snapshot > matches snapshot 1`] = `
+<div>
+  <div>
+    <section
+      class="heroSection"
+    >
+      <video
+        autoplay=""
+        class="heroVideo"
+        loop=""
+        playsinline=""
+      >
+        <source
+          src="assets/videos/herobg.mp4"
+          type="video/mp4"
+        />
+      </video>
+      <div
+        class="videoOverlay"
+      />
+      <div
+        class="heroTagline"
+      >
+        <h1>
+          Planting Optimisation Tool
+        </h1>
+      </div>
+      <div
+        class="heroCTA"
+      >
+        <p
+          class="heroSubtitle"
+        >
+          Generate your environmental profile!
+        </p>
+        <button
+          class="exploreButton"
+        >
+          Generate
+        </button>
+      </div>
+    </section>
+    <section
+      class="aboutSection"
+    >
+      <div
+        class="aboutLeft"
+      >
+        <div
+          class="aboutLogoContainer"
+        >
+          <img
+            alt="xpandFoundation Logo"
+            class="aboutLogo"
+            src="/assets/images/logo2.svg"
+          />
+          <span
+            class="aboutLogoText"
+          >
+            A tool developed under xpandFoundation
+          </span>
+        </div>
+      </div>
+      <div
+        class="aboutRight"
+      >
+        <h2
+          class="aboutTitle"
+        >
+          About Us
+        </h2>
+        <p
+          class="aboutDescription"
+        >
+          We help farmers in Timor-Leste generate their environmental profile to discover the best tree species for their land.
+        </p>
+      </div>
+    </section>
+    <section
+      class="featuresSection"
+    >
+      <div
+        class="featuresContainer"
+      >
+        <a
+          class="featureCard"
+          data-discover="true"
+          href="/profile"
+        >
+          <div
+            class="defaultContent"
+          >
+            <div
+              class="iconWrapper"
+            >
+              <span
+                class="featureIcon"
+              >
+                📍
+              </span>
+            </div>
+            <h3
+              class="featureTitle"
+            >
+              Generate environmental profile
+            </h3>
+            <p
+              class="featureText"
+            >
+              Provide your farm's boundaries to automatically load environmental data.
+            </p>
+          </div>
+          <div
+            class="hoverContent"
+          >
+            <div
+              class="hoverOverlay"
+            />
+            <span
+              class="centerButton"
+            >
+              Explore Now
+            </span>
+          </div>
+        </a>
+        <a
+          class="featureCard"
+          data-discover="true"
+          href="/calculator"
+        >
+          <div
+            class="defaultContent"
+          >
+            <div
+              class="iconWrapper"
+            >
+              <span
+                class="featureIcon"
+              >
+                🔢
+              </span>
+            </div>
+            <h3
+              class="featureTitle"
+            >
+              Bulk Sapling Calculator
+            </h3>
+            <p
+              class="featureText"
+            >
+              Calculate exactly how many saplings you need for your farm based on land size and optimal spacing.
+            </p>
+          </div>
+          <div
+            class="hoverContent"
+          >
+            <div
+              class="hoverOverlay"
+            />
+            <span
+              class="centerButton"
+            >
+              Explore Now
+            </span>
+          </div>
+        </a>
+        <a
+          class="featureCard"
+          data-discover="true"
+          href="/species"
+        >
+          <div
+            class="defaultContent"
+          >
+            <div
+              class="iconWrapper"
+            >
+              <span
+                class="featureIcon"
+              >
+                🌳
+              </span>
+            </div>
+            <h3
+              class="featureTitle"
+            >
+              Species Information
+            </h3>
+            <p
+              class="featureText"
+            >
+              Access detailed information about 20 species approved by Gold Standard to understand their ecological limits.
+            </p>
+          </div>
+          <div
+            class="hoverContent"
+          >
+            <div
+              class="hoverOverlay"
+            />
+            <span
+              class="centerButton"
+            >
+              Explore Now
+            </span>
+          </div>
+        </a>
+      </div>
+    </section>
+  </div>
+</div>
+`;

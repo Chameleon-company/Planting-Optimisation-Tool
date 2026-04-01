@@ -4,10 +4,11 @@
 
 This module provides a lightweight, production-ready interface for extracting geospatial environmental data from farm coordinates in Timor-Leste. It serves as the core GIS engine for the Planting Optimisation Tool, transforming simple longitude/latitude inputs into comprehensive environmental profiles that include elevation, rainfall, temperature, soil properties, and terrain characteristics.
 
-The module integrates two primary data sources:
+The module integrates three primary data sources:
 
 1. **Global datasets** via Google Earth Engine (GEE) - providing satellite-derived climate and terrain data with validated accuracy
 2. **Local datasets** from the Product Owner (PO) - including ground-truth measurements, farm boundaries, and field surveys specific to Timor-Leste
+3. **Local vector datasets** from HOT OpenStreetMap - providing Timor-Leste waterways data for riparian zone detection
 
 All datasets have been rigorously validated against 940 farm measurements collected by the Product Owner between 2020-2024. This validation period was chosen because it represents recent, high-quality ground truth data, but the system can extract historical data from GEE datasets dating back to their respective start dates (e.g., CHIRPS: 1981-present, MODIS: 2000-present).
 
@@ -20,6 +21,7 @@ All datasets have been rigorously validated against 940 farm measurements collec
 - **Flexible Input**: Accept coordinates as points, polygons, or coordinate lists
 - **Data Validation**: All extraction functions include built-in quality checks and error handling
 - **Efficient Updates**: Update only temporal variables (rainfall, temperature) without re-extracting static data
+- **Riparian Zone Detection**: Flag farms within configurable buffer distance of waterways using local vector operations (no GEE required)
 
 ### Primary Use Cases
 
@@ -29,6 +31,7 @@ All datasets have been rigorously validated against 940 farm measurements collec
 4. **Spatial Analysis**: Compare environmental conditions across different farm locations
 5. **Crop Suitability**: Provide environmental inputs for crop recommendation algorithms
 6. **Risk Assessment**: Identify climate and terrain risks (drought, flooding, erosion) based on environmental profiles
+7. **Exclusion Zone Checking**: Flag farms within riparian zones to enforce water-adjacent land exclusion rules
 
 ### Data Quality Assurance
 
@@ -47,8 +50,8 @@ gis/
 │
 │
 ├── assets/
-│    ├── all_farm_sample.csv      # Farm data sample, provided by PO
-│    └── farm_boundaries.gpkg     # Farms' geolocations
+│    ├── farm_boundaries_sampled.gpkg              # Farms' geolocations and environmental data
+│    └── hotosm_tls_waterways_lines_gpkg.gpkg      # HOT OSM Timor-Leste waterways (US-018)
 │
 ├── config/
 │   └── settings.py              # Environment variable loading (service account, key paths)
@@ -58,7 +61,8 @@ gis/
 │   ├── extract_data.py          # Functions to fetch rainfall, temp, pH, elevation, landcover
 │   ├── farm_profile.py          # Builds farm profiles from coordinates (single & bulk)
 │   ├── gee_client.py            # Earth Engine initialization + client handling
-│   └── geometry_parser.py       # Parsers for point, multipoint, polygon inputs
+│   ├── geometry_parser.py       # Parsers for point, multipoint, polygon inputs
+│   └── riparian.py              # Riparian zone detection (local vector, no GEE) (US-018)
 │
 ├── docs/
 │   ├── README.md                # This file - module documentation
@@ -75,7 +79,7 @@ gis/
 │   └── <service-account>.json   # service account key (ignored by Git)
 │
 ├── tests/
-│   └── test_gis.py              # Unit tests for all GIS functions (34 tests)
+│   └── test_gis.py              # Unit tests for all GIS functions (43 tests, incl. 11 riparian)
 │
 ├── .env                         # GEE_SERVICE_ACCOUNT and GEE_KEY_PATH variables
 
@@ -115,6 +119,21 @@ Local datasets collected and maintained by the Product Owner (field measurements
 
 **Note**: PO datasets represent ground-truth measurements used to validate the global GEE datasets.
 
+### Local Vector Datasets (HOT OpenStreetMap)
+
+Used for geospatial operations that do not require GEE:
+
+| Dataset | Variable | Source | Coverage |
+| --- | --- | --- | --- |
+| TLS Waterways Lines | Waterway geometry | HOT OSM (`hotosm_tls_waterways_lines_gpkg.gpkg`) | All Timor-Leste |
+
+**Setup**: Download `hotosm_tls_waterways_lines_gpkg.zip` unzip and place in `gis/assets/`. Then set in `.env`:
+
+```bash
+WATERWAYS_PATH=assets/hotosm_tls_waterways_lines_gpkg.gpkg
+RIPARIAN_BUFFER_M=30
+```
+
 ## Installation
 
 ### Setup Virtual Environment
@@ -128,19 +147,19 @@ source .venv/bin/activate
 
 ### Google Earth Engine Setup
 
-If you are a Deakin Capstone student, please refer to the Handover Documentation for the login credentials.
-
-However, if you were not a Deakin student, you can follow these step below and you can access to our functions.
-
 1. Create service account in Google Cloud Platform
 2. Download JSON key file
 3. Place key in `gis/keys/` directory
 4. Create `.env` file:
 
 ```bash
-#Edit .env with your credentials
+# GEE credentials
 GEE_SERVICE_ACCOUNT=your-service-account@project.iam.gserviceaccount.com
 GEE_KEY_PATH=/path/to/gis/keys/service-account-key.json
+
+# Riparian zone (US-018)
+WATERWAYS_PATH=assets/hotosm_tls_waterways_lines_gpkg.gpkg
+RIPARIAN_BUFFER_M=30
 ```
 
 ## Function Documentation
@@ -690,6 +709,70 @@ lat, lon = get_centroid_lat_lon(polygon)
 
 ---
 
+
+---
+
+#### **get_riparian_flags(geometry, buffer_m=None)**
+
+Returns riparian zone flags for a given farm geometry.
+
+**Data Source:** HOT OSM Timor-Leste Waterways lines (`hotosm_tls_waterways_lines_gpkg.gpkg`)
+
+**Note:** This function does **not** use Google Earth Engine. It is a local vector operation using GeoPandas and Shapely. GEE does not need to be initialised before calling this function.
+
+**Parameters:**
+
+- `geometry` (tuple|list): Farm geometry — same formats as all other extractors
+- `buffer_m` (float, optional): Riparian buffer distance in metres. Defaults to `settings.RIPARIAN_BUFFER_M` (30m). Override to test different thresholds.
+
+**Returns:** `dict` with two keys:
+
+```python
+{
+    "is_riparian": bool | None,
+    "distance_to_nearest_waterway_m": float | None
+}
+```
+
+Returns `None` values (not `False`) when the waterways dataset is unavailable, so callers can distinguish "not riparian" from "check not performed".
+
+**Example:**
+
+```python
+from core.riparian import get_riparian_flags
+
+# Point geometry
+result = get_riparian_flags((-8.569, 126.676))
+# Returns: {"is_riparian": True, "distance_to_nearest_waterway_m": 12.4}
+
+# Polygon geometry (farm boundary)
+farm_boundary = [[
+    (-8.55, 125.57), (-8.56, 125.57),
+    (-8.56, 125.58), (-8.55, 125.58),
+    (-8.55, 125.57),
+]]
+result = get_riparian_flags(farm_boundary)
+# Returns: {"is_riparian": False, "distance_to_nearest_waterway_m": 245.3}
+
+# Custom buffer distance
+result = get_riparian_flags((-8.569, 126.676), buffer_m=50)
+```
+
+**Performance:**
+
+- First call per process loads and spatially indexes the waterways file (~1-2 seconds)
+- All subsequent calls use the cached GeoDataFrame and are near-instant
+- In bulk jobs, the dataset is loaded once before the thread pool starts — not once per farm
+
+**Notes:**
+
+- Works for both existing farms and new/candidate farm boundaries
+- Projected to UTM Zone 52S (EPSG:32752) internally for metre-accurate distance calculations
+- Uses a two-phase spatial query: STRtree bounding-box filter → exact distance on candidates
+- `RIPARIAN_BUFFER_M` default is 30m (FAO/IFC guidance). Confirm with environmental consultant before production use.
+
+---
+
 #### **get_dist_to_coast(geometry)**
 
 Returns distance from geometry centroid to Timor-Leste coastal boundary.
@@ -752,6 +835,8 @@ Builds a complete farm profile by extracting all environmental variables.
     "longitude": 126.676,
     "coastal": False,
     "dist_to_coast_km": 15.2,
+    "is_riparian": True,
+    "distance_to_nearest_waterway_m": 12.4,
     "updated_at": "2024-01-15T10:30:00",
     "status": "success"
 }
@@ -819,6 +904,7 @@ print(f"Rainfall changed: {profile_2024['rainfall_mm']} → {updated['rainfall_m
 - Spatial: elevation_m, slope_degrees, area_ha, latitude, longitude
 - Soil: soil_ph, soil_texture_id
 - Derived: coastal, dist_to_coast_km
+- Riparian: is_riparian, distance_to_nearest_waterway_m
 
 ---
 
@@ -1113,6 +1199,40 @@ for farm in farms:
         print(f"Farm {farm['id']}: success")
 ```
 
+
+### Example 5: Riparian Zone Check
+
+```python
+from core.riparian import get_riparian_flags
+from core.farm_profile import build_farm_profile
+
+# --- Standalone check (no GEE required) ---
+result = get_riparian_flags((-8.569, 126.676))
+print(f"Is riparian:  {result['is_riparian']}")
+print(f"Distance:     {result['distance_to_nearest_waterway_m']}m")
+
+# --- Custom buffer ---
+result = get_riparian_flags((-8.569, 126.676), buffer_m=50)
+
+# --- Batch screening of candidate farm sites ---
+candidates = [
+    {"id": 1, "name": "Site A", "geometry": (-8.55, 125.57)},
+    {"id": 2, "name": "Site B", "geometry": (-8.569, 126.676)},
+    {"id": 3, "name": "Site C", "geometry": (-8.60, 125.90)},
+]
+
+for site in candidates:
+    r = get_riparian_flags(site["geometry"])
+    status = "EXCLUDED (riparian)" if r["is_riparian"] else "eligible"
+    print(f"  {site['name']}: {status} — {r['distance_to_nearest_waterway_m']}m from waterway")
+
+# --- Riparian fields are included in full farm profile automatically ---
+init_gee()
+profile = build_farm_profile(geometry=(-8.569, 126.676), farm_id=1, year=2024)
+print(f"is_riparian:                    {profile['is_riparian']}")
+print(f"distance_to_nearest_waterway_m: {profile['distance_to_nearest_waterway_m']}")
+```
+
 ## Testing
 
 ### Running Tests
@@ -1131,4 +1251,7 @@ pytest gis/tests/test_gis.py -k "validation" -v  # EDA validation
 
 # Skip slow tests
 pytest gis/tests/test_gis.py -m "not slow" -v
+
+# Riparian tests only (no GEE required for most)
+pytest gis/tests/test_gis.py -k "riparian" -v
 ```

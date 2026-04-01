@@ -11,6 +11,8 @@ def kill_process_on_port(port):
             connections = proc.net_connections(kind="inet")
             for conn in connections:
                 if conn.laddr.port == port:
+                    if proc.info["pid"] == 0:
+                        continue
                     print(f"Stopping API process {proc.info['pid']} ({proc.info['name']}) on port {port}...")
                     if os.name == "nt":  # Windows
                         os.kill(proc.info["pid"], signal.SIGTERM)

@@ -1,6 +1,5 @@
 import { it, expect, describe } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import UserEvent from "@testing-library/user-event";
 
 import GlobalErrorBoundary from "../errors/GlobalErrorBoundary";

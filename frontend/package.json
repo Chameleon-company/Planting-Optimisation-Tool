@@ -15,7 +15,7 @@
   "scripts": {
     "dev": "vite --host",
     "test": "vitest",
-    "build": "rimraf build/**/* && tsc && vite build --config vite.config.ts && copyfiles ./package.json build",
+    "build": "rimraf build && tsc && vite build --config vite.config.ts && copyfiles ./package.json build",
     "test:coverage": "vitest --coverage",
     "lint:scripts": "eslint . --ext .ts",
     "lint:styles": "stylelint ./**/*.{css,scss}",

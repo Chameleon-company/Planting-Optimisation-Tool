@@ -11,6 +11,7 @@ from src.models.recommendations import Recommendation
 from src.models.soil_texture import SoilTexture
 from src.models.species import Species
 from src.models.user import User
+from src.models.waterways import Waterway
 
 from .auth_token import AuthToken
 

@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 import { it, expect, describe, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import UserEvent from "@testing-library/user-event";
 
 import { Species } from "../utils/contentfulClient";
 import SpeciesGrid from "../components/species/speciesGrid";
 import SpeciesModal from "../components/species/speciesModal";
 import SpeciesSearch from "../components/species/speciesSearch";
+import SpeciesCard from "@/components/species/speciesCard";
+import SpeciesHeader from "@/components/species/speciesHeader";
 
 // Helpers
 // Create mock item template from Contentful species base
@@ -219,5 +220,92 @@ describe("SpeciesModal", () => {
 
     // Expect screen to display text within the description of the mock species item
     expect(screen.getByText("A tall native tree.")).toBeInTheDocument();
+  });
+});
+
+// SpeciesCard
+describe("SpeciesCard", () => {
+  it("should render the species name", () => {
+    // Render SpeciesCard with mock item and onClick function
+    const item = mockSpeciesItem("Eucalyptus alba", "1");
+    render(<SpeciesCard item={item} onClick={vi.fn()} />);
+
+    // Expect species name to be present
+    expect(screen.getByText("Eucalyptus alba")).toBeInTheDocument();
+  });
+
+  it("should render the species image with correct src", () => {
+    // Render SpeciesCard with mock item that has an image
+    const item = mockSpeciesItem("Eucalyptus alba", "1");
+    render(<SpeciesCard item={item} onClick={vi.fn()} />);
+
+    // Expect image to have the correct src built from the url
+    const img = screen.getByRole("img");
+    expect(img).toHaveAttribute("src", "https://image.fakeasset.net/test.jpg");
+  });
+
+  it("should render a fallback image when no image is provided", () => {
+    // Render SpeciesCard with mock item that has no image
+    const item: Species = {
+      sys: { id: "2" },
+      fields: {
+        name: "Unknown Tree",
+        description: { content: [] },
+        // image intentionally omitted
+      },
+    };
+    render(<SpeciesCard item={item} onClick={vi.fn()} />);
+
+    // Expect fallback placeholder image to be used
+    const img = screen.getByRole("img");
+    expect(img).toHaveAttribute(
+      "src",
+      "https://placehold.co/600x400?text=No+Image"
+    );
+  });
+
+  it("should render the View Details button", () => {
+    // Render SpeciesCard with mock item and onClick function
+    const item = mockSpeciesItem("Eucalyptus alba", "1");
+    render(<SpeciesCard item={item} onClick={vi.fn()} />);
+
+    // Expect View Details button to be present
+    expect(
+      screen.getByRole("button", { name: /view details/i })
+    ).toBeInTheDocument();
+  });
+
+  it("should call onClick when View Details button is clicked", async () => {
+    // Create fake user and mock onClick function
+    const user = UserEvent.setup();
+    const onClick = vi.fn();
+    const item = mockSpeciesItem("Eucalyptus alba", "1");
+
+    render(<SpeciesCard item={item} onClick={onClick} />);
+
+    // Await fake user to click View Details button
+    await user.click(screen.getByRole("button", { name: /view details/i }));
+
+    // Expect onClick to have been called
+    expect(onClick).toHaveBeenCalled();
+  });
+});
+
+// SpeciesHeader
+describe("SpeciesHeader", () => {
+  it("should render the Species Information heading", () => {
+    // Render SpeciesHeader component
+    render(<SpeciesHeader />);
+
+    // Expect main heading to be present
+    expect(screen.getByText("Species Information")).toBeInTheDocument();
+  });
+
+  it("should render the subtitle text", () => {
+    // Render SpeciesHeader component
+    render(<SpeciesHeader />);
+
+    // Expect subtitle to be present
+    expect(screen.getByText("Understanding Your Species")).toBeInTheDocument();
   });
 });

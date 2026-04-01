@@ -67,3 +67,15 @@ def slope_tester(slope_array: np.ndarray):
         valid = False
 
     return valid
+
+
+def compute_slope_from_array(elevation_array, pixel_width=1.0, pixel_height=1.0):
+    """
+    Compute slope from DEM numpy array (used when DEM comes from DB).
+    """
+    import numpy as np
+
+    y_grad, x_grad = np.gradient(elevation_array, pixel_height, pixel_width)
+    slope = np.degrees(np.arctan(np.sqrt(x_grad**2 + y_grad**2)))
+
+    return slope
