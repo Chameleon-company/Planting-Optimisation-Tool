@@ -1,28 +1,27 @@
 import os
 import signal
+import sys
 
 import psutil
 
 
 def kill_process_on_port(port):
-    found = False
-    for proc in psutil.process_iter(["pid", "name"]):
+    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         try:
-            connections = proc.net_connections(kind="inet")
-            for conn in connections:
-                if conn.laddr.port == port:
-                    print(f"Stopping API process {proc.info['pid']} ({proc.info['name']}) on port {port}...")
-                    if os.name == "nt":  # Windows
-                        os.kill(proc.info["pid"], signal.SIGTERM)
-                    else:  # Linux/WSL
-                        os.kill(proc.info["pid"], signal.SIGKILL)
-                    found = True
+            for conn in proc.net_connections(kind="inet"):
+                if conn.laddr.port != port:
+                    continue
+                cmdline = " ".join(proc.info["cmdline"] or []).lower()
+                if "uvicorn" not in cmdline and "fastapi" not in cmdline:
+                    print(f"WARNING: port {port} is in use by {proc.info['name']} (pid {proc.info['pid']}) - skipping.")
+                    return
+                print(f"Stopping API on port {port} (pid {proc.info['pid']})...")
+                os.kill(proc.info["pid"], signal.SIGTERM if os.name == "nt" else signal.SIGKILL)
+                return
         except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.Error):
             continue
-
-    if not found:
-        print(f"No process found running on port {port}.")
+    print(f"No process found on port {port}.")
 
 
 if __name__ == "__main__":
-    kill_process_on_port(8080)
+    kill_process_on_port(int(sys.argv[1]) if len(sys.argv) > 1 else 8080)

@@ -1,5 +1,6 @@
 import http.client
 import os
+import socket
 import subprocess
 import sys
 import time
@@ -15,6 +16,11 @@ def run_module(module_name):
     """Runs a python module using uv."""
     print(f"{GREEN} Running {module_name}...{NC}")
     subprocess.run(["uv", "run", "python", "-m", module_name], check=True)
+
+
+def is_port_free(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("127.0.0.1", port)) != 0
 
 
 def wait_for_api(url="127.0.0.1", port=8080, timeout=15):
@@ -36,7 +42,13 @@ def wait_for_api(url="127.0.0.1", port=8080, timeout=15):
 
 
 def main():
-    subprocess.run(["uv", "run", "python", "-m", "src.scripts.kill-api"], check=False)
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.getenv("API_PORT", "8080"))
+
+    subprocess.run(["uv", "run", "python", "-m", "src.scripts.kill-api", str(port)], check=False)
+
+    if not is_port_free(port):
+        print(f"{RED}Error: port {port} is still in use. Run 'just populate {port}' with a free port.{NC}")
+        sys.exit(1)
 
     print(f"{BLUE}===================================================={NC}")
     print(f"{BLUE} Starting Database Initialization{NC}")
@@ -58,7 +70,7 @@ def main():
                 "uvicorn",
                 "src.main:app",
                 "--port",
-                "8080",
+                str(port),
                 "--host",
                 "127.0.0.1",
             ],
@@ -70,7 +82,7 @@ def main():
         )
 
     try:
-        if not wait_for_api():
+        if not wait_for_api(port=port):
             print(f"\n{RED}Error: API failed to start. Check api_log.txt{NC}")
             api_proc.terminate()
             sys.exit(1)
