@@ -32,7 +32,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
             """
         )
     )
-    await async_session.commit()
+    await async_session.flush()
 
     farm = Farm(
         rainfall_mm=1000,
@@ -63,7 +63,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
         ),
     )
     async_session.add(boundary)
-    await async_session.commit()
+    await async_session.flush()
 
     result = await SaplingEstimationService.run_estimation(async_session, farm_id=farm.id, spacing_m=10)
 
