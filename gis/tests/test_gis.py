@@ -10,6 +10,8 @@ OpenLandMap pH:   r=0.18, MAE=1.21   - POOR (not recommended)
 
 """
 
+import os
+
 import pandas as pd
 import pytest
 
@@ -88,7 +90,7 @@ def test_polygon():
 
 
 @pytest.mark.skipif(
-    SERVICE_ACCOUNT is None,
+    SERVICE_ACCOUNT is None or KEY_PATH is None or not os.path.exists(KEY_PATH),
     reason="GEE credentials not available (expected in CI without secrets)",
 )
 def test_init_gee():

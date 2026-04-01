@@ -33,6 +33,8 @@ dependencies = [
     "bcrypt==4.0.1",
     "diff-cover>=9.2.0",
     "slowapi>=0.1.9",
+    "numpy>=1.26.0",
+    "rasterio>=1.3.0",
 ]
 
 [tool.pytest.ini_options]
