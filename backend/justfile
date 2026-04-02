@@ -14,7 +14,7 @@ SERVICE_NAME    := "db"
 CONTAINER_NAME  := "pot_postgres_db"
 
 FASTAPI_TARGET  := "src/main.py"
-FASTAPI_CMD     := "fastapi dev " + FASTAPI_TARGET + " --port 8080 --host 0.0.0.0"
+DEFAULT_PORT    := env("API_PORT", "8080")
 
 # Standard recipe to avoid Shebang/CRLF issues
 [private]
@@ -87,23 +87,23 @@ erd: ensure-env
     @{{PYTHON}} -c "print(chr(96)*3)" >> ERD.md
     @echo "--- ERD.md created successfully. ---"
 
-# Starts the FastAPI server
-run-api: ensure-env
-    -@{{UV_RUNNER}} {{FASTAPI_CMD}}
+# Starts the FastAPI server. Optionally pass a port: just run-api 9000 (default: 8080, or API_PORT from .env)
+run-api port=DEFAULT_PORT: ensure-env
+    -@{{UV_RUNNER}} fastapi dev {{FASTAPI_TARGET}} --port {{port}} --host 0.0.0.0
 
-# WARNING: Destructive. Wipes the database and re-populates from scratch.
-populate: ensure-env
+# WARNING: Destructive. Wipes the database and re-populates from scratch. Optionally pass a port: just populate 9000 (default: 8080, or API_PORT from .env)
+populate port=DEFAULT_PORT: ensure-env
     @echo "Preparing data ingestion environment..."
     @just reset
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.seed_references
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.create_test_user
-    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.setup_import_db
-    @just kill-api
+    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.setup_import_db {{port}}
+    @just kill-api {{port}}
     @echo "--- Ingestion Complete, Verifying Stats ---"
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.check_data_stats
     @echo "Database is ready and populated. To start dev server run: just run-api"
 
-# Stops the API server
-kill-api:
+# Stops the API server. Optionally pass a port: just kill-api 9000 (default: 8080, or API_PORT from .env)
+kill-api port=DEFAULT_PORT:
     @echo "Attempting to stop API server..."
-    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.kill-api
+    @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.kill-api {{port}}

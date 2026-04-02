@@ -25,6 +25,22 @@ KEY_PATH = os.getenv("GEE_KEY_PATH")
 
 
 # ============================================================================
+# RIPARIAN ZONE CONFIGURATION (US-018)
+# ============================================================================
+
+# GEE asset ID for the Timor-Leste waterways FeatureCollection.
+# Upload once using the earthengine CLI:
+#   earthengine upload table \
+#       --asset_id=projects/<your-project>/assets/tls_waterways_lines \
+#       assets/hotosm_tls_waterways_lines_gpkg.gpkg
+# Then set WATERWAYS_ASSET_ID in .env to match.
+WATERWAYS_ASSET_ID: str = os.getenv(
+    "WATERWAYS_ASSET_ID",
+    "projects/your-project/assets/tls_waterways_lines",
+)
+
+
+# ============================================================================
 # DATASET CONFIGURATIONS
 # ============================================================================
 
