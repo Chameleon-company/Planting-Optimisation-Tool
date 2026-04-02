@@ -6,7 +6,7 @@ from shapely.geometry import Point
 # The rotation function accepts the polygon and planting grid of the input farm, along with spacing rule (in meters).
 # The function first generates a base grid, and planting points are created based on spacing rules (3x3 spacing).
 # The polygon is then rotated by 1° from 0° to 90°, where the number of points that fall within the polygon is counted for each angle.
-# The optimal angle and highest point count is tracked during the rotation, which is then applied on the final rotation that outputs the final rotated planting grid.
+# The optimal angle and highest point count is tracked during the rotation, which is then applied on the base grid that outputs the final rotated planting grid.
 
 
 def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float):
