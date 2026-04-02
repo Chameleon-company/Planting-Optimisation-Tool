@@ -203,7 +203,6 @@ def run_exclusion_rules_records(
         if species_id in rules_lookup:
             # For each rule applicable to this species, check if the farm data violates it
             for rule in rules_lookup[species_id]:
-                print(rule)
                 # Get farm value based on rule's farm feature
                 rule_feature = _get_val(rule, "feature")
                 if rule_feature is None:

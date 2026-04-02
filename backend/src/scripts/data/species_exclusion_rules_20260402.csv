@@ -1,0 +1,22 @@
+species_id,feature,operator,value,reason
+1,soil_texture,==,"['clay']", Does not grow in clay soil
+2,ph,<,6.0, Needs pH greater than 6.0
+3,elevation_m,>,1300, Elevation must be less than 1300 m
+4,elevation_m,>,1200, Elevation must be less than 1200 m
+5,soil_texture,==,"['clay']", Does not grow in clay soil
+5,elevation_m,>,1000,Elevation must be less than 1000 m
+6,elevation_m,>,500,Elevation must be less than 500 m
+7,elevation_m,<,500,Elevation must be more than 500 m
+8,elevation_m,>,1500,Elevation must be less than 1500 m
+9,elevation_m,>,1500,Elevation must be less than 1500 m
+10,soil_texture,==,"['clay']",Does not grow in clay soil
+11,rainfall_mm,>,1200,Rainfall must be less than 1200 mm
+12,elevation_m,>,800,Elevation must be less than 800 m
+13,elevation_m,>,750,Elevation must be less than 750 m
+14,elevation_m,>,800,Elevation must be less than 800 m
+15,elevation_m,>,800,Elevation must be less than 800 m
+16,elevation_m,>,600,Elevation must be less than 600 m
+17,elevation_m,>,600,Elevation must be less than 600 m
+18,rainfall_mm,<,1500,Rainfall must be greater than 1500
+19,elevation_m,>,1000,Elevation must be less than 1000 m
+20,soil_texture,==,"['clay']",Does not grow in clay soil

@@ -1,6 +1,9 @@
+from collections import defaultdict
 from datetime import datetime, timezone
+from sqlalchemy import select
 
-from exclusion_rules.dummy_run import run_exclusion_rules
+
+# from exclusion_rules.dummy_run import run_exclusion_rules
 from exclusion_rules.exclusion_core_logic import run_exclusion_rules_records
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,12 +16,14 @@ from suitability_scoring import (
 
 from src.domains.suitability_scoring import SuitabilityFarm
 from src.models.recommendations import Recommendation
-from src.services.species import get_exclusion_config, get_species_by_ids
+from src.services.species import get_species_by_ids
 from src.services.species_parameters import get_species_parameters_as_dicts
+from src.models.exclusion_rules import SpeciesExclusionRule
+from src.schemas.exclusion_rules import SpeciesExclusionRuleRead
 
 
 async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg):
-    # Pre-calculate rules
+    # Pre-calculate suitability rules
     # Get species (over-ride) parameters from database
     species_params_rows = await get_species_parameters_as_dicts(db)
     params_dict = build_species_params_dict(species_params_rows, cfg)
@@ -28,12 +33,23 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
     # Place here so the function signature isn't changed for the run_recommendation_pipeline
     # TODO: Update exclusion rules library to use same configuration file as suitability scoring
     # the this function call could be removed and just cfg used.
-    exclusion_cfg = get_exclusion_config()
+    # exclusion_cfg = get_exclusion_config()
 
     # This is here to allow exclusion to be disabled if scoring without exclusion is wanted
     # TODO this code would be removed if the exclusion rules were updated to be less aggressive.
-    enable_exclusion = cfg.get("enable_exclusions", True)
-    exclusion_runner = run_exclusion_rules_records if enable_exclusion else run_exclusion_rules
+    # enable_exclusion = cfg.get("enable_exclusions", True)
+    exclusion_runner = run_exclusion_rules_records  # if enable_exclusion else run_exclusion_rules
+
+    # Fetch all exclusion rules from the database in one go, to avoid multiple queries inside the loop.
+    rules_from_db = await db.execute(select(SpeciesExclusionRule))
+
+    # Validate and convert to Pydantic objects
+    validated_rules = [SpeciesExclusionRuleRead.model_validate(r) for r in rules_from_db.scalars().all()]
+
+    # Organise rules by species_id for quick lookup during the farm loop
+    rules_lookup = defaultdict(list)
+    for r in validated_rules:
+        rules_lookup[r.species_id].append(r.model_dump())
 
     # Get timestamp of execution
     timestamp_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
@@ -51,7 +67,7 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
             farm_profile = SuitabilityFarm.from_db_model(f)
 
             # Determine which trees are valid candidates vs excluded
-            exclusions = exclusion_runner(farm_profile, all_species, exclusion_cfg)
+            exclusions = exclusion_runner(farm_profile, all_species, rules_lookup)
 
             # Get species information from database
             candidate_species = await get_species_by_ids(db, exclusions["candidate_ids"])
