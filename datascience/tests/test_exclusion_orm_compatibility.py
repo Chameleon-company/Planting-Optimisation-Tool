@@ -1,6 +1,6 @@
 import pytest
 
-from exclusion_rules.exclusion_core_logic import run_exclusion_rules_records
+from exclusion_rules.exclusion_core_logic import run_exclusion_rules
 
 
 # Mock ORM-like object
@@ -32,7 +32,7 @@ def test_exclusion_agnosticism(farm_type, species_type):
 
     rules_lookup = {1: [{"feature": "rainfall_mm", "operator": "<=", "value": 800, "reason": "minimum rainfall is 800"}]}
 
-    result = run_exclusion_rules_records(farm, species, rules_lookup)
+    result = run_exclusion_rules(farm, species, rules_lookup, dep_lookup={})
 
     # Assertion: species should be excluded due to rainfall
     assert len(result["excluded_species"]) == 1

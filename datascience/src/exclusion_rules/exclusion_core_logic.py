@@ -1,76 +1,4 @@
-"""
-Task 7 - Exclusion Rules Core Logic (API-aligned: id)
-
-Key points
-- Uses "id" for both farm and species primary keys (API aligned)
-- Rules are config-driven via RULES list (easy to add/remove rules)
-- Column mapping is centralised (easy to adapt to renamed columns)
-- Missing data does NOT exclude species (skip rule safely)
-- Dependency check is optional via config["dependency"]["enabled"] (default False)
-- Dependency headers may contain trailing spaces (handled by stripping keys)
-
-Updates included:
-- Task 8: Add annotation logic (more specific, readable reasons)
-- Task 9: Handle missing data (explicitly enforced; no exclusion on missing values)
-- Task 10: Make it configurable (support direct column names in config rules)
-
-# NOTES:
-# Exclusion_criteria.xlsx includes some narrative/text rules.
-# In this sprint we do not parse text-only rules.
-# Exclusions are driven by structured datasets only.
-# Missing values are skipped to avoid accidental exclusion when data is incomplete.
-
-# Notes on missing vs valid values handling:
-#
-# - Blank / NA-like values (e.g. "", "NA", "N/A", "null", None) are treated as MISSING
-#   and will cause the rule to be skipped (no exclusion).
-#
-# - False is considered a VALID value and may trigger exclusion
-#   (e.g. habitat flags such as coastal / riparian).
-#
-# - 0 is considered a VALID numeric value and will be evaluated normally
-#   in numeric comparisons (e.g. rainfall, temperature, elevation).
-#
-# This design avoids accidental exclusion when datasets are incomplete,
-# while still respecting explicit negative constraints in the data.
-"""
-
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set
-
-
-# ============================================================
-# 2) Rules (edit/add rules here later; core flow does NOT change)
-# ============================================================
-
-RULES: List[Dict[str, Any]] = [
-    # Habitat rules: only apply if farm flag == True.
-    # If farm flag missing => skip rule safely.
-    {
-        "id": "coastal_habitat",
-        "farm": "coastal_flag",
-        "op": "requires_true",
-        "species": "coastal_ok",
-        "reason": "excluded: not suitable for coastal habitat",
-    },
-    {
-        "id": "riparian_habitat",
-        "farm": "riparian_flag",
-        "op": "requires_true",
-        "species": "riparian_ok",
-        "reason": "excluded: not suitable for riparian habitat",
-    },
-]
-
-
-# ============================================================
-# 3) Dependency model (name-based, flexible parser)
-# ============================================================
-@dataclass(frozen=True)
-class DependencyRule:
-    focal_species_name: str
-    good_partners: Set[str]
-    reason: str = "excluded: no suitable host plant"
+from typing import Any, Dict, List, Optional
 
 
 def _compare(farm_val: Any, op: str, threshold_val: Any) -> Optional[bool]:
@@ -122,53 +50,72 @@ def _compare(farm_val: Any, op: str, threshold_val: Any) -> Optional[bool]:
     return True
 
 
-# def parse_dependencies_rows(
-#     dep_rows: List[Dict[str, Any]],
-#     *,
-#     focal_key: str = "Focal_species",
-#     partners_key: str = "Good_tree_partners",
-#     default_reason: str = "excluded: no suitable host plant",
-# ) -> List[DependencyRule]:
-#     """
-#     Parse dependency rows in a flexible way.
+def _check_biological_dependencies(candidate_ids: list[int], dep_lookup: dict[int, list[int]]):
+    """
+    Iteratively removes species whose required biological partners
+    (e.g., host plants) are no longer in the candidate list.
 
-#     The Excel file may have headers like:
-#         "Good_tree_partners  "
-#         "Role "
-#         "Group_notes "
-#     We strip whitespace from keys so it keeps working if spacing changes.
-#     """
-#     rules: List[DependencyRule] = []
+    1. Iterative Reduction (while True):
+     Dependencies can be "chained" (e.g., Species A depends on Species B, and Species B
+     depends on Species C). If Species C is excluded by a physical rule (like soil pH),
+     Species B must be removed. Once Species B is removed, the next pass of the loop will
+     identify that Species A must also be removed. The loop continues until no more species
+     are disqualified.
 
-#     for row in dep_rows:
-#         clean_row = {str(k).strip(): v for k, v in row.items()}
+    2. The "OR" Logic (any(...)):
+     The logic is designed to be supportive rather than overly aggressive. If a species like
+     Sandalwood can use either Acacia or Casuarina as a host, it will remain a candidate as
+     long as at least one of those species is still on the list.
 
-#         focal = _norm_str(clean_row.get(focal_key))
-#         partners = _parse_set(clean_row.get(partners_key)) or set()
-#         partners = {p for p in partners if _norm_str(p)}
+    3. Post-Physical Check:
+     This function runs after all physical exclusion rules and ecological filters have finished.
+     This ensures that "Partners" are only counted if they actually survive the farm's environmental
+     conditions.
 
-#         if focal and partners:
-#             rules.append(
-#                 DependencyRule(
-#                     focal_species_name=focal,
-#                     good_partners=partners,
-#                     reason=default_reason,
-#                 )
-#             )
+    4. Stable State:
+     The loop only breaks when it reaches a "Stable State"—meaning every remaining species either has
+     no dependencies or has at least one viable partner remaining in the set.
 
-#     return rules
+    5. Fail-Safe:
+     If a species has no dependencies defined in the species_dependencies table, it is ignored by this
+     function and passes through to the next stage.
+    """
+    # Convert to a set for lookups during the loop
+    current_candidates = set(candidate_ids)
+
+    while True:
+        to_remove = set()
+
+        for sid in current_candidates:
+            # Check if the species has any mandatory dependencies
+            if sid in dep_lookup:
+                partners = dep_lookup[sid]
+
+                # If NONE of the required partners are still candidates,
+                # this species cannot survive and must be removed
+                if not any(pid in current_candidates for pid in partners):
+                    to_remove.add(sid)
+
+        # If no species were disqualified in this pass, the list is stable
+        if not to_remove:
+            break
+
+        # Remove identified species and run the loop again to check for
+        # cascading effects (e.g., if A needs B, and B was just removed)
+        current_candidates -= to_remove
+
+    # Identify which species were lost specifically in this step
+    dep_excluded_ids = set(candidate_ids) - current_candidates
+    dep_excluded_results = [{"id": eid, "reasons": ["excluded: no suitable host/partner plant available"]} for eid in dep_excluded_ids]
+
+    return list(current_candidates), dep_excluded_results
 
 
-# ============================================================
-# 4) Core function (records-based)
-# ============================================================
-
-
-def run_exclusion_rules_records(
+def run_exclusion_rules(
     farm_data: Any,
     all_species: List[Any],
     rules_lookup: Dict[int, List[Any]],
-    dependencies_rows: Optional[List[Dict[str, Any]]] = None,
+    dep_lookup: Dict[int, List[int]],
 ) -> Dict[str, Any]:
     """
     Apply exclusion rules for ONE farm.
@@ -208,13 +155,16 @@ def run_exclusion_rules_records(
                 if rule_feature is None:
                     continue  # Skip rule if feature is missing
                 farm_val = _get_val(farm_data, rule_feature)
-                print(type(farm_val))
+
                 # Compare farm value to species threshold using rule's operator
                 if _compare(farm_val, _get_val(rule, "operator"), _get_val(rule, "value")) is False:
                     reasons.append(f"excluded: {_get_val(rule, 'reason')}, farm value = {str(farm_val).strip().lower()}")
 
         ################################################################################
         # STORY 34: Ecological matching would go here (not implemented in this PR)
+        # Something like this
+        # func_reasons = _check_ecological_functions(sp, farm_data)
+        # reasons.extend(func_reasons)
         ################################################################################
         if reasons:
             excluded.append(
@@ -228,43 +178,15 @@ def run_exclusion_rules_records(
         else:
             candidates.append(species_id)
 
-    # 2) Dependency pass (optional)
-    # dep_enabled = cfg.get("dependency", {}).get("enabled", False)
+    # Biological Dependencies (Host Plants)
+    # Runs last because it requires a finalised list of viable host candidates.
+    final_candidates, dep_excluded = _check_biological_dependencies(candidates, dep_lookup)
 
-    # if dep_enabled and dependencies_rows:
-    #     dep_rules = parse_dependencies_rows(dependencies_rows)
-
-    #     candidate_set = set(candidates)
-    #     excluded_by_id = {e["id"]: e for e in excluded}
-
-    #     for dep in dep_rules:
-    #         focal_id = name_to_id.get(dep.focal_species_name.lower())
-    #         if focal_id is None or focal_id not in candidate_set:
-    #             continue
-
-    #         partner_ids = {name_to_id.get(p.lower()) for p in dep.good_partners if p}
-    #         partner_ids = {pid for pid in partner_ids if pid is not None}
-
-    #         if not partner_ids.intersection(candidate_set):
-    #             candidate_set.remove(focal_id)
-
-    #             # Task 8: dependency reason is already human readable in DependencyRule.reason
-    #             if focal_id in excluded_by_id:
-    #                 excluded_by_id[focal_id]["reasons"].append(dep.reason)
-    #             else:
-    #                 sp = id_to_species.get(focal_id, {})
-    #                 excluded_by_id[focal_id] = {
-    #                     "id": focal_id,
-    #                     "species_name": _get_val(sp, SPECIES_COL["species_name"], None),
-    #                     "species_common_name": _get_val(sp, SPECIES_COL["species_common_name"], None),
-    #                     "reasons": [dep.reason],
-    #                 }
-
-    #    candidates = sorted(candidate_set)
-    #    excluded = list(excluded_by_id.values())
+    # Merge dependency failures into the final excluded list
+    excluded.extend(dep_excluded)
 
     return {
-        "candidate_ids": candidates,
+        "candidate_ids": final_candidates,
         "excluded_species": excluded,
     }
 

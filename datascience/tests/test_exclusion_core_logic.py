@@ -1,6 +1,4 @@
-import pandas as pd
-
-from exclusion_rules.run_exclusion_core_logic import run_exclusion_rules_records
+from exclusion_rules.exclusion_core_logic import run_exclusion_rules
 
 
 def test_species_specific_numeric_exclusion():
@@ -22,7 +20,7 @@ def test_species_specific_numeric_exclusion():
         ]
     }
 
-    out_numeric = run_exclusion_rules_records(farm_numeric, all_species, numeric_rules)
+    out_numeric = run_exclusion_rules(farm_numeric, all_species, numeric_rules, dep_lookup={})
     assert 101 not in out_numeric["candidate_ids"]
 
     reasons = next(e["reasons"] for e in out_numeric["excluded_species"] if e["id"] == 101)
@@ -32,8 +30,9 @@ def test_species_specific_numeric_exclusion():
     # Test "Pass" conditions (Rules exist but farm values are safe)
     farm_safe = {"id": 1, "rainfall_mm": 500}
     safe_rules = {102: [{"feature": "rainfall_mm", "operator": ">", "value": 600, "reason": "excluded if > 600"}]}
+
     # 500 > 600 is False -> Should NOT exclude
-    out_safe = run_exclusion_rules_records(farm_safe, all_species, safe_rules)
+    out_safe = run_exclusion_rules(farm_safe, all_species, safe_rules, dep_lookup={})
     assert 102 in out_safe["candidate_ids"]
 
 
@@ -52,7 +51,7 @@ def test_species_specific_categorical_exclusion():
 
     categorical_rules = {102: [{"feature": "soil_texture", "operator": "==", "value": "clay", "reason": "clay is prohibited"}]}
 
-    out_cat = run_exclusion_rules_records(farm_soil, all_species, categorical_rules)
+    out_cat = run_exclusion_rules(farm_soil, all_species, categorical_rules, dep_lookup={})
     assert 102 not in out_cat["candidate_ids"]
 
     excluded_item = next(e for e in out_cat["excluded_species"] if e["id"] == 102)
@@ -62,26 +61,26 @@ def test_species_specific_categorical_exclusion():
     farm_loam = {"id": 1, "soil_texture": "loam"}
     rules_in = {102: [{"feature": "soil_texture", "operator": "==", "value": ["sand", "loam", "silt"], "reason": "soil not supported"}]}
     # loam is in [sand, loam, silt] -> Should EXCLUDE
-    out_exclude = run_exclusion_rules_records(farm_loam, all_species, rules_in)
+    out_exclude = run_exclusion_rules(farm_loam, all_species, rules_in, dep_lookup={})
     assert 102 not in out_exclude["candidate_ids"]
     assert "excluded: soil not supported" in out_exclude["excluded_species"][0]["reasons"][0]
 
     # Test "==" logic: Farm soil matches any in the list
     farm_clay = {"id": 1, "soil_texture": "clay"}
     # clay is NOT in [sand, loam, silt] -> Should PASS
-    out_pass = run_exclusion_rules_records(farm_clay, all_species, rules_in)
+    out_pass = run_exclusion_rules(farm_clay, all_species, rules_in, dep_lookup={})
     assert 102 in out_pass["candidate_ids"]
 
     # Test "!=" logic: Farm soil does not match an item in the list.
     rules_not_equal = {102: [{"feature": "soil_texture", "operator": "!=", "value": ["clay"], "reason": "must be clay"}]}
     # Farm is clay, Rule says != [clay] -> Should PASS
-    out_pass_cat = run_exclusion_rules_records(farm_clay, all_species, rules_not_equal)
+    out_pass_cat = run_exclusion_rules(farm_clay, all_species, rules_not_equal, dep_lookup={})
     assert 102 in out_pass_cat["candidate_ids"]
 
     # Test Case Insensitivity within Lists
     farm_caps = {"id": 1, "soil_texture": "SAND"}
     # Rule has lowercase 'sand' -> Should PASS
-    out_case = run_exclusion_rules_records(farm_caps, all_species, rules_in)
+    out_case = run_exclusion_rules(farm_caps, all_species, rules_in, dep_lookup={})
     assert 101 in out_case["candidate_ids"]
 
 
@@ -95,32 +94,32 @@ def test_malformed_rules_and_empty_data():
     # Test: Missing Threshold Value
     rules_missing_val = {101: [{"feature": "ph", "operator": "<", "value": None, "reason": "bad rule"}]}
     farm_ph = {"id": 1, "ph": 6.0}
-    out = run_exclusion_rules_records(farm_ph, all_species, rules_missing_val)
+    out = run_exclusion_rules(farm_ph, all_species, rules_missing_val, dep_lookup={})
     assert 101 in out["candidate_ids"], "Should pass if rule value is None"
 
     # Test: Missing Feature
     rules_missing_feat = {101: [{"feature": None, "operator": "<", "value": 6.0, "reason": "bad rule"}]}
-    out = run_exclusion_rules_records(farm_ph, all_species, rules_missing_feat)
+    out = run_exclusion_rules(farm_ph, all_species, rules_missing_feat, dep_lookup={})
     assert 101 in out["candidate_ids"], "Should pass if rule feature is None"
 
     # Test: Missing Operator
     rules_missing_op = {101: [{"feature": "ph", "operator": None, "value": 6.0, "reason": "bad rule"}]}
-    out = run_exclusion_rules_records(farm_ph, all_species, rules_missing_op)
+    out = run_exclusion_rules(farm_ph, all_species, rules_missing_op, dep_lookup={})
     assert 101 in out["candidate_ids"], "Should pass if rule operator is None"
 
     # Test: Completely Empty Rules Table
-    out = run_exclusion_rules_records(farm_ph, all_species, rules_lookup={})
+    out = run_exclusion_rules(farm_ph, all_species, rules_lookup={}, dep_lookup={})
     assert 101 in out["candidate_ids"], "Should pass if no rules exist in database"
 
     # Test: Empty Farm Value (Farm data is missing the attribute)
     farm_empty = {"id": 1}  # Missing 'ph' key entirely
     rules_valid = {101: [{"feature": "ph", "operator": "<", "value": 6.0, "reason": "valid rule"}]}
-    out = run_exclusion_rules_records(farm_empty, all_species, rules_valid)
+    out = run_exclusion_rules(farm_empty, all_species, rules_valid, dep_lookup={})
     assert 101 not in out["candidate_ids"], "Should not pass if farm measurement is missing"
 
     # Test: Threshold Value not float
     rules_invalid_threshold = {101: [{"feature": "ph", "operator": "<", "value": "not_a_number", "reason": "valid rule"}]}
-    out = run_exclusion_rules_records(farm_ph, all_species, rules_invalid_threshold)
+    out = run_exclusion_rules(farm_ph, all_species, rules_invalid_threshold, dep_lookup={})
     assert 101 in out["candidate_ids"], "Should pass if threshold value for numeric feature is not a valid number"
 
 
@@ -134,5 +133,5 @@ def test_wrong_data_type():
     # Test: Farm Value not float
     farm_non_float = {"id": 1, "ph": "not_a_number"}  # 'ph' is a string
     rules_valid = {101: [{"feature": "ph", "operator": "<", "value": 6.0, "reason": "valid rule"}]}
-    out = run_exclusion_rules_records(farm_non_float, all_species, rules_valid)
+    out = run_exclusion_rules(farm_non_float, all_species, rules_valid, dep_lookup={})
     assert 101 not in out["candidate_ids"], "Should not pass if farm measurement is not a valid number"
