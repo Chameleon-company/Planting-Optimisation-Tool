@@ -1,5 +1,5 @@
 from geoalchemy2 import Geometry
-from sqlalchemy import Float, ForeignKey
+from sqlalchemy import Float, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import Base
@@ -20,6 +20,15 @@ class PlantingEstimate(Base):
     geometry: Mapped[str] = mapped_column(
         Geometry(geometry_type="POINT", srid=4326),
         nullable=False,
+    )
+
+    # Define spatial indexes in SQLAlchemy so Alembic won't try to drop them during autogeneration
+    __table_args__ = (
+        Index(
+            "idx_planting_estimates_geom",
+            "geometry",
+            postgresql_using="gist",
+        ),
     )
 
     def __repr__(self):
