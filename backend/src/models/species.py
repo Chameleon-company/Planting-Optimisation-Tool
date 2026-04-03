@@ -14,9 +14,8 @@ from src.models.association import (
     species_agroforestry_association,
     species_soil_texture_association,
 )
-from src.models.parameters import Parameter
-
 from src.models.exclusion_rules import SpeciesExclusionRule
+from src.models.parameters import Parameter
 
 
 class Species(Base):

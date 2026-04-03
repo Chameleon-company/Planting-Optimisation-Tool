@@ -1,8 +1,8 @@
 """add species_exclusion_rules table
 
-Revision ID: 54e8117daa73
-Revises: 2d5aae317afd
-Create Date: 2026-04-02 13:54:06.899770
+Revision ID: 2a53af31ea2e
+Revises: 5f7393003635
+Create Date: 2026-04-03 16:30:11.452481
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '54e8117daa73'
-down_revision: Union[str, Sequence[str], None] = '2d5aae317afd'
+revision: str = '2a53af31ea2e'
+down_revision: Union[str, Sequence[str], None] = '5f7393003635'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

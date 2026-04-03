@@ -1,11 +1,9 @@
 from collections import defaultdict
 from datetime import datetime, timezone
-from sqlalchemy import select
-
 
 # from exclusion_rules.dummy_run import run_exclusion_rules
-from exclusion_rules.exclusion_core_logic import run_exclusion_rules_records
-from sqlalchemy import delete
+from exclusion_rules.exclusion_core_logic import run_exclusion_rules
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from suitability_scoring import (
     build_rules_dict,
@@ -15,11 +13,11 @@ from suitability_scoring import (
 )
 
 from src.domains.suitability_scoring import SuitabilityFarm
+from src.models.exclusion_rules import SpeciesExclusionRule
 from src.models.recommendations import Recommendation
+from src.schemas.exclusion_rules import SpeciesExclusionRuleRead
 from src.services.species import get_species_by_ids
 from src.services.species_parameters import get_species_parameters_as_dicts
-from src.models.exclusion_rules import SpeciesExclusionRule
-from src.schemas.exclusion_rules import SpeciesExclusionRuleRead
 
 
 async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg):
@@ -38,7 +36,7 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
     # This is here to allow exclusion to be disabled if scoring without exclusion is wanted
     # TODO this code would be removed if the exclusion rules were updated to be less aggressive.
     # enable_exclusion = cfg.get("enable_exclusions", True)
-    exclusion_runner = run_exclusion_rules_records  # if enable_exclusion else run_exclusion_rules
+    exclusion_runner = run_exclusion_rules  # if enable_exclusion else run_exclusion_rules
 
     # Fetch all exclusion rules from the database in one go, to avoid multiple queries inside the loop.
     rules_from_db = await db.execute(select(SpeciesExclusionRule))
