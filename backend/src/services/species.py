@@ -30,19 +30,6 @@ def get_recommend_config():
     return load_yaml(str(config_path))
 
 
-# def get_exclusion_config():
-#     # TODO The exclusion config file should be merged with the recommend config file, then this function can be removed
-#     # See comment for get_recommend_config()
-#     base_path = Path(suitability_scoring.__file__).resolve().parent.parent.parent
-#     config_path = base_path / "config" / "exclusion_config.json"
-
-#     if not config_path.exists():
-#         # This will say where it looked so it can be debugged if it fails
-#         raise FileNotFoundError(f"JSON not found! Looked in: {config_path}")
-
-#     return load_exclusion_config(str(config_path))
-
-
 async def get_all_species_for_engine(db: AsyncSession) -> list[SuitabilitySpecies]:
     stmt = select(Species).options(selectinload(Species.soil_textures))
     result = await db.execute(stmt)

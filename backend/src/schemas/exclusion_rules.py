@@ -20,3 +20,19 @@ class SpeciesExclusionRuleRead(SpeciesExclusionRuleBase):
     species_id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SpeciesDependencyBase(BaseModel):
+    focal_species_id: int
+    required_partner_id: int
+
+
+class SpeciesDependencyCreate(SpeciesDependencyBase):
+    """No extra fields needed, but separates creation from reading."""
+
+    pass
+
+
+class SpeciesDependencyRead(SpeciesDependencyBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)

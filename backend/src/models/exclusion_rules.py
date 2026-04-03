@@ -37,3 +37,28 @@ class SpeciesExclusionRule(Base):
     def __repr__(self) -> str:
         """Official string representation for debugging."""
         return f"ExclusionRule(id={self.id!r}, species_id={self.species_id!r}, feature={self.feature!r}, op={self.operator!r})"
+
+
+class SpeciesDependency(Base):
+    """Maps focal species to their mandatory biological partners."""
+
+    __tablename__ = "species_dependencies"
+    # Column names
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    # The species that has the requirement
+    focal_species_id: Mapped[int] = mapped_column(ForeignKey("species.id", ondelete="CASCADE"), nullable=False)
+
+    # The species that must be present
+    required_partner_id: Mapped[int] = mapped_column(ForeignKey("species.id", ondelete="CASCADE"), nullable=False)
+
+    # Relationships
+    # -------------
+    # Links back to the main species table for the focal species
+    focal_species: Mapped["Species"] = relationship("Species", foreign_keys=[focal_species_id], back_populates="dependencies")
+
+    # Links to the partner species
+    required_partner: Mapped["Species"] = relationship("Species", foreign_keys=[required_partner_id])
+
+    def __repr__(self) -> str:
+        return f"Dependency(focal={self.focal_species_id}, partner={self.required_partner_id})"

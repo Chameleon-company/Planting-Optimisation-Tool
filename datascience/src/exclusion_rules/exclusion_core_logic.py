@@ -2,7 +2,21 @@ from typing import Any, Dict, List, Optional
 
 
 def _compare(farm_val: Any, op: str, threshold_val: Any) -> Optional[bool]:
-    """ """
+    """Compare a farm value against a threshold using the given operator.
+
+    Args:
+        farm_val: The value from farm data being evaluated.
+        op: The comparison operator to apply.
+        threshold_val: The threshold value from the rule.
+
+    Returns:
+        ``False`` when the farm value fails the exclusion check, ``True`` when
+        it passes, or ``True`` when the comparison cannot be evaluated and the
+        rule should not exclude the species.
+
+    Raises:
+        None: This function does not raise exceptions.
+    """
     if farm_val is None:
         return False
 
@@ -51,34 +65,22 @@ def _compare(farm_val: Any, op: str, threshold_val: Any) -> Optional[bool]:
 
 
 def _check_biological_dependencies(candidate_ids: list[int], dep_lookup: dict[int, list[int]]):
-    """
-    Iteratively removes species whose required biological partners
-    (e.g., host plants) are no longer in the candidate list.
+    """Filter candidate species by recursively enforcing biological dependencies.
 
-    1. Iterative Reduction (while True):
-     Dependencies can be "chained" (e.g., Species A depends on Species B, and Species B
-     depends on Species C). If Species C is excluded by a physical rule (like soil pH),
-     Species B must be removed. Once Species B is removed, the next pass of the loop will
-     identify that Species A must also be removed. The loop continues until no more species
-     are disqualified.
+    The function removes species whose required partner species are no longer
+    present in the candidate list. It continues iterating until the set reaches a
+    stable state, so chained dependency failures are also removed.
 
-    2. The "OR" Logic (any(...)):
-     The logic is designed to be supportive rather than overly aggressive. If a species like
-     Sandalwood can use either Acacia or Casuarina as a host, it will remain a candidate as
-     long as at least one of those species is still on the list.
+    Args:
+        candidate_ids: Species identifiers that have passed earlier exclusion checks.
+        dep_lookup: Mapping of species identifiers to required partner species identifiers.
 
-    3. Post-Physical Check:
-     This function runs after all physical exclusion rules and ecological filters have finished.
-     This ensures that "Partners" are only counted if they actually survive the farm's environmental
-     conditions.
+    Returns:
+        A tuple containing the remaining candidate species identifiers and a list
+        of dependency-based exclusion records.
 
-    4. Stable State:
-     The loop only breaks when it reaches a "Stable State"—meaning every remaining species either has
-     no dependencies or has at least one viable partner remaining in the set.
-
-    5. Fail-Safe:
-     If a species has no dependencies defined in the species_dependencies table, it is ignored by this
-     function and passes through to the next stage.
+    Raises:
+        None: This function does not raise exceptions.
     """
     # Convert to a set for lookups during the loop
     current_candidates = set(candidate_ids)
@@ -117,17 +119,20 @@ def run_exclusion_rules(
     rules_lookup: Dict[int, List[Any]],
     dep_lookup: Dict[int, List[int]],
 ) -> Dict[str, Any]:
-    """
-    Apply exclusion rules for ONE farm.
+    """Apply all exclusion rules for a single farm.
 
-    Returns
-    -------
-    {
-      "candidate_ids": [...],
-      "excluded_species": [
-        {"id", "species_name", "species_common_name", "reasons": [...]}
-      ]
-    }
+    Args:
+        farm_data: Farm-level data used to evaluate exclusion rules.
+        all_species: All species records that should be evaluated.
+        rules_lookup: Mapping of species identifiers to exclusion rules.
+        dep_lookup: Mapping of species identifiers to biological dependencies.
+
+    Returns:
+        A dictionary containing the surviving candidate species identifiers and
+        the full list of excluded species with reasons.
+
+    Raises:
+        None: This function does not raise exceptions.
     """
     excluded: List[Dict[str, Any]] = []
     candidates: List[int] = []
@@ -192,6 +197,19 @@ def run_exclusion_rules(
 
 
 def _get_val(obj, key, default=None):
+    """Return a value from a mapping or object attribute lookup.
+
+    Args:
+        obj: A dictionary-like object or attribute-bearing object.
+        key: The key or attribute name to retrieve.
+        default: The value to return when the key or attribute is missing.
+
+    Returns:
+        The resolved value or ``default`` when the lookup fails.
+
+    Raises:
+        None: This function does not raise exceptions.
+    """
     if obj is None:
         return default
     if isinstance(obj, dict):
