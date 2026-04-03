@@ -115,7 +115,18 @@ def _check_biological_dependencies(candidate_ids: list[int], dep_lookup: dict[in
 
 def _check_topographic_requirements(species: Any, farm: Any) -> list[str]:
     """
-    Checks topographic requirements using generic value retrieval.
+    Check species suitability against farm topographic requirements.
+
+    Args:
+        species: Species record evaluated for topographic compatibility.
+        farm: Farm record containing topographic requirement flags.
+
+    Returns:
+        A list of exclusion reason messages. Empty when the species satisfies
+        all topographic requirements.
+
+    Raises:
+        None: This function does not raise exceptions.
     """
     reasons = []
 
@@ -190,7 +201,7 @@ def run_exclusion_rules(
         reasons.extend(topographic_reasons)
 
         ################################################################################
-        # STORY 34: Ecological matching would go here (not implemented in this PR)
+        # STORY 34: Ecological and Agroforestry matching would go here (not implemented in this PR)
         # Something like this
         # func_reasons = _check_ecological_functions(sp, farm_data)
         # reasons.extend(func_reasons)
