@@ -113,6 +113,26 @@ def _check_biological_dependencies(candidate_ids: list[int], dep_lookup: dict[in
     return list(current_candidates), dep_excluded_results
 
 
+def _check_topographic_requirements(species: Any, farm: Any) -> list[str]:
+    """
+    Checks topographic requirements using generic value retrieval.
+    """
+    reasons = []
+
+    # Mapping of farm 'demand' flags to species 'supply' flags
+    checks = [
+        ("riparian", "excluded: species is not suitable for riparian zones"),
+        ("coastal", "excluded: species is not suitable for coastal zones"),
+    ]
+
+    for attr, msg in checks:
+        # If the farm DEMANDS it (True), but the species lacks it (False/None)
+        if _get_val(farm, attr) is True and not _get_val(species, attr):
+            reasons.append(msg)
+
+    return reasons
+
+
 def run_exclusion_rules(
     farm_data: Any,
     all_species: List[Any],
@@ -164,6 +184,10 @@ def run_exclusion_rules(
                 # Compare farm value to species threshold using rule's operator
                 if _compare(farm_val, _get_val(rule, "operator"), _get_val(rule, "value")) is False:
                     reasons.append(f"excluded: {_get_val(rule, 'reason')}, farm value = {str(farm_val).strip().lower()}")
+
+        # Check topographic requirements
+        topographic_reasons = _check_topographic_requirements(sp, farm_data)
+        reasons.extend(topographic_reasons)
 
         ################################################################################
         # STORY 34: Ecological matching would go here (not implemented in this PR)
