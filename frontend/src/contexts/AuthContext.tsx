@@ -33,18 +33,20 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize with a hardcoded "Mock" token for testing
-  const [token, setToken] = useState<string | null>("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzc1Mjc3ODgxfQ._uMCvtI90DYkSBC_e-BYTSSF4Jwcfxz-LNL1ovBf2kM");
+  //const [token, setToken] = useState<string | null>("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzc1Mjc3ODgxfQ._uMCvtI90DYkSBC_e-BYTSSF4Jwcfxz-LNL1ovBf2kM");
+  // Start with no token
+  const [token, setToken] = useState<string | null>(null);
 
   // Initialize a fake user so your UI thinks someone is logged in
-  const [user, setUser] = useState<User | null>({
-    id: 1,
-    name: "admin",
-    email: "admin@example.com",
-    role: "admin",
-    farms: ["Farm 1", "Farm 2"]
-  });
+  //const [user, setUser] = useState<User | null>({
+  //  id: 1,
+  //  name: "admin",
+  //  email: "admin@example.com",
+  //  role: "admin",
+  //  farms: ["Farm 1", "Farm 2"]
+  //});
   // Set user and isLoading as a useState of interfacetype User or null, defaults are null/false
-  //const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
 
