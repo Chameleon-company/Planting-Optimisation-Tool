@@ -20,6 +20,7 @@ interface User {
 // Logout is a function promising void when complete
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   logout: () => void;
@@ -30,8 +31,21 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 // Create function AuthProvider with children of ReactNode type
 export function AuthProvider({ children }: { children: ReactNode }) {
+
+  // Initialize with a hardcoded "Mock" token for testing
+  const [token, setToken] = useState<string | null>("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzc1Mjc3ODgxfQ._uMCvtI90DYkSBC_e-BYTSSF4Jwcfxz-LNL1ovBf2kM");
+
+  // Initialize a fake user so your UI thinks someone is logged in
+  const [user, setUser] = useState<User | null>({
+    id: 1,
+    name: "admin",
+    email: "admin@example.com",
+    role: "admin",
+    farms: ["Farm 1", "Farm 2"]
+  });
   // Set user and isLoading as a useState of interfacetype User or null, defaults are null/false
-  const [user, setUser] = useState<User | null>(null);
+  //const [user, setUser] = useState<User | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Create function login, using callback which creates a new function for each call
@@ -50,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           farms: ["Unknown Farm 1", "Unknown Farm 2"],
         };
         setUser(fakeUser);
+        setToken("real-token-from-api");
       } finally {
         setIsLoading(false);
       }
@@ -61,12 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Create function logout, using callback set user to null and exit
   const logout = useCallback(() => {
     setUser(null);
+    setToken(null);
   }, []);
 
   // Calling AuthContext with its provider will provide values (variables and functions), user, isLoading, login, logout
   // To all children wrapped by the Provider
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
