@@ -6,10 +6,11 @@ import { AuthProvider, useAuth } from "../contexts/AuthContext";
 
 // Create TestComponent to display all elements from AuthContext
 const TestComponent = () => {
-  const { user, login, logout } = useAuth();
+  const { user, token, login, logout } = useAuth();
   return (
     <div>
       <p>{user ? `Logged in as ${user.name}` : "Not logged in"}</p>
+
       <button
         onClick={() => login({ email: "test@test.com", password: "password" })}
       >
