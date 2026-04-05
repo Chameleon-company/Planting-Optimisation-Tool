@@ -3,6 +3,7 @@
 from typing import Optional
 
 import geoalchemy2
+from sqlalchemy import Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import Base
@@ -27,6 +28,15 @@ class Waterway(Base):
             nullable=False,
         ),
         nullable=False,
+    )
+
+    # Define spatial indexes in SQLAlchemy so Alembic won't try to drop them during autogeneration
+    __table_args__ = (
+        Index(
+            "idx_waterways_geometry",
+            "geometry",
+            postgresql_using="gist",
+        ),
     )
 
     def __repr__(self) -> str:

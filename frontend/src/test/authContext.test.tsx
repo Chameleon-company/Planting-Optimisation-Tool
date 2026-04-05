@@ -30,7 +30,7 @@ describe("AuthContext", () => {
     );
 
     //Expect TestComponent to display default options
-    expect(screen.getByText("Not logged in")).toBeInTheDocument();
+    expect(screen.getByText(/Logged in as/i)).toBeInTheDocument();
   });
 
   it("should set user after login", async () => {

@@ -1,8 +1,20 @@
-import os
-import signal
 import sys
 
 import psutil
+
+
+def is_api_process(proc):
+    cmdline = " ".join(proc.info["cmdline"] or []).lower()
+    if "uvicorn" in cmdline or "fastapi" in cmdline:
+        return True
+    try:
+        parent = proc.parent()
+        if parent:
+            parent_cmdline = " ".join(parent.cmdline() or []).lower()
+            return "uvicorn" in parent_cmdline or "fastapi" in parent_cmdline
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        pass
+    return False
 
 
 def kill_process_on_port(port):
@@ -11,12 +23,15 @@ def kill_process_on_port(port):
             for conn in proc.net_connections(kind="inet"):
                 if conn.laddr.port != port:
                     continue
-                cmdline = " ".join(proc.info["cmdline"] or []).lower()
-                if "uvicorn" not in cmdline and "fastapi" not in cmdline:
+                if not is_api_process(proc):
                     print(f"WARNING: port {port} is in use by {proc.info['name']} (pid {proc.info['pid']}) - skipping.")
                     return
-                print(f"Stopping API on port {port} (pid {proc.info['pid']})...")
-                os.kill(proc.info["pid"], signal.SIGTERM if os.name == "nt" else signal.SIGKILL)
+                target = proc.parent() if proc.parent() and "fastapi" in " ".join(proc.parent().cmdline()).lower() else proc
+                print(f"Stopping API on port {port} (pid {target.pid})...")
+                target_proc = psutil.Process(target.pid)
+                for child in target_proc.children(recursive=True):
+                    child.kill()
+                target_proc.kill()
                 return
         except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.Error):
             continue

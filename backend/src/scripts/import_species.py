@@ -1,5 +1,6 @@
 import asyncio
 import csv
+import os
 
 import httpx
 from sqlalchemy import select
@@ -11,7 +12,7 @@ from src.models.user import User
 from src.schemas.constants import AgroforestryTypeID, SoilTextureID
 
 # Configuration
-BASE_URL = "http://127.0.0.1:8080"
+BASE_URL = f"http://127.0.0.1:{os.getenv('API_PORT', '8080')}"
 USER_EMAIL = "testuser123@test.com"
 
 
