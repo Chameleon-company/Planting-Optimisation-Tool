@@ -56,7 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: userData.name || userData.email,
       email: userData.email,
       role: userData.role,
-      farms: [],
     };
 
     setUser(realUser);
