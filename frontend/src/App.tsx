@@ -11,6 +11,11 @@ import CalculatorPage from "./pages/CalculatorPage";
 import RecommendationPage from "./pages/RecommendationPage";
 import SpeciesPage from "./pages/SpeciesPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AdminLayout from "./components/layout/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminLogs from "./pages/admin/AdminLogs";
+import RequireRole from "./components/auth/RequireRole";
 
 // Export App
 export default function App() {
@@ -26,6 +31,19 @@ export default function App() {
               <Route path="/recommendation" element={<RecommendationPage />} />
               <Route path="/species" element={<SpeciesPage />} />
               <Route path="*" element={<NotFoundPage />} />
+            </Route>
+
+            <Route
+              path="/admin"
+              element={
+                <RequireRole allowedRoles={["admin", "supervisor"]}>
+                  <AdminLayout />
+                </RequireRole>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="settings" element={<AdminSettings />} />
+              <Route path="logs" element={<AdminLogs />} />
             </Route>
           </Routes>
         </BrowserRouter>
