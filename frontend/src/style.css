@@ -996,6 +996,139 @@ main.container {
   margin-bottom: 5px;
 }
 
+/* ============ PROFILE  ============ */
+
+.farmProfileHeader {
+  background: var(--gradient);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 48px 7%;
+}
+
+.farmProfileTitle {
+  color: #fff;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  margin: 0;
+}
+
+.farmProfileSubtitle {
+  color: #c8ffd9;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.farmList {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  padding: 32px 7%;
+}
+
+.farmListEmpty {
+  color: var(--muted);
+  padding: 40px 7%;
+  text-align: center;
+}
+
+.farmCard {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.farmCard:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.farmCardHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.farmCardId {
+  color: var(--primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.farmCardArea {
+  background: var(--brand-50);
+  border-radius: 20px;
+  color: var(--brand-800);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 12px;
+}
+
+.farmCardGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.farmCardStat {
+  background: var(--surface);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+}
+
+.farmCardStatLabel {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.farmCardStatValue {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.farmCardCoords {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.farmCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.farmTag {
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 4px 10px;
+}
+
+.farmTagAgroforestry {
+  background: var(--brand-100);
+  color: var(--brand-900);
+}
+
+.farmTagTrait {
+  background: #e8f5e9;
+  border: 1px solid var(--brand-200);
+  color: var(--brand-800);
+}
+
 /* ============ ERROR BOUNDARY ============ */
 
 .global-error-boundary-text {

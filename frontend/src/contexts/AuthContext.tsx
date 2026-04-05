@@ -12,7 +12,6 @@ interface User {
   name: string;
   email: string;
   role: "officer" | "supervisor" | "admin";
-  farms: string[];
 }
 
 // Create interface for AuthContextType, user of interface User type or null, isLoading as Boolean,
@@ -47,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: "John Doe",
           email: credentials.email,
           role: "admin",
-          farms: ["Unknown Farm 1", "Unknown Farm 2"],
         };
         setUser(fakeUser);
       } finally {
