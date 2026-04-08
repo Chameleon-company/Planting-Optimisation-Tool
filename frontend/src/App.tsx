@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import CalculatorPage from "./pages/CalculatorPage";
 import RecommendationPage from "./pages/RecommendationPage";
+import AhpPage from "./pages/AhpPage";
 import SpeciesPage from "./pages/SpeciesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import AdminLayout from "./components/layout/AdminLayout";
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/calculator" element={<CalculatorPage />} />
               <Route path="/recommendation" element={<RecommendationPage />} />
+              <Route path="/ahp" element={<AhpPage />} />
               <Route path="/species" element={<SpeciesPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
