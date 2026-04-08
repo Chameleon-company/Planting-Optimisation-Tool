@@ -1054,3 +1054,135 @@ main.container {
 .global-error-boundary-text button:hover {
   background: var(--gradient-dark);
 }
+
+/* ============ US-002 / #155 ADMIN DASHBOARD SHELL ============ */
+/* Core shell layout styles for admin/manager management pages */
+
+.admin-layout {
+  background: #f5f7fb;
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  background: #102a43;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 18px;
+  width: 260px;
+}
+
+.admin-sidebar-brand {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.admin-sidebar-logo {
+  height: 48px;
+  object-fit: contain;
+  width: 48px;
+}
+
+.admin-sidebar-brand h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.admin-sidebar-brand p {
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+  opacity: 0.8;
+}
+
+/* Navigation links inside the admin sidebar */
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-nav-link {
+  border-radius: 10px;
+  color: #fff;
+  display: block;
+  padding: 12px 14px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.admin-nav-link:hover,
+.admin-nav-link.active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Right-side content area of the dashboard shell */
+.admin-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.admin-header {
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #d9e2ec;
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 32px;
+}
+
+.admin-header h1 {
+  color: #102a43;
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.admin-header p {
+  color: #486581;
+  margin: 6px 0 0;
+}
+
+.admin-content {
+  padding: 32px;
+}
+
+/* Reusable content card for admin placeholder pages */
+.admin-page-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+}
+
+.admin-page-card h2 {
+  color: #102a43;
+  margin-top: 0;
+}
+
+.admin-page-card p {
+  color: #486581;
+  line-height: 1.6;
+}
+
+/* =========================
+   ADMIN HEADER ENHANCEMENT (#155)
+   ========================= */
+
+.admin-header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-breadcrumb {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.admin-header-right {
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 500;
+}

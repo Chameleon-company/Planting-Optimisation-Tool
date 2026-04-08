@@ -14,6 +14,7 @@ from src.models.association import (
     species_agroforestry_association,
     species_soil_texture_association,
 )
+from src.models.exclusion_rules import SpeciesDependency, SpeciesExclusionRule
 from src.models.parameters import Parameter
 
 
@@ -55,8 +56,16 @@ class Species(Base):
     # Links a species object to parameter object
     parameters: Mapped[list["Parameter"]] = relationship(back_populates="species", cascade="all, delete-orphan")
 
+    # Links a species object to its corresponding exclusion rules
+    exclusion_rules: Mapped[list["SpeciesExclusionRule"]] = relationship(back_populates="species", cascade="all, delete-orphan")
+
+    # Links a species object to its corresponding dependencies
+    dependencies: Mapped[list["SpeciesDependency"]] = relationship(
+        "SpeciesDependency", foreign_keys="[SpeciesDependency.focal_species_id]", back_populates="focal_species", cascade="all, delete-orphan"
+    )
+
     def __repr__(self) -> str:
         """Returns the official string representation of the Species object.
         Used primarily for debugging, logging, inspection.
         """
-        return f"Species(id={self.id!r}, name{self.name!r}, common_name{self.common_name!r})"
+        return f"Species(id={self.id!r}, name={self.name!r}, common_name={self.common_name!r})"

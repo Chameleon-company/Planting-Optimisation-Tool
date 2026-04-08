@@ -121,6 +121,8 @@ def main():
         run_module("src.scripts.import_boundaries")
         run_module("src.scripts.import_species_parameters")
         run_module("src.scripts.import_dem")
+        run_module("src.scripts.import_species_exclusion_rules")
+        run_module("src.scripts.import_species_dependencies")
 
     except subprocess.CalledProcessError as e:
         print(f"{RED}Ingestion failed during: {e}{NC}")
