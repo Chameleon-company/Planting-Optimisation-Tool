@@ -473,12 +473,13 @@ run `just [target]` in `/backend` to execute.
 | **`setup`** | Restarts the DB container and applies any pending migrations. Data volumes are preserved. | 1. `docker compose down` (via `stop`)<br> 2. `docker compose up -d db` (via `start`)<br> 3. `sleep 5` <br> 4. `uv run alembic upgrade head` (via `migrate`) |
 | **`revision`** | **GENERATES** a new Alembic migration script based on changes detected in your Python models. Called as `just revision "message"`. After running, you must **review the script** before running `just migrate`. | `uv run alembic revision --autogenerate -m "message"` |
 | **`migrate`** | Applies any pending Alembic migration scripts to upgrade the database schema to the latest version. This is the final step after creating and reviewing a script. | `uv run dotenv run alembic upgrade head` |
-| **`populate`** | Wipes the DB, migrates, and ingests all CSV data. Outputs state of database setup statistics to terminal | Runs `setup_import_db.py` |
+| **`populate [port]`** | Wipes the DB, migrates, and ingests all CSV data. Outputs state of database setup statistics to terminal. Accepts an optional port (default: 8080, or `API_PORT` from `.env`). Will warn and exit if the port is in use by a non-API process. | Runs `setup_import_db.py` |
 | **`test`** | Executes the full test suite using Pytest on the contents of the `tests/` directory. | `uv run dotenv run pytest tests/` |
 | **`schema`** | Generates a markdown formatted schema diagram and writes it to **`SCHEMA.md`**. | `uv run dotenv run python -m src.generate_schema > SCHEMA.md` |
 | **`erd`** | Generates a mermaid Entity-Relationship Diagram of the database and outputs to **`ERD.md`**. | `uv run dotenv run python -m src.generate_erd` |
 | **`psql`** | Starts an interactive psql DB session | `docker exec -it pot_postgres_db psql -U postgres -d POT_db` |
-| **`kill-api`** | Kills the API server running on port 8080 <br> Because `just populate` starts the api in the background for ease-of-use. | `uv run -m src.scripts.kill-api` |
+| **`run-api [port]`** | Starts the FastAPI development server. Accepts an optional port (default: 8080, or `API_PORT` from `.env`). | `uv run fastapi dev src/main.py` |
+| **`kill-api [port]`** | Stops the API server. Only kills the process if it is running uvicorn or fastapi - will warn and skip if another process (e.g. Java) is on the port. Accepts an optional port (default: 8080, or `API_PORT` from `.env`). | `uv run -m src.scripts.kill-api` |
 
 ### Initial ingestion and setup
 ```bash

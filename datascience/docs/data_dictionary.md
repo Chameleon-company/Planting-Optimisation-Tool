@@ -60,6 +60,24 @@ These data dictionaries contains all variables for the recommendation system (su
 | `trap_left_tol`           | Float   | Feature units | Trapezoid left tolerance                 | Optional, Range: `0.0`–`5000`      |
 | `trap_right_tol`          | Float   | Feature units | Trapezoid right tolerance                | Optional, Range: `0.0`–`5000`      |
 
+## **Species Exclusion Rules**
+
+| Column Name    | Type    | Unit   | Description                                                     | Constraints         |
+| -------------- | ------  | ------ | ----------------------------------------                        | ------------------- |
+| `id`           | Integer | —      | Unique identifier for each parameter                            | Required, unique    |
+| `feature`      | String  | —      | The farm feature to check                                       | Required            |
+| `operator`     | String  | —      | The logical operator: <, <=, <=, >, ==, !=                      | Required            |
+| `value`        | JSON    | —      | The threshold value (number, single string, or list of strings) | Required            |
+| `reason`       | String  | -      | The narrative reason for exclusion                              | Required            |
+
+## **Species Dependencies**
+
+| Column Name           | Type    | Unit   | Description                            | Constraints         |
+| --------------        | ------  | ------ | -------------------------------------- | ------------------- |
+| `id`                  | Integer | —      | Unique identifier for each parameter   | Required, unique    |
+| `focal_species_id`    | Integer | —      | ID of the focal species                | Required            |
+| `required_partner_id` | Integer | —      | ID of the required host                | Required            |
+
 
 ## **Soil Textures**
 

@@ -4,6 +4,8 @@ import subprocess
 import sys
 import time
 
+import psutil
+
 # Colors for terminal output
 BLUE = "\033[0;34m"
 GREEN = "\033[0;32m"
@@ -15,6 +17,42 @@ def run_module(module_name):
     """Runs a python module using uv."""
     print(f"{GREEN} Running {module_name}...{NC}")
     subprocess.run(["uv", "run", "python", "-m", module_name], check=True)
+
+
+def is_api_process(proc):
+    cmdline = " ".join(proc.cmdline() or []).lower()
+    if "uvicorn" in cmdline or "fastapi" in cmdline:
+        return True
+    try:
+        parent = proc.parent()
+        if parent:
+            parent_cmdline = " ".join(parent.cmdline() or []).lower()
+            return "uvicorn" in parent_cmdline or "fastapi" in parent_cmdline
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        pass
+    return False
+
+
+def handle_port(port):
+    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+        try:
+            for conn in proc.net_connections(kind="inet"):
+                if conn.laddr.port != port:
+                    continue
+                if not is_api_process(proc):
+                    print(f"{RED}Error: port {port} is in use by another process ({proc.info['name']}).{NC}")
+                    print(f"{RED}Run 'just populate <port>' with a free port. Set API_PORT=<port> in your .env to avoid passing the flag each time.{NC}")
+                    sys.exit(1)
+                target = proc.parent() if proc.parent() and "fastapi" in " ".join(proc.parent().cmdline()).lower() else proc
+                print(f"Stopping API on port {port} (pid {target.pid})...")
+                target_proc = psutil.Process(target.pid)
+                for child in target_proc.children(recursive=True):
+                    child.kill()
+                target_proc.kill()
+                time.sleep(1)
+                return
+        except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.Error):
+            continue
 
 
 def wait_for_api(url="127.0.0.1", port=8080, timeout=15):
@@ -36,7 +74,10 @@ def wait_for_api(url="127.0.0.1", port=8080, timeout=15):
 
 
 def main():
-    subprocess.run(["uv", "run", "python", "-m", "src.scripts.kill-api"], check=False)
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.getenv("API_PORT", "8080"))
+    os.environ["API_PORT"] = str(port)
+
+    handle_port(port)
 
     print(f"{BLUE}===================================================={NC}")
     print(f"{BLUE} Starting Database Initialization{NC}")
@@ -58,7 +99,7 @@ def main():
                 "uvicorn",
                 "src.main:app",
                 "--port",
-                "8080",
+                str(port),
                 "--host",
                 "127.0.0.1",
             ],
@@ -70,7 +111,7 @@ def main():
         )
 
     try:
-        if not wait_for_api():
+        if not wait_for_api(port=port):
             print(f"\n{RED}Error: API failed to start. Check api_log.txt{NC}")
             api_proc.terminate()
             sys.exit(1)
@@ -79,6 +120,9 @@ def main():
         run_module("src.scripts.import_farms")
         run_module("src.scripts.import_boundaries")
         run_module("src.scripts.import_species_parameters")
+        run_module("src.scripts.import_dem")
+        run_module("src.scripts.import_species_exclusion_rules")
+        run_module("src.scripts.import_species_dependencies")
 
     except subprocess.CalledProcessError as e:
         print(f"{RED}Ingestion failed during: {e}{NC}")

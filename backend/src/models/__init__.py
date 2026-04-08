@@ -5,12 +5,15 @@ from src.models.association import (
 )
 from src.models.audit_log import AuditLog
 from src.models.boundaries import FarmBoundary
+from src.models.exclusion_rules import SpeciesDependency, SpeciesExclusionRule
 from src.models.farm import Farm
 from src.models.parameters import Parameter
+from src.models.planting_estimates import PlantingEstimate
 from src.models.recommendations import Recommendation
 from src.models.soil_texture import SoilTexture
 from src.models.species import Species
 from src.models.user import User
+from src.models.waterways import Waterway
 
 from .auth_token import AuthToken
 
@@ -27,4 +30,7 @@ __all__ = [
     "Recommendation",
     "AuditLog",
     "AuthToken",
+    "PlantingEstimate",
+    "SpeciesExclusionRule",
+    "SpeciesDependency",
 ]

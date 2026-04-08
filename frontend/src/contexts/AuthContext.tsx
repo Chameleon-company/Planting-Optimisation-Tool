@@ -31,7 +31,13 @@ const AuthContext = createContext<AuthContextType | null>(null);
 // Create function AuthProvider with children of ReactNode type
 export function AuthProvider({ children }: { children: ReactNode }) {
   // Set user and isLoading as a useState of interfacetype User or null, defaults are null/false
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>({
+    id: 1,
+    name: "John Doe",
+    email: "admin@test.com",
+    role: "admin",
+    farms: [],
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   // Create function login, using callback which creates a new function for each call
