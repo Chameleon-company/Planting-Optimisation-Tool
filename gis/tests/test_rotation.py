@@ -1,10 +1,12 @@
+import time
+
 import geopandas as gpd
 import pytest
 from shapely.affinity import rotate
 from shapely.geometry import Polygon
 
 from sapling_estimation.planting_points import generate_planting_points
-from sapling_estimation.rotation import rotate_grid
+from sapling_estimation.rotation import old_rotate_grid, rotate_grid
 
 
 @pytest.fixture
@@ -35,3 +37,31 @@ def test_rotate_grid_basic(farm_polygon_45):
     assert 0 <= angle <= 360
     assert len(final_grid) > 0
     assert len(final_grid) >= len(initial_grid)
+
+
+def test_rotation_speed(farm_polygon_45):
+    spacing_m = 3.0
+    planting_grid = generate_planting_points(farm_polygon_45, "EPSG:4326", farm_polygon_45.bounds, spacing_m)
+
+    start = time.perf_counter()
+    old_grid, _ = old_rotate_grid(farm_polygon_45, planting_grid, spacing_m)
+    old_time = time.perf_counter() - start
+
+    start = time.perf_counter()
+    new_grid, _ = rotate_grid(farm_polygon_45, planting_grid, spacing_m)
+    new_time = time.perf_counter() - start
+
+    print(f"Rotation completed in {new_time:.4f} seconds.")
+    print(f"Time saved: {(old_time - new_time):.4f} seconds. Speedup: {(old_time / new_time):.2f}x faster")
+    assert new_time < old_time
+
+
+def test_rotation_correctness(farm_polygon_45):
+    spacing_m = 3.0
+    planting_grid = generate_planting_points(farm_polygon_45, "EPSG:4326", farm_polygon_45.bounds, spacing_m)
+
+    old_grid, old_angle = old_rotate_grid(farm_polygon_45, planting_grid, spacing_m)
+    new_grid, new_angle = rotate_grid(farm_polygon_45, planting_grid, spacing_m)
+
+    assert len(old_grid) == len(new_grid)
+    assert old_angle == new_angle

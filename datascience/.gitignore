@@ -22,3 +22,12 @@ __pycache__/
 # created by cross-project integration
 # backend using datascience/src/suitability_scoring causes creation.
 *.egg-info/
+
+# Large GIS input files (sourced from MS Teams, not committed)
+*.gpkg
+*.tif
+*:Zone.Identifier
+notebooks/reports/
+
+# Notebook-generated CSVs (outputs go to backend/src/scripts/data/, not here)
+notebooks/*.csv

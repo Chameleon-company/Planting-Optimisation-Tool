@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import suitability_scoring
-from exclusion_rules.run_exclusion_core_logic import load_exclusion_config
+
+# from exclusion_rules.run_exclusion_core_logic import load_exclusion_config
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -27,19 +28,6 @@ def get_recommend_config():
         raise FileNotFoundError(f"YAML not found! Looked in: {config_path}")
 
     return load_yaml(str(config_path))
-
-
-def get_exclusion_config():
-    # TODO The exclusion config file should be merged with the recommend config file, then this function can be removed
-    # See comment for get_recommend_config()
-    base_path = Path(suitability_scoring.__file__).resolve().parent.parent.parent
-    config_path = base_path / "config" / "exclusion_config.json"
-
-    if not config_path.exists():
-        # This will say where it looked so it can be debugged if it fails
-        raise FileNotFoundError(f"JSON not found! Looked in: {config_path}")
-
-    return load_exclusion_config(str(config_path))
 
 
 async def get_all_species_for_engine(db: AsyncSession) -> list[SuitabilitySpecies]:
@@ -93,3 +81,41 @@ async def create_species(db: AsyncSession, payload: SpeciesCreate) -> Species:
 
     result = await db.execute(select(Species).where(Species.id == new_species.id).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)))
     return result.scalar_one()
+
+
+async def get_species_for_dropdown(db: AsyncSession):
+    """
+    Fetches a lightweight list of species IDs and names.
+    Optimised to only query the required columns.
+    """
+    # Select only the needed columns and order alphabetically by common name
+    stmt = select(Species.id, Species.name, Species.common_name).order_by(Species.common_name)
+
+    result = await db.execute(stmt)
+
+    return result.all()
+
+
+def get_recommendation_features() -> list[str]:
+    """
+    Returns only the 'short' names of features for frontend display.
+    Example: ['Rinfall', 'Temperature', 'pH']
+    """
+    # Use existing config loader
+    config_data = get_recommend_config()
+
+    features_dict = config_data.get("features", {})
+
+    # Extract only the 'short' string from each feature config
+    short_names = []
+    for feature_cfg in features_dict.values():
+        if "short" in feature_cfg:
+            raw_short = str(feature_cfg["short"])
+
+            # Check for pH case-insensitively
+            if raw_short.lower() == "ph":
+                short_names.append("pH")
+            else:
+                short_names.append(raw_short.title())
+
+    return short_names

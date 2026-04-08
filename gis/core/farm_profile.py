@@ -35,32 +35,40 @@ def build_farm_profile(
     geometry,
     year: Optional[int] = None,
     farm_id: Optional[int] = None,
+    riparian: Optional[bool] = None,
     **additional_fields,
 ) -> Dict[str, Any]:
     """
     Build a complete farm profile from geometry.
 
+    Works for both existing farms and new/candidate farm boundaries — the
+    riparian check (US-018) is stateless with respect to whether the farm
+    record already exists.
+
     Args:
-        geometry: Farm geometry (point, polygon, or coordinates)
-        year: Year for temporal data extraction (default: 2024)
-        farm_id: Unique farm identifier
-        **additional_fields: Any additional custom fields (e.g., farmer_name)
+        geometry:          Farm geometry (point, polygon, or coordinates).
+        year:              Year for temporal data extraction (default: 2024).
+        farm_id:           Unique farm identifier (None for new/candidate farms).
+        riparian:          Riparian flag computed externally (e.g. PostGIS in backend).
+                           Pass None if unknown — profile will still include the field.
+        **additional_fields: Any additional custom fields (e.g., farmer_name).
 
     Returns:
-        Dictionary with complete farm profile
+        Dictionary with complete farm profile including:
+            - riparian (bool | None)
+            - distance_to_nearest_waterway_m (float | None)
 
     Example:
-        profile = build_farm_profile(
-            geometry=(-8.569, 126.676),
-            farm_id=1,
-            year=2024,
-            farmer_name="John Doe"
-        )
+        # Existing farm
+        profile = build_farm_profile(geometry=(-8.569, 126.676), farm_id=1, year=2024)
+
+        # New candidate farm boundary — farm_id omitted
+        profile = build_farm_profile(geometry=[[(lat, lon), ...]])
     """
     year = year or 2024
 
     try:
-        # Extract environmental data
+        # --- GEE extractions ---
         rainfall = get_rainfall(geometry, year=year)
         temperature = get_temperature(geometry, year=year)
         ph = get_ph(geometry, year=year)
@@ -70,13 +78,13 @@ def build_farm_profile(
         texture_id = get_texture_id(geometry)
         lat, lon = get_centroid_lat_lon(geometry)
 
-        # Calculate coastal flag
+        # --- Derived flags ---
         if elevation is not None and rainfall is not None:
             coastal_flag = elevation < 100 and 500 <= rainfall <= 3000
         else:
             coastal_flag = False
 
-        # Build profile
+        # --- Build profile ---
         profile: Dict[str, Any] = {
             "id": farm_id,
             "year": year,
@@ -90,13 +98,13 @@ def build_farm_profile(
             "latitude": lat,
             "longitude": lon,
             "coastal": coastal_flag,
+            # US-018: riparian flag passed in from backend PostGIS result
+            "riparian": riparian,
             "updated_at": datetime.now().isoformat(),
             "status": "success",
         }
 
-        # Add custom fields
         profile.update(additional_fields)
-
         return profile
 
     except Exception as e:
@@ -105,7 +113,6 @@ def build_farm_profile(
             "year": year,
             "status": "failed",
             "error": str(e),
-            "updated_at": datetime.now().isoformat(),
         }
 
 
@@ -119,30 +126,27 @@ def update_farm_profile(
     Update specific fields in an existing farm profile.
 
     Args:
-        existing_profile: Current profile dictionary
-        geometry: Farm geometry
-        fields: List of fields to update (None = update all fields)
-        year: Year for temporal data
+        existing_profile:  Current profile dictionary.
+        geometry:          Farm geometry.
+        fields:            List of fields to update (None = update all fields).
+        year:              Year for temporal data.
 
     Returns:
-        Updated profile dictionary
+        Updated profile dictionary.
 
     Example:
         updated = update_farm_profile(
             existing_profile=old_profile,
             geometry=farm_geometry,
-            fields=["rainfall_mm", "temperature_celsius"],
-            year=2025
+            fields=["rainfall_mm", "riparian", "distance_to_nearest_waterway_m"],
         )
     """
     year = year or existing_profile.get("year", 2024)
     farm_id = existing_profile.get("id")
 
-    # If no fields specified, update all
     if fields is None:
         return build_farm_profile(geometry, year, farm_id)
 
-    # Field extraction functions
     field_extractors = {
         "rainfall_mm": lambda: get_rainfall(geometry, year=year),
         "temperature_celsius": lambda: get_temperature(geometry, year=year),
@@ -194,24 +198,21 @@ def bulk_create_profiles(
     """
     Create profiles for multiple farms in parallel.
 
+    GEE is initialised before calling this function (via init_gee()).
+    Each farm's riparian check makes a GEE call — ensure GEE credentials
+    are available in the environment.
+
     Args:
-        farms: List of farm dictionaries containing geometry and ID
-        geometry_field: Field name containing geometry (default: "geometry")
-        id_field: Field name containing farm ID (default: "farm_id")
-        year: Year for data extraction (default: 2024)
-        max_workers: Maximum parallel workers (default: 5)
-        progress_callback: Optional callback function(current, total)
+        farms:             List of farm dicts containing geometry and ID.
+        geometry_field:    Field name containing geometry (default: "geometry").
+        id_field:          Field name containing farm ID (default: "farm_id").
+        year:              Year for data extraction (default: 2024).
+        max_workers:       Maximum parallel workers (default: 5).
+        progress_callback: Optional callback(current, total).
 
     Returns:
-        DataFrame with all farm profiles
-
-    Example:
-        farms = [
-            {"farm_id": 1, "geometry": (-8.55, 125.57)},
-            {"farm_id": 2, "geometry": (-8.56, 125.58)},
-        ]
-        profiles_df = bulk_create_profiles(farms, year=2024)
-        profiles_df.to_csv("profiles_2024.csv", index=False)
+        DataFrame with all farm profiles including riparian and
+        distance_to_nearest_waterway_m columns.
     """
     year = year or 2024
     profiles = []
@@ -221,7 +222,6 @@ def bulk_create_profiles(
     start_time = time.time()
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # Submit all tasks
         future_to_farm = {
             executor.submit(
                 build_farm_profile,
@@ -233,17 +233,21 @@ def bulk_create_profiles(
             for farm in farms
         }
 
-        # Collect results
         completed = 0
+        failed = 0
         for future in as_completed(future_to_farm):
-            profile = future.result()
-            profiles.append(profile)
+            try:
+                profile = future.result()
+                profiles.append(profile)
+            except Exception as e:
+                failed += 1
+                farm = future_to_farm[future]
+                print(f"  ERROR farm_id={farm.get(id_field)}: {e}")
             completed += 1
 
             if progress_callback:
                 progress_callback(completed, total)
 
-            # Print progress every 10%
             if completed % max(1, total // 10) == 0:
                 elapsed = time.time() - start_time
                 rate = completed / elapsed
@@ -251,13 +255,13 @@ def bulk_create_profiles(
                 print(f"  Progress: {completed}/{total} ({completed / total * 100:.1f}%) - {rate:.1f} farms/sec - ETA: {remaining:.0f}s")
 
     elapsed = time.time() - start_time
-    success_count = sum(1 for p in profiles if p.get("status") == "success")
+    success_count = len(profiles)
 
     print("\nBulk creation complete!")
     print(f"  Total time: {elapsed:.1f}s")
     print(f"  Rate: {total / elapsed:.1f} farms/sec")
     print(f"  Success: {success_count}/{total} ({success_count / total * 100:.1f}%)")
-    print(f"  Failed: {total - success_count}")
+    print(f"  Failed: {failed}")
 
     return pd.DataFrame(profiles)
 
@@ -274,27 +278,26 @@ def bulk_update_profiles(
     Update specific fields for multiple farms in parallel.
 
     Args:
-        profiles_df: DataFrame with existing profiles
-        geometries: Dictionary mapping farm_id to geometry
-        fields: List of fields to update (None = all fields)
-        year: Year for data extraction (default: 2024)
-        max_workers: Maximum parallel workers (default: 5)
-        progress_callback: Optional callback function(current, total)
+        profiles_df:       DataFrame with existing profiles.
+        geometries:        Dictionary mapping farm_id to geometry.
+        fields:            List of fields to update (None = all fields).
+        year:              Year for data extraction (default: 2024).
+        max_workers:       Maximum parallel workers (default: 5).
+        progress_callback: Optional callback(current, total).
 
     Returns:
-        DataFrame with updated profiles
+        DataFrame with updated profiles.
 
     Example:
-        geometries = {1: geom1, 2: geom2, 3: geom3}
+        # Re-run only riparian check after buffer distance was confirmed
         updated_df = bulk_update_profiles(
             profiles_df=old_profiles,
             geometries=geometries,
-            fields=["rainfall_mm", "temperature_celsius"],
-            year=2025
+            fields=["riparian", "distance_to_nearest_waterway_m"],
         )
-        updated_df.to_csv("profiles_2025.csv", index=False)
     """
     year = year or 2024
+
     updated_profiles = []
     total = len(profiles_df)
 
@@ -303,7 +306,6 @@ def bulk_update_profiles(
     start_time = time.time()
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # Submit all tasks
         future_to_id = {}
         for _, profile in profiles_df.iterrows():
             farm_id = profile.get("id")
@@ -317,11 +319,16 @@ def bulk_update_profiles(
                 )
                 future_to_id[future] = farm_id
 
-        # Collect results
         completed = 0
+        failed = 0
         for future in as_completed(future_to_id):
-            profile = future.result()
-            updated_profiles.append(profile)
+            try:
+                profile = future.result()
+                updated_profiles.append(profile)
+            except Exception as e:
+                failed += 1
+                farm_id = future_to_id[future]
+                print(f"  ERROR farm_id={farm_id}: {e}")
             completed += 1
 
             if progress_callback:
@@ -334,10 +341,10 @@ def bulk_update_profiles(
                 print(f"  Progress: {completed}/{total} ({completed / total * 100:.1f}%) - {rate:.1f} farms/sec - ETA: {remaining:.0f}s")
 
     elapsed = time.time() - start_time
-    success_count = sum(1 for p in updated_profiles if p.get("status") == "success")
+    success_count = len(updated_profiles)
 
     print("\nBulk update complete!")
     print(f"  Total time: {elapsed:.1f}s")
-    print(f"  Success: {success_count}/{len(updated_profiles)} ({success_count / len(updated_profiles) * 100:.1f}%)")
+    print(f"  Success: {success_count}/{completed} ({success_count / completed * 100:.1f}% )" if completed else "")
 
     return pd.DataFrame(updated_profiles)

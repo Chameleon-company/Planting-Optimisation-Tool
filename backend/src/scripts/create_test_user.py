@@ -28,6 +28,7 @@ async def create_user():
             email=email,
             hashed_password=get_password_hash("password123"),
             role="admin",  # ADMIN role for full access during testing
+            is_verified=True,
         )
 
         session.add(user)

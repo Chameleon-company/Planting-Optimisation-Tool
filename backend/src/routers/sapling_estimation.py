@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
-from src.dependencies import require_role
+from src.dependencies import get_user_id, limiter, require_role
 from src.schemas.sapling_estimation import SaplingEstimationResponse
 from src.schemas.user import Role, UserRead
 from src.services import farm as farm_service
@@ -16,7 +16,9 @@ router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
     response_model=SaplingEstimationResponse,
     response_model_exclude_none=True,
 )
+@limiter.limit("10/minute", key_func=get_user_id)
 async def get_sapling_estimation(
+    request: Request,
     farm_id: int,
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.OFFICER)),

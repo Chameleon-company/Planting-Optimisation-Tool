@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 from pydantic import BaseModel, ConfigDict
@@ -58,5 +58,5 @@ class FarmReportContract(BaseModel):
         return cls(
             farm=FarmReportMetadata.model_validate(farm_obj),
             recommendations=recs,
-            generated_at=datetime.now(),
+            generated_at=datetime.now(timezone.utc),
         )

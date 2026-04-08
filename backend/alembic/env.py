@@ -25,6 +25,9 @@ target_metadata = Base.metadata
 
 
 # This stops alembic from trying to delete the PostGIS system tables
+UNMANAGED_TABLES = {"dem_table"}
+
+
 def include_object(obj, name, type_, reflected, compare_to):
     """Excludes PostGIS system tables from Alembic's consideration."""
     # List of tables owned by PostGIS that alembic shouldn't touch
@@ -34,6 +37,17 @@ def include_object(obj, name, type_, reflected, compare_to):
         "geometry_columns",
     ]:
         return False
+
+    # Ignore DEM table
+    if type_ == "table" and name in UNMANAGED_TABLES:
+        return False
+
+    # Ignore indexes on DEM table
+    if type_ == "index":
+        table = getattr(obj, "table", None)
+        if table is not None and table.name in UNMANAGED_TABLES:
+            return False
+
     return True
 
 

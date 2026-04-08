@@ -1,5 +1,6 @@
 import asyncio
 import csv
+import os
 import sys
 
 import httpx
@@ -11,7 +12,7 @@ from src.dependencies import create_access_token
 from src.models.user import User
 
 # Configuration
-BASE_URL = "http://127.0.0.1:8080"
+BASE_URL = f"http://127.0.0.1:{os.getenv('API_PORT', '8080')}"
 USER_EMAIL = "testuser123@test.com"
 
 
@@ -33,7 +34,7 @@ async def ingest_farms():
         token = await get_test_user_token()
         headers = {"Authorization": f"Bearer {token}"}
 
-        with open("src/scripts/data/farms_20251219.csv", mode="r", encoding="utf-8-sig") as f:
+        with open("src/scripts/data/farm_master.csv", mode="r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             count = 0
 
