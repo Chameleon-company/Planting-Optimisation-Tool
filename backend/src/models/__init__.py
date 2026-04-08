@@ -5,6 +5,7 @@ from src.models.association import (
 )
 from src.models.audit_log import AuditLog
 from src.models.boundaries import FarmBoundary
+from src.models.exclusion_rules import SpeciesDependency, SpeciesExclusionRule
 from src.models.farm import Farm
 from src.models.parameters import Parameter
 from src.models.planting_estimates import PlantingEstimate
@@ -30,4 +31,6 @@ __all__ = [
     "AuditLog",
     "AuthToken",
     "PlantingEstimate",
+    "SpeciesExclusionRule",
+    "SpeciesDependency",
 ]
