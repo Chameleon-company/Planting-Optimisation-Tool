@@ -1,0 +1,12 @@
+**/__pycache__
+**/*.pyc
+**/.venv
+**/.env
+frontend/
+datascience/notebooks/
+backend/src/scripts/data/
+gis/keys/
+gis/notebook/
+**/*.gpkg
+**/*.tif
+**/.git
