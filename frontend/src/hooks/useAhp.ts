@@ -37,7 +37,7 @@ export function useAhpSpecies() {
                         'Authorization': `Bearer ${token}`,
                     },
                 });
-                console.log("Species API response status:", response.status);
+
                 if (!response.ok) {
                     throw new Error(`Failed to fetch species: ${response.statusText}`);
                 }
@@ -77,7 +77,6 @@ export function useAhpFactors() {
                     method: 'GET',
                     headers,
                 });
-                console.log("Factors API response status:", response.status);
                 if (!response.ok) {
                     throw new Error(`Could not load features: ${response.statusText}`);
                 }
