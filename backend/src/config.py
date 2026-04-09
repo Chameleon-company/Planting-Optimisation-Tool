@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     smtp_password: str = "test"
     smtp_from_email: str = "test@example.com"
     TESTING: bool = False
+    REDIS_URL: str = Field(default="")
 
     email_verification_expiry_minutes: int = 10
     password_reset_expiry_minutes: int = 10
