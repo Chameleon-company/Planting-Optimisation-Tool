@@ -9,7 +9,6 @@ services:
     # preDeployCommand requires a paid plan. On the free tier, migrations
     # need to be run manually after each deploy: Render dashboard -> pot-backend -> Shell ->
     # cd /app/backend && uv run alembic upgrade head
-    preDeployCommand: cd /app/backend && uv run alembic upgrade head
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -68,6 +67,7 @@ services:
   - type: redis
     name: pot-redis
     plan: free
+    ipAllowList: []
     maxmemoryPolicy: allkeys-lru
 
 databases:
