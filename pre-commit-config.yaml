@@ -1,0 +1,63 @@
+repos:
+# ── Backend ───────────────────────────────────────────────────────────────────
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.1
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+-   repo: local
+    hooks:
+      - id: pytest-backend
+        name: pytest (backend)
+        entry: just -f backend/justfile test
+        language: system
+        files: ^backend/
+        pass_filenames: false
+
+# ── Datascience ───────────────────────────────────────────────────────────────
+      - id: ruff-check-datascience
+        name: ruff check (datascience)
+        entry: bash -c 'cd datascience && uv run ruff check --fix'
+        language: system
+        files: ^datascience/
+        types: [python]
+        pass_filenames: false
+      - id: ruff-format-datascience
+        name: ruff format (datascience)
+        entry: bash -c 'cd datascience && uv run ruff format .'
+        language: system
+        files: ^datascience/
+        types: [python]
+        pass_filenames: false
+      - id: pytest-datascience
+        name: pytest (datascience)
+        entry: bash -c 'cd datascience && uv run pytest'
+        language: system
+        files: ^datascience/
+        pass_filenames: false
+
+# ── GIS ───────────────────────────────────────────────────────────────────────
+      - id: ruff-check-gis
+        name: ruff check (gis)
+        entry: bash -c 'cd gis && uv run ruff check --fix'
+        language: system
+        files: ^gis/
+        types: [python]
+        pass_filenames: false
+      - id: ruff-format-gis
+        name: ruff format (gis)
+        entry: bash -c 'cd gis && uv run ruff format .'
+        language: system
+        files: ^gis/
+        types: [python]
+        pass_filenames: false
+      - id: pytest-gis
+        name: pytest (gis)
+        entry: bash -c 'cd gis && uv run pytest'
+        language: system
+        files: ^gis/
+        pass_filenames: false
