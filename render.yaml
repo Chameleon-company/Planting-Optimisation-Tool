@@ -4,7 +4,6 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
-    plan: free
     # Runs migrations before the new instance goes live.
     # preDeployCommand requires a paid plan. On the free tier, migrations
     # need to be run manually after each deploy: Render dashboard -> pot-backend -> Shell ->
@@ -34,7 +33,7 @@ services:
           property: database
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: pot-redis
           property: connectionString
       # These are set manually in the Render dashboard - never commit the values.
@@ -53,7 +52,6 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: ./frontend/build/dist
     rootDir: frontend
-    plan: free
     envVars:
       # These are set manually in the Render dashboard - never commit the values.
       - key: VITE_SPACE_ID
@@ -64,7 +62,7 @@ services:
       - key: VITE_API_URL
         sync: false
 
-  - type: redis
+  - type: keyvalue
     name: pot-redis
     plan: free
     ipAllowList: []
