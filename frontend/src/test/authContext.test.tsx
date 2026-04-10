@@ -1,17 +1,27 @@
-import { it, expect, describe } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import UserEvent from "@testing-library/user-event";
+import userEvent from "@testing-library/user-event";
 
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 
-// Create TestComponent to display all elements from AuthContext
+const mockFetch = vi.fn();
+
+Object.defineProperty(globalThis, "fetch", {
+  value: mockFetch,
+  writable: true,
+});
+
 const TestComponent = () => {
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, isLoading } = useAuth();
+
   return (
     <div>
       <p>{user ? `Logged in as ${user.name}` : "Not logged in"}</p>
+      <p>{isLoading ? "Loading" : "Idle"}</p>
       <button
-        onClick={() => login({ email: "test@test.com", password: "password" })}
+        onClick={() =>
+          login({ email: "admin@test.com", password: "Password123!" })
+        }
       >
         Login
       </button>
@@ -21,92 +31,121 @@ const TestComponent = () => {
 };
 
 describe("AuthContext", () => {
-  it("should start logged out", () => {
-    // Render TestComponent inside wrapper of AuthProvider
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    );
-
-    //Expect TestComponent to display default options
-    expect(screen.getByText(/Logged in as/i)).toBeInTheDocument();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
   });
 
-  it("should set user after login", async () => {
-    // Render TestComponent inside wrapper of AuthProvider
+  it("should start logged out when there is no token", () => {
     render(
       <AuthProvider>
         <TestComponent />
       </AuthProvider>
     );
 
-    // Await fake user to click Login button
-    await UserEvent.click(screen.getByText("Login"));
-
-    // Wait for screen to display 'Logged in as' inside render, or time out
-    await waitFor(() => {
-      expect(screen.getByText(/Logged in as/)).toBeInTheDocument();
-    });
-  });
-
-  it("clears user after logout", async () => {
-    // Render TestComponent inside wrapper of AuthProvider
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    );
-
-    // Wait for fake user to click login, and await screen to display 'Logged in as'
-    await UserEvent.click(screen.getByText("Login"));
-    await waitFor(() => screen.getByText(/Logged in as/));
-
-    // Wait for fake user to click logout, and await screen to display 'Not logged in'
-    await UserEvent.click(screen.getByText("Logout"));
     expect(screen.getByText("Not logged in")).toBeInTheDocument();
+    expect(screen.getByText("Idle")).toBeInTheDocument();
   });
 
-  it("should set the correct role and farms on the fake user after login", async () => {
-    // Create TestRoleComponent that displays data associated with logged in user
-    const TestRoleComponent = () => {
-      const { user, login } = useAuth();
-      return (
-        <div>
-          <p>{user ? `Role: ${user.role}` : "No role"}</p>
-          <p>{user ? `Farms: ${user.farms.join(", ")}` : "No farms"}</p>
-          <button
-            onClick={() =>
-              login({ email: "test@test.com", password: "password" })
-            }
-          >
-            Login
-          </button>
-        </div>
-      );
-    };
+  it("should log in and set the real user from backend responses", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: "test-token",
+          token_type: "bearer",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: "Admin User",
+          email: "admin@test.com",
+          role: "admin",
+        }),
+      });
 
-    // Render TestRoleComponent displaying user's farms and role
     render(
       <AuthProvider>
-        <TestRoleComponent />
+        <TestComponent />
       </AuthProvider>
     );
 
-    // Await fake user to click login
-    await UserEvent.click(screen.getByText("Login"));
+    await userEvent.click(screen.getByText("Login"));
 
-    // Wait for and expect screen to display, fake user's role, and associated user's farms
     await waitFor(() => {
-      expect(screen.getByText("Role: admin")).toBeInTheDocument();
-      expect(
-        screen.getByText("Farms: Unknown Farm 1, Unknown Farm 2")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Logged in as Admin User")).toBeInTheDocument();
     });
+
+    expect(localStorage.getItem("access_token")).toBe("test-token");
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("should clear user and token after logout", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: "test-token",
+          token_type: "bearer",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: "Admin User",
+          email: "admin@test.com",
+          role: "admin",
+        }),
+      });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await userEvent.click(screen.getByText("Login"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Logged in as Admin User")).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText("Logout"));
+
+    expect(screen.getByText("Not logged in")).toBeInTheDocument();
+    expect(localStorage.getItem("access_token")).toBeNull();
+  });
+
+  it("should restore user from localStorage token on mount", async () => {
+    localStorage.setItem("access_token", "stored-token");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 2,
+        name: "Stored Admin",
+        email: "stored@test.com",
+        role: "admin",
+      }),
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Logged in as Stored Admin")).toBeInTheDocument();
+    });
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it("should throw if useAuth is used outside provider", () => {
-    // If Context is thrown, expect correct error message to display
     expect(() => render(<TestComponent />)).toThrow(
       "useAuth must be used inside <AuthProvider>"
     );
