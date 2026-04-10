@@ -137,70 +137,75 @@ def test_wrong_data_type():
     assert 101 not in out["candidate_ids"], "Should not pass if farm measurement is not a valid number"
 
 
-# NEW TESTS - STORY 34
+# Testing for ecological and agroforestry
 
 
 def test_ecological_function_filtering():
     """
-    Test that species must satisfy at least one required ecological function.
+    Test that species must satisfy farm ecological requirements (boolean flags).
     """
     all_species = [
         {"id": 1, "name": "Species A", "nitrogen_fixing": True},
         {"id": 2, "name": "Species B", "nitrogen_fixing": False},
     ]
 
-    farm = {"id": 1, "required_functions": ["nitrogen_fixing"]}
+    # Farm REQUIRES nitrogen fixing
+    farm = {"id": 1, "nitrogen_fixing": True}
 
     out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
 
-    assert 1 in out["candidate_ids"]  # should pass
-    assert 2 not in out["candidate_ids"]  # should be excluded
+    assert 1 in out["candidate_ids"]  # passes
+    assert 2 not in out["candidate_ids"]  # excluded
 
 
 def test_agroforestry_type_filtering():
     """
-    Test that species must match the selected agroforestry type.
-    """
-    all_species = [
-        {"id": 1, "name": "Species A", "agroforestry_types": "block, boundary"},
-        {"id": 2, "name": "Species B", "agroforestry_types": "intercropping"},
-    ]
-
-    farm = {"id": 1, "agroforestry_type": "block"}
-
-    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
-
-    assert 1 in out["candidate_ids"]  # matches → pass
-    assert 2 not in out["candidate_ids"]  # does not match → excluded
-
-
-def test_combined_ecological_and_agroforestry_filters():
-    """
-    Test both ecological functions and agroforestry type together.
-    """
-    all_species = [
-        {"id": 1, "name": "Species A", "nitrogen_fixing": True, "agroforestry_types": "block"},
-        {"id": 2, "name": "Species B", "nitrogen_fixing": False, "agroforestry_types": "boundary"},
-    ]
-
-    farm = {"id": 1, "required_functions": ["nitrogen_fixing"], "agroforestry_type": "block"}
-
-    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
-
-    assert 1 in out["candidate_ids"]  # passes both filters
-    assert 2 not in out["candidate_ids"]  # fails both
-
-
-def test_agroforestry_type_list_handling():
-    """
-    Ensure agroforestry types work when stored as a list instead of string.
+    Test that species must match at least one farm agroforestry type.
     """
     all_species = [
         {"id": 1, "name": "Species A", "agroforestry_types": ["block", "boundary"]},
         {"id": 2, "name": "Species B", "agroforestry_types": ["intercropping"]},
     ]
 
-    farm = {"id": 1, "agroforestry_type": "boundary"}
+    farm = {"id": 1, "agroforestry_types": ["block"]}
+
+    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
+
+    assert 1 in out["candidate_ids"]
+    assert 2 not in out["candidate_ids"]
+
+
+def test_combined_ecological_and_agroforestry_filters():
+    """
+    Test both ecological and agroforestry filters together.
+    """
+    all_species = [
+        {"id": 1, "name": "Species A", "nitrogen_fixing": True, "agroforestry_types": ["block"]},
+        {"id": 2, "name": "Species B", "nitrogen_fixing": False, "agroforestry_types": ["boundary"]},
+    ]
+
+    farm = {
+        "id": 1,
+        "nitrogen_fixing": True,
+        "agroforestry_types": ["block"],
+    }
+
+    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
+
+    assert 1 in out["candidate_ids"]
+    assert 2 not in out["candidate_ids"]
+
+
+def test_agroforestry_type_list_handling():
+    """
+    Ensure agroforestry matching works for list inputs.
+    """
+    all_species = [
+        {"id": 1, "name": "Species A", "agroforestry_types": ["block", "boundary"]},
+        {"id": 2, "name": "Species B", "agroforestry_types": ["intercropping"]},
+    ]
+
+    farm = {"id": 1, "agroforestry_types": ["boundary"]}
 
     out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
 

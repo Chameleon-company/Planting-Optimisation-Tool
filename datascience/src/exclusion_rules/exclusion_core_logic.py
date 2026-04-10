@@ -144,41 +144,42 @@ def _check_topographic_requirements(species: Any, farm: Any) -> list[str]:
     return reasons
 
 
-# NEW: Ecological function filtering
+# Ecological function filtering
 def _check_ecological_functions(species: Any, farm: Any) -> list[str]:
     reasons = []
-    required_functions = _get_val(farm, "required_functions", [])
 
-    if isinstance(required_functions, str):
-        required_functions = [required_functions]
+    # Map of farm boolean → species attribute
+    checks = [
+        ("nitrogen_fixing", "excluded: species is not nitrogen fixing"),
+        ("shade_tolerant", "excluded: species is not shade tolerant"),
+        ("bank_stabilising", "excluded: species is not bank stabilising"),
+    ]
 
-    if not required_functions:
-        return reasons
-
-    if not any(_get_val(species, func, False) for func in required_functions):
-        reasons.append(f"excluded: does not match required ecological functions {required_functions}")
+    for attr, msg in checks:
+        if _get_val(farm, attr) is True and not _get_val(species, attr, False):
+            reasons.append(msg)
 
     return reasons
 
 
-# NEW: Agroforestry type filtering
+# Agroforestry type filtering
 def _check_agroforestry_types(species: Any, farm: Any) -> list[str]:
     reasons = []
-    selected_type = _get_val(farm, "agroforestry_type")
 
-    if not selected_type:
-        return reasons
-
+    farm_types_raw = _get_val(farm, "agroforestry_types", [])
     species_types_raw = _get_val(species, "agroforestry_types", [])
 
-    # Normalize to list
-    if isinstance(species_types_raw, str):
-        species_types = [t.strip().lower() for t in species_types_raw.split(",") if t.strip()]
-    else:
-        species_types = [str(t).strip().lower() for t in species_types_raw]
+    # Normalize both to lowercase lists
+    farm_types = [str(t).strip().lower() for t in farm_types_raw]
+    species_types = [str(t).strip().lower() for t in species_types_raw]
 
-    if selected_type.lower() not in species_types:
-        reasons.append(f"excluded: not compatible with agroforestry type '{selected_type}'")
+    # If farm has no preference → allow
+    if not farm_types:
+        return reasons
+
+    # Check intersection
+    if not any(ft in species_types for ft in farm_types):
+        reasons.append("excluded: not compatible with selected agroforestry types")
 
     return reasons
 
