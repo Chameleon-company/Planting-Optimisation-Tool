@@ -11,6 +11,7 @@ import CalculatorPage from "./pages/CalculatorPage";
 import RecommendationPage from "./pages/RecommendationPage";
 import SpeciesPage from "./pages/SpeciesPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import LoginPage from "./pages/auth/LoginPage";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -24,6 +25,7 @@ export default function App() {
       <Providers>
         <BrowserRouter>
           <Routes>
+            <Route path="/login" element={<LoginPage />} />
             <Route element={<MainLayout />}>
               <Route path="/" index element={<HomePage />} />
               <Route path="/profile" element={<ProfilePage />} />
@@ -36,7 +38,7 @@ export default function App() {
             <Route
               path="/admin"
               element={
-                <RequireRole allowedRoles={["admin", "supervisor"]}>
+                <RequireRole allowedRoles={["admin"]}>
                   <AdminLayout />
                 </RequireRole>
               }
