@@ -31,7 +31,7 @@ def get_recommend_config():
 
 
 async def get_all_species_for_engine(db: AsyncSession) -> list[SuitabilitySpecies]:
-    stmt = select(Species).options(selectinload(Species.soil_textures))
+    stmt = select(Species).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types))
     result = await db.execute(stmt)
     return [SuitabilitySpecies.from_db_model(sp) for sp in result.scalars().all()]
 
@@ -40,7 +40,7 @@ async def get_species_by_ids(db: AsyncSession, ids: list[int], order_by_id: bool
     if not ids:
         return []
 
-    stmt = select(Species).options(selectinload(Species.soil_textures)).where(Species.id.in_(ids))
+    stmt = select(Species).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)).where(Species.id.in_(ids))
     if order_by_id:
         stmt = stmt.order_by(Species.id)
 
