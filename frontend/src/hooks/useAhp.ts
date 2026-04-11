@@ -3,7 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAsyncError } from '@/hooks/useAsyncError';
 import { AhpResponse, CalculationRequest } from '@/utils/ahp_types';
 
-const API_URL = 'http://127.0.0.1:8080';
+const API_BASE = import.meta.env.VITE_API_URL;
+
 
 // --- TYPES ---
 export interface SpeciesDropdownItem {
@@ -18,7 +19,8 @@ export interface FactorsResponse {
 
 // --- SPECIES DROPDOWN HOOK ---
 export function useAhpSpecies() {
-    const { token } = useAuth();
+    const { getAccessToken } = useAuth();
+    const token = getAccessToken();
     const throwAsyncError = useAsyncError();
 
     const [speciesList, setSpeciesList] = useState<SpeciesDropdownItem[]>([]);
@@ -30,7 +32,7 @@ export function useAhpSpecies() {
         const fetchSpecies = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch(`${API_URL}/species/dropdown`, {
+                const response = await fetch(`${API_BASE}/species/dropdown`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -60,7 +62,8 @@ export function useAhpSpecies() {
 
 // --- AHP CONFIG (FEATURES) HOOK ---
 export function useAhpFactors() {
-    const { token } = useAuth();
+    const { getAccessToken } = useAuth();
+    const token = getAccessToken();
     const throwAsyncError = useAsyncError();
 
     const [factorsList, setFactorsList] = useState<FactorsResponse | null>(null);
@@ -73,7 +76,7 @@ export function useAhpFactors() {
                 const headers: HeadersInit = { 'Accept': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                const response = await fetch(`${API_URL}/species/features`, {
+                const response = await fetch(`${API_BASE}/species/features`, {
                     method: 'GET',
                     headers,
                 });
@@ -99,7 +102,8 @@ export function useAhpFactors() {
 
 // --- AHP CALCULATION HOOK ---
 export function useAhpCalculation() {
-    const { token } = useAuth();
+    const { getAccessToken } = useAuth();
+    const token = getAccessToken();
     const throwAsyncError = useAsyncError();
 
     const [results, setResults] = useState<AhpResponse | null>(null);
@@ -112,7 +116,7 @@ export function useAhpCalculation() {
             const headers: HeadersInit = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
             if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            const response = await fetch(`${API_URL}/ahp/calculate-and-save`, {
+            const response = await fetch(`${API_BASE}/ahp/calculate-and-save`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(payload),
