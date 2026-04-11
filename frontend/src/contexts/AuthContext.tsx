@@ -23,7 +23,6 @@ interface User {
 // Logout is a function promising void when complete
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   logout: () => void;
@@ -34,20 +33,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 // Create function AuthProvider with children of ReactNode type
 export function AuthProvider({ children }: { children: ReactNode }) {
-
-  // Initialize with a hardcoded "Mock" token for testing
-  //const [token, setToken] = useState<string | null>("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzc1Mjc3ODgxfQ._uMCvtI90DYkSBC_e-BYTSSF4Jwcfxz-LNL1ovBf2kM");
-  // Start with no token
-  const [token, setToken] = useState<string | null>(null);
-
-  // Initialize a fake user so your UI thinks someone is logged in
-  //const [user, setUser] = useState<User | null>({
-  //  id: 1,
-  //  name: "admin",
-  //  email: "admin@example.com",
-  //  role: "admin",
-  //  farms: ["Farm 1", "Farm 2"]
-  //});
   // Set user and isLoading as a useState of interfacetype User or null, defaults are null/false
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(
@@ -125,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("access_token");
     setUser(null);
-    setToken(null);
   }, []);
 
   useEffect(() => {
@@ -155,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Calling AuthContext with its provider will provide values (variables and functions), user, isLoading, login, logout
   // To all children wrapped by the Provider
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
