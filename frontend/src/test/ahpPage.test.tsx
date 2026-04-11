@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
+import { MemoryRouter } from "react-router-dom"; // <-- Added MemoryRouter
 import UserEvent from "@testing-library/user-event";
 
 import AhpPage from "@/pages/admin/settings/AhpPage";
@@ -25,8 +26,11 @@ describe("AhpPage Integration", () => {
             results: null, isCalculating: false, handleCalculate: vi.fn(), resetCalculation: vi.fn()
         });
 
+        // Wrapped in MemoryRouter
         render(
-            <HelmetProvider><AhpPage /></HelmetProvider>
+            <MemoryRouter>
+                <HelmetProvider><AhpPage /></HelmetProvider>
+            </MemoryRouter>
         );
 
         const startBtn = screen.getByRole("button", { name: /Start Profiling/i });
@@ -42,8 +46,11 @@ describe("AhpPage Integration", () => {
             results: null, isCalculating: false, handleCalculate: vi.fn(), resetCalculation: vi.fn()
         });
 
+        // Wrapped in MemoryRouter
         render(
-            <HelmetProvider><AhpPage /></HelmetProvider>
+            <MemoryRouter>
+                <HelmetProvider><AhpPage /></HelmetProvider>
+            </MemoryRouter>
         );
 
         // Select a species to enable the start button
@@ -68,8 +75,11 @@ describe("AhpPage Integration", () => {
             resetCalculation: vi.fn()
         });
 
+        // Wrapped in MemoryRouter
         render(
-            <HelmetProvider><AhpPage /></HelmetProvider>
+            <MemoryRouter>
+                <HelmetProvider><AhpPage /></HelmetProvider>
+            </MemoryRouter>
         );
 
         // Table headers should render

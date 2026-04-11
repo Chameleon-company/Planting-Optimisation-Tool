@@ -3,9 +3,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { useAhpSpecies, useAhpFactors, useAhpCalculation } from "@/hooks/useAhp";
 
-// Mock external contexts and hooks
+
 vi.mock('@/contexts/AuthContext', () => ({
-    useAuth: () => ({ token: 'fake-token' })
+    useAuth: () => ({
+        token: 'fake-token',
+        getAccessToken: vi.fn(() => 'fake-token')
+    })
 }));
 
 const mockThrowAsyncError = vi.fn();

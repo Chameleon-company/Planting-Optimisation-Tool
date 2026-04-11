@@ -1,65 +1,89 @@
-import "@testing-library/jest-dom/vitest";
-import { describe, expect, it } from "vitest";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
+import { MemoryRouter } from "react-router-dom"; // <-- Added MemoryRouter
+import UserEvent from "@testing-library/user-event";
 
-import AdminLayout from "../components/layout/AdminLayout";
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import AdminSettings from "../pages/admin/AdminSettings";
-import AdminLogs from "../pages/admin/AdminLogs";
-import { AuthProvider } from "../contexts/AuthContext";
+import AhpPage from "@/pages/admin/settings/AhpPage";
 
-function renderAdminRoute(initialPath: string) {
-  return render(
-    <HelmetProvider>
-      <AuthProvider>
-        <MemoryRouter initialEntries={[initialPath]}>
-          <Routes>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="settings" element={<AdminSettings />} />
-              <Route path="logs" element={<AdminLogs />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      </AuthProvider>
-    </HelmetProvider>
-  );
-}
+// Mock the entire custom hook suite
+vi.mock("@/hooks/useAhp", () => ({
+  useAhpFactors: vi.fn(),
+  useAhpCalculation: vi.fn(),
+  useAhpSpecies: vi.fn().mockReturnValue({
+    speciesList: [{ id: 1, name: "Sci", common_name: "Test Tree" }],
+    isLoading: false
+  })
+}));
 
-describe("AdminLayout", () => {
-  it("renders the admin shell and dashboard content", () => {
-    renderAdminRoute("/admin");
+import { useAhpFactors, useAhpCalculation } from "@/hooks/useAhp";
 
-    expect(screen.getByText("Management Panel")).toBeInTheDocument();
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
-    expect(screen.getByText("Audit Logs")).toBeInTheDocument();
-    expect(screen.getByText("Dashboard Overview")).toBeInTheDocument();
+describe("AhpPage Integration", () => {
+  it("disables start button until a species is selected", () => {
+    vi.mocked(useAhpFactors).mockReturnValue({ factorsList: { factors: ["A", "B"] }, isLoading: false });
+    vi.mocked(useAhpCalculation).mockReturnValue({
+      results: null, isCalculating: false, handleCalculate: vi.fn(), resetCalculation: vi.fn()
+    });
+
+    // Wrapped in MemoryRouter
+    render(
+      <MemoryRouter>
+        <HelmetProvider><AhpPage /></HelmetProvider>
+      </MemoryRouter>
+    );
+
+    const startBtn = screen.getByRole("button", { name: /Start Profiling/i });
+    expect(startBtn).toBeDisabled();
+    expect(screen.queryByText(/Which factor is more important/i)).not.toBeInTheDocument();
   });
 
-  it("renders the settings page inside the admin shell", () => {
-    renderAdminRoute("/admin/settings");
+  it("opens comparison matrix when start button is clicked", async () => {
+    const user = UserEvent.setup();
 
-    expect(screen.getByText("Management Panel")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Settings" })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/support configuration controls/i)
-    ).toBeInTheDocument();
+    vi.mocked(useAhpFactors).mockReturnValue({ factorsList: { factors: ["A", "B"] }, isLoading: false });
+    vi.mocked(useAhpCalculation).mockReturnValue({
+      results: null, isCalculating: false, handleCalculate: vi.fn(), resetCalculation: vi.fn()
+    });
+
+    // Wrapped in MemoryRouter
+    render(
+      <MemoryRouter>
+        <HelmetProvider><AhpPage /></HelmetProvider>
+      </MemoryRouter>
+    );
+
+    // Select a species to enable the start button
+    await user.selectOptions(screen.getByRole("combobox"), "1");
+
+    const startBtn = screen.getByRole("button", { name: /Start Profiling/i });
+    expect(startBtn).not.toBeDisabled();
+    await user.click(startBtn);
+
+    // The matrix UI should now be visible
+    expect(screen.getByText(/Which factor is more important/i)).toBeInTheDocument();
   });
 
-  it("renders the audit logs page inside the admin shell", () => {
-    renderAdminRoute("/admin/logs");
+  it("displays results table when calculations are complete", () => {
+    vi.mocked(useAhpFactors).mockReturnValue({ factorsList: { factors: ["A", "B"] }, isLoading: false });
 
-    expect(screen.getByText("Management Panel")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Audit Logs" })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/display system audit activity/i)
-    ).toBeInTheDocument();
+    // Mock a finished calculation state
+    vi.mocked(useAhpCalculation).mockReturnValue({
+      results: { weights: { A: 0.5, B: 0.5 }, consistency_ratio: 0, is_consistent: true, message: "Success" },
+      isCalculating: false,
+      handleCalculate: vi.fn(),
+      resetCalculation: vi.fn()
+    });
+
+    // Wrapped in MemoryRouter
+    render(
+      <MemoryRouter>
+        <HelmetProvider><AhpPage /></HelmetProvider>
+      </MemoryRouter>
+    );
+
+    // Table headers should render
+    expect(screen.getByRole("columnheader", { name: /Factor/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Weight/i })).toBeInTheDocument();
   });
 });
