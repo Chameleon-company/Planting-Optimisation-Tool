@@ -1,0 +1,77 @@
+services:
+  - type: web
+    name: pot-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    # Runs migrations before the new instance goes live.
+    # preDeployCommand requires a paid plan. On the free tier, migrations
+    # need to be run manually after each deploy: Render dashboard -> pot-backend -> Shell ->
+    # cd /app/backend && uv run alembic upgrade head
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: pot-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: pot-db
+          property: password
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: pot-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: pot-db
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: pot-db
+          property: database
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: pot-redis
+          property: connectionString
+      # These are set manually in the Render dashboard - never commit the values.
+      - key: GEE_SERVICE_ACCOUNT
+        sync: false
+      - key: GEE_KEY_JSON
+        sync: false
+      - key: TESTING
+        value: "false"
+      - key: RATELIMIT_ENABLED
+        value: "true"
+
+  - type: web
+    name: pot-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./frontend/build/dist
+    rootDir: frontend
+    envVars:
+      # These are set manually in the Render dashboard - never commit the values.
+      - key: VITE_SPACE_ID
+        sync: false
+      - key: VITE_ACCESS_TOKEN
+        sync: false
+      # Backend API URL - set after pot-backend is first deployed.
+      - key: VITE_API_URL
+        sync: false
+
+  - type: keyvalue
+    name: pot-redis
+    plan: free
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+
+databases:
+  - name: pot-db
+    databaseName: pot_db
+    plan: free
+    postgresMajorVersion: 15
+    # After first deploy, enable PostGIS manually via the Render dashboard shell:
+    #   psql $DATABASE_URL -c "CREATE EXTENSION IF NOT EXISTS postgis;"

@@ -33,10 +33,10 @@ stop:
     @docker compose down
     @echo "--- PostgreSQL Container Stopped ---"
 
-# Starts the PostgreSQL Container
+# Starts the PostgreSQL and Redis containers
 start:
-    @echo "--- Starting PostgreSQL Container ---"
-    @docker compose up -d {{SERVICE_NAME}}
+    @echo "--- Starting Containers ---"
+    @docker compose up -d {{SERVICE_NAME}} redis
     @echo "Waiting for DB to be ready..."
     @{{PYTHON}} -c "import time; time.sleep(5)"
 
@@ -66,7 +66,7 @@ rename-column: ensure-env
     @{{ALEMBIC_CMD}} revision -m "MANUAL_RENAME_REQUIRED"
 
 # Clones the database and runs the pytest suite
-test: ensure-env
+test: ensure-env migrate
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.replicate_db
 
 # Starts an interactive PSQL session
@@ -87,8 +87,9 @@ erd: ensure-env
     @{{PYTHON}} -c "print(chr(96)*3)" >> ERD.md
     @echo "--- ERD.md created successfully. ---"
 
-# Starts the FastAPI server. Optionally pass a port: just run-api 9000 (default: 8080, or API_PORT from .env)
+# Starts the FastAPI server (and Redis if not already running)
 run-api port=DEFAULT_PORT: ensure-env
+    @docker compose up -d redis
     -@{{UV_RUNNER}} fastapi dev {{FASTAPI_TARGET}} --port {{port}} --host 0.0.0.0
 
 # WARNING: Destructive. Wipes the database and re-populates from scratch. Optionally pass a port: just populate 9000 (default: 8080, or API_PORT from .env)
