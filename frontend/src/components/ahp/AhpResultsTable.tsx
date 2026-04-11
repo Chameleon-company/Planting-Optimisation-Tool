@@ -1,5 +1,4 @@
 import { AhpResponse } from '@/utils/ahp_types';
-import { styles } from '@/utils/ahp_styles';
 
 interface ResultsProps {
     data: AhpResponse;
@@ -13,31 +12,31 @@ export default function AhpResultsTable({ data, speciesName, onReset, onRetry }:
     const crPercent = (consistency_ratio * 100).toFixed(2);
 
     return (
-        <div style={styles.resultsCard}>
+        <div className="ahp-results-card">
             <h2>Results for {speciesName}</h2>
 
-            <div style={is_consistent ? styles.badgePass : styles.badgeFail}>
+            <div className={is_consistent ? "ahp-badge-pass" : "ahp-badge-fail"}>
                 Consistency Ratio: {crPercent}%
                 {is_consistent ? " (Acceptable)" : " (Inconsistent - Please Retry)"}
             </div>
 
-            <table style={styles.table}>
+            <table className="ahp-table">
                 <thead>
                     <tr>
-                        <th style={styles.th}>Factor</th>
-                        <th style={styles.th}>Weight</th>
-                        <th style={styles.th}>% Importance</th>
+                        <th className="ahp-th">Factor</th>
+                        <th className="ahp-th">Weight</th>
+                        <th className="ahp-th">% Importance</th>
                     </tr>
                 </thead>
                 <tbody>
                     {Object.entries(weights).map(([factor, weight]) => (
-                        <tr key={factor} style={styles.tr}>
-                            <td style={styles.td}>{factor}</td>
-                            <td style={styles.td}>{weight.toFixed(4)}</td>
-                            <td style={styles.td}>
-                                <div style={styles.barContainer}>
-                                    <div style={styles.progressBarBg}>
-                                        <div style={{ ...styles.progressBarFill, width: `${weight * 100}%` }}></div>
+                        <tr key={factor} className="ahp-tr">
+                            <td className="ahp-td">{factor}</td>
+                            <td className="ahp-td">{weight.toFixed(4)}</td>
+                            <td className="ahp-td">
+                                <div className="ahp-bar-container">
+                                    <div className="ahp-progress-bar-bg">
+                                        <div className="ahp-progress-bar-fill" style={{ width: `${weight * 100}%` }}></div>
                                     </div>
                                     <span>{(weight * 100).toFixed(1)}%</span>
                                 </div>
@@ -48,11 +47,11 @@ export default function AhpResultsTable({ data, speciesName, onReset, onRetry }:
             </table>
 
             {is_consistent ? (
-                <button style={styles.primaryBtn} onClick={onReset}>
+                <button className="ahp-primary-btn" onClick={onReset}>
                     Profile Another Species
                 </button>
             ) : (
-                <button style={styles.primaryBtn} onClick={onRetry}>
+                <button className="ahp-primary-btn" onClick={onRetry}>
                     Profile Again
                 </button>
             )}

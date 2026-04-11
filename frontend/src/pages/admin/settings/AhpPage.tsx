@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { useAhpFactors, useAhpCalculation } from '@/hooks/useAhp';
-import { styles } from '@/utils/ahp_styles';
 
 import AhpHeader from '@/components/ahp/AhpHeader';
 import { SpeciesSelector } from '@/components/ahp/SpeciesSelector';
@@ -66,16 +65,23 @@ export default function AhpPage() {
     };
 
     return (
-        <div style={styles.viewContainer}>
+        <div className="ahp-view-container">
             <Helmet>
                 <title>AHP Expert Weighting | Planting Optimisation Tool</title>
             </Helmet>
 
+            {/* Back Button */}
+            <div style={{ marginBottom: "24px" }}>
+                <Link to="/admin/settings/weighting" style={{ textDecoration: "none", color: "#4f46e5", fontWeight: "500" }}>
+                    ← Back to Weighting Methods
+                </Link>
+            </div>
+
             <AhpHeader />
 
             {/* The Control Panel */}
-            <div style={styles.controls}>
-                <div style={styles.inputGroup}>
+            <div className="ahp-controls">
+                <div className="ahp-input-group">
                     <SpeciesSelector
                         isDisabled={isComparing || isCalculating || !!results}
                         onSpeciesSelect={(id, name) => {
@@ -85,7 +91,7 @@ export default function AhpPage() {
                     />
                 </div>
                 <button
-                    style={selectedSpeciesId !== null && !isComparing && !results ? styles.primaryBtn : { ...styles.primaryBtn, ...styles.disabledBtn }}
+                    className={selectedSpeciesId !== null && !isComparing && !results ? "ahp-primary-btn" : "ahp-primary-btn ahp-disabled-btn"}
                     onClick={startComparison}
                     disabled={!selectedSpeciesName || isComparing || !!results || isConfigLoading}
                 >
@@ -105,7 +111,7 @@ export default function AhpPage() {
 
             {/* State 2: Loading Weights */}
             {isCalculating && (
-                <div style={styles.resultsCard}>
+                <div className="ahp-results-card">
                     <p>Calculating Eigenvector Weights...</p>
                 </div>
             )}

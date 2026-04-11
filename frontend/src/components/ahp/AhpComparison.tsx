@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { styles } from '@/utils/ahp_styles';
-
 
 // Map backend factor strings to the imported SVGs
 const factorIconMap: Record<string, string> = {
@@ -67,40 +65,39 @@ export default function AhpComparison({ factors, speciesName, onComplete, onCanc
     ];
 
     return (
-        <div style={styles.resultsCard}>
+        <div className="ahp-results-card">
             <h3>Profiling: {speciesName}</h3>
             <p style={{ color: '#888' }}>Comparison {currentIndex + 1} of {queue.length}</p>
 
-            <div style={styles.comparisonBox}>
-                <div style={styles.factorLeft}>{factorA}</div>
-                <div style={styles.vs}>vs</div>
-                <div style={styles.factorRight}>{factorB}</div>
+            <div className="ahp-comparison-box">
+                <div className="ahp-factor-left">{factorA}</div>
+                <div className="ahp-vs">vs</div>
+                <div className="ahp-factor-right">{factorB}</div>
             </div>
 
             <div>
                 <p style={{ marginBottom: '15px' }}>Which factor is more important?</p>
 
-                <div style={styles.scaleWrapper}>
+                <div className="ahp-scale-wrapper">
 
                     {/* Left Side Icon (Factor A) */}
-                    <div style={styles.iconSide}>
+                    <div className="ahp-icon-side">
                         <img
                             src={factorIconMap[factorA] || '/assets/images/default.svg'}
                             alt={factorA}
-                            style={styles.svgIcon}
+                            className="ahp-svg-icon"
                         />
-                        <span style={styles.iconLabel}>Favours {factorA}</span>
+                        <span className="ahp-icon-label">Favours {factorA}</span>
                     </div>
 
-                    <div style={styles.scaleContainer}>
+                    <div className="ahp-scale-container">
                         {scaleOptions.map((opt, idx) => {
                             const isActive = opt.val === selectedValue;
-                            const btnStyle = { ...styles.scaleBtn, ...(isActive ? { background: '#3498db', color: 'white', transform: 'scale(1.1)' } : {}) };
 
                             return (
                                 <button
                                     key={idx}
-                                    style={btnStyle}
+                                    className={`ahp-scale-btn ${isActive ? 'active' : ''}`}
                                     onClick={() => setSelectedValue(opt.val)}
                                     title={opt.label}
                                 >
@@ -111,23 +108,23 @@ export default function AhpComparison({ factors, speciesName, onComplete, onCanc
                     </div>
 
                     {/* Right Side Icon (Factor B) */}
-                    <div style={styles.iconSide}>
+                    <div className="ahp-icon-side">
                         <img
                             src={factorIconMap[factorB] || '/assets/images/default.svg'}
                             alt={factorB}
-                            style={styles.svgIcon}
+                            className="ahp-svg-icon"
                         />
-                        <span style={styles.iconLabel}>Favours {factorB}</span>
+                        <span className="ahp-icon-label">Favours {factorB}</span>
                     </div>
 
                 </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '30px' }}>
-                <button style={styles.secondaryBtn} onClick={onCancel}>
+                <button className="ahp-secondary-btn" onClick={onCancel}>
                     Cancel
                 </button>
-                <button style={{ ...styles.primaryBtn, margin: 0 }} onClick={handleNext}>
+                <button className="ahp-primary-btn" onClick={handleNext}>
                     Next Comparison ➔
                 </button>
             </div>

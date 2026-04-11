@@ -1,7 +1,6 @@
 // src/components/ahp/SpeciesSelector.tsx
 import React from 'react';
 import { useAhpSpecies } from '@/hooks/useAhp';
-import { styles } from '@/utils/ahp_styles';
 
 interface SpeciesSelectorProps {
     onSpeciesSelect: (speciesId: number, speciesName: string) => void;
@@ -23,15 +22,15 @@ export function SpeciesSelector({ onSpeciesSelect, isDisabled }: SpeciesSelector
     };
 
     return (
-        <div style={styles.inputGroup}>
-            <label htmlFor="species-select" style={styles.label}>
+        <div className="ahp-input-group">
+            <label htmlFor="species-select" className="ahp-label">
                 Select a Species
             </label>
 
             <select
                 id="species-select"
                 onChange={handleChange}
-                style={styles.select}
+                className="ahp-select"
                 defaultValue=""
                 disabled={isLoading || isDisabled}
             >

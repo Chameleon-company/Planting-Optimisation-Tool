@@ -25,12 +25,10 @@
   --surface: #f4f7f5;
   --border: #e3e7e5;
   --gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #0e7a43 100%);
-  --gradient-dark: linear-gradient(
-    135deg,
-    #16a34a 0%,
-    #0e7a43 60%,
-    #065f46 100%
-  );
+  --gradient-dark: linear-gradient(135deg,
+      #16a34a 0%,
+      #0e7a43 60%,
+      #065f46 100%);
 }
 
 * {
@@ -826,16 +824,12 @@ main.container {
 
 .site-footer::before {
   background:
-    radial-gradient(
-      1200px 400px at 10% -10%,
+    radial-gradient(1200px 400px at 10% -10%,
       rgba(255, 255, 255, 0.08),
-      transparent 50%
-    ),
-    radial-gradient(
-      1000px 300px at 80% -20%,
+      transparent 50%),
+    radial-gradient(1000px 300px at 80% -20%,
       rgba(255, 255, 255, 0.06),
-      transparent 50%
-    );
+      transparent 50%);
   content: "";
   inset: 0;
   pointer-events: none;
@@ -1060,16 +1054,12 @@ main.container {
 .login-page {
   align-items: center;
   background:
-    radial-gradient(
-      circle at top left,
+    radial-gradient(circle at top left,
       rgba(102, 242, 163, 0.18),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at bottom right,
+      transparent 35%),
+    radial-gradient(circle at bottom right,
       rgba(19, 153, 82, 0.16),
-      transparent 30%
-    ),
+      transparent 30%),
     linear-gradient(180deg, #f7fbf8 0%, #eef7f1 100%);
   display: flex;
   justify-content: center;
@@ -1310,6 +1300,7 @@ main.container {
   opacity: 0.6;
   transform: none;
 }
+
 /* ============ LOGIN MOBILE IMPROVEMENTS ============ */
 
 @media (max-width: 480px) {
@@ -1327,155 +1318,4 @@ main.container {
 .login-input-error {
   border-color: #e74c3c;
   box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
-}
-/* ============ US-002 / #155 ADMIN DASHBOARD SHELL ============ */
-/* Core shell layout styles for admin/manager management pages */
-
-.admin-layout {
-  background: #f5f7fb;
-  display: flex;
-  min-height: 100vh;
-}
-
-.admin-sidebar {
-  background: #102a43;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px 18px;
-  width: 260px;
-}
-
-.admin-sidebar-brand {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-}
-
-.admin-sidebar-logo {
-  height: 48px;
-  object-fit: contain;
-  width: 48px;
-}
-
-.admin-sidebar-brand h2 {
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-.admin-sidebar-brand p {
-  font-size: 0.9rem;
-  margin: 4px 0 0;
-  opacity: 0.8;
-}
-
-/* Navigation links inside the admin sidebar */
-.admin-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.admin-nav-link {
-  border-radius: 10px;
-  color: #fff;
-  display: block;
-  padding: 12px 14px;
-  text-decoration: none;
-  transition: background 0.2s ease;
-}
-
-.admin-nav-link:hover,
-.admin-nav-link.active {
-  background: rgba(255, 255, 255, 0.16);
-}
-
-/* Right-side content area of the dashboard shell */
-.admin-main {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-.admin-header {
-  align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #d9e2ec;
-  display: flex;
-  justify-content: space-between;
-  padding: 24px 32px;
-}
-
-.admin-header h1 {
-  color: #102a43;
-  font-size: 1.8rem;
-  margin: 0;
-}
-
-.admin-header p {
-  color: #486581;
-  margin: 6px 0 0;
-}
-
-.admin-content {
-  padding: 32px;
-}
-
-/* Reusable content card for admin placeholder pages */
-.admin-page-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-  padding: 24px;
-}
-
-.admin-page-card h2 {
-  color: #102a43;
-  margin-top: 0;
-}
-
-.admin-page-card p {
-  color: #486581;
-  line-height: 1.6;
-}
-
-/* =========================
-   ADMIN HEADER ENHANCEMENT (#155)
-   ========================= */
-
-.admin-header-left {
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-breadcrumb {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.admin-header-right {
-  align-items: center;
-  color: #333;
-  display: flex;
-  font-size: 0.9rem;
-  font-weight: 500;
-  gap: 12px;
-}
-
-/* Admin logout button */
-.admin-logout-btn {
-  background: #102a43;
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 10px 14px;
-  transition: background 0.2s ease;
-}
-
-.admin-logout-btn:hover {
-  background: #0b1f33;
 }
