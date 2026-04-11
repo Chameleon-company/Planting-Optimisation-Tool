@@ -23,10 +23,10 @@ interface User {
 // Logout is a function promising void when complete
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   logout: () => void;
+  getAccessToken: () => string | null;
 }
 
 // Set AuthContext as a context with AuthContextType or null as it's type, default is null
@@ -111,7 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("access_token");
     setUser(null);
-    setToken(null);
+  }, []);
+
+  const getAccessToken = useCallback(() => {
+    return localStorage.getItem("access_token");
   }, []);
 
   useEffect(() => {
@@ -141,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Calling AuthContext with its provider will provide values (variables and functions), user, isLoading, login, logout
   // To all children wrapped by the Provider
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, getAccessToken }}>
       {children}
     </AuthContext.Provider>
   );
