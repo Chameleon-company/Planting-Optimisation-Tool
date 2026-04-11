@@ -3,8 +3,11 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   ReactNode,
 } from "react";
+// API base URL (adjust if needed)
+const API_BASE = import.meta.env.VITE_API_URL;
 
 // Create interface for User that maps to User model in backend, excluding password
 interface User {
@@ -31,43 +34,107 @@ const AuthContext = createContext<AuthContextType | null>(null);
 // Create function AuthProvider with children of ReactNode type
 export function AuthProvider({ children }: { children: ReactNode }) {
   // Set user and isLoading as a useState of interfacetype User or null, defaults are null/false
-  const [user, setUser] = useState<User | null>({
-    id: 1,
-    name: "John Doe",
-    email: "admin@test.com",
-    role: "admin",
-    farms: [],
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(
+    () => !!localStorage.getItem("access_token")
+  );
 
-  // Create function login, using callback which creates a new function for each call
+  const fetchCurrentUser = useCallback(async (token: string) => {
+    const userResponse = await fetch(`${API_BASE}/auth/users/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!userResponse.ok) {
+      throw new Error("Failed to fetch user details");
+    }
+
+    const userData = await userResponse.json();
+
+    const realUser: User = {
+      id: userData.id,
+      name: userData.name || userData.email,
+      email: userData.email,
+      role: userData.role,
+      farms: [],
+    };
+
+    setUser(realUser);
+  }, []);
+
   const login = useCallback(
     async (credentials: { email: string; password: string }) => {
       setIsLoading(true);
+
       try {
-        // TODO: replace with real API call
-        // e.g const response = await api.post('/auth/login', credentials);
-        // then setUser(response.data);
-        const fakeUser: User = {
-          id: 1,
-          name: "John Doe",
-          email: credentials.email,
-          role: "admin",
-          farms: ["Unknown Farm 1", "Unknown Farm 2"],
-        };
-        setUser(fakeUser);
+        // Step 1: request token (OAuth2 form format)
+        const formData = new URLSearchParams();
+        formData.append("username", credentials.email);
+        formData.append("password", credentials.password);
+
+        const tokenResponse = await fetch(`${API_BASE}/auth/token`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: formData,
+        });
+
+        if (!tokenResponse.ok) {
+          let errorMessage = "Login failed";
+
+          try {
+            const errorData = await tokenResponse.json();
+            errorMessage = errorData.detail || errorMessage;
+          } catch {
+            // Ignore JSON parse failure and keep default message
+          }
+
+          throw new Error(errorMessage);
+        }
+
+        const tokenData = await tokenResponse.json();
+
+        // Save token
+        localStorage.setItem("access_token", tokenData.access_token);
+
+        await fetchCurrentUser(tokenData.access_token);
       } finally {
         setIsLoading(false);
       }
-      // Empty dependency array means this function is only created on mount
     },
-    []
+    [fetchCurrentUser]
   );
 
-  // Create function logout, using callback set user to null and exit
   const logout = useCallback(() => {
+    localStorage.removeItem("access_token");
     setUser(null);
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      return;
+    }
+
+    const restoreUser = async () => {
+      setIsLoading(true);
+
+      try {
+        await fetchCurrentUser(token);
+      } catch (error) {
+        console.error("Failed to restore user session:", error);
+        localStorage.removeItem("access_token");
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreUser();
+  }, [fetchCurrentUser]);
 
   // Calling AuthContext with its provider will provide values (variables and functions), user, isLoading, login, logout
   // To all children wrapped by the Provider
