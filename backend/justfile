@@ -66,7 +66,7 @@ rename-column: ensure-env
     @{{ALEMBIC_CMD}} revision -m "MANUAL_RENAME_REQUIRED"
 
 # Clones the database and runs the pytest suite
-test: ensure-env
+test: ensure-env migrate
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.replicate_db
 
 # Starts an interactive PSQL session
@@ -88,9 +88,9 @@ erd: ensure-env
     @echo "--- ERD.md created successfully. ---"
 
 # Starts the FastAPI server (and Redis if not already running)
-run-api: ensure-env
+run-api port=DEFAULT_PORT: ensure-env
     @docker compose up -d redis
-    -@{{UV_RUNNER}} {{FASTAPI_CMD}}
+    -@{{UV_RUNNER}} fastapi dev {{FASTAPI_TARGET}} --port {{port}} --host 0.0.0.0
 
 # WARNING: Destructive. Wipes the database and re-populates from scratch. Optionally pass a port: just populate 9000 (default: 8080, or API_PORT from .env)
 populate port=DEFAULT_PORT: ensure-env

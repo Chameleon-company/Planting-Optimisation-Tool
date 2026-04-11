@@ -8,19 +8,22 @@ import AdminLayout from "../components/layout/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminSettings from "../pages/admin/AdminSettings";
 import AdminLogs from "../pages/admin/AdminLogs";
+import { AuthProvider } from "../contexts/AuthContext";
 
 function renderAdminRoute(initialPath: string) {
   return render(
     <HelmetProvider>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="logs" element={<AdminLogs />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <AuthProvider>
+        <MemoryRouter initialEntries={[initialPath]}>
+          <Routes>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="settings" element={<AdminSettings />} />
+              <Route path="logs" element={<AdminLogs />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>
     </HelmetProvider>
   );
 }

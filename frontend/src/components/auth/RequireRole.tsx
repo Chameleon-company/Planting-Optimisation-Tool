@@ -11,11 +11,15 @@ type Props = {
 };
 
 export default function RequireRole({ children, allowedRoles }: Props) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  // Not logged in → redirect home (or later login page)
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Not logged in → redirect to login page
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Role not allowed → redirect home
