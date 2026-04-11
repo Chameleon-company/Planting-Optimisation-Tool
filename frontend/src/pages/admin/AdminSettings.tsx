@@ -1,7 +1,6 @@
 // AdminSettings.tsx
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-// Optional: Import icons from an icon library like lucide-react or react-icons if you aren't using static images
 
 function AdminSettings() {
   return (
