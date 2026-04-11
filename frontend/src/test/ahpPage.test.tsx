@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
 import UserEvent from "@testing-library/user-event";
 
-import AhpPage from "@/pages/AhpPage";
+import AhpPage from "@/pages/admin/AhpPage";
 
 // Mock the entire custom hook suite
 vi.mock("@/hooks/useAhp", () => ({

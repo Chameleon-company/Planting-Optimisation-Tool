@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { Helmet } from 'react-helmet-async';
 import { useAhpFactors, useAhpCalculation } from '@/hooks/useAhp';
 import { styles } from '@/utils/ahp_styles';
@@ -17,6 +18,17 @@ export default function AhpPage() {
     const [selectedSpeciesName, setSelectedSpeciesName] = useState<string>('');
     const [selectedSpeciesId, setSelectedSpeciesId] = useState<number | null>(null);
     const [isComparing, setIsComparing] = useState<boolean>(false);
+
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isComparing) {
+                e.preventDefault();
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isComparing]);
 
     const startComparison = () => {
         if (selectedSpeciesName) setIsComparing(true);

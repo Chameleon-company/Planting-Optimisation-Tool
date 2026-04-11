@@ -9,7 +9,7 @@ import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import CalculatorPage from "./pages/CalculatorPage";
 import RecommendationPage from "./pages/RecommendationPage";
-import AhpPage from "./pages/AhpPage";
+import AhpPage from "./pages/admin/AhpPage";
 import SpeciesPage from "./pages/SpeciesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -32,7 +32,6 @@ export default function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/calculator" element={<CalculatorPage />} />
               <Route path="/recommendation" element={<RecommendationPage />} />
-              <Route path="/ahp" element={<AhpPage />} />
               <Route path="/species" element={<SpeciesPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
@@ -46,7 +45,11 @@ export default function App() {
               }
             >
               <Route index element={<AdminDashboard />} />
-              <Route path="settings" element={<AdminSettings />} />
+              <Route path="settings">
+                <Route index element={<AdminSettings />} /> {/* The Hub Page */}
+                <Route path="ahp" element={<AhpPage />} /> {/* The AHP Spoke */}
+                {/* Future routes: <Route path="scoring" element={<ScoringPage />} /> */}
+              </Route>
               <Route path="logs" element={<AdminLogs />} />
             </Route>
           </Routes>
