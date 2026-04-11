@@ -5,7 +5,7 @@ import { useRecommendations } from "@/hooks/useRecommendations";
 
 // Mock the external contexts and hooks
 vi.mock('@/contexts/AuthContext', () => ({
-    useAuth: () => ({ token: 'fake-token' })
+    useAuth: () => ({ getAccessToken: () => 'fake-token' })
 }));
 
 const mockThrowAsyncError = vi.fn();
@@ -36,6 +36,17 @@ describe("useRecommendations Hook", () => {
         await waitFor(() => {
             expect(result.current.isLoading).toBe(false);
         });
+
+        expect(global.fetch).toHaveBeenCalledWith(
+            expect.stringContaining('/recommendations/123'),
+            expect.objectContaining({
+                method: 'GET',
+                headers: expect.objectContaining({
+                    Authorization: 'Bearer fake-token',
+                    Accept: 'application/json'
+                })
+            })
+        );
 
         // Validate returned data
         expect(result.current.recs.length).toBe(1);

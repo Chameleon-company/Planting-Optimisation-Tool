@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from '../contexts/AuthContext';
 import { useAsyncError } from '../hooks/useAsyncError';
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 export interface Recommendation {
     species_id: number;
     rank_overall: number;
@@ -19,7 +21,8 @@ export interface ExcludedSpecies {
 }
 
 export function useRecommendations(farmId: string) {
-    const { token } = useAuth();
+    const { getAccessToken } = useAuth();
+    const token = getAccessToken();
     const throwAsyncError = useAsyncError();
 
     const [recs, setRecs] = useState<Recommendation[]>([]);
@@ -36,7 +39,7 @@ export function useRecommendations(farmId: string) {
             setExcludes([]);
 
             try {
-                const response = await fetch(`http://127.0.0.1:8080/recommendations/${farmId}`, {
+                const response = await fetch(`${API_BASE}/recommendations/${farmId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
