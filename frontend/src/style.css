@@ -1055,6 +1055,279 @@ main.container {
   background: var(--gradient-dark);
 }
 
+/* ============ LOGIN PAGE LAYOUT ============ */
+
+.login-page {
+  align-items: center;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(102, 242, 163, 0.18),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(19, 153, 82, 0.16),
+      transparent 30%
+    ),
+    linear-gradient(180deg, #f7fbf8 0%, #eef7f1 100%);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+/* ============ LOGIN CARD ============ */
+
+.login-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(19, 153, 82, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 18px 50px rgba(14, 122, 67, 0.12);
+  max-width: 520px;
+  padding: 36px 32px;
+  width: 100%;
+}
+
+/* ============ LOGIN HEADER ============ */
+
+.login-card-header {
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.login-badge {
+  background: var(--brand-100);
+  border-radius: 999px;
+  color: var(--brand-800);
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  padding: 7px 12px;
+  text-transform: uppercase;
+}
+
+.login-title {
+  color: var(--text);
+  font-size: 2rem;
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+
+.login-subtitle {
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ============ LOGIN FORM STRUCTURE ============ */
+
+.login-form {
+  display: grid;
+  gap: 20px;
+}
+
+.login-form-group {
+  text-align: left;
+}
+
+.login-form-group label {
+  color: var(--text);
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* ============ LOGIN INPUTS ============ */
+
+.login-input {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  padding: 14px 16px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+  width: 100%;
+}
+
+.login-input:focus {
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 4px rgba(31, 212, 111, 0.12);
+}
+
+.login-input::placeholder {
+  color: #8a968d;
+}
+
+/* ============ LOGIN PASSWORD FIELD ============ */
+
+.login-password-wrapper {
+  position: relative;
+}
+
+.login-password-input {
+  padding-right: 78px;
+}
+
+.login-password-toggle {
+  background: transparent;
+  border: none;
+  color: var(--brand-800);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.login-password-toggle:hover {
+  color: var(--brand-600);
+}
+
+/* ============ LOGIN FORM META ROW ============ */
+
+.login-form-meta {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.login-checkbox-row {
+  align-items: center;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.92rem;
+  gap: 8px;
+}
+
+.login-checkbox-row input {
+  accent-color: var(--brand-700);
+}
+
+.login-link {
+  color: var(--brand-700);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  color: var(--brand-800);
+  text-decoration: underline;
+}
+
+/* ============ LOGIN FEEDBACK MESSAGES ============ */
+
+.login-field-error {
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
+.login-message {
+  border-radius: 10px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  padding: 12px 14px;
+}
+
+.login-message-placeholder {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.login-message-error {
+  background: #fdecea;
+  border: 1px solid #f5c2c0;
+  color: #b42318;
+}
+
+/* ============ LOGIN SUBMIT BUTTON ============ */
+
+.login-submit-btn {
+  background: var(--gradient);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.98rem;
+  font-weight: 700;
+  padding: 14px 18px;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+  width: 100%;
+}
+
+.login-submit-btn:hover {
+  box-shadow: 0 12px 24px rgba(14, 122, 67, 0.18);
+  transform: translateY(-1px);
+}
+
+/* ============ LOGIN PAGE RESPONSIVE ============ */
+
+@media (max-width: 640px) {
+  .login-page {
+    padding: 24px 14px;
+  }
+
+  .login-card {
+    border-radius: 16px;
+    padding: 28px 20px;
+  }
+
+  .login-title {
+    font-size: 1.7rem;
+  }
+
+  .login-form-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* ============ LOGIN BUTTON DISABLED STATE ============ */
+
+.login-submit-btn:disabled {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+/* ============ LOGIN MOBILE IMPROVEMENTS ============ */
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 24px 16px;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* ============ LOGIN INPUT ERROR STATE ============ */
+
+.login-input-error {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
+}
 /* ============ US-002 / #155 ADMIN DASHBOARD SHELL ============ */
 /* Core shell layout styles for admin/manager management pages */
 
@@ -1182,7 +1455,27 @@ main.container {
 }
 
 .admin-header-right {
+  align-items: center;
   color: #333;
+  display: flex;
   font-size: 0.9rem;
   font-weight: 500;
+  gap: 12px;
+}
+
+/* Admin logout button */
+.admin-logout-btn {
+  background: #102a43;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  transition: background 0.2s ease;
+}
+
+.admin-logout-btn:hover {
+  background: #0b1f33;
 }

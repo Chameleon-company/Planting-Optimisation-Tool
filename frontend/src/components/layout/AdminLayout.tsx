@@ -1,7 +1,16 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import "../../style.css";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function AdminLayout() {
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
@@ -56,7 +65,18 @@ export default function AdminLayout() {
           </div>
 
           <div className="admin-header-right">
-            <span className="admin-role">Admin / Manager</span>
+            <span className="admin-role">
+              {user
+                ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+                : "User"}
+            </span>
+            <button
+              type="button"
+              className="admin-logout-btn"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
