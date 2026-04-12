@@ -1,0 +1,331 @@
+/* =========================================
+   AGROFORESTRY RECOMMENDATIONS TOOL
+   ========================================= */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rec-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    font-family: system-ui, sans-serif;
+}
+
+.rec-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.rec-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 40px;
+    letter-spacing: -0.02em;
+}
+
+.rec-nav-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.rec-button-group {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    max-width: 800px;
+    padding: 10px;
+}
+
+/* Action Buttons (Navigation) */
+.rec-action-btn {
+    padding: 14px 28px;
+    font-weight: 600;
+    color: #007bff;
+    background: #fff;
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    min-width: 220px;
+}
+
+.rec-action-btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+.rec-action-btn.active {
+    color: #fff;
+    background: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+    transform: none;
+}
+
+.rec-view-container {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.rec-view-title {
+    font-size: 1.75rem;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 12px;
+}
+
+/* Form Controls */
+.rec-controls {
+    background: #f8f9fa;
+    padding: 40px;
+    border-radius: 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 24px;
+    border: 1px solid #e9ecef;
+}
+
+.rec-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rec-label {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #444;
+}
+
+.rec-input {
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    width: 160px;
+    font-size: 1rem;
+}
+
+/* Primary Button */
+.rec-primary-btn {
+    padding: 14px 28px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.rec-primary-btn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.rec-primary-btn:disabled {
+    background-color: #adb5bd;
+    cursor: not-allowed;
+}
+
+/* Results Display */
+.rec-results-card {
+    margin-top: 50px;
+    padding: 35px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+}
+
+.rec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+}
+
+.rec-th {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 2px solid #eee;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.rec-td {
+    padding: 16px;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.rec-primary-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+}
+
+.rec-secondary-name {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Progress Bars & Scores */
+.rec-score-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rec-score-value {
+    min-width: 50px;
+    font-weight: bold;
+}
+
+.rec-progress-bar-bg {
+    flex: 1;
+    height: 10px;
+    background: #eee;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.rec-progress-bar-fill {
+    height: 100%;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rec-details-btn {
+    background: none;
+    border: 1px solid #007bff;
+    color: #007bff;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.rec-details-btn:hover {
+    background: #f8f9fa;
+}
+
+.rec-expanded-row {
+    background: #fafafa;
+}
+
+/* Reason Dropdowns */
+.rec-reason-container {
+    padding: 25px;
+    text-align: center;
+}
+
+.rec-reason-header {
+    margin-bottom: 15px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #888;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.rec-reason-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.rec-reason-list {
+    width: 100%;
+    max-width: 450px;
+}
+
+.rec-reason-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.rec-reason-item {
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+}
+
+/* States & Layouts */
+.rec-error-text {
+    color: #d32f2f;
+    text-align: center;
+    margin-top: 25px;
+    padding: 12px;
+    background: #fee;
+    border-radius: 8px;
+}
+
+.rec-welcome {
+    text-align: center;
+    padding: 100px 40px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 24px;
+    color: #999;
+}
+
+.rec-loading-full {
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #007bff;
+}
+
+.rec-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.rec-data-item {
+    padding: 15px;
+    background: #fcfcfc;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.rec-placeholder-box {
+    height: 350px;
+    background-color: #fafafa;
+    border: 2px dashed #dee2e6;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.rec-wip-container {
+    max-width: 450px;
+    padding: 20px;
+}
+
+.rec-wip-title {
+    font-size: 1.8rem;
+    color: #856404;
+    margin-bottom: 15px;
+}
+
+.rec-wip-text {
+    color: #777;
+    line-height: 1.6;
+    font-size: 1.05rem;
+}

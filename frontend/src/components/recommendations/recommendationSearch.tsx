@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { styles } from "../../utils/recommend_styles";
+import '@/pages/recommendations.css';
 
 interface RecommendationSearchProps {
     onSearch: (farmId: string) => void;
@@ -15,12 +15,12 @@ export default function RecommendationSearch({ onSearch, isLoading }: Recommenda
     };
 
     return (
-        <div style={styles.controls}>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>Farm ID</label>
+        <div className='rec-controls'>
+            <div className='rec-input-group'>
+                <label className='rec-label'>Farm ID</label>
                 <input
                     type="number"
-                    style={styles.input}
+                    className='rec-input'
                     value={searchInput}
                     placeholder="e.g. 1"
                     onChange={e => setSearchInput(e.target.value)}
@@ -28,7 +28,7 @@ export default function RecommendationSearch({ onSearch, isLoading }: Recommenda
                 />
             </div>
             <button
-                style={searchInput ? styles.primaryBtn : styles.disabledBtn}
+                className='rec-primary-btn'
                 onClick={handleSearch}
                 disabled={isLoading || !searchInput}
             >

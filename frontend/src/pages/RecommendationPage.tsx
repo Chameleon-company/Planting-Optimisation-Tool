@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useRecommendations } from "../hooks/useRecommendations";
-import { styles } from "../utils/recommend_styles";
-
+import { useRecommendations } from "@/hooks/useRecommendations";
+import './recommendations.css';
 import RecommendationHeader from "@/components/recommendations/recommendationHeader";
 import RecommendationSearch from "@/components/recommendations/recommendationSearch";
 import RecommendationTable from "@/components/recommendations/recommendationTable";
@@ -16,7 +15,7 @@ export default function RecommendationPage() {
   const cautionaryFits = recs.filter(r => r.score_mcda < 0.8);
 
   return (
-    <div style={styles.viewContainer}>
+    <div className="rec-view-container">
       <Helmet>
         <title>Agroforestry Recommendation | Planting Optimisation Tool</title>
       </Helmet>

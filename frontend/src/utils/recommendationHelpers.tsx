@@ -1,5 +1,5 @@
 import React from 'react';
-import { styles } from './recommend_styles';
+import '@/pages/recommendations.css';
 
 // Returns the progress bar color based on the MCDA score
 export const getBarColor = (score: number) => {
@@ -53,7 +53,7 @@ export const renderReason = (reason: string) => {
     const result = parts[1] ? parts[1].trim() : "";
 
     const isPositive = text.includes('inside') || text.includes('exact match') || text.includes('plateau');
-    const isNegative = text.includes('below minimum') || text.includes('above maximum') || text.includes('no_match') || text.includes('not supported');
+    const isNegative = text.includes('below minimum') || text.includes('above maximum') || text.includes('no_match') || text.includes('not supported') || text.includes('excluded');
 
     const color = isPositive ? '#28a745' : (isNegative ? '#dc3545' : '#fd7e14');
     const icon = isPositive ? '✓' : (isNegative ? '✗' : '⚠');
@@ -65,7 +65,7 @@ export const renderReason = (reason: string) => {
     };
 
     return (
-        <div style={styles.reasonRow}>
+        <div className="rec-reason-row">
             <span style={{ color, textAlign: 'left', fontWeight: (isPositive || isNegative) ? '600' : '400' }}>
                 <span>{formatFactor(factor)}</span>
                 {result && <span style={{ color: '#888', fontWeight: '400' }}> &nbsp;&nbsp;—&nbsp;&nbsp; {result}</span>}

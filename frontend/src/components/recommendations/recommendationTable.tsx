@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Recommendation } from "../../hooks/useRecommendations";
-import { styles } from "../../utils/recommend_styles";
-import { getEmptyStateStyle, getEmptyStateIcon } from "../../utils/recommendationHelpers";
+import { Recommendation } from "@/hooks/useRecommendations";
+import '@/pages/recommendations.css';
+import { getEmptyStateStyle, getEmptyStateIcon } from "@/utils/recommendationHelpers";
 import RecommendationRow from "./recommendationRow";
 
 interface RecommendationTableProps {
@@ -30,13 +30,14 @@ export default function RecommendationTable({ title, data, emptyMessage, type }:
     };
 
     return (
-        <div style={{ ...styles.resultsCard, flex: '1 1 300px', margin: 0 }}>
+        <div className="rec-results-card" style={{ flex: '1 1 300px', margin: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{title}</h3>
 
                 {data.length > 0 && (
                     <button
-                        style={{ ...styles.detailsBtn, width: 'auto', padding: '4px 12px' }}
+                        className="rec-details-btn"
+                        style={{ width: 'auto', padding: '4px 12px' }}
                         onClick={toggleAll}
                     >
                         {expandedRows.length === data.length ? 'Collapse All' : 'Expand All'}
@@ -50,13 +51,13 @@ export default function RecommendationTable({ title, data, emptyMessage, type }:
                     <span>{emptyMessage}</span>
                 </div>
             ) : (
-                <table style={styles.table}>
+                <table className="rec-table">
                     <thead>
-                        <tr style={styles.tableHeader}>
-                            <th style={styles.th}>Rank</th>
-                            <th style={styles.th}>Species</th>
-                            <th style={styles.th}>Score</th>
-                            <th style={styles.th}>Action</th>
+                        <tr className="rec-thead">
+                            <th className="rec-th">Rank</th>
+                            <th className="rec-th">Species</th>
+                            <th className="rec-th">Score</th>
+                            <th className="rec-th">Action</th>
                         </tr>
                     </thead>
                     <tbody>

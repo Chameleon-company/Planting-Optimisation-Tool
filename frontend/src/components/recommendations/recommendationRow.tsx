@@ -1,7 +1,7 @@
 import React from "react";
-import { Recommendation } from "../../hooks/useRecommendations";
-import { styles } from "../../utils/recommend_styles";
-import { renderReason, getBarColor } from "../../utils/recommendationHelpers";
+import { Recommendation } from "@/hooks/useRecommendations";
+import '@/pages/recommendations.css';
+import { renderReason, getBarColor } from "@/utils/recommendationHelpers";
 
 interface RecommendationRowProps {
     item: Recommendation;
@@ -12,40 +12,42 @@ interface RecommendationRowProps {
 export default function RecommendationRow({ item, isExpanded, onToggle }: RecommendationRowProps) {
     return (
         <React.Fragment>
-            <tr style={styles.tr}>
-                <td style={styles.td}>{item.rank_overall}</td>
-                <td style={styles.td}>
-                    <div style={styles.primaryName}>{item.species_common_name}</div>
-                    <div style={styles.secondaryName}>{item.species_name}</div>
+            <tr>
+                <td className='rec-td'>{item.rank_overall}</td>
+                <td className='rec-td'>
+                    <div className='rec-primary-name'>{item.species_common_name}</div>
+                    <div className='rec-secondary-name'>{item.species_name}</div>
                 </td>
-                <td style={styles.td}>
-                    <div style={styles.scoreContainer}>
-                        <span style={styles.scoreValue}>{(item.score_mcda * 100).toFixed(0)}%</span>
-                        <div style={styles.progressBarBg}>
-                            <div style={{
-                                ...styles.progressBarFill,
-                                width: `${item.score_mcda * 100}%`,
-                                backgroundColor: getBarColor(item.score_mcda)
-                            }}></div>
+                <td className='rec-td'>
+                    <div className='rec-score-container'>
+                        <span className='rec-score-value'>{(item.score_mcda * 100).toFixed(0)}%</span>
+                        <div className='rec-progress-bar-bg'>
+                            <div
+                                className='rec-progress-bar-fill'
+                                style={{
+                                    width: `${item.score_mcda * 100}%`,
+                                    backgroundColor: getBarColor(item.score_mcda)
+                                }}
+                            ></div>
                         </div>
                     </div>
                 </td>
-                <td style={styles.td}>
-                    <button style={styles.detailsBtn} onClick={onToggle}>
+                <td className='rec-td'>
+                    <button className='rec-details-btn' onClick={onToggle}>
                         {isExpanded ? 'Hide' : 'Details'}
                     </button>
                 </td>
             </tr>
 
             {isExpanded && (
-                <tr style={styles.expandedRow}>
+                <tr className='rec-expanded-row'>
                     <td colSpan={4}>
-                        <div style={styles.reasonContainer}>
-                            <div style={styles.reasonHeader}>KEY FACTORS</div>
-                            <div style={styles.reasonWrapper}>
-                                <div style={styles.reasonList}>
+                        <div className='rec-reason-container'>
+                            <div className='rec-reason-header'>KEY FACTORS</div>
+                            <div className='rec-reason-wrapper'>
+                                <div className='rec-reason-list'>
                                     {item.key_reasons.map((reason, i) => (
-                                        <div key={i} style={styles.reasonItem}>
+                                        <div key={i} className='rec-reason-item'>
                                             {renderReason(reason)}
                                         </div>
                                     ))}
