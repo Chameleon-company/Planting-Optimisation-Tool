@@ -144,7 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Calling AuthContext with its provider will provide values (variables and functions), user, isLoading, login, logout
   // To all children wrapped by the Provider
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, getAccessToken }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, logout, getAccessToken }}
+    >
       {children}
     </AuthContext.Provider>
   );

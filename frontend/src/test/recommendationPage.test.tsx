@@ -8,78 +8,101 @@ import RecommendationPage from "@/pages/RecommendationPage";
 
 // Mock the custom hook
 vi.mock("@/hooks/useRecommendations", () => ({
-    useRecommendations: vi.fn(),
+  useRecommendations: vi.fn(),
 }));
 
 import { useRecommendations } from "@/hooks/useRecommendations";
 
 describe("RecommendationPage Integration", () => {
-    it("does not show tables before a search has been performed", () => {
-        vi.mocked(useRecommendations).mockReturnValue({
-            recs: [],
-            excludes: [],
-            isLoading: false,
-            hasSearched: false,
-        });
-
-        render(
-            <HelmetProvider>
-                <RecommendationPage />
-            </HelmetProvider>
-        );
-
-        expect(screen.getByText(/Agroforestry Recommendations/i)).toBeInTheDocument();
-        // Tables should not be present yet
-        expect(screen.queryByText("Top Fit Species")).not.toBeInTheDocument();
+  it("does not show tables before a search has been performed", () => {
+    vi.mocked(useRecommendations).mockReturnValue({
+      recs: [],
+      excludes: [],
+      isLoading: false,
+      hasSearched: false,
     });
 
-    it("splits data into Top Fit and Cautionary tables based on score", () => {
-        vi.mocked(useRecommendations).mockReturnValue({
-            recs: [
-                { species_id: 1, score_mcda: 0.85, rank_overall: 1, species_common_name: "Top Tree", species_name: "", key_reasons: [] },
-                { species_id: 2, score_mcda: 0.60, rank_overall: 2, species_common_name: "Cautious Tree", species_name: "", key_reasons: [] }
-            ],
-            excludes: [],
-            isLoading: false,
-            hasSearched: true,
-        });
+    render(
+      <HelmetProvider>
+        <RecommendationPage />
+      </HelmetProvider>
+    );
 
-        render(
-            <HelmetProvider>
-                <RecommendationPage />
-            </HelmetProvider>
-        );
+    expect(
+      screen.getByText(/Agroforestry Recommendations/i)
+    ).toBeInTheDocument();
+    // Tables should not be present yet
+    expect(screen.queryByText("Top Fit Species")).not.toBeInTheDocument();
+  });
 
-        // Get the heading, then step up to its parent wrapper, and then up to the main card container
-        const topFitHeading = screen.getByRole('heading', { name: "Top Fit Species" });
-        const topFitSection = topFitHeading.parentElement?.parentElement;
-
-        expect(topFitSection).toHaveTextContent("Top Tree");
-        expect(topFitSection).not.toHaveTextContent("Cautious Tree");
-
-        // Do the same for the Cautionary table
-        const cautHeading = screen.getByRole('heading', { name: "Cautionary Species" });
-        const cautSection = cautHeading.parentElement?.parentElement;
-
-        expect(cautSection).toHaveTextContent("Cautious Tree");
+  it("splits data into Top Fit and Cautionary tables based on score", () => {
+    vi.mocked(useRecommendations).mockReturnValue({
+      recs: [
+        {
+          species_id: 1,
+          score_mcda: 0.85,
+          rank_overall: 1,
+          species_common_name: "Top Tree",
+          species_name: "",
+          key_reasons: [],
+        },
+        {
+          species_id: 2,
+          score_mcda: 0.6,
+          rank_overall: 2,
+          species_common_name: "Cautious Tree",
+          species_name: "",
+          key_reasons: [],
+        },
+      ],
+      excludes: [],
+      isLoading: false,
+      hasSearched: true,
     });
 
-    it("updates search state when user interacts with input", async () => {
-        const user = UserEvent.setup();
+    render(
+      <HelmetProvider>
+        <RecommendationPage />
+      </HelmetProvider>
+    );
 
-        vi.mocked(useRecommendations).mockReturnValue({
-            recs: [], excludes: [], isLoading: false, hasSearched: false,
-        });
-
-        render(
-            <HelmetProvider>
-                <RecommendationPage />
-            </HelmetProvider>
-        );
-
-        const input = screen.getByRole("spinbutton");
-        await user.type(input, "99");
-
-        expect(input).toHaveValue(99);
+    // Get the heading, then step up to its parent wrapper, and then up to the main card container
+    const topFitHeading = screen.getByRole("heading", {
+      name: "Top Fit Species",
     });
+    const topFitSection = topFitHeading.parentElement?.parentElement;
+
+    expect(topFitSection).toHaveTextContent("Top Tree");
+    expect(topFitSection).not.toHaveTextContent("Cautious Tree");
+
+    // Do the same for the Cautionary table
+    const cautHeading = screen.getByRole("heading", {
+      name: "Cautionary Species",
+    });
+    const cautSection = cautHeading.parentElement?.parentElement;
+
+    expect(cautSection).toHaveTextContent("Cautious Tree");
+  });
+
+  it("updates search state when user interacts with input", async () => {
+    const user = UserEvent.setup();
+
+    vi.mocked(useRecommendations).mockReturnValue({
+      recs: [],
+      excludes: [],
+      isLoading: false,
+      hasSearched: false,
+    });
+
+    render(
+      <HelmetProvider>
+        <RecommendationPage />
+      </HelmetProvider>
+    );
+
+    const input = screen.getByRole("spinbutton");
+    await user.type(input, "99");
+
+    expect(input).toHaveValue(99);
+  });
 });

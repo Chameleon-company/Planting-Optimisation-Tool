@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useRecommendations } from "@/hooks/useRecommendations";
-import './recommendations.css';
+import "./recommendations.css";
 import RecommendationHeader from "@/components/recommendations/recommendationHeader";
 import RecommendationSearch from "@/components/recommendations/recommendationSearch";
 import RecommendationTable from "@/components/recommendations/recommendationTable";
@@ -25,7 +25,14 @@ export default function RecommendationPage() {
       <RecommendationSearch onSearch={setFarmId} isLoading={isLoading} />
 
       {hasSearched && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', width: '100%' }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "20px",
+            width: "100%",
+          }}
+        >
           <RecommendationTable
             title="Top Fit Species"
             data={topFits}
@@ -38,9 +45,7 @@ export default function RecommendationPage() {
             emptyMessage="No species with moderate suitability found."
             type="caut"
           />
-          <ExcludedTable
-            data={excludes}
-          />
+          <ExcludedTable data={excludes} />
         </div>
       )}
     </div>
