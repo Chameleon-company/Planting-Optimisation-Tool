@@ -26,19 +26,21 @@ def initialise_data():
     config = load_yaml(config_path)
 
     # Path to farms CSV
-    farms_path = "data/farms_cleaned.csv"
+    farms_path = "../backend/src/scripts/data/farm_master.csv"
 
     # Load farm profile data from CSV file
     farms_df = pd.read_csv(farms_path)
+    farms_df["id"] = farms_df.index + 1
 
     # Path to species CSV
-    species_path = "data/species.csv"
+    species_path = "../backend/src/scripts/data/species_20251222.csv"
 
     # Load species profile data from CSV file
     species_df = pd.read_csv(species_path)
+    species_df["id"] = species_df.index + 1
 
     # Path to species_params CSV
-    species_params_path = "data/species_params.csv"
+    species_params_path = "../backend/src/scripts/data/species_params20260112.csv"
 
     # Load species parameters
     with open(species_params_path, encoding="utf-8-sig") as f:
