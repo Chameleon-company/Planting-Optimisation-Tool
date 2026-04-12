@@ -135,3 +135,79 @@ def test_wrong_data_type():
     rules_valid = {101: [{"feature": "ph", "operator": "<", "value": 6.0, "reason": "valid rule"}]}
     out = run_exclusion_rules(farm_non_float, all_species, rules_valid, dep_lookup={})
     assert 101 not in out["candidate_ids"], "Should not pass if farm measurement is not a valid number"
+
+
+# Testing for ecological and agroforestry
+
+
+def test_ecological_function_filtering():
+    """
+    Test that species must satisfy farm ecological requirements (boolean flags).
+    """
+    all_species = [
+        {"id": 1, "name": "Species A", "nitrogen_fixing": True},
+        {"id": 2, "name": "Species B", "nitrogen_fixing": False},
+    ]
+
+    # Farm REQUIRES nitrogen fixing
+    farm = {"id": 1, "nitrogen_fixing": True}
+
+    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
+
+    assert 1 in out["candidate_ids"]  # passes
+    assert 2 not in out["candidate_ids"]  # excluded
+
+
+def test_agroforestry_type_filtering():
+    """
+    Test that species must match at least one farm agroforestry type.
+    """
+    all_species = [
+        {"id": 1, "name": "Species A", "agroforestry_types": ["block", "boundary"]},
+        {"id": 2, "name": "Species B", "agroforestry_types": ["intercropping"]},
+    ]
+
+    farm = {"id": 1, "agroforestry_types": ["block"]}
+
+    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
+
+    assert 1 in out["candidate_ids"]
+    assert 2 not in out["candidate_ids"]
+
+
+def test_combined_ecological_and_agroforestry_filters():
+    """
+    Test both ecological and agroforestry filters together.
+    """
+    all_species = [
+        {"id": 1, "name": "Species A", "nitrogen_fixing": True, "agroforestry_types": ["block"]},
+        {"id": 2, "name": "Species B", "nitrogen_fixing": False, "agroforestry_types": ["boundary"]},
+    ]
+
+    farm = {
+        "id": 1,
+        "nitrogen_fixing": True,
+        "agroforestry_types": ["block"],
+    }
+
+    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
+
+    assert 1 in out["candidate_ids"]
+    assert 2 not in out["candidate_ids"]
+
+
+def test_agroforestry_type_list_handling():
+    """
+    Ensure agroforestry matching works for list inputs.
+    """
+    all_species = [
+        {"id": 1, "name": "Species A", "agroforestry_types": ["block", "boundary"]},
+        {"id": 2, "name": "Species B", "agroforestry_types": ["intercropping"]},
+    ]
+
+    farm = {"id": 1, "agroforestry_types": ["boundary"]}
+
+    out = run_exclusion_rules(farm, all_species, rules_lookup={}, dep_lookup={})
+
+    assert 1 in out["candidate_ids"]
+    assert 2 not in out["candidate_ids"]

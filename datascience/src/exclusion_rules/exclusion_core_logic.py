@@ -144,6 +144,46 @@ def _check_topographic_requirements(species: Any, farm: Any) -> list[str]:
     return reasons
 
 
+# Ecological function filtering
+def _check_ecological_functions(species: Any, farm: Any) -> list[str]:
+    reasons = []
+
+    # Map of farm boolean → species attribute
+    checks = [
+        ("nitrogen_fixing", "excluded: species is not nitrogen fixing"),
+        ("shade_tolerant", "excluded: species is not shade tolerant"),
+        ("bank_stabilising", "excluded: species is not bank stabilising"),
+    ]
+
+    for attr, msg in checks:
+        if _get_val(farm, attr) is True and not _get_val(species, attr, False):
+            reasons.append(msg)
+
+    return reasons
+
+
+# Agroforestry type filtering
+def _check_agroforestry_types(species: Any, farm: Any) -> list[str]:
+    reasons = []
+
+    farm_types_raw = _get_val(farm, "agroforestry_types", [])
+    species_types_raw = _get_val(species, "agroforestry_types", [])
+
+    # Normalize both to lowercase lists
+    farm_types = [str(t).strip().lower() for t in farm_types_raw]
+    species_types = [str(t).strip().lower() for t in species_types_raw]
+
+    # If farm has no preference → allow
+    if not farm_types:
+        return reasons
+
+    # Check intersection
+    if not any(ft in species_types for ft in farm_types):
+        reasons.append("excluded: not compatible with selected agroforestry types")
+
+    return reasons
+
+
 def run_exclusion_rules(
     farm_data: Any,
     all_species: List[Any],
@@ -200,12 +240,14 @@ def run_exclusion_rules(
         topographic_reasons = _check_topographic_requirements(sp, farm_data)
         reasons.extend(topographic_reasons)
 
-        ################################################################################
-        # STORY 34: Ecological and Agroforestry matching would go here (not implemented in this PR)
-        # Something like this
-        # func_reasons = _check_ecological_functions(sp, farm_data)
-        # reasons.extend(func_reasons)
-        ################################################################################
+        # Ecological function filtering
+        eco_reasons = _check_ecological_functions(sp, farm_data)
+        reasons.extend(eco_reasons)
+
+        # Agroforestry type filtering
+        agro_reasons = _check_agroforestry_types(sp, farm_data)
+        reasons.extend(agro_reasons)
+
         if reasons:
             excluded.append(
                 {
