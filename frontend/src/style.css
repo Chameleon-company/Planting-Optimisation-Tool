@@ -25,10 +25,12 @@
   --surface: #f4f7f5;
   --border: #e3e7e5;
   --gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #0e7a43 100%);
-  --gradient-dark: linear-gradient(135deg,
-      #16a34a 0%,
-      #0e7a43 60%,
-      #065f46 100%);
+  --gradient-dark: linear-gradient(
+    135deg,
+    #16a34a 0%,
+    #0e7a43 60%,
+    #065f46 100%
+  );
 }
 
 * {
@@ -824,12 +826,16 @@ main.container {
 
 .site-footer::before {
   background:
-    radial-gradient(1200px 400px at 10% -10%,
+    radial-gradient(
+      1200px 400px at 10% -10%,
       rgba(255, 255, 255, 0.08),
-      transparent 50%),
-    radial-gradient(1000px 300px at 80% -20%,
+      transparent 50%
+    ),
+    radial-gradient(
+      1000px 300px at 80% -20%,
       rgba(255, 255, 255, 0.06),
-      transparent 50%);
+      transparent 50%
+    );
   content: "";
   inset: 0;
   pointer-events: none;
@@ -1054,12 +1060,16 @@ main.container {
 .login-page {
   align-items: center;
   background:
-    radial-gradient(circle at top left,
+    radial-gradient(
+      circle at top left,
       rgba(102, 242, 163, 0.18),
-      transparent 35%),
-    radial-gradient(circle at bottom right,
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at bottom right,
       rgba(19, 153, 82, 0.16),
-      transparent 30%),
+      transparent 30%
+    ),
     linear-gradient(180deg, #f7fbf8 0%, #eef7f1 100%);
   display: flex;
   justify-content: center;

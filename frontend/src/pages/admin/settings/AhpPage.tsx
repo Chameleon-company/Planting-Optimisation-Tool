@@ -1,130 +1,146 @@
-import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
-import { useAhpFactors, useAhpCalculation } from '@/hooks/useAhp';
+import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
+import { useAhpFactors, useAhpCalculation } from "@/hooks/useAhp";
 
-import AhpHeader from '@/components/ahp/AhpHeader';
-import { SpeciesSelector } from '@/components/ahp/SpeciesSelector';
-import AhpComparison from '@/components/ahp/AhpComparison';
-import AhpResultsTable from '@/components/ahp/AhpResultsTable';
+import AhpHeader from "@/components/ahp/AhpHeader";
+import { SpeciesSelector } from "@/components/ahp/SpeciesSelector";
+import AhpComparison from "@/components/ahp/AhpComparison";
+import AhpResultsTable from "@/components/ahp/AhpResultsTable";
 
 export default function AhpPage() {
-    // Custom Hooks
-    const { factorsList, isLoading: isConfigLoading } = useAhpFactors();
-    const { results, isCalculating, handleCalculate, resetCalculation } = useAhpCalculation();
+  // Custom Hooks
+  const { factorsList, isLoading: isConfigLoading } = useAhpFactors();
+  const { results, isCalculating, handleCalculate, resetCalculation } =
+    useAhpCalculation();
 
-    // Local Page State
-    const [selectedSpeciesName, setSelectedSpeciesName] = useState<string>('');
-    const [selectedSpeciesId, setSelectedSpeciesId] = useState<number | null>(null);
-    const [isComparing, setIsComparing] = useState<boolean>(false);
+  // Local Page State
+  const [selectedSpeciesName, setSelectedSpeciesName] = useState<string>("");
+  const [selectedSpeciesId, setSelectedSpeciesId] = useState<number | null>(
+    null
+  );
+  const [isComparing, setIsComparing] = useState<boolean>(false);
 
-    useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (isComparing) {
-                e.preventDefault();
-            }
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [isComparing]);
-
-    const startComparison = () => {
-        if (selectedSpeciesName) setIsComparing(true);
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isComparing) {
+        e.preventDefault();
+      }
     };
 
-    const submitMatrix = (matrix: number[][]) => {
-        if (selectedSpeciesId !== null) {
-            handleCalculate({
-                species_id: selectedSpeciesId,
-                matrix: matrix
-            });
-        }
-        setIsComparing(false); // Close comparison UI, wait for results
-    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isComparing]);
 
-    // Completely resets the UI (for when it is consistent)
-    const handleReset = () => {
-        setSelectedSpeciesName('');
-        setSelectedSpeciesId(null);
-        setIsComparing(false);
-        resetCalculation();
-    };
+  const startComparison = () => {
+    if (selectedSpeciesName) setIsComparing(true);
+  };
 
-    // Only resets the calculation, keeping the species selected (for when it is inconsistent)
-    const handleRetry = () => {
-        resetCalculation(); // Clear the bad results
-        setIsComparing(true); // Jump straight back into the comparison matrix
-    };
+  const submitMatrix = (matrix: number[][]) => {
+    if (selectedSpeciesId !== null) {
+      handleCalculate({
+        species_id: selectedSpeciesId,
+        matrix: matrix,
+      });
+    }
+    setIsComparing(false); // Close comparison UI, wait for results
+  };
 
-    // Function to drop out of an active profiling session
-    const handleCancelProfiling = () => {
-        setIsComparing(false);
-        setSelectedSpeciesId(null);
-        setSelectedSpeciesName('');
-    };
+  // Completely resets the UI (for when it is consistent)
+  const handleReset = () => {
+    setSelectedSpeciesName("");
+    setSelectedSpeciesId(null);
+    setIsComparing(false);
+    resetCalculation();
+  };
 
-    return (
-        <div className="ahp-view-container">
-            <Helmet>
-                <title>AHP Expert Weighting | Planting Optimisation Tool</title>
-            </Helmet>
+  // Only resets the calculation, keeping the species selected (for when it is inconsistent)
+  const handleRetry = () => {
+    resetCalculation(); // Clear the bad results
+    setIsComparing(true); // Jump straight back into the comparison matrix
+  };
 
-            {/* Back Button */}
-            <div style={{ marginBottom: "24px" }}>
-                <Link to="/admin/settings/weighting" style={{ textDecoration: "none", color: "#4f46e5", fontWeight: "500" }}>
-                    ← Back to Weighting Methods
-                </Link>
-            </div>
+  // Function to drop out of an active profiling session
+  const handleCancelProfiling = () => {
+    setIsComparing(false);
+    setSelectedSpeciesId(null);
+    setSelectedSpeciesName("");
+  };
 
-            <AhpHeader />
+  return (
+    <div className="ahp-view-container">
+      <Helmet>
+        <title>AHP Expert Weighting | Planting Optimisation Tool</title>
+      </Helmet>
 
-            {/* The Control Panel */}
-            <div className="ahp-controls">
-                <div className="ahp-input-group">
-                    <SpeciesSelector
-                        isDisabled={isComparing || isCalculating || !!results}
-                        onSpeciesSelect={(id, name) => {
-                            setSelectedSpeciesId(id);
-                            setSelectedSpeciesName(name);
-                        }}
-                    />
-                </div>
-                <button
-                    className={selectedSpeciesId !== null && !isComparing && !results ? "ahp-primary-btn" : "ahp-primary-btn ahp-disabled-btn"}
-                    onClick={startComparison}
-                    disabled={!selectedSpeciesName || isComparing || !!results || isConfigLoading}
-                >
-                    {isConfigLoading ? 'Loading Factors...' : 'Start Profiling'}
-                </button>
-            </div>
+      {/* Back Button */}
+      <div style={{ marginBottom: "24px" }}>
+        <Link
+          to="/admin/settings/weighting"
+          style={{
+            textDecoration: "none",
+            color: "#4f46e5",
+            fontWeight: "500",
+          }}
+        >
+          ← Back to Weighting Methods
+        </Link>
+      </div>
 
-            {/* State 1: Active Comparison Matrix */}
-            {isComparing && factorsList && !results && (
-                <AhpComparison
-                    factors={factorsList.factors}
-                    speciesName={selectedSpeciesName}
-                    onComplete={submitMatrix}
-                    onCancel={handleCancelProfiling}
-                />
-            )}
+      <AhpHeader />
 
-            {/* State 2: Loading Weights */}
-            {isCalculating && (
-                <div className="ahp-results-card">
-                    <p>Calculating Eigenvector Weights...</p>
-                </div>
-            )}
-
-            {/* State 3: Results Display */}
-            {results && (
-                <AhpResultsTable
-                    data={results}
-                    speciesName={selectedSpeciesName}
-                    onReset={handleReset}
-                    onRetry={handleRetry}
-                />
-            )}
+      {/* The Control Panel */}
+      <div className="ahp-controls">
+        <div className="ahp-input-group">
+          <SpeciesSelector
+            isDisabled={isComparing || isCalculating || !!results}
+            onSpeciesSelect={(id, name) => {
+              setSelectedSpeciesId(id);
+              setSelectedSpeciesName(name);
+            }}
+          />
         </div>
-    );
+        <button
+          className={
+            selectedSpeciesId !== null && !isComparing && !results
+              ? "ahp-primary-btn"
+              : "ahp-primary-btn ahp-disabled-btn"
+          }
+          onClick={startComparison}
+          disabled={
+            !selectedSpeciesName || isComparing || !!results || isConfigLoading
+          }
+        >
+          {isConfigLoading ? "Loading Factors..." : "Start Profiling"}
+        </button>
+      </div>
+
+      {/* State 1: Active Comparison Matrix */}
+      {isComparing && factorsList && !results && (
+        <AhpComparison
+          factors={factorsList.factors}
+          speciesName={selectedSpeciesName}
+          onComplete={submitMatrix}
+          onCancel={handleCancelProfiling}
+        />
+      )}
+
+      {/* State 2: Loading Weights */}
+      {isCalculating && (
+        <div className="ahp-results-card">
+          <p>Calculating Eigenvector Weights...</p>
+        </div>
+      )}
+
+      {/* State 3: Results Display */}
+      {results && (
+        <AhpResultsTable
+          data={results}
+          speciesName={selectedSpeciesName}
+          onReset={handleReset}
+          onRetry={handleRetry}
+        />
+      )}
+    </div>
+  );
 }

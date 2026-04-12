@@ -50,9 +50,12 @@ export default function App() {
               <Route path="settings">
                 <Route index element={<AdminSettings />} /> {/* The Hub Page */}
                 <Route path="weighting">
-                  <Route index element={<WeightingHub />} /> {/* The intermediate menu */}
-                  <Route path="ahp" element={<AhpPage />} /> {/* The standard AHP tool */}
-                  <Route path="hybrid" element={<HybridAhpPage />} /> {/* The ML tool */}
+                  <Route index element={<WeightingHub />} />{" "}
+                  {/* The intermediate menu */}
+                  <Route path="ahp" element={<AhpPage />} />{" "}
+                  {/* The standard AHP tool */}
+                  <Route path="hybrid" element={<HybridAhpPage />} />{" "}
+                  {/* The ML tool */}
                 </Route>
               </Route>
               <Route path="logs" element={<AdminLogs />} />

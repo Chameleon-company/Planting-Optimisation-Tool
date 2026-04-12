@@ -13,43 +13,61 @@ vi.mock("@/hooks/useAhp", () => ({
   useAhpCalculation: vi.fn(),
   useAhpSpecies: vi.fn().mockReturnValue({
     speciesList: [{ id: 1, name: "Sci", common_name: "Test Tree" }],
-    isLoading: false
-  })
+    isLoading: false,
+  }),
 }));
 
 import { useAhpFactors, useAhpCalculation } from "@/hooks/useAhp";
 
 describe("AhpPage Integration", () => {
   it("disables start button until a species is selected", () => {
-    vi.mocked(useAhpFactors).mockReturnValue({ factorsList: { factors: ["A", "B"] }, isLoading: false });
+    vi.mocked(useAhpFactors).mockReturnValue({
+      factorsList: { factors: ["A", "B"] },
+      isLoading: false,
+    });
     vi.mocked(useAhpCalculation).mockReturnValue({
-      results: null, isCalculating: false, handleCalculate: vi.fn(), resetCalculation: vi.fn()
+      results: null,
+      isCalculating: false,
+      handleCalculate: vi.fn(),
+      resetCalculation: vi.fn(),
     });
 
     // Wrapped in MemoryRouter
     render(
       <MemoryRouter>
-        <HelmetProvider><AhpPage /></HelmetProvider>
+        <HelmetProvider>
+          <AhpPage />
+        </HelmetProvider>
       </MemoryRouter>
     );
 
     const startBtn = screen.getByRole("button", { name: /Start Profiling/i });
     expect(startBtn).toBeDisabled();
-    expect(screen.queryByText(/Which factor is more important/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Which factor is more important/i)
+    ).not.toBeInTheDocument();
   });
 
   it("opens comparison matrix when start button is clicked", async () => {
     const user = UserEvent.setup();
 
-    vi.mocked(useAhpFactors).mockReturnValue({ factorsList: { factors: ["A", "B"] }, isLoading: false });
+    vi.mocked(useAhpFactors).mockReturnValue({
+      factorsList: { factors: ["A", "B"] },
+      isLoading: false,
+    });
     vi.mocked(useAhpCalculation).mockReturnValue({
-      results: null, isCalculating: false, handleCalculate: vi.fn(), resetCalculation: vi.fn()
+      results: null,
+      isCalculating: false,
+      handleCalculate: vi.fn(),
+      resetCalculation: vi.fn(),
     });
 
     // Wrapped in MemoryRouter
     render(
       <MemoryRouter>
-        <HelmetProvider><AhpPage /></HelmetProvider>
+        <HelmetProvider>
+          <AhpPage />
+        </HelmetProvider>
       </MemoryRouter>
     );
 
@@ -61,29 +79,45 @@ describe("AhpPage Integration", () => {
     await user.click(startBtn);
 
     // The matrix UI should now be visible
-    expect(screen.getByText(/Which factor is more important/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Which factor is more important/i)
+    ).toBeInTheDocument();
   });
 
   it("displays results table when calculations are complete", () => {
-    vi.mocked(useAhpFactors).mockReturnValue({ factorsList: { factors: ["A", "B"] }, isLoading: false });
+    vi.mocked(useAhpFactors).mockReturnValue({
+      factorsList: { factors: ["A", "B"] },
+      isLoading: false,
+    });
 
     // Mock a finished calculation state
     vi.mocked(useAhpCalculation).mockReturnValue({
-      results: { weights: { A: 0.5, B: 0.5 }, consistency_ratio: 0, is_consistent: true, message: "Success" },
+      results: {
+        weights: { A: 0.5, B: 0.5 },
+        consistency_ratio: 0,
+        is_consistent: true,
+        message: "Success",
+      },
       isCalculating: false,
       handleCalculate: vi.fn(),
-      resetCalculation: vi.fn()
+      resetCalculation: vi.fn(),
     });
 
     // Wrapped in MemoryRouter
     render(
       <MemoryRouter>
-        <HelmetProvider><AhpPage /></HelmetProvider>
+        <HelmetProvider>
+          <AhpPage />
+        </HelmetProvider>
       </MemoryRouter>
     );
 
     // Table headers should render
-    expect(screen.getByRole("columnheader", { name: /Factor/i })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: /Weight/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: /Factor/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: /Weight/i })
+    ).toBeInTheDocument();
   });
 });
