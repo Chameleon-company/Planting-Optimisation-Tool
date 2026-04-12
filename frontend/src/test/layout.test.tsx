@@ -21,9 +21,10 @@ vi.mock("@/hooks/useStickyHeader", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom"
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom"
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -52,7 +53,7 @@ describe("MainLayout", () => {
       user: null,
       logout: mockLogout,
       login: vi.fn(),
-      isLoading: false
+      isLoading: false,
     });
 
     vi.mocked(useStickyHeader).mockReturnValue({ isScrolled: false });
@@ -69,19 +70,25 @@ describe("MainLayout", () => {
     const homeLinks = screen.getAllByRole("link", { name: /home/i });
     expect(homeLinks).toHaveLength(2); // Expecting 2 identical links
 
-    const calculatorLinks = screen.getAllByRole("link", { name: /sapling calculator/i });
+    const calculatorLinks = screen.getAllByRole("link", {
+      name: /sapling calculator/i,
+    });
     expect(calculatorLinks).toHaveLength(2); // Expecting 2 identical links
   });
 
   it("applies the 'home-topbar' class only when on the root route", () => {
     // Render on Home page
     const { container: homeContainer, unmount } = renderWithRouter("/");
-    expect(homeContainer.querySelector(".topbar.home-topbar")).toBeInTheDocument();
+    expect(
+      homeContainer.querySelector(".topbar.home-topbar")
+    ).toBeInTheDocument();
     unmount();
 
     // Render on another page (e.g., /calculator)
     const { container: otherContainer } = renderWithRouter("/calculator");
-    expect(otherContainer.querySelector(".topbar.home-topbar")).not.toBeInTheDocument();
+    expect(
+      otherContainer.querySelector(".topbar.home-topbar")
+    ).not.toBeInTheDocument();
   });
 
   it("adds the 'is-scrolled' class when useStickyHeader returns true", () => {
@@ -107,14 +114,16 @@ describe("MainLayout", () => {
       user: { name: "Test User", role: "admin", email: "test@test.com" },
       logout: mockLogout,
       login: vi.fn(),
-      isLoading: false
+      isLoading: false,
     });
 
     renderWithRouter();
 
     expect(screen.getByText("Welcome, Test User")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /login/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /login/i })
+    ).not.toBeInTheDocument();
   });
 
   it("calls logout and navigates to home when logout button is clicked", async () => {
@@ -122,7 +131,7 @@ describe("MainLayout", () => {
       user: { name: "Test User", role: "admin", email: "test@test.com" },
       logout: mockLogout,
       login: vi.fn(),
-      isLoading: false
+      isLoading: false,
     });
 
     renderWithRouter();

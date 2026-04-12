@@ -12,7 +12,7 @@ vi.mock("../contexts/AuthContext", () => ({
     user: null, // Capturing the default logged-out state
     logout: vi.fn(),
     login: vi.fn(),
-    isLoading: false
+    isLoading: false,
   }),
 }));
 

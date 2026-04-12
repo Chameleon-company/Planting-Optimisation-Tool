@@ -20,9 +20,10 @@ vi.mock("../contexts/AuthContext", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom"
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom"
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -92,7 +93,7 @@ describe("LoginPage", () => {
     });
   });
 
-  // Tests the useEffect admin redirect 
+  // Tests the useEffect admin redirect
   it("redirects to /admin automatically if user has admin role", () => {
     mockAuthContext.useAuth.mockReturnValue({
       login: mockLogin,
@@ -105,7 +106,7 @@ describe("LoginPage", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/admin");
   });
 
-  // Tests the useEffect supervisor redirect 
+  // Tests the useEffect supervisor redirect
   it("redirects to / automatically if user has supervisor role", () => {
     mockAuthContext.useAuth.mockReturnValue({
       login: mockLogin,
@@ -121,14 +122,16 @@ describe("LoginPage", () => {
   it("shows validation messages for empty fields", async () => {
     renderLoginPage();
 
-    // Because the submit button is disabled when fields are empty, 
+    // Because the submit button is disabled when fields are empty,
     // we trigger the validation by clicking and tabbing away (onBlur)
     await userEvent.click(screen.getByPlaceholderText(/enter your email/i));
     await userEvent.tab();
     await userEvent.tab();
 
     expect(await screen.findByText("Email is required.")).toBeInTheDocument();
-    expect(await screen.findByText("Password is required.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Password is required.")
+    ).toBeInTheDocument();
 
     expect(mockLogin).not.toHaveBeenCalled();
   });

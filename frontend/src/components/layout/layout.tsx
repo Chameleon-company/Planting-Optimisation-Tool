@@ -16,7 +16,6 @@ export default function MainLayout() {
 
   const isHome = pathname === "/";
 
-
   return (
     <>
       <header
