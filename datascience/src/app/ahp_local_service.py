@@ -16,7 +16,7 @@ class AhpLocalDataManager:
         "trap_right_tol",
     )
 
-    def __init__(self, yaml_path="config/recommend.yaml", species_path="../backend/src/scripts/data/species_20251222.csv", csv_path="data/species_params.csv"):
+    def __init__(self, yaml_path="config/recommend.yaml", species_path="../backend/src/scripts/data/species_20251222.csv", csv_path="../backend/src/scripts/data/species_params20260112.csv"):
         """Initialise file paths used by the local data manager.
 
         Args:
