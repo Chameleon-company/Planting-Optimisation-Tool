@@ -31,4 +31,3 @@ notebooks/reports/
 
 # Notebook-generated CSVs (outputs go to backend/src/scripts/data/, not here)
 notebooks/*.csv
-*.joblib
