@@ -1129,6 +1129,52 @@ main.container {
   color: var(--brand-800);
 }
 
+/* ============ PROFILE PAGE NAVIGATION ============ */
+
+.farmPageNav {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: left;
+  padding: 8px 7% 40px;
+}
+
+.farmPageNavBtn {
+  background: var(--gradient);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 24px;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.farmPageNavBtn:hover:not(:disabled) {
+  background: var(--gradient-dark);
+  box-shadow: 0 8px 20px rgba(14, 122, 67, 0.18);
+  transform: translateY(-1px);
+}
+
+.farmPageNavBtn:disabled {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.4;
+  transform: none;
+}
+
+.farmPageNavInfo {
+  color: var(--muted);
+  font-size: 0.9rem;
+  min-width: 80px;
+  padding-top: 10px;
+  text-align: center;
+}
+
 /* ============ ERROR BOUNDARY ============ */
 
 .global-error-boundary-text {

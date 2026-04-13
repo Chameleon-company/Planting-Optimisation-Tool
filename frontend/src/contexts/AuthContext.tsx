@@ -25,6 +25,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   logout: () => void;
+  getAccessToken: () => string | null;
 }
 
 // Set AuthContext as a context with AuthContextType or null as it's type, default is null
@@ -66,6 +67,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
 
       try {
+        // Step 1: request token (OAuth2 form format)
+        const formData = new URLSearchParams();
+        formData.append("username", credentials.email);
+        formData.append("password", credentials.password);
+
+        const tokenResponse = await fetch(`${API_BASE}/auth/token`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: formData,
+        });
+
+        if (!tokenResponse.ok) {
+          let errorMessage = "Login failed";
+
+          try {
+            const errorData = await tokenResponse.json();
+            errorMessage = errorData.detail || errorMessage;
+          } catch {
+            // Ignore JSON parse failure and keep default message
+          }
+
+          throw new Error(errorMessage);
+        }
+
+        const tokenData = await tokenResponse.json();
+
+        // Save token
+        localStorage.setItem("access_token", tokenData.access_token);
+
+        await fetchCurrentUser(tokenData.access_token);
       } finally {
         setIsLoading(false);
       }
@@ -102,10 +135,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restoreUser();
   }, [fetchCurrentUser]);
 
+  const getAccessToken = useCallback(() => {
+    return localStorage.getItem("access_token");
+  }, []);
+
   // Calling AuthContext with its provider will provide values (variables and functions), user, isLoading, login, logout
   // To all children wrapped by the Provider
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, logout, getAccessToken }}
+    >
       {children}
     </AuthContext.Provider>
   );

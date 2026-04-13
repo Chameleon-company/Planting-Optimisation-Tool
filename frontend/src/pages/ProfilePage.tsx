@@ -1,26 +1,34 @@
 import { Helmet } from "react-helmet-async";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSession } from "@/contexts/SessionContext";
 import FarmProfileHeader from "@/components/profile/profileHeader";
 import FarmList from "@/components/profile/profileFarms";
+import { useProfiles } from "../hooks/useProfiles";
+import { useAuth } from "@/contexts/AuthContext";
 
-function ProfilePage() {
-  const { user, login, isLoading: authLoading } = useAuth();
-  const { farms, isLoading: sessionLoading } = useSession();
+function TempLoginButton() {
+  const { user, login, logout } = useAuth();
 
-  // Temp login mock function
-  const handleLogin = async () => {
-    try {
-      await login({
-        email: "john@example.com",
-        password: "password123",
-      });
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+  const handleLogin = () => {
+    login({ email: "testuser123@test.com", password: "password123" });
   };
 
-  const isLoading = authLoading || sessionLoading;
+  if (user) {
+    return (
+      <div>
+        <p>
+          Logged in as: {user.name} ({user.role})
+        </p>
+        <button onClick={logout}>Logout</button>
+      </div>
+    );
+  }
+
+  return <button onClick={handleLogin}>Temp Login</button>;
+}
+
+function ProfilePage() {
+  const { user } = useAuth();
+  const { farms, isLoading, page, setPage, totalPages, totalFarms } =
+    useProfiles();
 
   return (
     <div>
@@ -28,24 +36,21 @@ function ProfilePage() {
         <title>Environmental Profile | Planting Optimisation Tool</title>
       </Helmet>
 
-      <FarmProfileHeader
-        farmerName={user?.name ?? "..."}
-        farmCount={farms.length}
-      />
+      <TempLoginButton />
 
-      {/* Temp Login Button */}
-      {!user && (
-        <button
-          onClick={handleLogin}
-          disabled={isLoading}
-          className="loginButton"
-        >
-          {isLoading ? "Logging in..." : "Login (Demo)"}
-        </button>
+      {user && (
+        <>
+          <FarmProfileHeader farmerName={user.name} farmCount={totalFarms} />
+          <FarmList
+            farms={farms}
+            isLoading={isLoading}
+            user={user}
+            page={page}
+            totalPages={totalPages}
+            setPage={setPage}
+          />
+        </>
       )}
-
-      {/* List of farms */}
-      <FarmList />
     </div>
   );
 }

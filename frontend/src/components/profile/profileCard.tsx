@@ -1,4 +1,4 @@
-import { Farm } from "@/contexts/SessionContext";
+import { Farm } from "@/hooks/useProfiles";
 
 interface FarmCardProps {
   farm: Farm;
@@ -17,7 +17,9 @@ export default function FarmCard({ farm }: FarmCardProps) {
     <div className="farmCard">
       <div className="farmCardHeader">
         <span className="farmCardId">Farm #{farm.id}</span>
-        <span className="farmCardArea">{farm.area_ha.toFixed(3)} ha</span>
+        <span className="farmCardArea">
+          {Number(farm.area_ha).toFixed(3)} ha
+        </span>
       </div>
 
       <div className="farmCardGrid">
@@ -37,11 +39,15 @@ export default function FarmCard({ farm }: FarmCardProps) {
         </div>
         <div className="farmCardStat">
           <span className="farmCardStatLabel">Soil pH</span>
-          <span className="farmCardStatValue">{farm.ph.toFixed(1)}</span>
+          <span className="farmCardStatValue">
+            {farm.ph ? Number(farm.ph).toFixed(1) : "N/A"}
+          </span>
         </div>
         <div className="farmCardStat">
           <span className="farmCardStatLabel">Slope</span>
-          <span className="farmCardStatValue">{farm.slope.toFixed(2)}°</span>
+          <span className="farmCardStatValue">
+            {farm.slope ? Number(farm.slope).toFixed(2) : "N/A"}°
+          </span>
         </div>
         <div className="farmCardStat">
           <span className="farmCardStatLabel">Soil Type</span>
@@ -50,7 +56,8 @@ export default function FarmCard({ farm }: FarmCardProps) {
       </div>
 
       <div className="farmCardCoords">
-        📍 {farm.latitude.toFixed(5)}, {farm.longitude.toFixed(5)}
+        📍 {Number(farm.latitude).toFixed(5)},{" "}
+        {Number(farm.longitude).toFixed(5)}
       </div>
 
       {farm.agroforestry_type.length > 0 && (
