@@ -21,7 +21,7 @@ export default function ExcludedRow({
           <div className="rec-secondary-name">{item.species_name}</div>
         </td>
         <td className="rec-td">
-          <button className="rec-details-btn" onClick={onToggle}>
+          <button className="rec-details-btn" onClick={onToggle} aria-expanded={isExpanded}>
             {isExpanded ? "Hide" : "Details"}
           </button>
         </td>

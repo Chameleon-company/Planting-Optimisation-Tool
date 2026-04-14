@@ -39,7 +39,7 @@ export default function RecommendationRow({
           </div>
         </td>
         <td className="rec-td">
-          <button className="rec-details-btn" onClick={onToggle}>
+          <button className="rec-details-btn" onClick={onToggle} aria-expanded={isExpanded}>
             {isExpanded ? "Hide" : "Details"}
           </button>
         </td>
