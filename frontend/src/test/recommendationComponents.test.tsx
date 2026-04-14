@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { it, expect, describe, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import UserEvent from "@testing-library/user-event";
@@ -6,6 +5,8 @@ import UserEvent from "@testing-library/user-event";
 import RecommendationSearch from "@/components/recommendations/recommendationSearch";
 import RecommendationTable from "@/components/recommendations/recommendationTable";
 import RecommendationRow from "@/components/recommendations/recommendationRow";
+import ExcludedRow from "@/components/recommendations/excludedRow";
+import ExcludedTable from "@/components/recommendations/excludedTable";
 
 // Mock Data Generators
 const mockRec = (id: number, score: number) => ({
@@ -15,6 +16,13 @@ const mockRec = (id: number, score: number) => ({
   species_name: "Test scientific",
   score_mcda: score,
   key_reasons: ["Soil: Exact Match"],
+});
+
+const mockExcluded = (id: number) => ({
+  id,
+  species_common_name: "Excluded Tree",
+  species_name: "Excludus scientificus",
+  reasons: ["Too dry for this species"],
 });
 
 describe("RecommendationSearch", () => {
@@ -113,5 +121,59 @@ describe("RecommendationRow", () => {
     );
 
     expect(screen.getByText(/KEY FACTORS/i)).toBeInTheDocument();
+  });
+});
+
+describe("ExcludedRow", () => {
+  it("renders 'Details' button and expands to show reasons", async () => {
+    const user = UserEvent.setup();
+    const onToggle = vi.fn();
+    const item = mockExcluded(1);
+
+    const { rerender } = render(
+      <table>
+        <tbody>
+          <ExcludedRow item={item} isExpanded={false} onToggle={onToggle} />
+        </tbody>
+      </table>
+    );
+
+    // Verify initial state
+    expect(screen.queryByText(/Too dry/i)).not.toBeInTheDocument();
+
+    // Check for the A11y
+    const button = screen.getByRole("button", { name: /details/i });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(button);
+
+    // Verify the interaction happened
+    expect(onToggle).toHaveBeenCalledTimes(1);
+
+    // Simulate expansion
+    rerender(
+      <table>
+        <tbody>
+          <ExcludedRow item={item} isExpanded={true} onToggle={onToggle} />
+        </tbody>
+      </table>
+    );
+
+    expect(screen.getByText(/Too dry/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /hide/i })).toHaveAttribute("aria-expanded", "true");
+  });
+});
+
+describe("ExcludedTable", () => {
+  it("renders headers even when list is empty", () => {
+    render(<ExcludedTable data={[]} />);
+    expect(screen.getByText(/Excluded Species/i)).toBeInTheDocument();
+  });
+
+  it("renders the correct number of excluded rows", () => {
+    const data = [mockExcluded(1), mockExcluded(2)];
+    render(<ExcludedTable data={data} />);
+    // Check for the common names of both mock items
+    expect(screen.getAllByText(/Excluded Tree/i)).toHaveLength(2);
   });
 });
