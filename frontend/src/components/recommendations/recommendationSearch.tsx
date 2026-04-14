@@ -33,7 +33,7 @@ export default function RecommendationSearch({
       <button
         className="rec-primary-btn"
         onClick={handleSearch}
-        disabled={isLoading || !searchInput}
+        disabled={isLoading || !searchInput.trim()}
       >
         {isLoading ? "Analyzing Suitability..." : "Generate Recommendations"}
       </button>
