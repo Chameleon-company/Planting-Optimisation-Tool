@@ -21,8 +21,6 @@ export interface ExcludedSpecies {
 
 export function useRecommendations(farmId: string) {
   const { getAccessToken } = useAuth();
-  const token = getAccessToken();
-
   const [recs, setRecs] = useState<Recommendation[]>([]);
   const [excludes, setExcludes] = useState<ExcludedSpecies[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +36,14 @@ export function useRecommendations(farmId: string) {
       setHasSearched(false);
       setRecs([]);
       setExcludes([]);
+
+      const token = getAccessToken();
+
+      if (!token) {
+        setError("Your session has expired. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
 
       try {
         const response = await fetch(`${API_BASE}/recommendations/${farmId}`, {
@@ -71,7 +77,7 @@ export function useRecommendations(farmId: string) {
     };
 
     fetchRecs();
-  }, [farmId, token]);
+  }, [farmId, getAccessToken]);
 
   return { recs, excludes, isLoading, hasSearched, error };
 }

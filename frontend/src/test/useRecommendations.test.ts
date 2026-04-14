@@ -2,19 +2,19 @@ import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useRecommendations } from "@/hooks/useRecommendations";
 
-// Mock the external contexts and hooks
-vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({ getAccessToken: () => "fake-token" }),
-}));
+// Create a stable function reference outside the mock call
+const stableGetAccessToken = vi.fn(() => "fake-token");
 
-const mockThrowAsyncError = vi.fn();
-vi.mock("@/hooks/useAsyncError", () => ({
-  useAsyncError: () => mockThrowAsyncError,
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({
+    getAccessToken: stableGetAccessToken, // Reference the stable function
+  }),
 }));
 
 describe("useRecommendations Hook", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    vi.resetModules();
     global.fetch = vi.fn();
   });
 
