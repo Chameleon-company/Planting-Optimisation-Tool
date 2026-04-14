@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useAsyncError } from "../hooks/useAsyncError";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -23,18 +22,20 @@ export interface ExcludedSpecies {
 export function useRecommendations(farmId: string) {
   const { getAccessToken } = useAuth();
   const token = getAccessToken();
-  const throwAsyncError = useAsyncError();
 
   const [recs, setRecs] = useState<Recommendation[]>([]);
   const [excludes, setExcludes] = useState<ExcludedSpecies[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!farmId) return;
 
     const fetchRecs = async () => {
       setIsLoading(true);
+      setError(null);
+      setHasSearched(false);
       setRecs([]);
       setExcludes([]);
 
@@ -48,8 +49,10 @@ export function useRecommendations(farmId: string) {
         });
 
         if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(errorData);
+          const errorData = await response.json();
+          throw new Error(
+            errorData.detail || "Failed to fetch recommendations"
+          );
         }
 
         const data = await response.json();
@@ -57,14 +60,18 @@ export function useRecommendations(farmId: string) {
         setExcludes(data.excluded_species || []);
         setHasSearched(true);
       } catch (err: unknown) {
-        throwAsyncError(err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRecs();
-  }, [farmId, token, throwAsyncError]);
+  }, [farmId, token]);
 
-  return { recs, excludes, isLoading, hasSearched };
+  return { recs, excludes, isLoading, hasSearched, error };
 }

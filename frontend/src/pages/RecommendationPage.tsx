@@ -9,7 +9,8 @@ import ExcludedTable from "@/components/recommendations/excludedTable";
 
 export default function RecommendationPage() {
   const [farmId, setFarmId] = useState("");
-  const { recs, excludes, isLoading, hasSearched } = useRecommendations(farmId);
+  const { recs, excludes, isLoading, hasSearched, error } =
+    useRecommendations(farmId);
 
   const topFits = recs.filter(r => r.score_mcda >= 0.8);
   const cautionaryFits = recs.filter(r => r.score_mcda < 0.8);
@@ -23,6 +24,15 @@ export default function RecommendationPage() {
       <RecommendationHeader />
 
       <RecommendationSearch onSearch={setFarmId} isLoading={isLoading} />
+
+      {/* Localized Error Message */}
+      {error && (
+        <div className="rec-error-message">
+          <p>
+            <strong>Error:</strong> {error}
+          </p>
+        </div>
+      )}
 
       {hasSearched && (
         <div

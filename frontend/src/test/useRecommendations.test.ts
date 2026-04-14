@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useRecommendations } from "@/hooks/useRecommendations";
@@ -61,10 +60,10 @@ describe("useRecommendations Hook", () => {
     expect(result.current.hasSearched).toBe(false);
   });
 
-  it("handles API errors using the async error boundary", async () => {
-    (global.fetch as Mock).mockResolvedValue({
+  it("handles API errors by returning an error message", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
       ok: false,
-      text: async () => "Internal Server Error",
+      json: () => Promise.resolve({ detail: "Internal Server Error" }),
     });
 
     const { result } = renderHook(() => useRecommendations("123"));
@@ -73,9 +72,7 @@ describe("useRecommendations Hook", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockThrowAsyncError).toHaveBeenCalledWith(
-      new Error("Internal Server Error")
-    );
-    expect(result.current.recs.length).toBe(0);
+    expect(result.current.error).toBe("Internal Server Error");
+    expect(result.current.hasSearched).toBe(false);
   });
 });
