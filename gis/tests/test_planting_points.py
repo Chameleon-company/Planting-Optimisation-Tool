@@ -13,8 +13,8 @@ def create_farm_polygon():
 
 
 def test_generate_planting_points(create_farm_polygon):
-    spacing_x = 3.0 # Define X spacing
-    spacing_y = 3.0 # Define Y spacing
+    spacing_x = 3.0  # Define X spacing
+    spacing_y = 3.0  # Define Y spacing
     crs = "EPSG:4326"  # Define CRS
 
     # Define the bounds of the polygon (xmin, ymin, xmax, ymax)

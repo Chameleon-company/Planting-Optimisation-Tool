@@ -9,6 +9,7 @@ class SaplingEstimationRequest(BaseModel):
     spacing_y: float
     max_slope: float
 
+
 class SaplingEstimationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     status: str = "success"
