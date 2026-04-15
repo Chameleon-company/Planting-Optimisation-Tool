@@ -20,6 +20,7 @@ describe("RecommendationPage Integration", () => {
       excludes: [],
       isLoading: false,
       hasSearched: false,
+      error: null,
     });
 
     render(
@@ -58,6 +59,7 @@ describe("RecommendationPage Integration", () => {
       excludes: [],
       isLoading: false,
       hasSearched: true,
+      error: null,
     });
 
     render(
@@ -92,6 +94,7 @@ describe("RecommendationPage Integration", () => {
       excludes: [],
       isLoading: false,
       hasSearched: false,
+      error: null,
     });
 
     render(
