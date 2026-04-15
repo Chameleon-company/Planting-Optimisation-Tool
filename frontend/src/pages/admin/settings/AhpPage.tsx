@@ -75,10 +75,12 @@ export default function AhpPage() {
   };
 
   // Function to drop out of an active profiling session
+  const [resetKey, setResetKey] = useState(0);
   const handleCancelProfiling = () => {
     setIsComparing(false);
     setSelectedSpeciesId(null);
     setSelectedSpeciesName("");
+    setResetKey(prev => prev + 1); // Increment to force a fresh dropdown
   };
 
   // Combine errors for display
@@ -120,6 +122,7 @@ export default function AhpPage() {
       <div className="ahp-controls">
         <div className="ahp-input-group">
           <SpeciesSelector
+            key={resetKey}
             isDisabled={
               isComparing || isCalculating || !!results || !!globalError
             }
