@@ -3,7 +3,6 @@ import numpy as np
 import rasterio
 
 
-
 def apply_slope_rules(
     slope_array: np.ndarray,
     rotated_grid: gpd.GeoDataFrame,

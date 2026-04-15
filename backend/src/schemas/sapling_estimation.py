@@ -2,6 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+
 class SaplingEstimationRequest(BaseModel):
     farm_id: int
     spacing_x: float
