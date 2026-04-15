@@ -473,21 +473,23 @@
 .ahp-bar-container {
   align-items: center;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  min-width: 150px;
 }
 
-.ahp-progress-bg {
+.ahp-progress-bar-bg {
   background-color: #e9ecef;
   border-radius: 5px;
   height: 10px;
   overflow: hidden;
-  width: 100px;
+  flex-grow: 1;
 }
 
-.ahp-progress-fill {
+.ahp-progress-bar-fill {
   background-color: #3498db;
   border-radius: 5px;
   height: 100%;
+  transition: width 0.4s ease-out;
 }
 
 .ahp-error-message {
