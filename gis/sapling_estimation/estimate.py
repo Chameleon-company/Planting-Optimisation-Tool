@@ -54,7 +54,7 @@ def sapling_estimation(
 
     if not rotation_tester(rotated_grid, initial_grid):
         raise ValueError("Rotated grid failed validation")
-    
+
     pre_slope_count = len(rotated_grid)
 
     slope_array = compute_slope_from_array(

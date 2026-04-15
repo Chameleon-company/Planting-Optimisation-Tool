@@ -43,7 +43,7 @@ async def get_sapling_estimation(
         user_id_filter = current_user.id
     else:
         user_id_filter = None
-        
+
     farm_id = data.farm_id
     spacing_x = data.spacing_x
     spacing_y = data.spacing_y
@@ -54,13 +54,7 @@ async def get_sapling_estimation(
         raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id} not found.")
 
     service = sapling_estimation_service.SaplingEstimationService()
-    estimation_data = await service.run_estimation(
-        db,
-        farm_id,
-        spacing_x=spacing_x,
-        spacing_y=spacing_y,
-        max_slope=max_slope
-    )
+    estimation_data = await service.run_estimation(db, farm_id, spacing_x=spacing_x, spacing_y=spacing_y, max_slope=max_slope)
 
     if not estimation_data:
         raise HTTPException(status_code=404, detail=f"Farm boundary not found for farm_id: {farm_id}")
