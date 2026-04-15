@@ -93,20 +93,32 @@ describe("RecommendationTable", () => {
 });
 
 describe("RecommendationRow", () => {
-  it("renders details only when isExpanded is true", () => {
+  it("renders details only when isExpanded is true", async () => {
+    const user = UserEvent.setup();
+    const onToggle = vi.fn();
+
     const { rerender } = render(
       <table>
         <tbody>
           <RecommendationRow
             item={mockRec(1, 0.9)}
             isExpanded={false}
-            onToggle={vi.fn()}
+            onToggle={onToggle}
           />
         </tbody>
       </table>
     );
 
+    // Check for the A11y
+    const button = screen.getByRole("button", { name: /details/i });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+
     expect(screen.queryByText(/KEY FACTORS/i)).not.toBeInTheDocument();
+
+    await user.click(button);
+
+    // Verify the interaction happened
+    expect(onToggle).toHaveBeenCalledTimes(1);
 
     rerender(
       <table>
@@ -114,13 +126,17 @@ describe("RecommendationRow", () => {
           <RecommendationRow
             item={mockRec(1, 0.9)}
             isExpanded={true}
-            onToggle={vi.fn()}
+            onToggle={onToggle}
           />
         </tbody>
       </table>
     );
 
     expect(screen.getByText(/KEY FACTORS/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /hide/i })).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    );
   });
 });
 
@@ -160,7 +176,10 @@ describe("ExcludedRow", () => {
     );
 
     expect(screen.getByText(/Too dry/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /hide/i })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: /hide/i })).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    );
   });
 });
 
