@@ -14,6 +14,7 @@ vi.mock("@/hooks/useAhp", () => ({
   useAhpSpecies: vi.fn().mockReturnValue({
     speciesList: [{ id: 1, name: "Sci", common_name: "Test Tree" }],
     isLoading: false,
+    error: null,
   }),
 }));
 
@@ -24,12 +25,14 @@ describe("AhpPage Integration", () => {
     vi.mocked(useAhpFactors).mockReturnValue({
       factorsList: { factors: ["A", "B"] },
       isLoading: false,
+      error: null,
     });
     vi.mocked(useAhpCalculation).mockReturnValue({
       results: null,
       isCalculating: false,
       handleCalculate: vi.fn(),
       resetCalculation: vi.fn(),
+      error: null,
     });
 
     // Wrapped in MemoryRouter
@@ -54,12 +57,14 @@ describe("AhpPage Integration", () => {
     vi.mocked(useAhpFactors).mockReturnValue({
       factorsList: { factors: ["A", "B"] },
       isLoading: false,
+      error: null,
     });
     vi.mocked(useAhpCalculation).mockReturnValue({
       results: null,
       isCalculating: false,
       handleCalculate: vi.fn(),
       resetCalculation: vi.fn(),
+      error: null,
     });
 
     // Wrapped in MemoryRouter
@@ -88,6 +93,7 @@ describe("AhpPage Integration", () => {
     vi.mocked(useAhpFactors).mockReturnValue({
       factorsList: { factors: ["A", "B"] },
       isLoading: false,
+      error: null,
     });
 
     // Mock a finished calculation state
@@ -101,6 +107,7 @@ describe("AhpPage Integration", () => {
       isCalculating: false,
       handleCalculate: vi.fn(),
       resetCalculation: vi.fn(),
+      error: null,
     });
 
     // Wrapped in MemoryRouter
