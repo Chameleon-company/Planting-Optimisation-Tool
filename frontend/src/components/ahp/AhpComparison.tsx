@@ -109,6 +109,7 @@ export default function AhpComparison({
                   key={idx}
                   className={`ahp-scale-btn ${isActive ? "active" : ""}`}
                   onClick={() => setSelectedValue(opt.val)}
+                  aria-pressed={isActive}
                   title={opt.label}
                 >
                   {opt.val === 1
