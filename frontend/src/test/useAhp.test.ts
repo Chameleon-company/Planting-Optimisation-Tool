@@ -7,17 +7,14 @@ import {
   useAhpCalculation,
 } from "@/hooks/useAhp";
 
+const stableGetAccessToken = vi.fn(() => "fake-token");
+
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    token: "fake-token",
-    getAccessToken: vi.fn(() => "fake-token"),
+    getAccessToken: stableGetAccessToken,
   }),
 }));
 
-const mockThrowAsyncError = vi.fn();
-vi.mock("@/hooks/useAsyncError", () => ({
-  useAsyncError: () => mockThrowAsyncError,
-}));
 
 describe("AHP Hooks", () => {
   beforeEach(() => {
@@ -40,74 +37,106 @@ describe("AHP Hooks", () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.speciesList.length).toBe(1);
+      expect(result.current.error).toBe(null);
       expect(result.current.speciesList[0].common_name).toBe("Common Tree");
     });
   });
 
-  describe("useAhpFactors", () => {
-    it("wraps the flat array API response into the factors object", async () => {
-      const mockFlatArray = ["Rainfall", "Temperature"];
-
-      (global.fetch as Mock).mockResolvedValue({
-        ok: true,
-        json: async () => mockFlatArray,
-      });
-
-      const { result } = renderHook(() => useAhpFactors());
-
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.factorsList?.factors).toEqual([
-        "Rainfall",
-        "Temperature",
-      ]);
+  it("handles species fetch errors locally", async () => {
+    (global.fetch as Mock).mockResolvedValue({
+      ok: false,
+      statusText: "Unauthorised",
     });
+
+    const { result } = renderHook(() => useAhpSpecies());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.error).toContain("Failed to fetch species");
+    expect(result.current.speciesList).toEqual([]);
+  });
+});
+
+describe("useAhpFactors", () => {
+  it("wraps the flat array API response into the factors object", async () => {
+    const mockFlatArray = ["Rainfall", "Temperature"];
+
+    (global.fetch as Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockFlatArray,
+    });
+
+    const { result } = renderHook(() => useAhpFactors());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.factorsList?.factors).toEqual([
+      "Rainfall",
+      "Temperature",
+    ]);
+    expect(result.current.error).toBe(null);
   });
 
-  describe("useAhpCalculation", () => {
-    it("posts matrix payload and returns results", async () => {
-      const mockResponse = {
-        weights: { Rainfall: 0.8 },
-        consistency_ratio: 0.05,
-        is_consistent: true,
-      };
-
-      (global.fetch as Mock).mockResolvedValue({
-        ok: true,
-        json: async () => mockResponse,
-      });
-
-      const { result } = renderHook(() => useAhpCalculation());
-
-      await act(async () => {
-        await result.current.handleCalculate({
-          species_id: 1,
-          matrix: [
-            [1, 3],
-            [0.33, 1],
-          ],
-        });
-      });
-
-      expect(result.current.isCalculating).toBe(false);
-      expect(result.current.results?.is_consistent).toBe(true);
+  it("handles factors fetch errors locally", async () => {
+    // Mock a 500 or 404 response
+    (global.fetch as Mock).mockResolvedValue({
+      ok: false,
+      statusText: "Internal Server Error",
     });
 
-    it("handles calculation errors correctly", async () => {
-      (global.fetch as Mock).mockResolvedValue({
-        ok: false,
-        statusText: "Bad Request",
-        json: async () => ({ detail: "Matrix invalid" }),
-      });
+    const { result } = renderHook(() => useAhpFactors());
 
-      const { result } = renderHook(() => useAhpCalculation());
+    // Wait for the hook to finish the async cycle
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      await act(async () => {
-        await result.current.handleCalculate({ species_id: 1, matrix: [] });
-      });
+    // Assert the local error state matches your catch block logic
+    expect(result.current.error).toBe("Could not load features: Internal Server Error");
+    expect(result.current.factorsList).toBe(null);
+  });
+});
 
-      expect(mockThrowAsyncError).toHaveBeenCalledWith(
-        new Error("Calculation failed: Matrix invalid")
-      );
+describe("useAhpCalculation", () => {
+  it("posts matrix payload and returns results", async () => {
+    const mockResponse = {
+      weights: { Rainfall: 0.8 },
+      consistency_ratio: 0.05,
+      is_consistent: true,
+    };
+
+    (global.fetch as Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockResponse,
     });
+
+    const { result } = renderHook(() => useAhpCalculation());
+
+    await act(async () => {
+      await result.current.handleCalculate({
+        species_id: 1,
+        matrix: [
+          [1, 3],
+          [0.33, 1],
+        ],
+      });
+    });
+
+    expect(result.current.isCalculating).toBe(false);
+    expect(result.current.results?.is_consistent).toBe(true);
+    expect(result.current.error).toBe(null);
+  });
+
+  it("handles calculation errors correctly", async () => {
+    (global.fetch as Mock).mockResolvedValue({
+      ok: false,
+      statusText: "Bad Request",
+      json: async () => ({ detail: "Matrix invalid" }),
+    });
+
+    const { result } = renderHook(() => useAhpCalculation());
+
+    await act(async () => {
+      await result.current.handleCalculate({ species_id: 1, matrix: [] });
+    });
+
+    expect(result.current.error).toBe("Calculation failed: Matrix invalid");
+    expect(result.current.results).toBe(null);
   });
 });
