@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAsyncError } from "@/hooks/useAsyncError";
 import { AhpResponse, CalculationRequest } from "@/utils/ahp_types";
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -19,17 +18,22 @@ export interface FactorsResponse {
 // --- SPECIES DROPDOWN HOOK ---
 export function useAhpSpecies() {
   const { getAccessToken } = useAuth();
-  const token = getAccessToken();
-  const throwAsyncError = useAsyncError();
-
   const [speciesList, setSpeciesList] = useState<SpeciesDropdownItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return;
-
     const fetchSpecies = async () => {
+      const token = getAccessToken();
       setIsLoading(true);
+      setError(null);
+
+      if (!token) {
+        setError("Your session has expired. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(`${API_BASE}/species/dropdown`, {
           method: "GET",
@@ -46,30 +50,41 @@ export function useAhpSpecies() {
         const data: SpeciesDropdownItem[] = await response.json();
         setSpeciesList(data);
       } catch (err: unknown) {
-        throwAsyncError(err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchSpecies();
-  }, [token, throwAsyncError]);
+  }, [getAccessToken]);
 
-  return { speciesList, isLoading };
+  return { speciesList, isLoading, error };
 }
 
 // --- AHP CONFIG (FEATURES) HOOK ---
 export function useAhpFactors() {
   const { getAccessToken } = useAuth();
-  const token = getAccessToken();
-  const throwAsyncError = useAsyncError();
-
   const [factorsList, setFactorsList] = useState<FactorsResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFactors = async () => {
+      const token = getAccessToken();
       setIsLoading(true);
+      setError(null);
+
+      if (!token) {
+        setError("Your session has expired. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const headers: HeadersInit = { Accept: "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -85,30 +100,40 @@ export function useAhpFactors() {
         const rawData: string[] = await response.json();
         setFactorsList({ factors: rawData });
       } catch (err: unknown) {
-        throwAsyncError(err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchFactors();
-  }, [token, throwAsyncError]);
+  }, [getAccessToken]);
 
-  return { factorsList, isLoading };
+  return { factorsList, isLoading, error };
 }
 
 // --- AHP CALCULATION HOOK ---
 export function useAhpCalculation() {
   const { getAccessToken } = useAuth();
-  const token = getAccessToken();
-  const throwAsyncError = useAsyncError();
-
   const [results, setResults] = useState<AhpResponse | null>(null);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCalculate = async (payload: CalculationRequest) => {
+    const token = getAccessToken();
     setIsCalculating(true);
-    console.log("Calculating AHP with payload:", payload);
+    setError(null);
+
+    if (!token) {
+      setError("Your session has expired. Please log in again.");
+      setIsCalculating(false);
+      return;
+    }
+
     try {
       const headers: HeadersInit = {
         "Content-Type": "application/json",
@@ -136,13 +161,17 @@ export function useAhpCalculation() {
       const data = await response.json();
       setResults(data);
     } catch (err: unknown) {
-      throwAsyncError(err);
+      const msg = err instanceof Error ? err.message : "Calculation failed";
+      setError(msg);
     } finally {
       setIsCalculating(false);
     }
   };
 
-  const resetCalculation = () => setResults(null);
+  const resetCalculation = () => {
+    setResults(null);
+    setError(null);
+  };
 
-  return { results, isCalculating, handleCalculate, resetCalculation };
+  return { results, isCalculating, handleCalculate, resetCalculation, error };
 }

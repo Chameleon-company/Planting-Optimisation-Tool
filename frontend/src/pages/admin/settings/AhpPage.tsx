@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { useAhpFactors, useAhpCalculation } from "@/hooks/useAhp";
+import {
+  useAhpSpecies,
+  useAhpFactors,
+  useAhpCalculation,
+} from "@/hooks/useAhp";
 
 import AhpHeader from "@/components/ahp/AhpHeader";
 import { SpeciesSelector } from "@/components/ahp/SpeciesSelector";
@@ -10,9 +14,19 @@ import AhpResultsTable from "@/components/ahp/AhpResultsTable";
 
 export default function AhpPage() {
   // Custom Hooks
-  const { factorsList, isLoading: isConfigLoading } = useAhpFactors();
-  const { results, isCalculating, handleCalculate, resetCalculation } =
-    useAhpCalculation();
+  const { error: speciesError } = useAhpSpecies();
+  const {
+    factorsList,
+    isLoading: isConfigLoading,
+    error: factorsError,
+  } = useAhpFactors();
+  const {
+    results,
+    isCalculating,
+    handleCalculate,
+    resetCalculation,
+    error: calcError,
+  } = useAhpCalculation();
 
   // Local Page State
   const [selectedSpeciesName, setSelectedSpeciesName] = useState<string>("");
@@ -67,6 +81,9 @@ export default function AhpPage() {
     setSelectedSpeciesName("");
   };
 
+  // Combine errors for display
+  const globalError = speciesError || factorsError;
+
   return (
     <div className="ahp-view-container">
       <Helmet>
@@ -89,11 +106,23 @@ export default function AhpPage() {
 
       <AhpHeader />
 
+      {/* Display local errors */}
+      {globalError && (
+        <div className="ahp-error-message">
+          <p>
+            <strong>Error:</strong> {globalError}
+          </p>
+          {calcError && <button onClick={handleRetry}>Try Again</button>}
+        </div>
+      )}
+
       {/* The Control Panel */}
       <div className="ahp-controls">
         <div className="ahp-input-group">
           <SpeciesSelector
-            isDisabled={isComparing || isCalculating || !!results}
+            isDisabled={
+              isComparing || isCalculating || !!results || !!globalError
+            }
             onSpeciesSelect={(id, name) => {
               setSelectedSpeciesId(id);
               setSelectedSpeciesName(name);

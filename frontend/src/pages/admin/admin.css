@@ -489,3 +489,13 @@
   border-radius: 5px;
   height: 100%;
 }
+
+.ahp-error-message {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  border-radius: 0.5rem;
+  color: #b91c1c;
+  margin: 1rem 0;
+  padding: 1rem;
+  width: 100%;
+}
