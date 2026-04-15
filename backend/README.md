@@ -265,6 +265,12 @@ The following endpoints have role-based access control implemented:
 | `/sapling-estimation/` | POST | OFFICER | Calculate sapling estimation |
 | `/recommendations/` | POST | OFFICER | Generate recommendations |
 | `/recommendations/{farm_id}` | GET | OFFICER | Get farm recommendations |
+| `/reports/farm/{farm_id}` | GET | OFFICER | Get report for a single farm (ownership verified) |
+| `/reports/farm/{farm_id}/export/docx` | GET | OFFICER | Download single farm report as DOCX (ownership verified) |
+| `/reports/farm/{farm_id}/export/pdf` | GET | OFFICER | Download single farm report as PDF (ownership verified) |
+| `/reports/farms` | GET | SUPERVISOR | Get reports for all farms under management |
+| `/reports/farms/export/docx` | GET | SUPERVISOR | Download all farms under management as DOCX |
+| `/reports/farms/export/pdf` | GET | SUPERVISOR | Download all farms under management as PDF |
 
 Notes:
 
