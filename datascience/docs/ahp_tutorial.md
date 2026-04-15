@@ -26,7 +26,7 @@ You will see a menu listing your species:
  3. Pterocarpus indicus [Ai-na]
  4. Santalum album [Ai-kamelli]
  5. Sterculia foetida [Ai-nitas]
- 6. Eucalyptus alba [Ai-bobur (mutin)]
+ 6. Eucalyptus alba [Ai-bubur (mutin)]
  7. Eucalyptus urophylla [Ai-ru]
  8. Toona ciliata [Ai-saria]
  9. Sweitenia macrophylla [Ai-Mahony]
