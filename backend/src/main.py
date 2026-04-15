@@ -18,6 +18,7 @@ from src.routers import (
     environmental_profile,
     farm,
     recommendation,
+    reporting,
     sapling_estimation,
     soil_texture,
     species,
@@ -71,6 +72,7 @@ app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
 app.include_router(ahp.router)
+app.include_router(reporting.router)
 
 
 @app.exception_handler(RequestValidationError)
