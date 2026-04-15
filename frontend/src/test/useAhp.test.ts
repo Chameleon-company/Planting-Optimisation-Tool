@@ -15,7 +15,6 @@ vi.mock("@/contexts/AuthContext", () => ({
   }),
 }));
 
-
 describe("AHP Hooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -88,7 +87,9 @@ describe("useAhpFactors", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Assert the local error state matches your catch block logic
-    expect(result.current.error).toBe("Could not load features: Internal Server Error");
+    expect(result.current.error).toBe(
+      "Could not load features: Internal Server Error"
+    );
     expect(result.current.factorsList).toBe(null);
   });
 });

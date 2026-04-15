@@ -480,9 +480,9 @@
 .ahp-progress-bar-bg {
   background-color: #e9ecef;
   border-radius: 5px;
+  flex-grow: 1;
   height: 10px;
   overflow: hidden;
-  flex-grow: 1;
 }
 
 .ahp-progress-bar-fill {
