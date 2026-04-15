@@ -21,7 +21,9 @@ def create_dem_array():
 def test_sapling_estimation(create_farm_polygon, create_dem_array):
     result = sapling_estimation(
         farm_polygon=create_farm_polygon,
-        spacing_m=10,
+        spacing_x=10,
+        spacing_y=10,
+        max_slope=15,
         farm_boundary_crs="EPSG:3857",
         dem_array=create_dem_array,
         dem_upper_left_x=0,
