@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useAsyncError } from "../hooks/useAsyncError";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -32,19 +31,23 @@ export interface Farm {
 export function useProfiles() {
   const { getAccessToken } = useAuth();
   const token = getAccessToken();
-  const throwAsyncError = useAsyncError();
 
   const [allFarms, setAllFarms] = useState<Farm[]>([]);
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const PAGE_SIZE = 9;
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setError(null);
+      return;
+    }
 
     const fetchFarms = async () => {
       setIsLoading(true);
-      setAllFarms([]);
+      setError(null);
+
       try {
         const res = await fetch(`${API_BASE}/auth/users/me/items`, {
           headers: {
@@ -52,16 +55,25 @@ export function useProfiles() {
             Accept: "application/json",
           },
         });
-        if (!res.ok) throw new Error(await res.text());
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || `Failed to fetch farms (${res.status})`);
+        }
+
         const data = await res.json();
         setAllFarms(data);
-      } catch (err) {
-        throwAsyncError(err);
+      } catch (err: unknown) {
+        setAllFarms([]);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchFarms();
   }, [token]);
 
@@ -71,6 +83,7 @@ export function useProfiles() {
   return {
     farms,
     isLoading,
+    error,
     page,
     setPage,
     totalPages,

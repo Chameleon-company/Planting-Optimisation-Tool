@@ -1,4 +1,6 @@
 import FarmCard from "./profileCard";
+import FarmPageNav from "./profilePageNav";
+import ProfileEditActions from "./profileEditButtons";
 import { Farm } from "@/hooks/useProfiles";
 
 interface FarmListProps {
@@ -7,7 +9,7 @@ interface FarmListProps {
   user: { name: string } | null;
   page: number;
   totalPages: number;
-  setPage: (updater: (p: number) => number) => void;
+  setPage: (page: number) => void;
 }
 
 export default function FarmList({
@@ -18,10 +20,12 @@ export default function FarmList({
   totalPages,
   setPage,
 }: FarmListProps) {
+  // Loading state
   if (isLoading) {
     return <p className="farmListEmpty">Loading farms...</p>;
   }
 
+  // Not logged in
   if (!user) {
     return (
       <p className="farmListEmpty">
@@ -30,10 +34,19 @@ export default function FarmList({
     );
   }
 
+  // Logged in but no farms still displays editing actions dependent on role
   if (farms.length === 0) {
-    return <p className="farmListEmpty">No farms found.</p>;
+    return (
+      <>
+        <p className="farmListEmpty">No farms found.</p>
+        <div className="farmBottomRow">
+          <ProfileEditActions />
+        </div>
+      </>
+    );
   }
 
+  // Logged in with farms displays all data
   return (
     <div>
       <div className="farmList">
@@ -42,24 +55,9 @@ export default function FarmList({
         ))}
       </div>
 
-      <div className="farmPageNav">
-        <button
-          className="farmPageNavBtn"
-          disabled={page === 0}
-          onClick={() => setPage(p => p - 1)}
-        >
-          ← Previous
-        </button>
-        <span className="farmPageNavInfo">
-          Page {page + 1} of {totalPages}
-        </span>
-        <button
-          className="farmPageNavBtn"
-          disabled={page >= totalPages - 1}
-          onClick={() => setPage(p => p + 1)}
-        >
-          Next →
-        </button>
+      <div className="farmBottomRow">
+        <FarmPageNav page={page} totalPages={totalPages} setPage={setPage} />
+        <ProfileEditActions />
       </div>
     </div>
   );

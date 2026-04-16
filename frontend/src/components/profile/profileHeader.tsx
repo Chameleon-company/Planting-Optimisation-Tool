@@ -13,7 +13,9 @@ export default function ProfileHeader({
     <header className="farmProfileHeader">
       <h1 className="farmProfileTitle">Environmental Profile</h1>
       <p className="farmProfileSubtitle">
-        {farmerName} · {farmCount} {farmCount === 1 ? "Farm" : "Farms"}
+        {farmerName
+          ? `${farmerName} · ${farmCount} ${farmCount === 1 ? "Farm" : "Farms"}`
+          : ""}
       </p>
     </header>
   );

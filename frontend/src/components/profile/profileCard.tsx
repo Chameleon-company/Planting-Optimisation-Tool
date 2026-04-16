@@ -4,7 +4,9 @@ interface FarmCardProps {
   farm: Farm;
 }
 
+// Create farm card that parses data from backend to be displayed in the frontend
 export default function FarmCard({ farm }: FarmCardProps) {
+  // Convert boolean tags to strings to be displayed
   const tags = [
     farm.coastal && "Coastal",
     farm.riparian && "Riparian",

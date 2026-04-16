@@ -10,7 +10,7 @@ function NotFoundPage() {
         <title>Not Found | Planting Optimisation Tool</title>
       </Helmet>
 
-      {/* NotFoundContent, if empty page is searchde for, display this */}
+      {/* NotFoundContent, if empty page is searched for, display this */}
       <NotFoundContent />
     </div>
   );

@@ -1131,12 +1131,19 @@ main.container {
 
 /* ============ PROFILE PAGE NAVIGATION ============ */
 
+.farmBottomRow {
+  align-items: center;
+  display: flex;
+  justify-content: space-between; /* pushes nav left, actions right */
+  padding: 8px 7% 40px; /* same overall spacing as before */
+}
+
 .farmPageNav {
   align-items: center;
   display: flex;
   gap: 12px;
   justify-content: left;
-  padding: 8px 7% 40px;
+  padding: 0;
 }
 
 .farmPageNavBtn {
@@ -1171,8 +1178,52 @@ main.container {
   color: var(--muted);
   font-size: 0.9rem;
   min-width: 80px;
-  padding-top: 10px;
   text-align: center;
+}
+
+/* ============ PROFILE EDIT ACTIONS ============ */
+
+.farmActions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  padding: 0;
+}
+
+.farmActionBtn {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.88rem;
+  font-weight: 600;
+  gap: 6px;
+  padding: 8px 16px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.farmActionBtn:hover {
+  background: var(--brand-50);
+  border-color: var(--brand-300);
+  box-shadow: 0 4px 12px rgba(14, 122, 67, 0.1);
+  transform: translateY(-1px);
+}
+
+.farmActionBtnDanger {
+  color: #c0392b;
+}
+
+.farmActionBtnDanger:hover {
+  background: #fdecea;
+  border-color: #f5c2c0;
+  box-shadow: 0 4px 12px rgba(192, 59, 44, 0.1);
 }
 
 /* ============ ERROR BOUNDARY ============ */
