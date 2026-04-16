@@ -1,6 +1,9 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src import cache
 from src.database import get_db_session
 from src.dependencies import get_user_id, limiter, require_role
 from src.schemas.sapling_estimation import SaplingEstimationResponse
@@ -41,10 +44,16 @@ async def get_sapling_estimation(
     if not farms:
         raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id} not found.")
 
+    cache_key = f"sapling:{farm_id}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return SaplingEstimationResponse(**json.loads(cached))
+
     service = sapling_estimation_service.SaplingEstimationService()
     estimation_data = await service.run_estimation(db, farm_id)
 
     if not estimation_data:
         raise HTTPException(status_code=404, detail=f"Farm boundary not found for farm_id: {farm_id}")
 
+    await cache.set(cache_key, estimation_data.model_dump_json())
     return estimation_data

@@ -10,38 +10,36 @@ from src.models.farm import Farm
 
 async def import_boundaries():
     async with AsyncSessionLocal() as session:
-        # Path to csv
         csv_path = "src/scripts/data/farm_boundaries_master.csv"
 
         try:
+            # Load all external_id -> farm_id mappings in one query
+            result = await session.execute(select(Farm.id, Farm.external_id))
+            id_map = {ext_id: farm_id for farm_id, ext_id in result.all()}
+
             with open(csv_path, mode="r", encoding="utf-8-sig") as f:
-                reader = csv.DictReader(f)
-                count = 0
+                rows = list(csv.DictReader(f))
 
-                for row in reader:
-                    ext_id = int(row["external_id"])
-                    wkt_string = row["boundary"].strip()
-
-                    # Find the Farm ID using the external_id
-                    stmt = select(Farm.id).where(Farm.external_id == ext_id)
-                    result = await session.execute(stmt)
-                    farm_id = result.scalar_one_or_none()
-
-                    if farm_id:
-                        # Format for GeoAlchemy2 / PostGIS
-                        # Using EWKT format: SRID=4326;POLYGON(...)
-                        new_boundary = FarmBoundary(
-                            id=farm_id,  # Shared PK with Farm
-                            boundary=f"SRID=4326;{wkt_string}",
+            boundaries = []
+            skipped = 0
+            for row in rows:
+                ext_id = int(row["external_id"])
+                farm_id = id_map.get(ext_id)
+                if farm_id:
+                    boundaries.append(
+                        FarmBoundary(
+                            id=farm_id,
+                            boundary=f"SRID=4326;{row['boundary'].strip()}",
                             external_id=ext_id,
                         )
-                        session.add(new_boundary)
-                        count += 1
-                    else:
-                        print(f"Skip: No farm found for external_id {ext_id}")
+                    )
+                else:
+                    print(f"Skip: No farm found for external_id {ext_id}")
+                    skipped += 1
 
-                await session.commit()
-                print(f"Successfully imported {count} boundaries.")
+            session.add_all(boundaries)
+            await session.commit()
+            print(f"Successfully imported {len(boundaries)} boundaries, skipped {skipped}.")
 
         except FileNotFoundError:
             print(f"Error: Could not find {csv_path}")
