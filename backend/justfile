@@ -104,6 +104,51 @@ populate port=DEFAULT_PORT: ensure-env
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.check_data_stats
     @echo "Database is ready and populated. To start dev server run: just run-api"
 
+# Applies pending migrations against the Render production database (requires backend/.env.render)
+render-migrate:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    uv run alembic upgrade head
+
+# Seeds the Render production database with reference and test data (requires backend/.env.render)
+render-populate:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    uv run python -m src.scripts.seed_references
+    uv run python -m src.scripts.create_test_user
+    uv run python -m src.scripts.setup_import_db
+
+# Lists all Render services and their current status
+render-status:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    render services --output json --confirm | python3 -c "
+    import json, sys
+    data = json.load(sys.stdin)
+    print('NAME'.ljust(20) + 'TYPE'.ljust(15) + 'STATUS')
+    print('-' * 55)
+    for item in data:
+        svc = next((v for k, v in item.items() if k not in ('project', 'environment')), None)
+        if not svc:
+            continue
+        name = svc.get('name', '?')
+        stype = [k for k in item if k not in ('project', 'environment')][0]
+        status = svc.get('status') or svc.get('suspended', '?')
+        print(name.ljust(20) + stype.ljust(15) + status)
+    "
+
+# Streams live logs from the backend service (Ctrl+C to stop)
+render-logs:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    render logs --resources $RENDER_BACKEND_ID --tail --output text --confirm
+
+# Triggers a manual redeploy of the backend
+render-deploy:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    render deploy --service-id $RENDER_BACKEND_ID --output text --confirm
+
 # Stops the API server. Optionally pass a port: just kill-api 9000 (default: 8080, or API_PORT from .env)
 kill-api port=DEFAULT_PORT:
     @echo "Attempting to stop API server..."

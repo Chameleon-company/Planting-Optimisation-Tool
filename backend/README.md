@@ -486,6 +486,11 @@ run `just [target]` in `/backend` to execute.
 | **`psql`** | Starts an interactive psql DB session | `docker exec -it pot_postgres_db psql -U postgres -d POT_db` |
 | **`run-api [port]`** | Starts the FastAPI development server. Accepts an optional port (default: 8080, or `API_PORT` from `.env`). | `uv run fastapi dev src/main.py` |
 | **`kill-api [port]`** | Stops the API server. Only kills the process if it is running uvicorn or fastapi - will warn and skip if another process (e.g. Java) is on the port. Accepts an optional port (default: 8080, or `API_PORT` from `.env`). | `uv run -m src.scripts.kill-api` |
+| **`render-status`** | Lists all Render services and their current status. Requires `backend/.env.render` with `RENDER_API_KEY` set. | `render services --output json` |
+| **`render-logs`** | Streams live logs from the Render backend service (Ctrl+C to stop). Requires `backend/.env.render`. | `render logs --resources $RENDER_BACKEND_ID --tail` |
+| **`render-deploy`** | Triggers a manual redeploy of the Render backend service. Requires `backend/.env.render`. | `render deploy --service-id $RENDER_BACKEND_ID` |
+| **`render-migrate`** | Applies pending Alembic migrations against the Render production database. Requires `backend/.env.render` with correct `DATABASE_URL`. | `uv run alembic upgrade head` |
+| **`render-populate`** | Seeds reference data and creates the test user on the Render production database. Requires `backend/.env.render`. **Never run `just populate` against Render** - it wipes local Docker containers first. | Runs `seed_references.py`, `create_test_user.py`, `setup_import_db.py` |
 
 ### Initial ingestion and setup
 ```bash
