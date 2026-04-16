@@ -55,5 +55,5 @@ async def get_sapling_estimation(
     if not estimation_data:
         raise HTTPException(status_code=404, detail=f"Farm boundary not found for farm_id: {farm_id}")
 
-    await cache.set(cache_key, estimation_data.model_dump_json())
+    await cache.set(cache_key, json.dumps(estimation_data))
     return estimation_data
