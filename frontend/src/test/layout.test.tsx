@@ -54,6 +54,7 @@ describe("MainLayout", () => {
       logout: mockLogout,
       login: vi.fn(),
       isLoading: false,
+      getAccessToken: vi.fn(() => null),
     });
 
     vi.mocked(useStickyHeader).mockReturnValue({ isScrolled: false });
@@ -111,10 +112,17 @@ describe("MainLayout", () => {
   it("shows user info and logout button when authenticated", async () => {
     // Override auth mock to simulate a logged-in user
     vi.mocked(useAuth).mockReturnValue({
-      user: { name: "Test User", role: "admin", email: "test@test.com" },
+      user: {
+        id: 1,
+        name: "Test User",
+        role: "admin",
+        email: "test@test.com",
+        farms: [],
+      },
       logout: mockLogout,
       login: vi.fn(),
       isLoading: false,
+      getAccessToken: vi.fn(() => "test-token"),
     });
 
     renderWithRouter();
@@ -128,10 +136,17 @@ describe("MainLayout", () => {
 
   it("calls logout and navigates to home when logout button is clicked", async () => {
     vi.mocked(useAuth).mockReturnValue({
-      user: { name: "Test User", role: "admin", email: "test@test.com" },
+      user: {
+        id: 1,
+        name: "Test User",
+        role: "admin",
+        email: "test@test.com",
+        farms: [],
+      },
       logout: mockLogout,
       login: vi.fn(),
       isLoading: false,
+      getAccessToken: vi.fn(() => "test-token"),
     });
 
     renderWithRouter();
