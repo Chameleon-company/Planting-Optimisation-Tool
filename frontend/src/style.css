@@ -240,7 +240,9 @@ html {
   font-weight: 700;
   padding: 10px 28px;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .logout-btn:hover {
@@ -256,7 +258,9 @@ html {
   font-weight: 700;
   padding: 10px 28px;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .login-btn:hover {
@@ -1341,8 +1345,10 @@ main.container {
 }
 
 .login-submit-btn:disabled {
+  box-shadow: none;
   cursor: not-allowed;
   opacity: 0.6;
+  transform: none;
 }
 
 .login-select {
@@ -1427,14 +1433,6 @@ main.container {
   }
 }
 
-/* ============ LOGIN BUTTON DISABLED STATE ============ */
-
-.login-submit-btn:disabled {
-  box-shadow: none;
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-}
 /* ============ LOGIN MOBILE IMPROVEMENTS ============ */
 
 @media (max-width: 480px) {

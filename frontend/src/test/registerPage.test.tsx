@@ -46,7 +46,10 @@ describe("RegisterPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset to idle state before each test
-    vi.mocked(useRegister).mockReturnValue({ ...defaultHookReturn, register: vi.fn() });
+    vi.mocked(useRegister).mockReturnValue({
+      ...defaultHookReturn,
+      register: vi.fn(),
+    });
   });
 
   it("renders the registration form", () => {
@@ -97,7 +100,9 @@ describe("RegisterPage", () => {
       screen.getByPlaceholderText(/confirm your password/i),
       "Password123!"
     );
-    await userEvent.click(screen.getByRole("button", { name: /create account/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /create account/i })
+    );
 
     await waitFor(() => {
       expect(mockRegister).toHaveBeenCalledWith({
@@ -120,13 +125,19 @@ describe("RegisterPage", () => {
     renderRegisterPage();
 
     // Success panel should be visible
-    expect(screen.getByRole("heading", { name: /account created/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /account created/i })
+    ).toBeInTheDocument();
     expect(screen.getByText(/check your inbox/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /sign in/i })).toBeInTheDocument();
 
     // Form should no longer be present
-    expect(screen.queryByPlaceholderText(/enter your full name/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /create account/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText(/enter your full name/i)
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /create account/i })
+    ).not.toBeInTheDocument();
   });
 
   it("displays error message for duplicate email when hook reports it", () => {
@@ -166,7 +177,9 @@ describe("RegisterPage", () => {
 
     expect(await screen.findByText("Name is required.")).toBeInTheDocument();
     expect(await screen.findByText("Email is required.")).toBeInTheDocument();
-    expect(await screen.findByText("Password is required.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Password is required.")
+    ).toBeInTheDocument();
 
     // register() should not be called - submit button is disabled
     expect(defaultHookReturn.register).not.toHaveBeenCalled();
