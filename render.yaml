@@ -61,7 +61,6 @@ services:
   - type: web
     name: pot-frontend
     runtime: static
-    plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: ./frontend/build/dist
     rootDir: frontend
