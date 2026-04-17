@@ -1,10 +1,18 @@
-import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { useStickyHeader } from "@/hooks/useStickyHeader";
 import "../../style.css";
 
 export default function MainLayout() {
   const { isScrolled } = useStickyHeader();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const isHome = pathname === "/";
 
@@ -63,7 +71,20 @@ export default function MainLayout() {
               Species
             </NavLink>
           </nav>
-          <div className="actions"></div>
+          <div className="actions">
+            {user ? (
+              <div className="user-info">
+                <span>Welcome, {user.name}</span>
+                <button onClick={handleLogout} className="logout-btn">
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <NavLink to="/login" className="nav-link">
+                Login
+              </NavLink>
+            )}
+          </div>
         </div>
       </header>
 
