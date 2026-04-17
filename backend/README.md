@@ -97,6 +97,7 @@ backend/
 │   │   └── data/           # Seeding data for scripts
 │   └── services/           # Service layer connectivity
 └── tests/                  # Pytest suite for automated testing
+    └── test_environmental_profile_service.py  # Imputation service integration tests
 ├── ERD.md                  # Entity-Relationship Diagram of current database
 ├── README.md               # This file
 ├── SCHEMA.md               # Current database schema

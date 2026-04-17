@@ -1,10 +1,19 @@
 from core.farm_profile import build_farm_profile
 from geoalchemy2.shape import to_shape
+from imputation import TARGET_FEATURES, impute_missing
 from shapely.geometry import MultiPolygon, Polygon
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.boundaries import FarmBoundary
+
+# Maps from farm_profile.py output keys to imputation service keys
+_TO_IMPUTER = {"slope_degrees": "slope", "soil_ph": "ph"}
+_FROM_IMPUTER = {v: k for k, v in _TO_IMPUTER.items()}
+
+
+class ImputationError(Exception):
+    """Raised when imputation fails or produces implausible values."""
 
 
 class EnvironmentalProfileService:
@@ -39,6 +48,40 @@ class EnvironmentalProfileService:
 
         if not profile:
             return None
+
+        # --- Imputation ---------------------------------------------------
+        # Null out values that the schema validators would reject as out of range,
+        # so they are treated as missing and picked up by the imputer rather than
+        # silently becoming None only after Pydantic validation.
+        rainfall = profile.get("rainfall_mm")
+        if rainfall is not None and not (1000 <= rainfall <= 3000):
+            profile["rainfall_mm"] = None
+
+        temp = profile.get("temperature_celsius")
+        if temp is not None and not (15 <= temp <= 30):
+            profile["temperature_celsius"] = None
+
+        # TARGET_FEATURES uses imputer naming (slope, ph).
+        # farm_profile uses slope_degrees and soil_ph — remap before passing.
+        imputer_profile = {_TO_IMPUTER.get(k, k): v for k, v in profile.items()}
+
+        missing_targets = [f for f in TARGET_FEATURES if imputer_profile.get(f) is None]
+
+        if missing_targets:
+            try:
+                filled, imputed_fields = impute_missing(imputer_profile)
+            except RuntimeError as exc:
+                raise ImputationError(f"Imputation model unavailable: {exc}") from exc
+
+            # Merge filled values back, remapping imputer keys to profile keys
+            for field in imputed_fields:
+                profile_key = _FROM_IMPUTER.get(field, field)
+                profile[profile_key] = filled[field]
+
+            # Record which fields were imputed (using DB column naming)
+            for field in imputed_fields:
+                profile[f"{field}_imputed"] = True
+        # ------------------------------------------------------------------
 
         # Data Normalization to enforce pydantic schema
 
