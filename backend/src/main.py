@@ -1,3 +1,5 @@
+import json
+import logging
 import time
 from contextlib import asynccontextmanager
 
@@ -87,6 +89,9 @@ async def pydantic_validation_exception_handler(request: Request, exc: Validatio
     return JSONResponse(status_code=422, content={"detail": "Validation failed", "errors": errors})
 
 
+_request_logger = logging.getLogger("api.requests")
+
+
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()
@@ -94,8 +99,16 @@ async def add_process_time_header(request: Request, call_next):
     process_time = time.perf_counter() - start_time
     response.headers["X-Process-Time"] = str(process_time)
 
-    # Log it to the terminal
-    print(f"Path: {request.url.path} | Time: {process_time:.4f}s")
+    _request_logger.info(
+        json.dumps(
+            {
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": response.status_code,
+                "process_time": process_time,
+            }
+        )
+    )
 
     return response
 
