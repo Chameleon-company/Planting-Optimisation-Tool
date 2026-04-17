@@ -1,10 +1,10 @@
 import { Helmet } from "react-helmet-async";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +18,19 @@ function LoginPage() {
   const emailError = touched.email && !email.trim() ? "Email is required." : "";
   const passwordError =
     touched.password && !password.trim() ? "Password is required." : "";
+
+  // Watch for the user to populate, then redirect
+  useEffect(() => {
+    if (user) {
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "supervisor") {
+        navigate("/");
+      } else {
+        navigate("/"); // Default redirect
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,9 +47,6 @@ function LoginPage() {
 
     try {
       await login({ email, password });
-
-      // Redirect after successful login
-      navigate("/admin");
     } catch (error) {
       const message =
         error instanceof Error
@@ -57,11 +67,10 @@ function LoginPage() {
       <main className="login-page">
         <section className="login-card">
           <div className="login-card-header">
-            <span className="login-badge">Admin Access</span>
-            <h1 className="login-title">Sign in to continue</h1>
+            <span className="login-badge">User Access</span>
+            <h1 className="login-title">Sign in to your account</h1>
             <p className="login-subtitle">
-              Access the management workspace for dashboard tools, settings, and
-              future administrative features.
+              Access your workspace to manage tools and resources.
             </p>
           </div>
 

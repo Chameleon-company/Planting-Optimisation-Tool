@@ -1,7 +1,10 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Project Imports
+from src import cache
 from src.database import get_db_session
 from src.dependencies import get_user_id, limiter, require_role
 from src.schemas.user import Role, UserRead
@@ -33,6 +36,11 @@ async def get_farm_recs(
     if not farms:
         raise HTTPException(status_code=404, detail="Farm not found or access denied")
 
+    cache_key = f"rec:{farm_id}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
     # Prepare data for the engine
     all_species = await species_service.get_all_species_for_engine(db)
     cfg = species_service.get_recommend_config()
@@ -40,6 +48,7 @@ async def get_farm_recs(
     # Run the pipeline
     results = await recommendation_service.run_recommendation_pipeline(db, farms, all_species, cfg)
 
+    await cache.set(cache_key, json.dumps(results[0]))
     return results[0]
 
 

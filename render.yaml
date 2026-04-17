@@ -41,6 +41,18 @@ services:
         sync: false
       - key: GEE_KEY_JSON
         sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        sync: false
+      - key: FRONTEND_BASE_URL
+        sync: false
       - key: TESTING
         value: "false"
       - key: RATELIMIT_ENABLED
@@ -52,6 +64,10 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: ./frontend/build/dist
     rootDir: frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       # These are set manually in the Render dashboard - never commit the values.
       - key: VITE_SPACE_ID
