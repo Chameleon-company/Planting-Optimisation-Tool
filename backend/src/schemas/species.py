@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from src.schemas.constants import AgroforestryTypeID, SoilTextureID
 from src.schemas.nested_models import AgroforestryTypeReadNested, SoilTextureReadNested
@@ -86,6 +86,28 @@ class SpeciesBase(BaseModel):
     )
     soil_textures: Optional[List[SoilTextureID]] = None
     agroforestry_types: Optional[List[AgroforestryTypeID]] = None
+
+    @model_validator(mode="after")
+    def validate_logical_ranges(self):
+        range_checks = [
+            ("rainfall_mm_min", "rainfall_mm_max", "Minimum rainfall cannot be greater than maximum rainfall."),
+            (
+                "temperature_celsius_min",
+                "temperature_celsius_max",
+                "Minimum temperature cannot be greater than maximum temperature.",
+            ),
+            ("elevation_m_min", "elevation_m_max", "Minimum elevation cannot be greater than maximum elevation."),
+            ("ph_min", "ph_max", "Minimum pH cannot be greater than maximum pH."),
+        ]
+
+        for min_field, max_field, error_message in range_checks:
+            min_value = getattr(self, min_field, None)
+            max_value = getattr(self, max_field, None)
+
+            if min_value is not None and max_value is not None and min_value > max_value:
+                raise ValueError(error_message)
+
+        return self
 
 
 class SpeciesCreate(SpeciesBase):

@@ -39,7 +39,13 @@ async def update_species(
     """Updates an existing species.
     Requires ADMIN role.
     """
-    species = await species_service.update_species(db, species_id, payload)
+    try:
+        species = await species_service.update_species(db, species_id, payload)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from exc
 
     if species is None:
         raise HTTPException(
