@@ -80,9 +80,14 @@ export default function MainLayout() {
                 </button>
               </div>
             ) : (
-              <NavLink to="/login" className="nav-link">
-                Login
-              </NavLink>
+              <div className="auth-actions">
+                <NavLink to="/login" className="login-btn">
+                  Login
+                </NavLink>
+                <NavLink to="/register" className="login-btn">
+                  Register
+                </NavLink>
+              </div>
             )}
           </div>
         </div>

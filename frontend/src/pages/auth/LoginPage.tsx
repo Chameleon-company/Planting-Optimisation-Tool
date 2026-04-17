@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function LoginPage() {
   const { login, isLoading, user } = useAuth();
@@ -148,6 +148,13 @@ function LoginPage() {
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
+
+            <p className="login-footer-text">
+              Don't have an account?{" "}
+              <Link to="/register" className="login-link">
+                Register
+              </Link>
+            </p>
           </form>
         </section>
       </main>
