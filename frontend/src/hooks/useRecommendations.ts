@@ -111,7 +111,7 @@ export function useRecommendations(farmId: string) {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
-    } catch (err) {
+    } catch {
       setError("Error downloading PDF report.");
     }
   };

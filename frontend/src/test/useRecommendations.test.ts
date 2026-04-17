@@ -16,6 +16,10 @@ describe("useRecommendations Hook", () => {
     vi.resetAllMocks();
     vi.resetModules();
     global.fetch = vi.fn();
+
+    // Mock URL methods for PDF download
+    window.URL.createObjectURL = vi.fn(() => "blob:url");
+    window.URL.revokeObjectURL = vi.fn();
   });
 
   it("fetches and returns recommendation data successfully", async () => {
@@ -74,5 +78,49 @@ describe("useRecommendations Hook", () => {
 
     expect(result.current.error).toBe("Internal Server Error");
     expect(result.current.hasSearched).toBe(false);
+  });
+
+  it("triggers a PDF download successfully", async () => {
+    const mockBlob = new Blob(["pdf-content"], { type: "application/pdf" });
+    (global.fetch as Mock).mockResolvedValue({
+      ok: true,
+      blob: async () => mockBlob,
+    });
+
+    // farmId to trigger the hook and get the function
+    const { result } = renderHook(() => useRecommendations("123"));
+
+    // Create a spy on document.createElement to catch the anchor tag
+    const linkSpy = {
+      click: vi.fn(),
+      setAttribute: vi.fn(),
+      remove: vi.fn(),
+      style: {} as CSSStyleDeclaration,
+      parentNode: {
+        removeChild: vi.fn(),
+      },
+    } as unknown as HTMLAnchorElement;
+
+    const createElementSpy = vi
+      .spyOn(document, "createElement")
+      .mockReturnValue(linkSpy);
+
+    const appendSpy = vi
+      .spyOn(document.body, "appendChild")
+      .mockImplementation(node => {
+        return node as Node;
+      });
+
+    await result.current.downloadPdf();
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/reports/farm/123/export/pdf"),
+      expect.objectContaining({ method: "GET" })
+    );
+    expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
+    expect(linkSpy.click).toHaveBeenCalled();
+
+    createElementSpy.mockRestore();
+    appendSpy.mockRestore();
   });
 });

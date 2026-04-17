@@ -14,6 +14,8 @@ vi.mock("@/hooks/useRecommendations", () => ({
 import { useRecommendations } from "@/hooks/useRecommendations";
 
 describe("RecommendationPage Integration", () => {
+  const mockDownload = vi.fn();
+
   it("does not show tables before a search has been performed", () => {
     vi.mocked(useRecommendations).mockReturnValue({
       recs: [],
@@ -21,6 +23,7 @@ describe("RecommendationPage Integration", () => {
       isLoading: false,
       hasSearched: false,
       error: null,
+      downloadPdf: mockDownload,
     });
 
     render(
@@ -34,6 +37,71 @@ describe("RecommendationPage Integration", () => {
     ).toBeInTheDocument();
     // Tables should not be present yet
     expect(screen.queryByText("Top Fit Species")).not.toBeInTheDocument();
+  });
+
+  it("shows the download button when recommendations are found", () => {
+    vi.mocked(useRecommendations).mockReturnValue({
+      recs: [
+        {
+          species_id: 1,
+          score_mcda: 0.9,
+          rank_overall: 1,
+          species_common_name: "Tree",
+          species_name: "S",
+          key_reasons: [],
+        },
+      ],
+      excludes: [],
+      isLoading: false,
+      hasSearched: true,
+      error: null,
+      downloadPdf: mockDownload,
+    });
+
+    render(
+      <HelmetProvider>
+        <RecommendationPage />
+      </HelmetProvider>
+    );
+
+    const downloadBtn = screen.getByRole("button", {
+      name: /Download PDF Report/i,
+    });
+    expect(downloadBtn).toBeInTheDocument();
+  });
+
+  it("calls downloadPdf when the button is clicked", async () => {
+    const user = UserEvent.setup();
+    vi.mocked(useRecommendations).mockReturnValue({
+      recs: [
+        {
+          species_id: 1,
+          score_mcda: 0.9,
+          rank_overall: 1,
+          species_common_name: "Tree",
+          species_name: "S",
+          key_reasons: [],
+        },
+      ],
+      excludes: [],
+      isLoading: false,
+      hasSearched: true,
+      error: null,
+      downloadPdf: mockDownload,
+    });
+
+    render(
+      <HelmetProvider>
+        <RecommendationPage />
+      </HelmetProvider>
+    );
+
+    const downloadBtn = screen.getByRole("button", {
+      name: /Download PDF Report/i,
+    });
+    await user.click(downloadBtn);
+
+    expect(mockDownload).toHaveBeenCalledTimes(1);
   });
 
   it("splits data into Top Fit and Cautionary tables based on score", () => {
@@ -60,6 +128,7 @@ describe("RecommendationPage Integration", () => {
       isLoading: false,
       hasSearched: true,
       error: null,
+      downloadPdf: mockDownload,
     });
 
     render(
@@ -95,6 +164,7 @@ describe("RecommendationPage Integration", () => {
       isLoading: false,
       hasSearched: false,
       error: null,
+      downloadPdf: mockDownload,
     });
 
     render(
