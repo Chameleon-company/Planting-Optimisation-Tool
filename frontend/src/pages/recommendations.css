@@ -339,3 +339,43 @@
   padding: 1rem;
   width: 100%;
 }
+
+/* Container for both search and the download button */
+.rec-controls-wrapper {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* Row specifically for the download button to push it right */
+.rec-download-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* Styling for the download button itself */
+.rec-download-report-btn {
+  background-color: #28a745;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: bold;
+  padding: 10px 20px;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.rec-download-report-btn:hover {
+  background-color: #218838;
+}
+
+.rec-download-report-btn:active {
+  transform: translateY(1px);
+}
