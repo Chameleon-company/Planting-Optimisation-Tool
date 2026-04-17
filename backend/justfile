@@ -15,6 +15,7 @@ CONTAINER_NAME  := "pot_postgres_db"
 
 FASTAPI_TARGET  := "src/main.py"
 DEFAULT_PORT    := env("API_PORT", "8080")
+DEFAULT_HOST    := "http://localhost:" + DEFAULT_PORT
 
 # Standard recipe to avoid Shebang/CRLF issues
 [private]
@@ -104,6 +105,23 @@ populate port=DEFAULT_PORT: ensure-env
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.check_data_stats
     @echo "Database is ready and populated. To start dev server run: just run-api"
 
+# ---- Production based targets beyond this point ----
+# ---- They won't work without .env.render as a failsafe ----
+# ---- But still be careful ----
+
+# Opens an interactive PSQL session against the Render database (requires .env.render)
+render-psql:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    psql "${DATABASE_URL/+asyncpg/}"
+
+# WARNING: Destructive. Wipes the Render production database and re-applies migrations (requires backend/.env.render)
+render-reset:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    uv run alembic downgrade base
+    uv run alembic upgrade head
+
 # Applies pending migrations against the Render production database (requires backend/.env.render)
 render-migrate:
     #!/usr/bin/env bash
@@ -149,7 +167,27 @@ render-deploy:
     set -a && source .env.render && set +a
     render deploy --service-id $RENDER_BACKEND_ID --output text --confirm
 
+# Creates 10 admin users in the Render DB for load testing (requires .env.render)
+render-seed-users:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    PYTHONPATH=. uv run python locust/seed_users.py
+
+# Runs Locust load tests against the Render API (requires .env.render)
+render-load-test:
+    #!/usr/bin/env bash
+    set -a && source .env.render && set +a
+    PYTHONPATH=. uv run locust -f locust/locustfile.py --host $RENDER_API_URL --web-host localhost
+
 # Stops the API server. Optionally pass a port: just kill-api 9000 (default: 8080, or API_PORT from .env)
 kill-api port=DEFAULT_PORT:
     @echo "Attempting to stop API server..."
     @{{UV_RUNNER}} {{PYTHON}} -m src.scripts.kill-api {{port}}
+
+# Creates 10 admin users in the local DB for load testing
+seed-users: ensure-env
+    @{{UV_RUNNER}} {{PYTHON}} locust/seed_users.py
+
+# Runs Locust load tests against the local API
+load-test host=DEFAULT_HOST: ensure-env
+    @{{UV_RUNNER}} locust -f locust/locustfile.py --host {{host}} --web-host localhost
