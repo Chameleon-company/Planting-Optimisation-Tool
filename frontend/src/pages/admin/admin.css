@@ -1,0 +1,503 @@
+/* ============ US-002 / #155 ADMIN DASHBOARD SHELL ============ */
+/* Core shell layout styles for admin/manager management pages */
+
+.admin-layout {
+  background: #f5f7fb;
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  background: #102a43;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 18px;
+  width: 260px;
+}
+
+.admin-sidebar-brand {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.admin-sidebar-logo {
+  height: 48px;
+  object-fit: contain;
+  width: 48px;
+}
+
+.admin-sidebar-brand h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.admin-sidebar-brand p {
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+  opacity: 0.8;
+}
+
+/* Navigation links inside the admin sidebar */
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-nav-link {
+  border-radius: 10px;
+  color: #fff;
+  display: block;
+  padding: 12px 14px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.admin-nav-link:hover,
+.admin-nav-link.active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Right-side content area of the dashboard shell */
+.admin-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.admin-header {
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #d9e2ec;
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 32px;
+}
+
+.admin-header h1 {
+  color: #102a43;
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.admin-header p {
+  color: #486581;
+  margin: 6px 0 0;
+}
+
+.admin-content {
+  padding: 32px;
+}
+
+/* Reusable content card for admin placeholder pages */
+.admin-page-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+}
+
+.admin-page-card h2 {
+  color: #102a43;
+  margin-top: 0;
+}
+
+.admin-page-card p {
+  color: #486581;
+  line-height: 1.6;
+}
+
+/* =========================
+   ADMIN HEADER ENHANCEMENT (#155)
+   ========================= */
+
+.admin-header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-breadcrumb {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.admin-header-right {
+  align-items: center;
+  color: #333;
+  display: flex;
+  font-size: 0.9rem;
+  font-weight: 500;
+  gap: 12px;
+}
+
+/* Admin logout button */
+.admin-logout-btn {
+  background: #102a43;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  transition: background 0.2s ease;
+}
+
+.admin-logout-btn:hover {
+  background: #0b1f33;
+}
+
+/* =========================
+   SETTINGS & HUB NAVIGATION
+   ========================= */
+
+.settings-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  margin-top: 32px;
+}
+
+.settings-card {
+  align-items: flex-start;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  padding: 24px;
+  text-decoration: none;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Added hover state for better UI feedback */
+.settings-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.settings-card-icon {
+  flex-shrink: 0;
+  font-size: 32px;
+  margin-right: 16px;
+}
+
+.settings-card-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-card-text h3 {
+  color: #1e293b;
+  margin: 0 0 6px;
+}
+
+.settings-card-text p {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =========================
+   ADMIN CONTENT CARDS & NAV
+   ========================= */
+
+.admin-back-nav {
+  margin-bottom: 24px;
+}
+
+.admin-back-link {
+  color: #4f46e5;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.admin-back-link:hover {
+  color: #3730a3;
+}
+
+.admin-content-card {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-top: 24px;
+  padding: 24px;
+}
+
+.admin-content-card h3 {
+  color: #1e293b;
+  margin-top: 0;
+}
+
+.admin-content-list {
+  color: #334155;
+  line-height: 1.8;
+  margin-top: 16px;
+  padding-left: 24px;
+}
+
+/* =========================
+   AHP EXPERT WEIGHTING TOOL
+   ========================= */
+
+.ahp-view-container {
+  font-family: sans-serif;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 20px;
+}
+
+.ahp-view-title {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.ahp-controls {
+  align-items: flex-end;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 20px;
+}
+
+.ahp-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ahp-label {
+  color: #495057;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ahp-select {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  min-width: 250px;
+  padding: 10px;
+}
+
+.ahp-results-card {
+  background-color: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 30px;
+  text-align: center;
+}
+
+/* --- Buttons --- */
+.ahp-primary-btn {
+  background-color: #2c3e50;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 20px;
+  padding: 12px 24px;
+  transition: background-color 0.2s;
+}
+
+.ahp-primary-btn:hover:not(:disabled) {
+  background-color: #1a252f;
+}
+
+.ahp-primary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ahp-secondary-btn {
+  background-color: transparent;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.2s;
+}
+
+.ahp-secondary-btn:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+/* --- Comparison Specifics --- */
+.ahp-comparison-box {
+  align-items: center;
+  display: flex;
+  font-size: 1.5rem;
+  font-weight: bold;
+  justify-content: space-between;
+  margin: 30px 0;
+}
+
+.ahp-factor-left {
+  color: #2c3e50;
+  flex: 1;
+  text-align: right;
+}
+
+.ahp-vs {
+  color: #95a5a6;
+  font-size: 1rem;
+  margin: 0 20px;
+}
+
+.ahp-factor-right {
+  color: #27ae60;
+  flex: 1;
+  text-align: left;
+}
+
+.ahp-scale-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.ahp-scale-btn {
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  height: 45px;
+  transition: all 0.2s;
+  width: 45px;
+}
+
+.ahp-scale-btn:hover,
+.ahp-scale-btn.active {
+  background-color: #3498db;
+  border-color: #3498db;
+  color: #fff;
+}
+
+.ahp-scale-wrapper {
+  align-items: center;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.ahp-icon-side {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 80px;
+}
+
+.ahp-svg-icon {
+  height: 90px;
+  object-fit: contain;
+  width: 90px;
+}
+
+.ahp-icon-label {
+  color: #6c757d;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* --- Results Specifics --- */
+.ahp-badge-pass {
+  background: #d4edda;
+  border-radius: 6px;
+  color: #155724;
+  display: inline-block;
+  font-weight: bold;
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+.ahp-badge-fail {
+  background: #f8d7da;
+  border-radius: 6px;
+  color: #721c24;
+  display: inline-block;
+  font-weight: bold;
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+.ahp-table {
+  border-collapse: collapse;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.ahp-th {
+  border-bottom: 2px solid #dee2e6;
+  color: #495057;
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+}
+
+.ahp-tr {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.ahp-td {
+  padding: 12px;
+  text-align: left;
+}
+
+.ahp-bar-container {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  min-width: 150px;
+}
+
+.ahp-progress-bar-bg {
+  background-color: #e9ecef;
+  border-radius: 5px;
+  flex-grow: 1;
+  height: 10px;
+  overflow: hidden;
+}
+
+.ahp-progress-bar-fill {
+  background-color: #3498db;
+  border-radius: 5px;
+  height: 100%;
+  transition: width 0.4s ease-out;
+}
+
+.ahp-error-message {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  border-radius: 0.5rem;
+  color: #b91c1c;
+  margin: 1rem 0;
+  padding: 1rem;
+  width: 100%;
+}
