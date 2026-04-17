@@ -2,7 +2,6 @@ services:
   - type: web
     name: pot-backend
     runtime: docker
-    plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     # Runs migrations before the new instance goes live.
