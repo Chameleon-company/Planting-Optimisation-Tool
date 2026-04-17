@@ -50,6 +50,10 @@ class EnvironmentalProfileService:
             return None
 
         # --- Imputation ---------------------------------------------------
+        # Skip imputation if GEE failed — error profiles lack base features
+        # (latitude, longitude, area_ha, coastal, riparian) entirely.
+        if profile.get("status") == "failed":
+            return profile
         # Null out values that the schema validators would reject as out of range,
         # so they are treated as missing and picked up by the imputer rather than
         # silently becoming None only after Pydantic validation.
