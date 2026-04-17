@@ -14,7 +14,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 24
         uses: actions/setup-node@v3
@@ -30,7 +32,7 @@ jobs:
         working-directory: frontend
 
       - name: Run tests
-        run: npm run test
+        run: npm run test:coverage
         working-directory: frontend
 
       - name: Lint scripts
@@ -48,3 +50,36 @@ jobs:
       - name: Check styles formatting
         run: npm run format:styles -- -- check
         working-directory: frontend
+
+      - name: Fetch base branch and check for frontend changes
+        id: frontend-changes
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin
+          CHANGED=$(git diff --name-only origin/master...HEAD -- 'frontend/**/*.ts' 'frontend/**/*.tsx' | wc -l)
+          echo "has_changes=$([ "$CHANGED" -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+      - name: Install diff-cover
+        if: github.event_name == 'pull_request' && steps.frontend-changes.outputs.has_changes == 'true'
+        run: pip install diff-cover
+
+      - name: Diff coverage report
+        id: diff-cover
+        if: github.event_name == 'pull_request' && steps.frontend-changes.outputs.has_changes == 'true'
+        run: |
+          sed 's|^SF:|SF:frontend/|' frontend/coverage/lcov.info > /tmp/coverage-fixed.lcov
+          diff-cover /tmp/coverage-fixed.lcov --compare-branch=origin/master --format markdown:diff-coverage-frontend.md
+
+      - name: Save PR number
+        if: github.event_name == 'pull_request'
+        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+
+      - name: Upload diff-coverage artifacts
+        if: github.event_name == 'pull_request' && steps.diff-cover.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: diff-coverage-frontend
+          path: |
+            diff-coverage-frontend.md
+            pr_number.txt
+          retention-days: 1
