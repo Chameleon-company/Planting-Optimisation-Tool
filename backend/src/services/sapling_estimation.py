@@ -98,7 +98,6 @@ class SaplingEstimationService:
 
             return {
                 "id": farm_id,
-                "total_capacity": len(final_grid),
                 "pre_slope_count": estimation_result.get("pre_slope_count"),
                 "aligned_count": len(final_grid),
                 "optimal_angle": optimal_angle,

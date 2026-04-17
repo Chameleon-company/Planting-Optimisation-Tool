@@ -15,7 +15,6 @@ class SaplingEstimationResponse(BaseModel):
     status: str = "success"
     id: Optional[int] = None
 
-    total_capacity: Optional[int] = None
     pre_slope_count: Optional[int] = None
     aligned_count: Optional[int] = None
 

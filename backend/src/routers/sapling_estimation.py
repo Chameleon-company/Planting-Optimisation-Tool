@@ -35,7 +35,6 @@ async def get_sapling_estimation(
     - max_slope: maximum allowed slope
 
     Returns:
-    - total_capacity
     - pre_slope_count
     - aligned_count
     - optimal_angle (if applicable)
@@ -56,7 +55,7 @@ async def get_sapling_estimation(
     if not farms:
         raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id} not found.")
 
-    cache_key = f"sapling:{farm_id}"
+    cache_key = f"sapling:{farm_id}:{spacing_x}:{spacing_y}:{max_slope}"
     cached = await cache.get(cache_key)
     if cached:
         return SaplingEstimationResponse(**json.loads(cached))

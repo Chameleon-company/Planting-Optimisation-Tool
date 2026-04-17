@@ -69,18 +69,15 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
 
     assert result is not None
     assert result.get("status") != "failed", f"Service failed: {result}"
-    assert "total_capacity" in result
-    assert result["total_capacity"] > 0
+    assert "aligned_count" in result
+    assert result["aligned_count"] > 0
 
     assert "pre_slope_count" in result
-    assert result["pre_slope_count"] >= result["total_capacity"]
-
-    assert "aligned_count" in result
-    assert result["aligned_count"] == result["total_capacity"]
+    assert result["pre_slope_count"] >= result["aligned_count"]
 
     rows = await async_session.execute(
         text("SELECT COUNT(*) FROM planting_estimates WHERE farm_id = :id"),
         {"id": farm.id},
     )
 
-    assert rows.scalar_one() == result["total_capacity"]
+    assert rows.scalar_one() == result["aligned_count"]
