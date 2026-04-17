@@ -1,3 +1,8 @@
+# NOTE: This file serves as reference documentation only. Blueprint deployment is not
+# currently usable because Docker web services require a paid Render plan, and the
+# shared project account has no payment method on file. Services must be created and
+# managed manually via the Render dashboard. See GitHub issue for details.
+
 services:
   - type: web
     name: pot-backend
@@ -61,7 +66,6 @@ services:
   - type: web
     name: pot-frontend
     runtime: static
-    plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: ./frontend/build/dist
     rootDir: frontend
