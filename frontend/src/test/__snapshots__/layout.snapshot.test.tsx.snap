@@ -59,7 +59,15 @@ exports[`Layout Snapshot > matches snapshot 1`] = `
       </nav>
       <div
         class="actions"
-      />
+      >
+        <a
+          class="nav-link"
+          data-discover="true"
+          href="/login"
+        >
+          Login
+        </a>
+      </div>
     </div>
   </header>
   <main>
