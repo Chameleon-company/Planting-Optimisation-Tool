@@ -79,5 +79,42 @@ export function useRecommendations(farmId: string) {
     fetchRecs();
   }, [farmId, getAccessToken]);
 
-  return { recs, excludes, isLoading, hasSearched, error };
+  // Triggers the PDF generation and download from the reporting service.
+  const downloadPdf = async () => {
+    if (!farmId) return;
+
+    const token = getAccessToken();
+    if (!token) {
+      setError("Session expired. Please log in to download.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/reports/farm/${farmId}/export/pdf`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to generate PDF");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `farm_${farmId}_report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch {
+      setError("Error downloading PDF report.");
+    }
+  };
+
+  return { recs, excludes, isLoading, hasSearched, error, downloadPdf };
 }

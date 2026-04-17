@@ -96,6 +96,7 @@ backend/
 │   ├── scripts/            # Scripts for initial database ingestion
 │   │   └── data/           # Seeding data for scripts
 │   └── services/           # Service layer connectivity
+├── locust/                 # Locust load-test scripts
 └── tests/                  # Pytest suite for automated testing
 ├── ERD.md                  # Entity-Relationship Diagram of current database
 ├── README.md               # This file
@@ -432,6 +433,27 @@ Directly running `backend $ uv run pytest` will <u>**not**</u> work, because the
 
 The [src/scripts/create_test_user.py](src/scripts/create_test_user.py) script creates a test user with ADMIN role for development and testing. The script was updated to include the `role` field (set to "admin") to provide full system access for testing all endpoints. Test credentials: `testuser123@test.com` / `password123`.
 
+### Load Testing
+
+[Locust](https://locust.io/) is used for load testing. Scripts are in `locust/`.
+
+Two scenarios are defined - `MixedWorkloadUser` covers the full range of read endpoints (recommendations, sapling estimation, environmental profile, reports, farm lookups), and `HeavyConcurrentUser` hammers the most expensive bulk endpoints concurrently to identify DB locking issues.
+
+Local:
+```bash
+just run-api
+just seed-users        # one-time, creates 10 admin test users
+just load-test
+# open http://localhost:8089 - recommended: 10 users, ramp-up 2/s
+```
+
+In the cloud:
+```bash
+just render-seed-users
+just render-load-test
+# open http://localhost:8089 - recommended: 5 users, ramp-up 1/s while on free tier, it's slow.
+```
+
 ### CI (Continuous integration testing)
 `Planting-Optimisation-Tool/.github/workflows/backend-ci.yml` is the GitHub actions workflow file that runs on a new pull request.
 
@@ -486,11 +508,16 @@ run `just [target]` in `/backend` to execute.
 | **`psql`** | Starts an interactive psql DB session | `docker exec -it pot_postgres_db psql -U postgres -d POT_db` |
 | **`run-api [port]`** | Starts the FastAPI development server. Accepts an optional port (default: 8080, or `API_PORT` from `.env`). | `uv run fastapi dev src/main.py` |
 | **`kill-api [port]`** | Stops the API server. Only kills the process if it is running uvicorn or fastapi - will warn and skip if another process (e.g. Java) is on the port. Accepts an optional port (default: 8080, or `API_PORT` from `.env`). | `uv run -m src.scripts.kill-api` |
+| **`seed-users`** | Creates 10 admin test users in the local DB for load testing. Idempotent - safe to run multiple times. | `uv run python locust/seed_users.py` |
+| **`load-test [host]`** | Starts Locust against the local API. Open http://localhost:8089 to configure and start the test. Host must match the port FastAPI is running on (default: http://localhost:8080, or `API_PORT` from `.env`). | `uv run locust -f locust/locustfile.py --host <host>` |
+| **`render-psql`** | Opens an interactive psql session against the Render production database. Requires `backend/.env.render`. | `psql $DATABASE_URL` |
 | **`render-status`** | Lists all Render services and their current status. Requires `backend/.env.render` with `RENDER_API_KEY` set. | `render services --output json` |
 | **`render-logs`** | Streams live logs from the Render backend service (Ctrl+C to stop). Requires `backend/.env.render`. | `render logs --resources $RENDER_BACKEND_ID --tail` |
 | **`render-deploy`** | Triggers a manual redeploy of the Render backend service. Requires `backend/.env.render`. | `render deploy --service-id $RENDER_BACKEND_ID` |
 | **`render-migrate`** | Applies pending Alembic migrations against the Render production database. Requires `backend/.env.render` with correct `DATABASE_URL`. | `uv run alembic upgrade head` |
 | **`render-populate`** | Seeds reference data and creates the test user on the Render production database. Requires `backend/.env.render`. **Never run `just populate` against Render** - it wipes local Docker containers first. | Runs `seed_references.py`, `create_test_user.py`, `setup_import_db.py` |
+| **`render-seed-users`** | Creates 10 admin test users in the Render DB for load testing. Requires `backend/.env.render`. | `uv run python locust/seed_users.py` (against Render DB) |
+| **`render-load-test`** | Starts Locust against the Render API. Open http://localhost:8089 to configure and start the test. Requires `backend/.env.render`. | `uv run locust -f locust/locustfile.py --host $RENDER_API_URL` |
 
 ### Initial ingestion and setup
 ```bash

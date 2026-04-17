@@ -9,7 +9,7 @@ import ExcludedTable from "@/components/recommendations/excludedTable";
 
 export default function RecommendationPage() {
   const [farmId, setFarmId] = useState("");
-  const { recs, excludes, isLoading, hasSearched, error } =
+  const { recs, excludes, isLoading, hasSearched, error, downloadPdf } =
     useRecommendations(farmId);
 
   const topFits = recs.filter(r => r.score_mcda >= 0.8);
@@ -23,7 +23,19 @@ export default function RecommendationPage() {
 
       <RecommendationHeader />
 
-      <RecommendationSearch onSearch={setFarmId} isLoading={isLoading} />
+      {/* Main Control Container */}
+      <div className="rec-controls-wrapper">
+        <RecommendationSearch onSearch={setFarmId} isLoading={isLoading} />
+
+        {/* The button only exists in the DOM once hasSearched is true.*/}
+        {hasSearched && recs.length > 0 && (
+          <div className="rec-download-container">
+            <button onClick={downloadPdf} className="rec-download-report-btn">
+              Download PDF Report
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Localized Error Message */}
       {error && (
