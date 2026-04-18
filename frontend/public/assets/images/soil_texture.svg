@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="720" height="240" viewBox="0 0 720 240"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <!-- ===== PATTERNS ===== -->
+
+    <!-- Clay: dense plates -->
+    <pattern id="clayPattern" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#d0b48c"/>
+      <line x1="0" y1="3" x2="6" y2="3"
+            stroke="#8b6a3d" stroke-width="2"/>
+    </pattern>
+
+    <!-- Loam: mixed texture -->
+    <pattern id="loamPattern" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#b8905a"/>
+      <circle cx="3" cy="4" r="1.5" fill="#6b4a2b"/>
+      <circle cx="7" cy="7" r="1.5" fill="#6b4a2b"/>
+      <line x1="6" y1="2" x2="9" y2="2"
+            stroke="#6b4a2b" stroke-width="1.5"/>
+    </pattern>
+
+    <!-- Sand: coarse grains -->
+    <pattern id="sandPattern" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="#edd8a3"/>
+      <circle cx="4" cy="4" r="2" fill="#c8aa6a"/>
+      <circle cx="9" cy="8" r="2" fill="#c8aa6a"/>
+    </pattern>
+
+    <style>
+      .ring { stroke:#2f4f4f; stroke-width:6; }
+      .label {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size:18px;
+        fill:#2f4f4f;
+        text-anchor:middle;
+      }
+    </style>
+  </defs>
+
+  <!-- ===== OVERLAPPING CIRCLES ===== -->
+
+  <!-- Clay -->
+  <circle cx="260" cy="120" r="90"
+          fill="url(#clayPattern)"
+          class="ring"/>
+
+  <!-- Loam (center, overlapping both) -->
+  <circle cx="360" cy="120" r="90"
+          fill="url(#loamPattern)"
+          class="ring"/>
+
+  <!-- Sand -->
+  <circle cx="460" cy="120" r="90"
+          fill="url(#sandPattern)"
+          class="ring"/>
+
+
+</svg>

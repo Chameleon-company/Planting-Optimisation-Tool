@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <ellipse cx="250" cy="420" rx="130" ry="40" fill="#bce2ed" stroke="#455f69" stroke-width="7" />
+  
+  <text x="250" y="442" font-family="Arial, Helvetica, sans-serif" font-size="65" fill="#455f69" text-anchor="middle" font-weight="bold">?</text>
+  
+  <path d="M 250 80 
+           L 285 185 
+           L 395 185 
+           L 305 250 
+           L 340 355 
+           L 250 290 
+           L 160 355 
+           L 195 250 
+           L 105 185 
+           L 215 185 
+           Z" 
+        fill="#95c3e0" stroke="#455f69" stroke-width="7" stroke-linejoin="round" />
+</svg>
