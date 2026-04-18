@@ -1383,6 +1383,11 @@ main.container {
   width: 64px;
 }
 
+.verify-email-icon--error {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
 .register-success-body {
   color: var(--muted);
   font-size: 0.95rem;
