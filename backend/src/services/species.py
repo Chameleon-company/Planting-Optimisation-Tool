@@ -49,6 +49,26 @@ async def get_species_by_ids(db: AsyncSession, ids: list[int], order_by_id: bool
     return [SuitabilitySpecies.from_db_model(sp) for sp in species_rows]
 
 
+def validate_species_ranges(species_data: dict) -> None:
+    range_checks = [
+        ("rainfall_mm_min", "rainfall_mm_max", "Minimum rainfall cannot be greater than maximum rainfall."),
+        (
+            "temperature_celsius_min",
+            "temperature_celsius_max",
+            "Minimum temperature cannot be greater than maximum temperature.",
+        ),
+        ("elevation_m_min", "elevation_m_max", "Minimum elevation cannot be greater than maximum elevation."),
+        ("ph_min", "ph_max", "Minimum pH cannot be greater than maximum pH."),
+    ]
+
+    for min_field, max_field, error_message in range_checks:
+        min_value = species_data.get(min_field)
+        max_value = species_data.get(max_field)
+
+        if min_value is not None and max_value is not None and min_value > max_value:
+            raise ValueError(error_message)
+
+
 async def create_species(db: AsyncSession, payload: SpeciesCreate) -> Species:
     new_species = Species(
         name=payload.name,
@@ -91,6 +111,20 @@ async def update_species(db: AsyncSession, species_id: int, payload: SpeciesUpda
         return None
 
     update_data = payload.model_dump(exclude_unset=True)
+
+    merged_data = {
+        "rainfall_mm_min": species.rainfall_mm_min,
+        "rainfall_mm_max": species.rainfall_mm_max,
+        "temperature_celsius_min": species.temperature_celsius_min,
+        "temperature_celsius_max": species.temperature_celsius_max,
+        "elevation_m_min": species.elevation_m_min,
+        "elevation_m_max": species.elevation_m_max,
+        "ph_min": species.ph_min,
+        "ph_max": species.ph_max,
+    }
+    merged_data.update(update_data)
+
+    validate_species_ranges(merged_data)
 
     soil_texture_ids = update_data.pop("soil_textures", None)
     agroforestry_type_ids = update_data.pop("agroforestry_types", None)

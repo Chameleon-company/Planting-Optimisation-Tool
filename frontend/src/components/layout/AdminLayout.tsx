@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import "../../style.css";
+import "@/pages/admin/admin.css"; // Specific admin shell and settings styles
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function AdminLayout() {

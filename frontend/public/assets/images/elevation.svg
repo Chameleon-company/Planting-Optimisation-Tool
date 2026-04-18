@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .grid { stroke: #bfc7c9; stroke-width: 2; }
+      .terrain-dark { fill: none; stroke: #2f4f4f; stroke-width: 6; }
+      .terrain-light { fill: none; stroke: #6b8e23; stroke-width: 10; }
+      .fill { fill: #d6d37a; }
+      .label { font-family: Arial, Helvetica, sans-serif; font-size: 48px; fill: #2f4f4f; font-weight: bold; }
+      .arrow { fill: none; stroke: #2f4f4f; stroke-width: 6; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2f4f4f" />
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="600" height="600" fill="#f5f7f7" />
+
+  <g class="grid">
+    <line x1="100" y1="0" x2="100" y2="600" />
+    <line x1="200" y1="0" x2="200" y2="600" />
+    <line x1="300" y1="0" x2="300" y2="600" />
+    <line x1="400" y1="0" x2="400" y2="600" />
+    <line x1="500" y1="0" x2="500" y2="600" />
+    <line x1="0" y1="100" x2="600" y2="100" />
+    <line x1="0" y1="200" x2="600" y2="200" />
+    <line x1="0" y1="300" x2="600" y2="300" />
+    <line x1="0" y1="400" x2="600" y2="400" />
+    <line x1="0" y1="500" x2="600" y2="500" />
+  </g>
+
+  <path class="fill" d="M0,420 C120,380 200,450 300,360 380,300 450,260 600,180 L600,600 L0,600 Z" />
+
+  <path class="terrain-dark" d="M0,420 C120,380 200,450 300,360 380,300 450,260 600,180" />
+  <path class="terrain-light" d="M0,460 C140,420 230,480 320,400 400,340 470,300 600,220" />
+  <path class="terrain-dark" d="M0,500 C160,470 260,520 340,440 420,380 500,340 600,260" />
+
+  <line class="arrow" x1="220" y1="320" x2="380" y2="200" />
+
+  <text class="label" x="520" y="90">H</text>
+  <text class="label" x="520" y="560">L</text>
+</svg>

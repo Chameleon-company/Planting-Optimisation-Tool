@@ -25,6 +25,8 @@ __pycache__/
 
 # Environment variables & secrets
 .env
+.env.*
+!.env.example
 keys/
 
 # Test caches
