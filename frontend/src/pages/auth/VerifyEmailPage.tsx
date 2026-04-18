@@ -27,12 +27,18 @@ function VerifyEmailPage() {
         <section className="login-card">
           {!token ? (
             <div className="register-success">
-              <div className="register-success-icon verify-email-icon--error">&#10007;</div>
+              <div className="register-success-icon verify-email-icon--error">
+                &#10007;
+              </div>
               <h1 className="login-title">Invalid link</h1>
               <p className="register-success-body">
-                This verification link is missing a token. Please use the link from your verification email.
+                This verification link is missing a token. Please use the link
+                from your verification email.
               </p>
-              <Link to="/login" className="login-submit-btn register-success-link">
+              <Link
+                to="/login"
+                className="login-submit-btn register-success-link"
+              >
                 Back to sign in
               </Link>
             </div>
@@ -48,16 +54,24 @@ function VerifyEmailPage() {
               <p className="register-success-body">
                 Your account has been activated. You can now sign in.
               </p>
-              <Link to="/login" className="login-submit-btn register-success-link">
+              <Link
+                to="/login"
+                className="login-submit-btn register-success-link"
+              >
                 Sign in
               </Link>
             </div>
           ) : (
             <div className="register-success">
-              <div className="register-success-icon verify-email-icon--error">&#10007;</div>
+              <div className="register-success-icon verify-email-icon--error">
+                &#10007;
+              </div>
               <h1 className="login-title">Verification failed</h1>
               <p className="register-success-body">{errorMessage}</p>
-              <Link to="/login" className="login-submit-btn register-success-link">
+              <Link
+                to="/login"
+                className="login-submit-btn register-success-link"
+              >
                 Back to sign in
               </Link>
             </div>

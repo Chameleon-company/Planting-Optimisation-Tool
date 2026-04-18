@@ -20,7 +20,10 @@ vi.mock("../hooks/useVerifyEmail", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom"
+    );
   return {
     ...actual,
     useSearchParams: vi.fn(),
@@ -52,13 +55,18 @@ describe("VerifyEmailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useVerifyEmail).mockReturnValue(defaultHookReturn);
-    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams("token=abc123"), vi.fn()]);
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams("token=abc123"),
+      vi.fn(),
+    ]);
   });
 
   it("shows loading state while verifying", () => {
     renderPage();
 
-    expect(screen.getByRole("heading", { name: /verifying your email/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /verifying your email/i })
+    ).toBeInTheDocument();
     expect(screen.getByText(/please wait/i)).toBeInTheDocument();
   });
 
@@ -76,9 +84,16 @@ describe("VerifyEmailPage", () => {
 
     renderPage();
 
-    expect(screen.getByRole("heading", { name: /email verified/i })).toBeInTheDocument();
-    expect(screen.getByText(/your account has been activated/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/login");
+    expect(
+      screen.getByRole("heading", { name: /email verified/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/your account has been activated/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute(
+      "href",
+      "/login"
+    );
   });
 
   it("shows error state when verification fails", () => {
@@ -90,18 +105,31 @@ describe("VerifyEmailPage", () => {
 
     renderPage();
 
-    expect(screen.getByRole("heading", { name: /verification failed/i })).toBeInTheDocument();
-    expect(screen.getByText("Invalid or expired verification link.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /back to sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /verification failed/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Invalid or expired verification link.")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /back to sign in/i })
+    ).toBeInTheDocument();
   });
 
   it("shows invalid link state and does not call verify when no token in URL", () => {
-    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(""), vi.fn()]);
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams(""),
+      vi.fn(),
+    ]);
 
     renderPage();
 
-    expect(screen.getByRole("heading", { name: /invalid link/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /back to sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /invalid link/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /back to sign in/i })
+    ).toBeInTheDocument();
     expect(mockVerify).not.toHaveBeenCalled();
   });
 });
