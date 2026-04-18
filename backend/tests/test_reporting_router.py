@@ -566,7 +566,7 @@ async def test_get_farm_report_supervisor_access(
     assert data["farm"]["id"] == farm.id
 
 
-@pytest.mark.skip(reason="all-farms DOCX times out against replicated DB (3200 farms) - see issue #TBC")
+@pytest.mark.skip(reason="all-farms DOCX times out against replicated DB (3200 farms) - see issue #434")
 @pytest.mark.asyncio
 async def test_export_all_farms_report_admin(
     async_client: AsyncClient,

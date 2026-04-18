@@ -12,6 +12,7 @@ import RecommendationPage from "./pages/RecommendationPage";
 import SpeciesPage from "./pages/SpeciesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -29,6 +30,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route element={<MainLayout />}>
               <Route path="/" index element={<HomePage />} />
               <Route path="/profile" element={<ProfilePage />} />

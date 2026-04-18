@@ -33,6 +33,10 @@ keys/
 tests/**/__pycache__/
 tests/.pytest_cache/
 
+# CI-generated coverage reports (created locally when testing diff-cover)
+diff-coverage-frontend.md
+pr_number.txt
+
 # Ruff cache
 .ruff_cache/
 
