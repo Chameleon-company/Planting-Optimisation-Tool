@@ -14,7 +14,6 @@ function VerifyEmailPage() {
       hasVerified.current = true;
       verify(token);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

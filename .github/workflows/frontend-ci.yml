@@ -69,6 +69,7 @@ jobs:
         run: |
           sed 's|^SF:|SF:frontend/|' frontend/coverage/lcov.info > /tmp/coverage-fixed.lcov
           diff-cover /tmp/coverage-fixed.lcov --compare-branch=origin/master --format markdown:diff-coverage-frontend.md
+          awk '/^## frontend\//{exit} {print}' diff-coverage-frontend.md > /tmp/stripped.md && mv /tmp/stripped.md diff-coverage-frontend.md
 
       - name: Save PR number
         if: github.event_name == 'pull_request'
