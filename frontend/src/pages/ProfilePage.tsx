@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import ProfileHeader from "@/components/profile/profileHeader";
 import FarmList from "@/components/profile/profileFarms";
@@ -11,6 +11,15 @@ import { useAuth } from "@/contexts/AuthContext";
 function ProfilePage() {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const { farms, isLoading, page, setPage, totalFarms, totalPages } =
     useUserProfiles();
@@ -19,7 +28,7 @@ function ProfilePage() {
     profile,
     isLoading: isProfileLoading,
     error,
-  } = useSearchProfiles(query);
+  } = useSearchProfiles(debouncedQuery);
 
   const isSearching = query.trim().length > 0;
 
@@ -29,7 +38,7 @@ function ProfilePage() {
         <title>Environmental Profile | Planting Optimisation Tool</title>
       </Helmet>
 
-      <ProfileHeader farmerName={user?.name} farmCount={totalFarms} />
+      <ProfileHeader userName={user?.name} farmCount={totalFarms} />
 
       <FarmSearchPanel
         query={query}

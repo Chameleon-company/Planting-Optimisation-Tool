@@ -14,11 +14,10 @@ export default function ProfileEditActions({
   // Call user details from context
   const { user } = useAuth();
 
-  // If user exists, show add button, if user is supervisor or above, show edit button
-  // If use admin is admin show delete button, component is non-functional and currently
-  // Cosmetic
-  const canAdd = !!user;
+  // Officer role cannot add, edit or delete, supervisor can read and edit
+  // If user is admin show all post buttons, component is non-functional and currently cosmetic
   const canEdit = user?.role === "supervisor" || user?.role === "admin";
+  const canAdd = user?.role === "admin";
   const canDelete = user?.role === "admin";
 
   if (!canAdd && !canEdit && !canDelete) return null;
