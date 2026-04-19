@@ -16,14 +16,21 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 export function useSearchProfiles(query: string) {
   const { getAccessToken } = useAuth();
-  const token = getAccessToken();
 
   const [profile, setProfile] = useState<EnvironmentalProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token || !query.trim()) {
+    if (!query.trim()) {
+      setProfile(null);
+      setError(null);
+      return;
+    }
+
+    const token = getAccessToken();
+
+    if (!token) {
       setProfile(null);
       setError(null);
       return;
@@ -74,7 +81,7 @@ export function useSearchProfiles(query: string) {
     };
 
     fetchProfile();
-  }, [query, token]);
+  }, [query, getAccessToken]);
 
   return { profile, isLoading, error };
 }

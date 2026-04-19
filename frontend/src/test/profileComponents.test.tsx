@@ -58,25 +58,25 @@ beforeEach(() => {
 // ProfileHeader Tests
 describe("ProfileHeader", () => {
   it("renders the page title", () => {
-    render(<ProfileHeader farmerName="John" farmCount={3} />);
+    render(<ProfileHeader userName="John" farmCount={3} />);
     // The main heading should always be visible regardless of auth state
     expect(screen.getByText("Environmental Profile")).toBeInTheDocument();
   });
 
   it("renders farmer name and farm count when user is logged in", () => {
-    render(<ProfileHeader farmerName="John" farmCount={3} />);
+    render(<ProfileHeader userName="John" farmCount={3} />);
     // Subtitle should show the farmer's name and plural "Farms" when count > 1
     expect(screen.getByText(/John · 3 Farms/i)).toBeInTheDocument();
   });
 
   it("renders singular Farm label when count is 1", () => {
-    render(<ProfileHeader farmerName="John" farmCount={1} />);
+    render(<ProfileHeader userName="John" farmCount={1} />);
     // Verify the singular form is used for exactly one farm
     expect(screen.getByText(/John · 1 Farm/i)).toBeInTheDocument();
   });
 
   it("renders empty subtitle when no farmer name is provided", () => {
-    render(<ProfileHeader farmerName="" farmCount={0} />);
+    render(<ProfileHeader userName="" farmCount={0} />);
     // No separator dot should appear when there is no farmer info to display
     expect(screen.queryByText(/·/)).not.toBeInTheDocument();
   });

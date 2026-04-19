@@ -16,7 +16,7 @@ function ProfilePage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-    }, 500);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, [query]);
