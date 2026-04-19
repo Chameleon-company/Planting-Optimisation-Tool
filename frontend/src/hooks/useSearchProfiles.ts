@@ -16,7 +16,7 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 export function useSearchProfiles(query: string) {
   const { getAccessToken } = useAuth();
-  const token = getAccessToken(); 
+  const token = getAccessToken();
 
   const [profile, setProfile] = useState<EnvironmentalProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +36,7 @@ export function useSearchProfiles(query: string) {
       try {
         const res = await fetch(`${API_BASE}/profile/${query}`, {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
         });
@@ -66,7 +66,7 @@ export function useSearchProfiles(query: string) {
     };
 
     fetchProfile();
-  }, [query, token]); 
+  }, [query, token]);
 
   return { profile, isLoading, error };
 }
