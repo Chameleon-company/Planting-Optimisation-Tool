@@ -3,8 +3,10 @@ import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from pygam import GammaGAM, s
 from io import BytesIO
+
 
 # ReportLab Imports
 from reportlab.lib.pagesizes import A4
@@ -127,8 +129,6 @@ def plot_epi_for_report(sp, grp):
     ax.set_title(f"Histogram of {'Expected Performance Index'} — {sp}")
     ax.set_xlabel("Expected Performance Index")
     ax.set_ylabel("Frequency")
-    ax.set_xlabel("Age (years)")
-    ax.set_ylabel("Circumference (cm)")
 
     buf = BytesIO()
     plt.savefig(buf, format="png", dpi=SAVE_DPI, bbox_inches="tight")
@@ -138,7 +138,50 @@ def plot_epi_for_report(sp, grp):
     return Image(buf, width=6 * inch, height=2.5 * inch)
 
 
-def generate_pdf_report(df, summary_df, preds_df, epi_df, output_path, logo_path="../frontend/public/assets/images/logo2.png"):
+def plot_farm_performance_violin(farm_targets):
+    """
+    Generates a violin plot of farm performance by species
+    and returns it as an in-memory ReportLab Image flowable.
+
+    Args:
+        farm_targets (pd.DataFrame): The aggregated dataset containing 'farm_mean_epi' and 'species'.
+
+    Returns:
+        reportlab.platypus.Image: A flowable image ready to be appended to a Story.
+    """
+    # Set up the figure (Slightly taller than the histogram to fit multiple species)
+    fig, ax = plt.subplots(figsize=(6.5, 3.5), dpi=120)
+
+    # Prevent errors on empty data
+    if farm_targets.empty:
+        plt.close(fig)
+        return None
+
+    # Draw the violin plot onto our specific axes (ax)
+    sns.violinplot(data=farm_targets, x="farm_mean_epi", y="species", orient="h", hue="species_id", legend=False, palette="crest", inner="quartile", linewidth=1, cut=0, ax=ax)
+
+    # Add the baseline reference
+    ax.axvline(x=1.0, color="#e76f51", linestyle="--", linewidth=1.5, label="Baseline (EPI=1.0)")
+
+    # 4. Clean labels and styling to match the histogram
+    ax.set_title("Distribution of Farm Performance by Species ID", fontsize=11, pad=10)
+    ax.set_xlabel("Farm Mean EPI (Actual / Expected Growth)", fontsize=9)
+    ax.set_ylabel("")
+    ax.legend(frameon=False, fontsize=8)
+
+    # Clean up the layout
+    plt.tight_layout()
+
+    # Save to the in-memory buffer
+    buf = BytesIO()
+    plt.savefig(buf, format="png", dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    buf.seek(0)
+
+    return Image(buf, width=6.5 * inch, height=3.5 * inch)
+
+
+def generate_pdf_report(df, summary_df, preds_df, epi_df, farm_targets, output_path, logo_path="../frontend/public/assets/images/logo2.png"):
     """
     Builds the ReportLab PDF.
 
@@ -147,6 +190,7 @@ def generate_pdf_report(df, summary_df, preds_df, epi_df, output_path, logo_path
         summary_df (pd.DataFrame): Summary statistics for each species.
         preds_df (pd.DataFrame): Predicted values for each species.
         epi_df (pd.DataFrame): Expected Performance Index values for each species.
+        farm_targets (pd.DataFrame): Aggregated dataset containing farm performance data.
         output_path (str): The file path to save the generated PDF.
 
     Returns:
@@ -293,6 +337,47 @@ def generate_pdf_report(df, summary_df, preds_df, epi_df, output_path, logo_path
             if plots_added % 3 == 0:
                 story.append(PageBreak())
 
+    story.append(PageBreak())
+
+    # Farm-Level Aggregation & Violin Plot Section
+    story.append(Paragraph("Farm-Level Performance Aggregation", styles["Heading2"]))
+
+    # Explanation of why we aggregate
+    aggregation_text = """
+    <b>Aggregate to the Farm Level</b><br/><br/>
+    Before feeding the Expected Performance Index (EPI) into the final weight-extraction GLM, 
+    the tree-level data is grouped by farm identifier (e.g., farm_id) and species_id. This achieves two vital things:<br/><br/>
+    1. Noise Reduction: Individual trees exhibit random variance (e.g., one tree got struck by lightning, 
+    another had an isolated fungal infection). Averaging the EPI of all trees of a specific species on a 
+    single farm smooths out that individual noise, resulting in a highly stable "Farm Performance Score."<br/><br/>
+    2. Alignment with Features: The environmental features (Rainfall, Temperature, Soil suitability) 
+    are scored at the farm level, not the individual tree level. The target variable (EPI) must perfectly 
+    align with these inputs for accurate mathematical extraction.
+    """
+    story.append(Paragraph(aggregation_text, styles["Normal"]))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Explanation of the Violin Plot
+    violin_desc_text = """
+    <b>Interpreting the Violin Plot</b><br/><br/>
+    The plot below illustrates the distribution of these aggregated Farm EPI scores across different species. 
+    It highlights the density of farm performance: wider sections indicate a high concentration of farms 
+    achieving that specific score. The dashed vertical line at 1.0 represents the biological baseline 
+    (where actual growth perfectly matches expected growth).
+    """
+    story.append(Paragraph(violin_desc_text, styles["Normal"]))
+    story.append(Spacer(1, 0.25 * inch))
+
+    # Add the Violin Plot
+    if farm_targets is not None and not farm_targets.empty:
+        violin_img = plot_farm_performance_violin(farm_targets)
+        if violin_img:
+            story.append(violin_img)
+            story.append(Spacer(1, 0.2 * inch))
+    else:
+        story.append(Paragraph("<i>No farm target data available to generate distribution plot.</i>", styles["Normal"]))
+
+    # Build the document
     doc.build(story, onFirstPage=add_header_logo)
 
 
@@ -380,14 +465,25 @@ def main():
     # Sort by species_id and farm_id for better readability in the report
     epi_df = epi_df.sort_values(by=["species_id", "farm_id"], ascending=[True, True])
 
+    # Aggregate to the Farm Level too:
+    # 1. Reduce noise: Individual trees have random variance (e.g., one tree got struck by lightning, another had an isolated fungal infection).
+    # Averaging the EPI of all 50 Mahogany trees on Farm A smooths out that individual noise and gives a highly stable "Farm Performance Score."
+    # 2. Align with features: The environmental features (Rainfall, Temperature, Soil) are scored at the farm level, not the tree level.
+    # The target must perfectly align with the inputs.
+    farm_targets = epi_df.groupby(["farm_id", "species_id", "species"])["epi"].mean().reset_index().copy()
+
+    # Rename for clarity
+    farm_targets.rename(columns={"epi": "farm_mean_epi"}, inplace=True)
+
     try:
-        epi_df.to_csv("src/scripts/epi_data.csv", index=False)
-        print(f"[saved] EPI data exported to: src/scripts/epi_data.csv")
+        farm_targets.drop(columns=["species"]).to_csv("src/scripts/aggregated_epi_data.csv", index=False)
+        print(f"[saved] Aggregated EPI data exported to: src/scripts/aggregated_epi_data.csv")
     except Exception as e:
         print(f"ERROR: Could not save CSV: {e}")
 
     print(f"Generating PDF report: {args.output}...")
-    generate_pdf_report(df, summary_df, preds_df, epi_df, args.output)
+    generate_pdf_report(df, summary_df, preds_df, epi_df, farm_targets, args.output)
+
     print("Done.")
 
 
