@@ -315,22 +315,22 @@ describe("FarmPageNav", () => {
 
 // ProfileEditActions Tests
 describe("ProfileEditActions", () => {
-  it("renders Add button for regular logged-in users", () => {
+  it("renders no buttons for regular logged-in users", () => {
     // A basic authenticated user (no elevated role) should only see Add
-    mockUseAuth.mockReturnValue({ user: { name: "User", role: "user" } });
+    mockUseAuth.mockReturnValue({ user: { name: "User", role: "officer" } });
     render(<ProfileEditActions />);
-    expect(screen.getByText(/Add/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Add/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Edit/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Delete/i)).not.toBeInTheDocument();
   });
 
-  it("renders Add and Edit buttons for supervisors", () => {
+  it("renders Edit button for supervisors", () => {
     // Supervisors have elevated write access but cannot delete
     mockUseAuth.mockReturnValue({
       user: { name: "Supervisor", role: "supervisor" },
     });
     render(<ProfileEditActions />);
-    expect(screen.getByText(/Add/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Add/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Edit/i)).toBeInTheDocument();
     expect(screen.queryByText(/Delete/i)).not.toBeInTheDocument();
   });

@@ -16,21 +16,14 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 export function useSearchProfiles(query: string) {
   const { getAccessToken } = useAuth();
+  const token = getAccessToken(); 
 
   const [profile, setProfile] = useState<EnvironmentalProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!query.trim()) {
-      setProfile(null);
-      setError(null);
-      return;
-    }
-
-    const token = getAccessToken();
-
-    if (!token) {
+    if (!query.trim() || !token) {
       setProfile(null);
       setError(null);
       return;
@@ -43,7 +36,7 @@ export function useSearchProfiles(query: string) {
       try {
         const res = await fetch(`${API_BASE}/profile/${query}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, 
             Accept: "application/json",
           },
         });
@@ -52,36 +45,28 @@ export function useSearchProfiles(query: string) {
           let errorMessage = "Something went wrong";
           try {
             const errorData = await res.json();
-
             if (typeof errorData.detail === "string") {
               errorMessage = errorData.detail;
             }
           } catch {
             errorMessage = await res.text();
           }
-
           throw new Error(errorMessage);
         }
 
         const data = await res.json();
-
         data.id = data.id ?? Number(query);
-
         setProfile(data);
       } catch (err: unknown) {
         setProfile(null);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Unexpected error");
-        }
+        setError(err instanceof Error ? err.message : "Unexpected error");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [query, getAccessToken]);
+  }, [query, token]); 
 
   return { profile, isLoading, error };
 }

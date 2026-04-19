@@ -20,12 +20,10 @@ export default function FarmSearchPanel({
   error,
   user,
 }: FarmSearchPanelProps) {
-  const handleClear = () => {
-    setQuery("");
-  };
+  const handleClear = () => setQuery("");
 
-  const isSearching = query.trim().length > 0;
-
+  const isSearching = (query).trim().length > 0; 
+  
   return (
     <>
       <FarmSearchInput
