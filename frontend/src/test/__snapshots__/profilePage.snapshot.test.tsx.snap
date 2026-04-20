@@ -1,0 +1,59 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ProfilePage Snapshot > matches snapshot 1`] = `
+<div>
+  <div>
+    <header
+      class="farmProfileHeader"
+    >
+      <h1
+        class="farmProfileTitle"
+      >
+        Environmental Profile
+      </h1>
+      <p
+        class="farmProfileSubtitle"
+      >
+        John · 0 Farms
+      </p>
+    </header>
+    <div
+      class="profile-search"
+    >
+      <input
+        class="search-input"
+        placeholder="Search by farm ID..."
+        value=""
+      />
+    </div>
+    <p
+      class="farmListEmpty"
+    >
+      No farms found.
+    </p>
+    <div
+      class="farmBottomRow"
+    >
+      <div
+        class="farmActions"
+      >
+        <button
+          class="farmActionBtn farmActionBtnDanger"
+        >
+          🗑️ Delete
+        </button>
+        <button
+          class="farmActionBtn"
+        >
+          ✏️ Edit
+        </button>
+        <button
+          class="farmActionBtn"
+        >
+          ➕ Add
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
