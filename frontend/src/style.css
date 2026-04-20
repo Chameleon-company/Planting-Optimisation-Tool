@@ -1059,6 +1059,314 @@ main.container {
   margin-bottom: 5px;
 }
 
+/* ============ PROFILE  ============ */
+
+.farmProfileHeader {
+  background: var(--gradient);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 48px 7%;
+}
+
+.farmProfileTitle {
+  color: #fff;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  margin: 0;
+}
+
+.farmProfileSubtitle {
+  color: #c8ffd9;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.farmList {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  padding: 32px 7%;
+}
+
+.farmListEmpty {
+  color: var(--muted);
+  padding: 40px 7%;
+  text-align: center;
+}
+
+.farmCard {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.profileCard {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 32px 7%;
+  padding: 20px;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+  width: calc(100% - 14%);
+}
+
+.farmCard:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.farmCardHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.farmCardId {
+  color: var(--primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.farmCardArea {
+  background: var(--brand-50);
+  border-radius: 20px;
+  color: var(--brand-800);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 12px;
+}
+
+.farmCardGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.farmCardStat {
+  background: var(--surface);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+}
+
+.farmCardStatLabel {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.farmCardStatValue {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.farmCardCoords {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.farmCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.farmTag {
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 4px 10px;
+}
+
+.farmTagAgroforestry {
+  background: var(--brand-100);
+  color: var(--brand-900);
+}
+
+.farmTagTrait {
+  background: #e8f5e9;
+  border: 1px solid var(--brand-200);
+  color: var(--brand-800);
+}
+
+/* ============ PROFILE PAGE NAVIGATION ============ */
+
+.farmBottomRow {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 7% 40px;
+}
+
+.farmPageNav {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: left;
+  padding: 0;
+}
+
+.farmPageNavBtn {
+  background: var(--gradient);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 24px;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.farmPageNavBtn:hover:not(:disabled) {
+  background: var(--gradient-dark);
+  box-shadow: 0 8px 20px rgba(14, 122, 67, 0.18);
+  transform: translateY(-1px);
+}
+
+.farmPageNavBtn:disabled {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.4;
+  transform: none;
+}
+
+.farmPageNavInfo {
+  color: var(--muted);
+  font-size: 0.9rem;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* ============ PROFILE EDIT ACTIONS ============ */
+
+.farmActions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  padding: 0;
+}
+
+.farmActionBtn {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.88rem;
+  font-weight: 600;
+  gap: 6px;
+  padding: 8px 16px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.farmActionBtn:hover {
+  background: var(--brand-50);
+  border-color: var(--brand-300);
+  box-shadow: 0 4px 12px rgba(14, 122, 67, 0.1);
+  transform: translateY(-1px);
+}
+
+.farmActionBtnDanger {
+  color: #c0392b;
+}
+
+.farmActionBtnDanger:hover {
+  background: #fdecea;
+  border-color: #f5c2c0;
+  box-shadow: 0 4px 12px rgba(192, 59, 44, 0.1);
+}
+
+/* ============ PROFILE SEARCH ============ */
+
+.profile-search {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  padding: 20px 7% 0;
+}
+
+.profile-search .search-input {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex: 0 0 280px;
+  font-size: 14px;
+  padding: 12px 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.profile-search .search-input:focus {
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 3px rgba(31, 212, 111, 0.15);
+  outline: none;
+}
+
+.profile-search .search-btn {
+  background: var(--gradient);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 22px;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.profile-search .search-btn:hover:not(:disabled) {
+  background: var(--gradient-dark);
+  box-shadow: 0 8px 20px rgba(14, 122, 67, 0.18);
+  transform: translateY(-1px);
+}
+
+.profile-search .search-btn:disabled {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.4;
+  transform: none;
+}
+
+/* loading text */
+.profile-search span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 /* ============ ERROR BOUNDARY ============ */
 
 .global-error-boundary-text {
