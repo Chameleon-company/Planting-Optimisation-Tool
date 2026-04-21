@@ -39,7 +39,7 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> Opti
         return None
 
     if not user.is_verified:
-        raise ValueError("Email address has not been verified")
+        raise ValueError("Your email address has not been verified.\nPlease check your inbox (and spam/junk folder) for a verification link.")
 
     return user
 

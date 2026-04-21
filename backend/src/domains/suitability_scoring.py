@@ -14,6 +14,12 @@ class SuitabilityFarm(BaseModel):
     elevation_m: int
     ph: float  # Pydantic will auto-convert Decimal to float
     soil_texture: str
+    agroforestry_types: list[str]
+    coastal: bool
+    riparian: bool
+    nitrogen_fixing: bool
+    shade_tolerant: bool
+    bank_stabilising: bool
 
     @classmethod
     def from_db_model(cls, farm_obj):
@@ -26,6 +32,13 @@ class SuitabilityFarm(BaseModel):
             ph=float(farm_obj.ph),
             # Flattening the nested soil_texture object to a simple string
             soil_texture=farm_obj.soil_texture.name.lower() if farm_obj.soil_texture else "unknown",
+            agroforestry_types=[a.type_name.lower() for a in farm_obj.agroforestry_type],
+            coastal=farm_obj.coastal,
+            riparian=farm_obj.riparian,
+            # These flags indicate what the FARM needs from a SPECIES
+            nitrogen_fixing=farm_obj.nitrogen_fixing,
+            shade_tolerant=farm_obj.shade_tolerant,
+            bank_stabilising=farm_obj.bank_stabilising,
         )
 
 
@@ -44,6 +57,12 @@ class SuitabilitySpecies(BaseModel):
     ph_min: float
     ph_max: float
     soil_textures: list[str]
+    agroforestry_types: list[str]
+    coastal: bool
+    riparian: bool
+    nitrogen_fixing: bool
+    shade_tolerant: bool
+    bank_stabilising: bool
 
     @classmethod
     def from_db_model(cls, sp):
@@ -60,4 +79,10 @@ class SuitabilitySpecies(BaseModel):
             ph_min=float(sp.ph_min),
             ph_max=float(sp.ph_max),
             soil_textures=[s.name.lower() for s in sp.soil_textures],
+            agroforestry_types=[a.type_name.lower() for a in sp.agroforestry_types],
+            coastal=sp.coastal,
+            riparian=sp.riparian,
+            nitrogen_fixing=sp.nitrogen_fixing,
+            shade_tolerant=sp.shade_tolerant,
+            bank_stabilising=sp.bank_stabilising,
         )

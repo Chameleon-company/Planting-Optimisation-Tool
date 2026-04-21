@@ -35,6 +35,10 @@ async def create_farm(
     return await farm_service.create_farm_record(db=db, farm_data=farm_data, user_id=current_user.id)
 
 
+# NOTE: When a farm boundary update endpoint is added, invalidate cached results for that farm:
+#   await cache.invalidate(f"profile:{farm_id}", f"sapling:{farm_id}", f"rec:{farm_id}")
+
+
 @router.get("/{farm_id}", response_model=FarmRead)
 async def read_farm(
     farm_id: int,

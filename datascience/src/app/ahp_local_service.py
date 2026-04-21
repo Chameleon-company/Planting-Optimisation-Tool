@@ -16,7 +16,7 @@ class AhpLocalDataManager:
         "trap_right_tol",
     )
 
-    def __init__(self, yaml_path="config/recommend.yaml", species_path="data/species.csv", csv_path="data/species_params.csv"):
+    def __init__(self, yaml_path="config/recommend.yaml", species_path="../backend/src/scripts/data/species_20251222.csv", csv_path="../backend/src/scripts/data/species_params20260112.csv"):
         """Initialise file paths used by the local data manager.
 
         Args:
@@ -48,18 +48,18 @@ class AhpLocalDataManager:
         features = [(feature_name, feature_cfg["short"]) for feature_name, feature_cfg in data["features"].items()]
 
         species = []
-
+        id = 1
         with open(self.species_path, newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                print(row)
                 species.append(
                     {
-                        "id": int(row["id"]),
+                        "id": id,
                         "name": row["name"],
                         "common_name": row["common_name"],
                     }
                 )
+                id += 1
 
         return features, species
 
