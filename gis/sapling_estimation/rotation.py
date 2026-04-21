@@ -9,7 +9,7 @@ from shapely.geometry import Point
 # The optimal angle and highest point count is tracked during the rotation, which is then applied on the base grid that outputs the final rotated planting grid.
 
 
-def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float):
+def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_x: float, spacing_y: float):
     farm_poly_series = gpd.GeoSeries([farm_polygon], crs=planting_grid.crs)  # Extract farm polygon as Geoseries
 
     # Generate a regular grid inside polygon bounds
@@ -17,8 +17,8 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_m: float)
     farm_poly_shp = farm_poly_series.iloc[0]  # Extract shapely geometry from farm polygon Geoseries
 
     # Generate x and y coordinates for planting points based on 3x3 spacing_m
-    xs = np.arange(xmin, xmax, spacing_m)
-    ys = np.arange(ymin, ymax, spacing_m)
+    xs = np.arange(xmin, xmax, spacing_x)
+    ys = np.arange(ymin, ymax, spacing_y)
 
     # Create a full grid of x and y coordinates
     xx, yy = np.meshgrid(xs, ys)

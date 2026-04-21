@@ -65,16 +65,19 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     async_session.add(boundary)
     await async_session.flush()
 
-    result = await SaplingEstimationService.run_estimation(async_session, farm_id=farm.id, spacing_m=10)
+    result = await SaplingEstimationService.run_estimation(async_session, farm_id=farm.id, spacing_x=10, spacing_y=10, max_slope=15)
 
     assert result is not None
     assert result.get("status") != "failed", f"Service failed: {result}"
-    assert "sapling_count" in result
-    assert result["sapling_count"] > 0
+    assert "aligned_count" in result
+    assert result["aligned_count"] > 0
+
+    assert "pre_slope_count" in result
+    assert result["pre_slope_count"] >= result["aligned_count"]
 
     rows = await async_session.execute(
         text("SELECT COUNT(*) FROM planting_estimates WHERE farm_id = :id"),
         {"id": farm.id},
     )
 
-    assert rows.scalar_one() == result["sapling_count"]
+    assert rows.scalar_one() == result["aligned_count"]

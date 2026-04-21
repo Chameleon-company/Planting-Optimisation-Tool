@@ -23,10 +23,15 @@ class FarmReportMetadata(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    user_name: str
     rainfall_mm: int
     temperature_celsius: int
+    elevation_m: int
     ph: float
     soil_texture: str
+    area_ha: float
+    latitude: float
+    longitude: float
 
 
 class FarmReportContract(BaseModel):
@@ -38,6 +43,7 @@ class FarmReportContract(BaseModel):
 
     farm: FarmReportMetadata
     recommendations: List[RecommendationReportEntry]
+    exclusions: List[RecommendationReportEntry]
     generated_at: datetime
 
     @classmethod
@@ -58,5 +64,6 @@ class FarmReportContract(BaseModel):
         return cls(
             farm=FarmReportMetadata.model_validate(farm_obj),
             recommendations=recs,
+            exclusions=[],
             generated_at=datetime.now(timezone.utc),
         )

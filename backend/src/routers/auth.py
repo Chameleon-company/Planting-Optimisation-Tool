@@ -127,6 +127,7 @@ async def register_user(request: Request, user: UserCreate, db: AsyncSession = D
         subject="Verify your account",
         recipient=db_user.email,
         body=f"Click this link to verify your account:\n{verification_link}",
+        html_body=f'<p>Click this link to verify your account:</p><p><a href="{verification_link}">{verification_link}</a></p>',
     )
 
     return {"message": "User registered. Verification email sent."}

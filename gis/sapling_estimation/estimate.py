@@ -10,7 +10,9 @@ from sapling_estimation.slope_rules import apply_slope_rules
 
 def sapling_estimation(
     farm_polygon,
-    spacing_m: float,
+    spacing_x: float,
+    spacing_y: float,
+    max_slope: float,
     farm_boundary_crs="EPSG:4326",
     debug=False,
     dem_array=None,
@@ -22,7 +24,9 @@ def sapling_estimation(
 ):
     """
     Main orchestrator for sapling estimation.
-    Uses DEM data from database to compute slope and generate planting plan.
+    Supports:
+    - Rectangular planting grid (spacing_x, spacing_y)
+    - Dynamic slope filtering (max_slope)
     """
 
     if dem_array is None:
@@ -44,12 +48,14 @@ def sapling_estimation(
 
     bounds = farm_poly_projected.bounds
 
-    initial_grid = generate_planting_points(farm_poly_projected, "EPSG:3857", bounds, spacing_m)
+    initial_grid = generate_planting_points(farm_poly_projected, "EPSG:3857", bounds, spacing_x, spacing_y)
 
-    rotated_grid, optimal_angle = rotate_grid(farm_poly_projected, initial_grid, spacing_m)
+    rotated_grid, optimal_angle = rotate_grid(farm_poly_projected, initial_grid, spacing_x, spacing_y)
 
     if not rotation_tester(rotated_grid, initial_grid):
         raise ValueError("Rotated grid failed validation")
+
+    pre_slope_count = len(rotated_grid)
 
     slope_array = compute_slope_from_array(
         dem_array,
@@ -66,6 +72,7 @@ def sapling_estimation(
         slope_array,
         rotated_grid_in_dem_crs,
         dem_transform,
+        max_slope,
     )
 
     if filtered_grid.empty:
@@ -81,6 +88,7 @@ def sapling_estimation(
 
     if debug:
         print(f"Optimal Rotation Angle: {optimal_angle}°")
+        print(f"Pre-slope Count: {pre_slope_count}")
         print(f"Final Sapling Count: {len(final_grid)}")
 
     return {
@@ -88,4 +96,5 @@ def sapling_estimation(
         "slope_array": slope_array,
         "slope_values": slope_values,
         "optimal_angle": optimal_angle,
+        "pre_slope_count": pre_slope_count,
     }
