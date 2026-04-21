@@ -40,13 +40,18 @@ async def create_farm(
 
 
 @router.get("/{farm_id}", response_model=FarmRead)
-async def read_farm(farm_id: int, db: AsyncSession = Depends(get_db_session), current_user: UserRead = Depends(get_current_user)):
+async def read_farm(
+    farm_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(get_current_user),
+):
     """Retrieves a farm by ID.
 
     ADMIN: can read any farm
     SUPERVISOR: can read any farm
     OFFICER: can read only their own farm
     """
+
     farms = await farm_service.get_farm_by_id(db, farm_ids=[farm_id])
 
     if not farms:
@@ -57,18 +62,22 @@ async def read_farm(farm_id: int, db: AsyncSession = Depends(get_db_session), cu
 
     farm = farms[0]
 
-    # ADMIN & SUPERVISOR → allowed
-    if current_user.role in [Role.ADMIN, Role.SUPERVISOR]:
+    # ADMIN → allowed
+    if current_user.role == Role.ADMIN:
+        return farm
+
+    # SUPERVISOR → allowed
+    if current_user.role == Role.SUPERVISOR:
         return farm
 
     # OFFICER → only own farm
     if current_user.role == Role.OFFICER:
         if farm.user_id != current_user.id:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Farm not found.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Farm not found.",
+            )
         return farm
-
-    # fallback (safety)
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized.")
 
 
 @router.put("/{farm_id}", response_model=FarmRead)
@@ -76,11 +85,20 @@ async def update_farm(
     farm_id: int,
     farm_data: FarmUpdate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserRead = Depends(require_role(Role.ADMIN)),
+    current_user: UserRead = Depends(get_current_user),
 ):
-    """Updates an existing farm record.
-    Requires ADMIN role.
+    """Updates a farm by ID.
+
+    ADMIN: can update any farm
+    SUPERVISOR: can update only their own farm
+    OFFICER: cannot update farms
     """
+    if current_user.role == Role.OFFICER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user does not have adequate permissions.",
+        )
+
     existing_farms = await farm_service.get_farm_by_id(db, farm_ids=[farm_id])
 
     if not existing_farms:
@@ -90,6 +108,12 @@ async def update_farm(
         )
 
     existing_farm = existing_farms[0]
+
+    if current_user.role == Role.SUPERVISOR and existing_farm.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user does not have adequate permissions.",
+        )
 
     latitude = farm_data.latitude if farm_data.latitude is not None else existing_farm.latitude
     longitude = farm_data.longitude if farm_data.longitude is not None else existing_farm.longitude
@@ -101,7 +125,11 @@ async def update_farm(
     )
     farm_data.riparian = riparian_result["riparian"]
 
-    updated_farm = await farm_service.update_farm_record(db=db, farm_id=farm_id, farm_data=farm_data)
+    updated_farm = await farm_service.update_farm_record(
+        db=db,
+        farm_id=farm_id,
+        farm_data=farm_data,
+    )
 
     return updated_farm
 
