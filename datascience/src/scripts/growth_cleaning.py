@@ -799,7 +799,6 @@ def generate_pdf(df, df_growth_rates, metrics, output_path, logo_path="../fronte
 
     # Add to the story
     story.append(Paragraph(summary_text, styles["Normal"]))
-    story.append(Spacer(1, 0.25 * inch))
 
     # Output Table Description
     story.append(Paragraph("Cleaned Data Output", styles["Heading2"]))
