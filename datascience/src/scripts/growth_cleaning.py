@@ -115,7 +115,7 @@ def add_species_id_from_reference(trees_df, species_ref_path="data/species_20251
     if missing_cols:
         raise ValueError(f"species_ref is missing required columns: {missing_cols}")
 
-    # Standardize text columns for safer matching
+    # Standardise text columns for safer matching
     for col in ["name", "common_name"]:
         species_ref[col] = species_ref[col].fillna("").astype(str).str.strip()
 
@@ -485,6 +485,62 @@ def clean_data(df):
     return dftc_clean, metrics
 
 
+def calculate_lifetime_growth_rate(df_clean, min_span_years=0.5, max_growth_cm_yr=100.0, drop_negative=True):
+    """
+    Converts a cleaned longitudinal dataset into a single annualised
+    growth rate per tree_instance_id, enforcing biological realism constraints.
+
+    Args:
+        df_clean (pd.DataFrame): The cleaned tree measurements dataset.
+        min_span_years (float): Minimum elapsed time between first and last scan.
+        max_growth_cm_yr (float): The absolute biological ceiling for cm grown per year.
+        drop_negative (bool): If True, removes trees with a net negative growth rate.
+    """
+    # Ensure chronological order per tree to accurately grab first/last scans
+    df_sorted = df_clean.sort_values(["tree_instance_id", "age_years_at_scan"])
+
+    # Group by tree to extract the endpoints
+    growth_df = (
+        df_sorted.groupby("tree_instance_id", observed=True)
+        .agg(
+            farm_id=("farm_id", "first"),
+            species_id=("species_id", "first"),
+            tree_species=("tree_species", "first"),
+            is_dead=("is_dead", "last"),
+            first_age=("age_years_at_scan", "first"),
+            last_age=("age_years_at_scan", "last"),
+            first_circ=("trunk_circumference_clean", "first"),
+            last_circ=("trunk_circumference_clean", "last"),
+        )
+        .reset_index()
+    )
+
+    # Calculate the elapsed time between first and last scan
+    growth_df["age_span"] = growth_df["last_age"] - growth_df["first_age"]
+
+    # Enforce minimum time span
+    growth_df = growth_df[growth_df["age_span"] >= min_span_years].copy()
+
+    # Calculate the annualised growth rate
+    growth_df["net_growth_rate_cm_yr"] = (growth_df["last_circ"] - growth_df["first_circ"]) / growth_df["age_span"]
+
+    # Clean up math artifacts
+    growth_df["net_growth_rate_cm_yr"] = growth_df["net_growth_rate_cm_yr"].replace([np.inf, -np.inf], np.nan)
+    growth_df = growth_df.dropna(subset=["net_growth_rate_cm_yr"])
+
+    # Handle negative growth
+    if drop_negative:
+        # We assume net negative growth over a >6 month span is a hardware reset
+        # or measurement failure that slipped through, rather than biological shrinkage.
+        growth_df = growth_df[growth_df["net_growth_rate_cm_yr"] > 0.0]
+
+    # Enforce biological ceiling
+    # Drops extreme outliers resulting from misentered data (e.g., 10cm recorded as 100cm)
+    growth_df = growth_df[growth_df["net_growth_rate_cm_yr"] <= max_growth_cm_yr]
+
+    return growth_df.reset_index(drop=True)
+
+
 # ==== Plotting Functions ==========================================================================
 def plot_species_for_report(df_base, species_name):
     """
@@ -547,8 +603,50 @@ def plot_species_for_report(df_base, species_name):
     return Image(img_buffer, width=6 * inch, height=2.5 * inch)
 
 
+def plot_growth_rate_distribution(df_growth_rates):
+    """
+    Generates a boxplot of the net annualised growth rates across all species.
+    Returns a ReportLab Image object.
+
+    Args:
+        df_growth_rates (pd.DataFrame): DataFrame containing at least 'tree_species' and 'net_growth_rate_cm_yr' columns.
+
+    Returns:
+        ReportLab Image object containing the boxplot, or None if there is insufficient data to plot
+    """
+    # Filter out species with too few trees to make a meaningful boxplot
+    species_counts = df_growth_rates["tree_species"].value_counts()
+    valid_species = species_counts[species_counts >= 10].index
+    df_plot = df_growth_rates[df_growth_rates["tree_species"].isin(valid_species)].copy()
+
+    if df_plot.empty:
+        print("[skip] Not enough data to plot growth rate distributions.")
+        return None
+
+    # Sort species by median growth rate for a cleaner visual
+    order = df_plot.groupby("tree_species")["net_growth_rate_cm_yr"].median().sort_values(ascending=False).index
+
+    plt.figure(figsize=(10, 6))
+
+    # Create the boxplot
+    ax = sns.boxplot(data=df_plot, x="net_growth_rate_cm_yr", y="tree_species", order=order, color="#8fb4d9", showfliers=SHOW_FLIERS)
+
+    ax.set_xlabel("Net Annualised Growth Rate (cm/year)")
+    ax.set_ylabel("Tree Species")
+    ax.set_title("Distribution of Annualised Growth Rates by Species")
+    plt.tight_layout()
+
+    # Convert to ReportLab Image
+    img_buffer = BytesIO()
+    plt.savefig(img_buffer, format="png", dpi=SAVE_DPI, bbox_inches="tight")
+    plt.close()
+    img_buffer.seek(0)
+
+    return Image(img_buffer, width=6.5 * inch, height=4 * inch)
+
+
 # ==== Output Functions ============================================================================
-def save_cleaned_data(df, output_csv_path):
+def save_cleaned_circumference_data(df, output_csv_path):
     """
     Removes generated/internal columns and saves the dataframe to a CSV.
 
@@ -595,7 +693,41 @@ def save_cleaned_data(df, output_csv_path):
         print(f"ERROR: Could not save CSV: {e}")
 
 
-def generate_pdf(df, metrics, output_path, logo_path="../frontend/public/assets/images/logo2.png"):
+def save_cleaned_rate_data(df, output_csv_path):
+    """
+    Removes generated/internal columns and saves the dataframe to a CSV.
+
+    Args:
+        df (pd.DataFrame): The cleaned DataFrame to save.
+        output_csv_path (str): The file path for the output CSV.
+
+    Raises:
+        Exception: If there is an error during saving.
+    """
+    cols_to_drop = [
+        "is_dead",
+        "last_age",
+        "first_circ",
+        "last_circ",
+    ]
+
+    # Create a copy to avoid SettingWithCopy warnings if df is a slice
+    df_out = df.drop(columns=cols_to_drop, errors="ignore").copy()
+
+    # Reorder result_df columns using exact column names only
+    column_order = ["tree_instance_id", "farm_id", "species_id", "tree_species", "first_age", "age_span", "net_growth_rate_cm_yr"]
+
+    remaining_cols = [c for c in df_out.columns if c not in column_order]
+    df_out = df_out[column_order + remaining_cols]
+
+    try:
+        df_out.to_csv(output_csv_path, index=False)
+        print(f"[saved] Cleaned data exported to: {output_csv_path}")
+    except Exception as e:
+        print(f"ERROR: Could not save CSV: {e}")
+
+
+def generate_pdf(df, df_growth_rates, metrics, output_path, logo_path="../frontend/public/assets/images/logo2.png"):
     """
     Generates a PDF report with a summary of cleaning metrics and boxplots for each species.
 
@@ -711,6 +843,18 @@ def generate_pdf(df, metrics, output_path, logo_path="../frontend/public/assets/
         else:
             print(f"[skip] {spec}: Insufficient data for plotting.")
 
+    # Add to the story
+    story.append(Paragraph("Overall Growth Rate Distributions", styles["Heading2"]))
+    story.append(Paragraph("The chart below illustrates the annualised net growth rate (cm/year) calculated from the first and last valid scans of each tree, grouped by species.", styles["Normal"]))
+    story.append(Spacer(1, 0.1 * inch))
+
+    # Generate and append the new plot
+    distribution_plot = plot_growth_rate_distribution(df_growth_rates)
+    if distribution_plot:
+        story.append(distribution_plot)
+
+    story.append(PageBreak())
+
     doc.build(story, onFirstPage=add_header_logo)
 
 
@@ -746,13 +890,20 @@ def main():
     print("Cleaning data...")
     df_cleaned, metrics = clean_data(df)
 
+    # Calculate the annualised growth rate for each tree
+    print("Calculating annualised growth rates...")
+    df_growth_rates = calculate_lifetime_growth_rate(df_cleaned)
+
     print(f"Generating PDF: {args.report}...")
-    generate_pdf(df_cleaned, metrics, args.report)
+    generate_pdf(df_cleaned, df_growth_rates, metrics, args.report)
     print("Success.")
 
     # Save the CSV (The requested save function)
-    print(f"Saving cleaned CSV: {args.csv}...")
-    save_cleaned_data(df_cleaned, args.csv)
+    print(f"Saving cleaned circumference CSV: {args.csv}...")
+    save_cleaned_circumference_data(df_cleaned, args.csv)
+
+    print(f"Saving cleaned rates CSV: {args.csv}...")
+    save_cleaned_rate_data(df_growth_rates, args.csv.replace(".csv", "_growth_rates.csv"))
 
     print("Process complete.")
 
