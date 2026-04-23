@@ -87,7 +87,7 @@ def validate_and_load(file_path):
         sys.exit(1)
 
 
-def add_species_id_from_reference(trees_df, species_ref_path="data/species_20251222.csv"):
+def add_species_id_from_reference(trees_df, species_ref_path="../backend/src/scripts/data/species_20251222.csv"):
     """
     Add species_id to trees_df by matching tree_species against species_ref names.
 
@@ -161,7 +161,7 @@ def clean_data(df):
         2. Interpolating suspect interior points based on valid neighbours.
         3. Flagging and dropping endpoint measurements with unrealistic growth rates.
         4. Applying a species-aware growth threshold to single-scan tree_instance_ids.
-        5. Performing robust z-score outlier detection within species × age bins.
+        5. Performing robust z-score outlier detection within species x age bins.
         6. Removing tree_instance_ids with only one scan after cleaning.
 
     - The function returns both the cleaned DataFrame and a dictionary of metrics summarizing the cleaning process, such as counts of flagged measurements and changes made.
@@ -805,7 +805,8 @@ def generate_pdf(df, df_growth_rates, metrics, output_path, logo_path="../fronte
     table_text = (
         "The resulting cleaned dataset provides a refined basis for growth modelling. Key outputs "
         "include <i>trunk_circumference_clean</i>, which represents the validated measurement, "
-        "and <i>age_years_at_scan</i>, which normalises measurements to the time elapsed since planting."
+        "and <i>age_years_at_scan</i>, which normalises measurements to the time elapsed since planting and"
+        "<i>net_growth_rate_cm_yr</i>, which represents the calculated annualised growth rate for a tree."
     )
     story.append(Paragraph(table_text, styles["Normal"]))
 
@@ -861,7 +862,7 @@ def generate_pdf(df, df_growth_rates, metrics, output_path, logo_path="../fronte
 def main():
     parser = argparse.ArgumentParser(description="TreeO2 Growth Cleaning and Reporting Tool")
     # Input
-    parser.add_argument("input", help="Path to input treeo2_cleaned.csv")
+    parser.add_argument("input", help="Path to input treeo2_cleaned.csv.gz")
 
     # Outputs
     parser.add_argument(
@@ -874,7 +875,7 @@ def main():
     parser.add_argument(
         "--csv",
         "-c",
-        default="src/scripts/farm_species_age_circumference.csv",
+        default="notebooks/farm_species_age_circumference.csv",
         help="Output cleaned CSV path (default: farm_species_age_circumference.csv)",
     )
 
