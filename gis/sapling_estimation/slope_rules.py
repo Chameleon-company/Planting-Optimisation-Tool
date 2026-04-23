@@ -2,13 +2,12 @@ import geopandas as gpd
 import numpy as np
 import rasterio
 
-MAX_SLOPE = 15.0
-
 
 def apply_slope_rules(
     slope_array: np.ndarray,
     rotated_grid: gpd.GeoDataFrame,
     slope_transform,
+    max_slope: float,
 ):
     xs = [point.x for point in rotated_grid.geometry]
     ys = [point.y for point in rotated_grid.geometry]
@@ -22,7 +21,7 @@ def apply_slope_rules(
     for idx, (r, c) in enumerate(zip(rows, cols)):
         if 0 <= r < height and 0 <= c < width:
             slope_value = float(slope_array[r, c])
-            if slope_value <= MAX_SLOPE:
+            if slope_value <= max_slope:
                 kept_indices.append(idx)
                 kept_slopes.append(slope_value)
 
