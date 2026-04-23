@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.boundaries import FarmBoundary
+from src.models.farm import Farm
 
 # Maps from farm_profile.py output keys to imputation service keys
 _TO_IMPUTER = {"slope_degrees": "slope", "soil_ph": "ph"}
@@ -85,6 +86,14 @@ class EnvironmentalProfileService:
             # Record which fields were imputed (using DB column naming)
             for field in imputed_fields:
                 profile[f"{field}_imputed"] = True
+
+            # Persist imputation flags to the Farm DB record
+            farm_result = await db.execute(select(Farm).where(Farm.id == farm_id))
+            farm_record = farm_result.scalar_one_or_none()
+            if farm_record is not None:
+                for field in imputed_fields:
+                    setattr(farm_record, f"{field}_imputed", True)
+                await db.commit()
         # ------------------------------------------------------------------
 
         # Data Normalization to enforce pydantic schema
