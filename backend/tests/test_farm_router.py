@@ -3,6 +3,7 @@ from geoalchemy2.elements import WKTElement
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import src.routers.farm as farm_router
 from src.dependencies import create_access_token
 from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
@@ -271,7 +272,7 @@ async def test_supervisor_can_read_any_farm(
     """Supervisor can read a farm belonging to a different user (no ownership filter applied)."""
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
     async_session.add(farm)
-    await async_session.flush()
+    await async_session.commit()
     await async_session.refresh(farm)
 
     response = await async_client.get(f"/farms/{farm.id}", headers=supervisor_auth_headers)
@@ -292,7 +293,7 @@ async def test_admin_can_read_any_farm(
     """Admin can read a farm belonging to a different user (no ownership filter applied)."""
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
     async_session.add(farm)
-    await async_session.flush()
+    await async_session.commit()
     await async_session.refresh(farm)
 
     response = await async_client.get(f"/farms/{farm.id}", headers=admin_auth_headers)
@@ -358,8 +359,6 @@ async def test_admin_can_update_farm_lat_long_and_recompute_riparian(
     setup_soil_texture,
     monkeypatch,
 ):
-    import src.routers.farm as farm_router
-
     async def fake_get_riparian_flags(db, latitude, longitude):
         assert latitude == -8.6
         assert longitude == 126.6
@@ -422,7 +421,13 @@ async def test_admin_can_update_farm_partially(
     test_admin_user: User,
     admin_auth_headers: dict,
     setup_soil_texture,
+    monkeypatch,
 ):
+    async def fake_get_riparian_flags(db, latitude, longitude):
+        return {"riparian": False}
+
+    monkeypatch.setattr(farm_router, "get_riparian_flags", fake_get_riparian_flags)
+
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
     async_session.add(farm)
     await async_session.commit()
@@ -454,7 +459,13 @@ async def test_supervisor_can_update_own_farm(
     test_supervisor_user: User,
     supervisor_auth_headers: dict,
     setup_soil_texture,
+    monkeypatch,
 ):
+    async def fake_get_riparian_flags(db, latitude, longitude):
+        return {"riparian": False}
+
+    monkeypatch.setattr(farm_router, "get_riparian_flags", fake_get_riparian_flags)
+
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_supervisor_user.id)
     async_session.add(farm)
     await async_session.commit()
@@ -479,7 +490,13 @@ async def test_supervisor_cannot_update_other_users_farm(
     test_officer_user: User,
     supervisor_auth_headers: dict,
     setup_soil_texture,
+    monkeypatch,
 ):
+    async def fake_get_riparian_flags(db, latitude, longitude):
+        return {"riparian": False}
+
+    monkeypatch.setattr(farm_router, "get_riparian_flags", fake_get_riparian_flags)
+
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
