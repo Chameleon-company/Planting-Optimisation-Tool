@@ -34,7 +34,7 @@ describe("useCalculator Hook", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/sapling-estimation"),
+      expect.stringContaining("/sapling_estimation/calculate"),
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
