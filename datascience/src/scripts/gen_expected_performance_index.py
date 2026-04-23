@@ -1,34 +1,33 @@
-import os
 import argparse
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from pygam import GammaGAM, s
 from io import BytesIO
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from pygam import GammaGAM, s
+from reportlab.lib import colors
 
 # ReportLab Imports
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
     Image,
-    Spacer,
     PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
     Table,
     TableStyle,
 )
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import inch
-from reportlab.lib import colors
 
 # ==== Plotting Settings ===========================================================================
 SAVE_DPI = 150
 
 
 # ==== GAM Functions ===============================================================================
-def fit_species_gams(age, circ, n_splines=10):
+def fit_species_gams(age, rate, n_splines=10):
     """
     Fits a GammaGAM with monotonic increasing constraints.
 
@@ -42,10 +41,10 @@ def fit_species_gams(age, circ, n_splines=10):
         model (GammaGAM): The fitted GAM model.
         stats (dict): A dictionary of model statistics (AIC, deviance, edof).
     """
-    X = age.reshape(-1, 1)
+    x = age.reshape(-1, 1)
     # Using monotonic_inc constraint to reflect growth patterns, and a reasonable number of splines for flexibility
-    gam = GammaGAM(s(0, constraints="monotonic_inc", n_splines=n_splines))
-    model = gam.gridsearch(X, circ, progress=False)
+    gam = GammaGAM(s(0, n_splines=n_splines))
+    model = gam.gridsearch(x, rate, progress=False)
     stats = getattr(model, "statistics_", {})
     return "Gamma", model, stats
 
@@ -63,11 +62,11 @@ def gam_predict(model, age_grid):
         lo (np.array or None): Lower bounds of confidence intervals, or None if not available.
         hi (np.array or None): Upper bounds of confidence intervals, or None if not available
     """
-    Xg = age_grid.reshape(-1, 1)
-    yhat = model.predict(Xg)
+    xg = age_grid.reshape(-1, 1)
+    yhat = model.predict(xg)
     lo, hi = None, None
     try:
-        lo, hi = model.confidence_intervals(Xg, width=0.95).T
+        lo, hi = model.confidence_intervals(xg, width=0.95).T
     except Exception:
         pass
     return yhat, lo, hi
@@ -90,14 +89,14 @@ def plot_growth_for_report(sp, grp, age_grid, yhat_grid, lo, hi):
         BytesIO: An in-memory buffer containing the plot image.
     """
     fig, ax = plt.subplots(figsize=(12, 5), dpi=120)
-    ax.scatter(grp["age"], grp["circ"], s=10, alpha=0.3, color="#5a5a5a", label="Observed")
+    ax.scatter(grp["mid_age"], grp["rate"], s=10, alpha=0.3, color="#5a5a5a", label="Observed")
     ax.plot(age_grid, yhat_grid, color="#2a9d8f", lw=2, label="GAM Fit")
 
     if lo is not None and hi is not None:
         ax.fill_between(age_grid, lo, hi, color="#2a9d8f", alpha=0.15, linewidth=0)
 
-    ax.set_xlabel("Age (years)")
-    ax.set_ylabel("Circumference (cm)")
+    ax.set_xlabel("Biological Age (Mid-point of growth window)")
+    ax.set_ylabel("Annualised Growth Rate (cm/yr)")
     ax.legend(frameon=False)
 
     buf = BytesIO()
@@ -163,7 +162,7 @@ def plot_farm_performance_violin(farm_targets):
     # Add the baseline reference
     ax.axvline(x=1.0, color="#e76f51", linestyle="--", linewidth=1.5, label="Baseline (EPI=1.0)")
 
-    # 4. Clean labels and styling to match the histogram
+    # Clean labels and styling to match the histogram
     ax.set_title("Distribution of Farm Performance by Species ID", fontsize=11, pad=10)
     ax.set_xlabel("Farm Mean EPI (Actual / Expected Growth)", fontsize=9)
     ax.set_ylabel("")
@@ -388,20 +387,26 @@ def main():
     parser.add_argument("--output", "-o", default="docs/EPI_Report.pdf", help="Output PDF name")
     args = parser.parse_args()
 
-    # Read cleaned growth data
+    # Read cleaned growth rates data
     print(f"Loading data from {args.input}...")
     df = pd.read_csv(args.input)
 
+    # Calculate a mid-point age to represent the tree's biological age during this specific growth window
+    df["mid_age"] = df["first_age"] + (df["age_span"] / 2.0)
+
+    # Rename the target variable for convenience in the script
+    df.rename(columns={"net_growth_rate_cm_yr": "rate", "tree_species": "species"}, inplace=True)
+
     # Normalise columns
-    df.columns = [
-        "farm_id",
-        "tree_id",
-        "species_id",
-        "species",
-        "is_dead",
-        "age",
-        "circ",
-    ]
+    #    df.columns = [
+    #        "farm_id",
+    #        "tree_id",
+    #        "species_id",
+    #        "species",
+    #        "is_dead",
+    #        "age",
+    #        "circ",
+    #    ]
 
     summary_rows = []
     preds_all = []
@@ -413,11 +418,11 @@ def main():
         if len(grp) < 50:  # min_points_per_species
             continue
 
-        age = grp["age"].to_numpy().astype(float)
-        circ = grp["circ"].to_numpy().astype(float)
+        age = grp["mid_age"].to_numpy().astype(float)
+        rate = grp["rate"].to_numpy().astype(float)
 
         # Fit GAM
-        name, model, stats = fit_species_gams(age, circ)
+        name, model, stats = fit_species_gams(age, rate)
 
         row = {"species": sp, "n_points": len(grp)}
         for k in ["AIC", "deviance", "edof"]:
@@ -440,11 +445,11 @@ def main():
         preds_all.append(preds)
 
         # EPI for each observed tree
-        X = age.reshape(-1, 1)
-        c_hat = model.predict(X)
+        x = age.reshape(-1, 1)
+        rate_hat = model.predict(x)
 
         # Ratio-based Expected Performance Index
-        epi = circ / np.maximum(c_hat, 1e-9)
+        epi = rate / np.maximum(rate_hat, 1e-9)
 
         epi_df = pd.DataFrame(
             {
@@ -477,7 +482,7 @@ def main():
 
     try:
         farm_targets.drop(columns=["species"]).to_csv("src/scripts/aggregated_epi_data.csv", index=False)
-        print(f"[saved] Aggregated EPI data exported to: src/scripts/aggregated_epi_data.csv")
+        print("[saved] Aggregated EPI data exported to: src/scripts/aggregated_epi_data.csv")
     except Exception as e:
         print(f"ERROR: Could not save CSV: {e}")
 
