@@ -35,12 +35,12 @@ export function useCalculator(farmId: string) {
 
       try {
         const response = await fetch(
-          `${API_BASE}/sapling-estimation/${farmId}`,
+          `${API_BASE}/sapling_estimation/calculate`,
           {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
-              Accept: "application/json",
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               farm_id: Number(farmId),
