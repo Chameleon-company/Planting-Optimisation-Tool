@@ -1,22 +1,18 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import argparse
+import re
 import sys
 from io import BytesIO
-from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 # ReportLab Imports
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
-
-import re
-from io import BytesIO
-from reportlab.platypus import Image
-from reportlab.lib.units import inch
+from reportlab.platypus import Image, PageBreak, Paragraph, SimpleDocTemplate, Spacer
 
 # ==== Cleaning Settings ===========================================================================
 MAD_TO_SIGMA = 0.6745  # scales MAD to sigma-equivalent units for robust z-scores
@@ -166,7 +162,8 @@ def clean_data(df):
 
     - The function returns both the cleaned DataFrame and a dictionary of metrics summarizing the cleaning process, such as counts of flagged measurements and changes made.
 
-    - The cleaned DataFrame includes a new column 'trunk_circumference_clean' with corrected values, and a 'correction_method' column indicating how each suspect measurement was handled ('drop', 'interp_neighbours', or 'as_is').
+    - The cleaned DataFrame includes a new column 'trunk_circumference_clean' with corrected values, and a 'correction_method' column indicating how each suspect measurement
+      was handled ('drop', 'interp_neighbours', or 'as_is').
 
     - The function assumes that the input DataFrame has already been validated for required columns and that 'scan_date' is in datetime format.
 
