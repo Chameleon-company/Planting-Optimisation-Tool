@@ -13,12 +13,7 @@ from src.utils.security import get_password_hash
 async def test_farm_and_boundary_link(async_client: AsyncClient, async_session, setup_soil_texture):
     """Verify that a farm and boundary link correctly via shared PK and External ID."""
     # Create a test user with SUPERVISOR role and auth headers
-    test_user = User(
-        name="Test User farm",
-        email="testuser@test.com",
-        hashed_password=get_password_hash("testpassword"),
-        role=Role.SUPERVISOR.value,  # Changed to SUPERVISOR
-    )
+    test_user = User(name="Test User farm", email="testuser@test.com", hashed_password=get_password_hash("testpassword"), role=Role.ADMIN.value)
     async_session.add(test_user)
     await async_session.flush()
     await async_session.refresh(test_user)

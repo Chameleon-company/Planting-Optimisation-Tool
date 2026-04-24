@@ -58,6 +58,9 @@ asyncio_default_test_loop_scope = "session"
 addopts = "--cov=src --cov-report=xml"
 filterwarnings = ["ignore:urllib3.*doesn't match a supported version:Warning"]
 
+[tool.coverage.run]
+concurrency = ["thread", "greenlet"]
+
 [tool.ruff]
 line-length = 200
 exclude = [

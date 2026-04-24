@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.models import AgroforestryType, Farm
-from src.schemas.farm import FarmCreate
+from src.schemas.farm import FarmCreate, FarmUpdate
 
 
 async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: int):
@@ -76,3 +76,63 @@ async def list_farms_by_user(db: AsyncSession, user_id: int) -> list[Farm]:
     )
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpdate) -> Farm | None:
+    """Partially updates a farm record by ID.
+    Returns the updated farm, or None if not found.
+    """
+    result = await db.execute(
+        select(Farm)
+        .options(
+            selectinload(Farm.farm_supervisor),
+            selectinload(Farm.soil_texture),
+            selectinload(Farm.agroforestry_type),
+        )
+        .where(Farm.id == farm_id)
+    )
+    db_farm = result.scalar_one_or_none()
+
+    if db_farm is None:
+        return None
+
+    update_data = farm_data.model_dump(exclude_unset=True)
+
+    agroforestry_ids = update_data.pop("agroforestry_type_ids", None)
+
+    for field, value in update_data.items():
+        setattr(db_farm, field, value)
+
+    if agroforestry_ids is not None:
+        result = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_ids)))
+        selected_types = list(result.scalars().all())
+        db_farm.agroforestry_type = selected_types
+
+    await db.commit()
+    await db.refresh(db_farm)
+
+    result = await db.execute(
+        select(Farm)
+        .options(
+            selectinload(Farm.farm_supervisor),
+            selectinload(Farm.soil_texture),
+            selectinload(Farm.agroforestry_type),
+        )
+        .where(Farm.id == db_farm.id)
+    )
+    return result.scalar_one()
+
+
+async def delete_farm_record(db: AsyncSession, farm_id: int) -> bool:
+    """Deletes a farm record by ID.
+    Returns True if deleted, False if not found.
+    """
+    result = await db.execute(select(Farm).where(Farm.id == farm_id))
+    db_farm = result.scalar_one_or_none()
+
+    if db_farm is None:
+        return False
+
+    await db.delete(db_farm)
+    await db.commit()
+    return True
