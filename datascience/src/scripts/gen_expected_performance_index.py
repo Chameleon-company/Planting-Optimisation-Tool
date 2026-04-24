@@ -29,11 +29,11 @@ SAVE_DPI = 150
 # ==== GAM Functions ===============================================================================
 def fit_species_gams(age, rate, n_splines=10):
     """
-    Fits a GammaGAM with monotonic increasing constraints.
+    Fits a GammaGAM.
 
     Args:
         age (np.array): Age data for the species.
-        circ (np.array): Circumference data for the species.
+        rate (np.array): Growth rate data for the species.
         n_splines (int): Number of splines to use in the GAM.
 
     Returns:
@@ -42,7 +42,6 @@ def fit_species_gams(age, rate, n_splines=10):
         stats (dict): A dictionary of model statistics (AIC, deviance, edof).
     """
     x = age.reshape(-1, 1)
-    # Using monotonic_inc constraint to reflect growth patterns, and a reasonable number of splines for flexibility
     gam = GammaGAM(s(0, n_splines=n_splines))
     model = gam.gridsearch(x, rate, progress=False)
     stats = getattr(model, "statistics_", {})
@@ -58,7 +57,7 @@ def gam_predict(model, age_grid):
         age_grid (np.array): A grid of age values to predict on.
 
     Returns:
-        yhat (np.array): Predicted circumference values.
+        yhat (np.array): Predicted growth rate values.
         lo (np.array or None): Lower bounds of confidence intervals, or None if not available.
         hi (np.array or None): Upper bounds of confidence intervals, or None if not available
     """
@@ -81,7 +80,7 @@ def plot_growth_for_report(sp, grp, age_grid, yhat_grid, lo, hi):
         sp (str): Species name for the plot title.
         grp (pd.DataFrame): The data group for the species.
         age_grid (np.array): The age values used for predictions.
-        yhat_grid (np.array): The predicted circumference values.
+        yhat_grid (np.array): The predicted growth rate values.
         lo (np.array or None): Lower bounds of confidence intervals.
         hi (np.array or None): Upper bounds of confidence intervals.
 
@@ -140,7 +139,7 @@ def plot_epi_for_report(sp, grp):
 def plot_farm_performance_violin(farm_targets):
     """
     Generates a violin plot of farm performance by species
-    and returns it as an in-memory ReportLab Image flowable.
+    and returns it as an in-memory ReportLab Image.
 
     Args:
         farm_targets (pd.DataFrame): The aggregated dataset containing 'farm_mean_epi' and 'species'.
@@ -236,13 +235,13 @@ def generate_pdf_report(df, summary_df, preds_df, epi_df, farm_targets, output_p
     story.append(Paragraph("Methodology and Purpose", styles["Heading2"]))
 
     methodology_text = """
-    To decouple tree age from environmental suitability, we employ a Gamma Generalised Linear Model (GLM). 
-    Unlike standard regression, a Gamma GLM respects the biological reality that tree size must be positive 
+    To decouple tree age from environmental suitability, we employ a Gamma Generalised Additive Model (GAM). 
+    Unlike standard regression, a Gamma GAM respects the biological reality that tree size must be positive 
     and that variance increases as trees mature (heteroscedasticity). <br/><br/>
     
     By using a Log-Link function, we capture the natural growth curve. The resulting 
     Expected Performance Index (EPI) is the ratio of actual growth to the model's 
-    predicted baseline. This creates a standardized metric: an EPI of 1.2 indicates 
+    predicted baseline. This creates a standardised metric: an EPI of 1.2 indicates 
     growth 20% above the species average for that age, isolating the environmental 
     signal for use in our MCDA weight extraction.
     """
@@ -295,7 +294,7 @@ def generate_pdf_report(df, summary_df, preds_df, epi_df, farm_targets, output_p
 
         # Extract the prediction grids
         age_grid = preds_grp["age_years"].to_numpy()
-        yhat_grid = preds_grp["GAM_C_cm"].to_numpy()
+        yhat_grid = preds_grp["GAM_rate_cm_yr"].to_numpy()
         lo = preds_grp["GAM_PI_lo"].to_numpy()
         hi = preds_grp["GAM_PI_hi"].to_numpy()
 
@@ -336,15 +335,13 @@ def generate_pdf_report(df, summary_df, preds_df, epi_df, farm_targets, output_p
             if plots_added % 3 == 0:
                 story.append(PageBreak())
 
-    story.append(PageBreak())
-
     # Farm-Level Aggregation & Violin Plot Section
     story.append(Paragraph("Farm-Level Performance Aggregation", styles["Heading2"]))
 
     # Explanation of why we aggregate
     aggregation_text = """
     <b>Aggregate to the Farm Level</b><br/><br/>
-    Before feeding the Expected Performance Index (EPI) into the final weight-extraction GLM, 
+    Before feeding the Expected Performance Index (EPI) into the final weight-extraction GAM, 
     the tree-level data is grouped by farm identifier (e.g., farm_id) and species_id. This achieves two vital things:<br/><br/>
     1. Noise Reduction: Individual trees exhibit random variance (e.g., one tree got struck by lightning, 
     another had an isolated fungal infection). Averaging the EPI of all trees of a specific species on a 
@@ -397,17 +394,6 @@ def main():
     # Rename the target variable for convenience in the script
     df.rename(columns={"net_growth_rate_cm_yr": "rate", "tree_species": "species"}, inplace=True)
 
-    # Normalise columns
-    #    df.columns = [
-    #        "farm_id",
-    #        "tree_id",
-    #        "species_id",
-    #        "species",
-    #        "is_dead",
-    #        "age",
-    #        "circ",
-    #    ]
-
     summary_rows = []
     preds_all = []
     epi_rows = []  # per-observation performance index rows
@@ -429,7 +415,7 @@ def main():
             row[f"GAM_{k}"] = stats.get(k, np.nan)
         summary_rows.append(row)
 
-        # ---- Predictions on a grid ----
+        # Predictions on a grid
         age_grid = np.linspace(1, min(20, float(np.nanmax(age)) * 1.05), 601)
         yhat_grid, lo, hi = gam_predict(model, age_grid)
 
@@ -437,7 +423,7 @@ def main():
             {
                 "species": sp,
                 "age_years": age_grid,
-                "GAM_C_cm": yhat_grid,
+                "GAM_rate_cm_yr": yhat_grid,
                 "GAM_PI_lo": lo if lo is not None else np.nan,
                 "GAM_PI_hi": hi if hi is not None else np.nan,
             }
@@ -481,8 +467,8 @@ def main():
     farm_targets.rename(columns={"epi": "farm_mean_epi"}, inplace=True)
 
     try:
-        farm_targets.drop(columns=["species"]).to_csv("src/scripts/aggregated_epi_data.csv", index=False)
-        print("[saved] Aggregated EPI data exported to: src/scripts/aggregated_epi_data.csv")
+        farm_targets.drop(columns=["species"]).to_csv("notebooks/aggregated_epi_data.csv", index=False)
+        print("[saved] Aggregated EPI data exported to: notebooks/aggregated_epi_data.csv")
     except Exception as e:
         print(f"ERROR: Could not save CSV: {e}")
 
