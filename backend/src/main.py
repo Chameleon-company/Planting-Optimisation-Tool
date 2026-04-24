@@ -14,18 +14,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from src.dependencies import limiter
-from src.routers import (
-    ahp,
-    auth,
-    environmental_profile,
-    farm,
-    recommendation,
-    reporting,
-    sapling_estimation,
-    soil_texture,
-    species,
-    user,
-)
+from src.routers import agroforestry_type, ahp, auth, environmental_profile, farm, recommendation, reporting, sapling_estimation, soil_texture, species, user
 
 
 @asynccontextmanager
@@ -77,6 +66,7 @@ app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
 app.include_router(ahp.router)
 app.include_router(reporting.router)
+app.include_router(agroforestry_type.router)
 
 
 @app.exception_handler(RequestValidationError)
