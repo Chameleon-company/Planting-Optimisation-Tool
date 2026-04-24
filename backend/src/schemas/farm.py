@@ -116,21 +116,98 @@ class FarmRead(FarmBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Updating a field of a farm doesn't require all other fields being passed too
-# Therefore this class inherits the validation criteria from Base while making each field optional.
-class FarmUpdate(FarmBase):
-    rainfall_mm: Optional[int] = None
-    temperature_celsius: Optional[int] = None
-    elevation_m: Optional[int] = None
-    ph: Optional[Decimal] = None
-    soil_texture_id: Optional[SoilTextureID] = None
-    area_ha: Optional[Decimal] = None
-    latitude: Optional[Decimal] = None
-    longitude: Optional[Decimal] = None
-    coastal: Optional[bool] = None
-    riparian: Optional[bool] = None
-    nitrogen_fixing: Optional[bool] = None
-    shade_tolerant: Optional[bool] = None
-    bank_stabilising: Optional[bool] = None
-    slope: Optional[Decimal] = None
+class FarmUpdate(BaseModel):
+    rainfall_mm: Optional[int] = Field(
+        default=None,
+        title="Annual rainfall in millimetres",
+        description="Annual rainfall in millimetres",
+        ge=500,
+        le=3000,
+    )
+    temperature_celsius: Optional[int] = Field(
+        default=None,
+        title="Annual average temperature",
+        description="Average temperature in Celsius",
+        ge=15,
+        le=30,
+    )
+    elevation_m: Optional[int] = Field(
+        default=None,
+        title="Elevation above sea level",
+        description="Elevation in metres",
+        ge=0,
+        le=2963,
+    )
+    ph: Optional[Decimal] = Field(
+        default=None,
+        title="Soil acidity/alkalinity",
+        description="pH value",
+        ge=4.0,
+        le=8.5,
+        max_digits=2,
+        decimal_places=1,
+    )
+    soil_texture_id: Optional[SoilTextureID] = Field(
+        default=None,
+        title="Soil texture ID",
+        description="Soil texture ID number",
+    )
+    area_ha: Optional[Decimal] = Field(
+        default=None,
+        title="Farm area",
+        description="Total size of the farm in hectares",
+        ge=0,
+        le=100,
+        decimal_places=3,
+    )
+    latitude: Optional[Decimal] = Field(
+        default=None,
+        title="Latitude",
+        description="Geographic latitude",
+        ge=-90,
+        le=90,
+        decimal_places=5,
+    )
+    longitude: Optional[Decimal] = Field(
+        default=None,
+        title="Longitude",
+        description="Geographic longitude",
+        ge=-180,
+        le=180,
+        decimal_places=5,
+    )
+    coastal: Optional[bool] = Field(
+        default=None,
+        title="Coastal",
+        description="Is a coastal environment",
+    )
+    riparian: Optional[bool] = Field(
+        default=None,
+        title="Riparian",
+        description="Is a riparian environment",
+    )
+    nitrogen_fixing: Optional[bool] = Field(
+        default=None,
+        title="Nitrogen fixing",
+        description="Needs Nitrogen-fixing species",
+    )
+    shade_tolerant: Optional[bool] = Field(
+        default=None,
+        title="Shade Tolerant",
+        description="Needs shade tolerant species",
+    )
+    bank_stabilising: Optional[bool] = Field(
+        default=None,
+        title="Bank Stabilising",
+        description="Needs erosion control species",
+    )
+    slope: Optional[Decimal] = Field(
+        default=None,
+        title="Slope",
+        description="Indicates how steep the farm terrain is, based on elevation gradients.",
+        ge=0,
+        le=90,
+        decimal_places=2,
+    )
     agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None
+    external_id: Optional[int] = Field(default=None, title="Temporary identifier for CSV import")

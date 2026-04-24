@@ -13,6 +13,11 @@ export default defineConfig({
     globals: true,
     css: false,
     setupFiles: "./src/test/setupTests.ts",
+    coverage: {
+      provider: "v8",
+      reporter: ["lcov"],
+      reportsDirectory: "./coverage",
+    },
   },
   resolve: {
     alias: {

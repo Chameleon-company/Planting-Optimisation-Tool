@@ -5,7 +5,7 @@ import rasterio
 from rasterio.transform import from_origin
 from shapely.geometry import Point
 
-from sapling_estimation.slope_rules import MAX_SLOPE, apply_slope_rules
+from sapling_estimation.slope_rules import apply_slope_rules
 
 
 @pytest.fixture
@@ -44,7 +44,8 @@ def create_planting_points():
 def test_apply_slope_rules_basic(create_slope_raster, create_planting_points):
     # Create the slope raster and apply the slope rules
     slope_array, transform = create_slope_raster
-    filtered, slope_values = apply_slope_rules(slope_array, create_planting_points, transform)
+    max_slope = 10
+    filtered, slope_values = apply_slope_rules(slope_array, create_planting_points, transform, max_slope)
 
     # Slope rules check
     assert isinstance(filtered, gpd.GeoDataFrame)  # Ensure the function returns a GeoDataFrame
@@ -53,4 +54,4 @@ def test_apply_slope_rules_basic(create_slope_raster, create_planting_points):
     # Ensure the 3 remaining points are the ones inside raster and on low slope
     for p in filtered.geometry:
         r, c = rasterio.transform.rowcol(transform, p.x, p.y)
-        assert slope_array[r, c] <= MAX_SLOPE
+        assert slope_array[r, c] <= max_slope

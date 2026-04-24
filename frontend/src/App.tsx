@@ -11,11 +11,17 @@ import CalculatorPage from "./pages/CalculatorPage";
 import RecommendationPage from "./pages/RecommendationPage";
 import SpeciesPage from "./pages/SpeciesPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogs from "./pages/admin/AdminLogs";
 import RequireRole from "./components/auth/RequireRole";
+import WeightingHub from "./pages/admin/settings/WeightingHub";
+import AhpPage from "./pages/admin/settings/AhpPage";
+import HybridAhpPage from "./pages/admin/settings/HybridAhpPage";
 
 // Export App
 export default function App() {
@@ -24,6 +30,9 @@ export default function App() {
       <Providers>
         <BrowserRouter>
           <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route element={<MainLayout />}>
               <Route path="/" index element={<HomePage />} />
               <Route path="/profile" element={<ProfilePage />} />
@@ -36,13 +45,23 @@ export default function App() {
             <Route
               path="/admin"
               element={
-                <RequireRole allowedRoles={["admin", "supervisor"]}>
+                <RequireRole allowedRoles={["admin"]}>
                   <AdminLayout />
                 </RequireRole>
               }
             >
               <Route index element={<AdminDashboard />} />
-              <Route path="settings" element={<AdminSettings />} />
+              <Route path="settings">
+                <Route index element={<AdminSettings />} /> {/* The Hub Page */}
+                <Route path="weighting">
+                  <Route index element={<WeightingHub />} />{" "}
+                  {/* The intermediate menu */}
+                  <Route path="ahp" element={<AhpPage />} />{" "}
+                  {/* The standard AHP tool */}
+                  <Route path="hybrid" element={<HybridAhpPage />} />{" "}
+                  {/* The ML tool */}
+                </Route>
+              </Route>
               <Route path="logs" element={<AdminLogs />} />
             </Route>
           </Routes>

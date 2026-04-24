@@ -13,7 +13,8 @@ def create_farm_polygon():
 
 
 def test_generate_planting_points(create_farm_polygon):
-    spacing = 3.0  # Define 3x3 spacing rule
+    spacing_x = 3.0  # Define X spacing
+    spacing_y = 3.0  # Define Y spacing
     crs = "EPSG:4326"  # Define CRS
 
     # Define the bounds of the polygon (xmin, ymin, xmax, ymax)
@@ -24,7 +25,8 @@ def test_generate_planting_points(create_farm_polygon):
         farm_polygon=create_farm_polygon,
         target_crs=crs,
         slope_bounds=slope_bounds,
-        spacing_m=spacing,
+        spacing_x=spacing_x,
+        spacing_y=spacing_y,
     )
 
     # Planting grid checks

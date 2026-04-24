@@ -25,11 +25,17 @@ __pycache__/
 
 # Environment variables & secrets
 .env
+.env.*
+!.env.example
 keys/
 
 # Test caches
 tests/**/__pycache__/
 tests/.pytest_cache/
+
+# CI-generated coverage reports (created locally when testing diff-cover)
+diff-coverage-frontend.md
+pr_number.txt
 
 # Ruff cache
 .ruff_cache/

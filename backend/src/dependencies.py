@@ -24,7 +24,7 @@ from src.schemas.user import Role, TokenData
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 # SlowAPI limiter, default 60/min and declared explicitly for expensive endpoints
-limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"], storage_uri=settings.REDIS_URL or None)
 
 
 def get_user_id(request: Request) -> str:
