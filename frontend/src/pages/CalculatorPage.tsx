@@ -6,7 +6,7 @@ import CalculatorSearch from "@/components/calculator/calculatorSearch";
 import CalculatorResult from "@/components/calculator/calculatorResult";
 import "@/components/calculator/calculator.css";
 
-export default function calculatorPage() {
+export default function CalculatorPage() {
   const [farmId, setFarmId] = useState("");
   const { result, isLoading, hasSearched, error } = useCalculator(farmId);
 
