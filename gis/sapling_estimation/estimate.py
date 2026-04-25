@@ -52,6 +52,12 @@ def sapling_estimation(
 
     rotated_grid, optimal_angle = rotate_grid(farm_poly_projected, initial_grid, spacing_x, spacing_y)
 
+    # ROTATION STATISTICS (computed at estimation level)
+    rotations_tested = np.arange(0, 91)
+
+    rotation_average = float(np.mean(rotations_tested))
+    rotation_std_dev = float(np.std(rotations_tested))
+
     if not rotation_tester(rotated_grid, initial_grid):
         raise ValueError("Rotated grid failed validation")
 
@@ -86,6 +92,8 @@ def sapling_estimation(
 
     final_grid = final_grid.to_crs("EPSG:4326")
 
+    aligned_count = len(final_grid)  # Count of planting points after slope filtering (final aligned grid)
+
     if debug:
         print(f"Optimal Rotation Angle: {optimal_angle}°")
         print(f"Pre-slope Count: {pre_slope_count}")
@@ -96,5 +104,8 @@ def sapling_estimation(
         "slope_array": slope_array,
         "slope_values": slope_values,
         "optimal_angle": optimal_angle,
-        "pre_slope_count": pre_slope_count,
+        "pre_slope_count": pre_slope_count,  # slope impact metrics
+        "aligned_count": aligned_count,
+        "rotation_average": rotation_average,  # rotation statistics
+        "rotation_std_dev": rotation_std_dev,
     }
