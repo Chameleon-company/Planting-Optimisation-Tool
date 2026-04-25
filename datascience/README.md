@@ -4,13 +4,18 @@
 ├── config - configuration files for the libraries.
 ├── data - example data files only used by CLI application. 
 ├── exclusion_rules - documentation for the exclusion rules library.
+├── notebooks/imputation_model_training.ipynb - trains and evaluates the ML imputation pipeline.
 ├── src
 │   ├── app - CLI application for recommendation system. Does not use database.
 │   ├── exclusion_rules - exclusion rules library code.
+│   ├── imputation - ML imputation service (imputation_service.py, __init__.py).
+│   ├── models/imputation/ - trained model artefacts (*.joblib).
 │   ├── scripts - miscellaneous scripts.
 │   └── suitability_scoring - suitability scoring library code.
 ├── suitability_scoring - documentation and Jupyter notebooks for the suitability scoring library.
-└── tests pyTest files for exclusion rules and suitability scoring libraries.
+└── tests - pytest files for all libraries.
+    ├── test_imputation_service.py - unit tests (mocked model).
+    └── test_imputation_integration.py - integration tests (real model).
 ```
 
 # Getting started
