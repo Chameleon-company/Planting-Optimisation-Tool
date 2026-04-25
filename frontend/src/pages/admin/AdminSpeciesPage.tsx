@@ -283,7 +283,9 @@ function AdminSpeciesPage() {
                       </span>
                       <span className="admin-tag">
                         {item.agroforestry_types.length}{" "}
-                        {item.agroforestry_types.length === 1 ? "type" : "types"}
+                        {item.agroforestry_types.length === 1
+                          ? "type"
+                          : "types"}
                       </span>
                     </td>
                     <td>
