@@ -98,7 +98,7 @@ describe("AdminSpeciesPage", () => {
     expect(screen.getByText("10–35°C")).toBeInTheDocument();
     expect(screen.getByText("5–7.7")).toBeInTheDocument();
     expect(screen.getByText("2 soils")).toBeInTheDocument();
-    expect(screen.getByText("1 types")).toBeInTheDocument();
+    expect(screen.getByText("1 type")).toBeInTheDocument();
   });
 
   it("opens add species modal", async () => {
