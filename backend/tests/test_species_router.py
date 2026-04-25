@@ -386,7 +386,10 @@ async def test_read_all_species_returns_created_species(
     )
     assert create_response.status_code == 201
 
-    response = await async_client.get("/species")
+    response = await async_client.get(
+        "/species",
+        headers=admin_auth_headers,
+    )
 
     assert response.status_code == 200
     species_list = response.json()

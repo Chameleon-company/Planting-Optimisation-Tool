@@ -278,10 +278,12 @@ function AdminSpeciesPage() {
                     </td>
                     <td>
                       <span className="admin-tag">
-                        {item.soil_textures.length} soils
+                        {item.soil_textures.length}{" "}
+                        {item.soil_textures.length === 1 ? "soil" : "soils"}
                       </span>
                       <span className="admin-tag">
-                        {item.agroforestry_types.length} types
+                        {item.agroforestry_types.length}{" "}
+                        {item.agroforestry_types.length === 1 ? "type" : "types"}
                       </span>
                     </td>
                     <td>
@@ -326,6 +328,7 @@ function AdminSpeciesPage() {
                 type="button"
                 className="admin-modal-close"
                 onClick={closeModal}
+                aria-label="Close"
               >
                 ×
               </button>
