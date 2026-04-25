@@ -1,2 +1,8 @@
+if git diff --cached --name-only | grep -qE '^(backend|datascience|gis)/'; then
+    if command -v pre-commit >/dev/null 2>&1; then
+        pre-commit run
+    fi
+fi
+
 cd frontend
 npx lint-staged
