@@ -43,9 +43,14 @@ class EnvironmentalProfileService:
         lat_lon_ring = [(lat, lon) for (lon, lat) in list(target_poly.exterior.coords)]
         formatted_geometry = [lat_lon_ring]
 
+        # Fetch Farm record early so riparian can be passed into build_farm_profile
+        farm_result = await db.execute(select(Farm).where(Farm.id == farm_id))
+        farm_record = farm_result.scalar_one_or_none()
+        riparian = farm_record.riparian if farm_record is not None else None
+
         # Call the external GEE logic
         # Passing the boundary and farm_id
-        profile = build_farm_profile(geometry=formatted_geometry, farm_id=farm_id)
+        profile = build_farm_profile(geometry=formatted_geometry, farm_id=farm_id, riparian=riparian)
 
         if not profile:
             return None
@@ -88,8 +93,6 @@ class EnvironmentalProfileService:
                 profile[f"{field}_imputed"] = True
 
             # Persist imputation flags to the Farm DB record
-            farm_result = await db.execute(select(Farm).where(Farm.id == farm_id))
-            farm_record = farm_result.scalar_one_or_none()
             if farm_record is not None:
                 for field in imputed_fields:
                     setattr(farm_record, f"{field}_imputed", True)
