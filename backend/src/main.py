@@ -1,9 +1,12 @@
+import json
+import logging
 import time
 from contextlib import asynccontextmanager
 
 from core.gee_client import init_gee
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from slowapi import _rate_limit_exceeded_handler
@@ -17,6 +20,7 @@ from src.routers import (
     environmental_profile,
     farm,
     recommendation,
+    reporting,
     sapling_estimation,
     soil_texture,
     species,
@@ -42,6 +46,23 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://planting-optimisation-tool.app",
+    "https://www.planting-optimisation-tool.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
@@ -55,6 +76,7 @@ app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
 app.include_router(ahp.router)
+app.include_router(reporting.router)
 
 
 @app.exception_handler(RequestValidationError)
@@ -69,6 +91,9 @@ async def pydantic_validation_exception_handler(request: Request, exc: Validatio
     return JSONResponse(status_code=422, content={"detail": "Validation failed", "errors": errors})
 
 
+_request_logger = logging.getLogger("api.requests")
+
+
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()
@@ -76,8 +101,16 @@ async def add_process_time_header(request: Request, call_next):
     process_time = time.perf_counter() - start_time
     response.headers["X-Process-Time"] = str(process_time)
 
-    # Log it to the terminal
-    print(f"Path: {request.url.path} | Time: {process_time:.4f}s")
+    _request_logger.info(
+        json.dumps(
+            {
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": response.status_code,
+                "process_time": process_time,
+            }
+        )
+    )
 
     return response
 

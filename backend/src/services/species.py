@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import suitability_scoring
-from exclusion_rules.run_exclusion_core_logic import load_exclusion_config
+
+# from exclusion_rules.run_exclusion_core_logic import load_exclusion_config
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -11,7 +12,7 @@ from src.domains.suitability_scoring import SuitabilitySpecies
 from src.models.agroforestry_type import AgroforestryType
 from src.models.soil_texture import SoilTexture
 from src.models.species import Species
-from src.schemas.species import SpeciesCreate
+from src.schemas.species import SpeciesCreate, SpeciesUpdate
 
 
 def get_recommend_config():
@@ -29,21 +30,8 @@ def get_recommend_config():
     return load_yaml(str(config_path))
 
 
-def get_exclusion_config():
-    # TODO The exclusion config file should be merged with the recommend config file, then this function can be removed
-    # See comment for get_recommend_config()
-    base_path = Path(suitability_scoring.__file__).resolve().parent.parent.parent
-    config_path = base_path / "config" / "exclusion_config.json"
-
-    if not config_path.exists():
-        # This will say where it looked so it can be debugged if it fails
-        raise FileNotFoundError(f"JSON not found! Looked in: {config_path}")
-
-    return load_exclusion_config(str(config_path))
-
-
 async def get_all_species_for_engine(db: AsyncSession) -> list[SuitabilitySpecies]:
-    stmt = select(Species).options(selectinload(Species.soil_textures))
+    stmt = select(Species).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types))
     result = await db.execute(stmt)
     return [SuitabilitySpecies.from_db_model(sp) for sp in result.scalars().all()]
 
@@ -52,13 +40,33 @@ async def get_species_by_ids(db: AsyncSession, ids: list[int], order_by_id: bool
     if not ids:
         return []
 
-    stmt = select(Species).options(selectinload(Species.soil_textures)).where(Species.id.in_(ids))
+    stmt = select(Species).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)).where(Species.id.in_(ids))
     if order_by_id:
         stmt = stmt.order_by(Species.id)
 
     result = await db.execute(stmt)
     species_rows = result.scalars().all()
     return [SuitabilitySpecies.from_db_model(sp) for sp in species_rows]
+
+
+def validate_species_ranges(species_data: dict) -> None:
+    range_checks = [
+        ("rainfall_mm_min", "rainfall_mm_max", "Minimum rainfall cannot be greater than maximum rainfall."),
+        (
+            "temperature_celsius_min",
+            "temperature_celsius_max",
+            "Minimum temperature cannot be greater than maximum temperature.",
+        ),
+        ("elevation_m_min", "elevation_m_max", "Minimum elevation cannot be greater than maximum elevation."),
+        ("ph_min", "ph_max", "Minimum pH cannot be greater than maximum pH."),
+    ]
+
+    for min_field, max_field, error_message in range_checks:
+        min_value = species_data.get(min_field)
+        max_value = species_data.get(max_field)
+
+        if min_value is not None and max_value is not None and min_value > max_value:
+            raise ValueError(error_message)
 
 
 async def create_species(db: AsyncSession, payload: SpeciesCreate) -> Species:
@@ -93,6 +101,61 @@ async def create_species(db: AsyncSession, payload: SpeciesCreate) -> Species:
 
     result = await db.execute(select(Species).where(Species.id == new_species.id).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)))
     return result.scalar_one()
+
+
+async def update_species(db: AsyncSession, species_id: int, payload: SpeciesUpdate) -> Species | None:
+    result = await db.execute(select(Species).where(Species.id == species_id).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)))
+    species = result.scalar_one_or_none()
+
+    if species is None:
+        return None
+
+    update_data = payload.model_dump(exclude_unset=True)
+
+    merged_data = {
+        "rainfall_mm_min": species.rainfall_mm_min,
+        "rainfall_mm_max": species.rainfall_mm_max,
+        "temperature_celsius_min": species.temperature_celsius_min,
+        "temperature_celsius_max": species.temperature_celsius_max,
+        "elevation_m_min": species.elevation_m_min,
+        "elevation_m_max": species.elevation_m_max,
+        "ph_min": species.ph_min,
+        "ph_max": species.ph_max,
+    }
+    merged_data.update(update_data)
+
+    validate_species_ranges(merged_data)
+
+    soil_texture_ids = update_data.pop("soil_textures", None)
+    agroforestry_type_ids = update_data.pop("agroforestry_types", None)
+
+    for field, value in update_data.items():
+        setattr(species, field, value)
+
+    if soil_texture_ids is not None:
+        res = await db.execute(select(SoilTexture).where(SoilTexture.id.in_(soil_texture_ids)))
+        species.soil_textures = list(res.scalars().all())
+
+    if agroforestry_type_ids is not None:
+        res = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_type_ids)))
+        species.agroforestry_types = list(res.scalars().all())
+
+    await db.commit()
+
+    refreshed = await db.execute(select(Species).where(Species.id == species_id).options(selectinload(Species.soil_textures), selectinload(Species.agroforestry_types)))
+    return refreshed.scalar_one()
+
+
+async def delete_species(db: AsyncSession, species_id: int) -> bool:
+    result = await db.execute(select(Species).where(Species.id == species_id))
+    species = result.scalar_one_or_none()
+
+    if species is None:
+        return False
+
+    await db.delete(species)
+    await db.commit()
+    return True
 
 
 async def get_species_for_dropdown(db: AsyncSession):

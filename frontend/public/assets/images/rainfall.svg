@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <linearGradient id="cloudGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bfe3f2"/>
+      <stop offset="100%" stop-color="#79b6d6"/>
+    </linearGradient>
+
+    <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfeaf4"/>
+      <stop offset="100%" stop-color="#9fcbdc"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Cloud -->
+  <path
+    d="
+      M120 210
+      C120 160, 170 130, 215 145
+      C240 105, 300 105, 325 145
+      C370 130, 420 160, 420 210
+      C450 215, 450 260, 420 270
+      L120 270
+      C90 260, 90 215, 120 210
+      Z"
+    fill="url(#cloudGrad)"
+    stroke="#3b5663"
+    stroke-width="10"
+    stroke-linejoin="round"/>
+
+  <!-- Raindrops -->
+  <path d="M210 300 C190 330, 190 350, 210 360 C230 350, 230 330, 210 300 Z"
+        fill="url(#waterGrad)"
+        stroke="#3b5663"
+        stroke-width="6"/>
+
+  <path d="M260 300 C240 330, 240 350, 260 360 C280 350, 280 330, 260 300 Z"
+        fill="url(#waterGrad)"
+        stroke="#3b5663"
+        stroke-width="6"/>
+
+  <path d="M310 300 C290 330, 290 350, 310 360 C330 350, 330 330, 310 300 Z"
+        fill="url(#waterGrad)"
+        stroke="#3b5663"
+        stroke-width="6"/>
+
+  <!-- Puddle -->
+  <path
+    d="
+      M150 410
+      C190 390, 320 390, 360 410
+      C390 420, 390 450, 360 460
+      C320 480, 190 480, 150 460
+      C120 450, 120 420, 150 410
+      Z"
+    fill="url(#waterGrad)"
+    stroke="#3b5663"
+    stroke-width="8"/>
+
+  <!-- R Label -->
+  <text
+    x="256"
+    y="450"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="64"
+    font-weight="bold"
+    fill="#3b5663">
+    R
+  </text>
+
+</svg>

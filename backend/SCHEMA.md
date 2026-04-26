@@ -18,6 +18,21 @@
 | :--- | :--- | :--- | :--- | :--- |
 | `species_id` | `Integer` | No | Yes | id |
 | `soil_texture_id` | `Integer` | No | Yes | id |
+## TABLE: `agroforestry_types`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `type_name` | `String` | No | No |  |
+## TABLE: `audit_logs`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `user_id` | `Integer` | No | No | id |
+| `event_type` | `String` | No | No |  |
+| `details` | `String` | No | No |  |
+| `timestamp` | `DateTime` | No | No |  |
 ## TABLE: `farms`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -39,6 +54,30 @@
 | `slope` | `Float` | No | No |  |
 | `user_id` | `Integer` | Yes | No | id |
 | `external_id` | `Integer` | Yes | No |  |
+## TABLE: `boundary`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes | id |
+| `boundary` | `Geometry` | No | No |  |
+| `external_id` | `Integer` | Yes | No |  |
+## TABLE: `species_exclusion_rules`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `species_id` | `Integer` | No | No | id |
+| `feature` | `String` | No | No |  |
+| `operator` | `String` | No | No |  |
+| `value` | `JSON` | No | No |  |
+| `reason` | `String` | No | No |  |
+## TABLE: `species_dependencies`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `focal_species_id` | `Integer` | No | No | id |
+| `required_partner_id` | `Integer` | No | No | id |
 ## TABLE: `parameters`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -50,6 +89,14 @@
 | `weight` | `Float` | Yes | No |  |
 | `trap_left_tol` | `Float` | Yes | No |  |
 | `trap_right_tol` | `Float` | Yes | No |  |
+## TABLE: `planting_estimates`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `farm_id` | `Integer` | No | No | id |
+| `slope` | `Float` | Yes | No |  |
+| `geometry` | `Geometry` | No | No |  |
 ## TABLE: `species`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -70,34 +117,6 @@
 | `nitrogen_fixing` | `Boolean` | No | No |  |
 | `shade_tolerant` | `Boolean` | No | No |  |
 | `bank_stabilising` | `Boolean` | No | No |  |
-## TABLE: `soil_textures`
-
-| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
-| :--- | :--- | :--- | :--- | :--- |
-| `id` | `Integer` | No | Yes |  |
-| `name` | `String` | No | No |  |
-## TABLE: `boundary`
-
-| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
-| :--- | :--- | :--- | :--- | :--- |
-| `id` | `Integer` | No | Yes | id |
-| `boundary` | `Geometry` | No | No |  |
-| `external_id` | `Integer` | Yes | No |  |
-## TABLE: `agroforestry_types`
-
-| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
-| :--- | :--- | :--- | :--- | :--- |
-| `id` | `Integer` | No | Yes |  |
-| `type_name` | `String` | No | No |  |
-## TABLE: `users`
-
-| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
-| :--- | :--- | :--- | :--- | :--- |
-| `id` | `Integer` | No | Yes |  |
-| `name` | `String` | No | No |  |
-| `email` | `String` | No | No |  |
-| `hashed_password` | `String` | No | No |  |
-| `role` | `String` | No | No |  |
 ## TABLE: `recommendations`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -109,16 +128,22 @@
 | `score_mcda` | `Float` | No | No |  |
 | `key_reasons` | `ARRAY` | No | No |  |
 | `created_at` | `DateTime` | No | No |  |
-## TABLE: `audit_logs`
+## TABLE: `soil_textures`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | `Integer` | No | Yes |  |
-| `user_id` | `Integer` | No | No | id |
-| `event_type` | `String` | No | No |  |
-| `details` | `String` | No | No |  |
-| `timestamp` | `DateTime` | No | No |  |
+| `name` | `String` | No | No |  |
+## TABLE: `users`
 
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `name` | `String` | No | No |  |
+| `email` | `String` | No | No |  |
+| `hashed_password` | `String` | No | No |  |
+| `is_verified` | `Boolean` | No | No |  |
+| `role` | `String` | No | No |  |
 ## TABLE: `waterways`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -127,3 +152,14 @@
 | `name` | `String` | Yes | No |  |
 | `waterway` | `String` | Yes | No |  |
 | `geometry` | `Geometry` | No | No |  |
+## TABLE: `auth_tokens`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `user_id` | `Integer` | No | No | id |
+| `token_hash` | `String` | No | No |  |
+| `token_type` | `String` | No | No |  |
+| `expires_at` | `DateTime` | No | No |  |
+| `used_at` | `DateTime` | Yes | No |  |
+| `created_at` | `DateTime` | No | No |  |

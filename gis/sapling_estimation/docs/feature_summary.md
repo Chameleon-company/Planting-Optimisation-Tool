@@ -3,7 +3,7 @@
 ## Introduction
 This document outlines the estimation algorithm used to estimate the maximum number of saplings that can be planted on a farm, while considering terrain features such as slope and rotation.
 
-The feature begins with a farm boundary/polygon for the input farm that is passed by the API, it matches the polygon with the Digital Elevation Model (DEM) raster, which is converted into a slope raster to identify terrain steepness. A square grid of planting points is generated using the default 3m spacing to define the planting areas (Each planting area would be a 3x3m square); the gird is then rotated by potential angles to determine the orientation that maximizes sapling count. Finally, a slope rule of 15 degrees is applied to remove planting points on the terrain that is too steep, and the estimator/main algorithm outputs the final sapling count and optimal rotation angle of the input farm, which is passed back to the API.
+The feature begins with a farm boundary/polygon for the input farm that is passed by the API, it matches the polygon with the Digital Elevation Model (DEM) raster, which is converted into a slope raster to identify terrain steepness. A square grid of planting points is generated using the default 3m spacing to define the planting areas (Each planting area would be a 3x3m square); the polygon is then rotated by potential angles to determine the orientation that maximizes sapling count. Finally, a slope rule of 15 degrees is applied to remove planting points on the terrain that is too steep, and the estimator/main algorithm outputs the final sapling count and optimal rotation angle of the input farm, which is passed back to the API.
 
 The algorithm scales with the number of planting points. Larger farms produce more points, which increases computation time for grid generation, rotation mechanism, and slope sampling.
 
@@ -59,10 +59,10 @@ Output: Optimal rotation angle, Rotated planting grid
 Logic:
 * Accepts initial planting grid.
 * Generates a base grid covering the farm polygon.
-* Tests rotation angles from 0 to 90 degrees by rotating the grid around the farm centroid.
+* Tests rotation angles from 0 to 90 degrees by rotating the polygon around the farm centroid.
 * For each tested angle, count the number of rotated points that fall within the farms.
 * Select the angle with the highest planting point count.
-* Applies the optimal angle to produce the final rotated grid.
+* Applies the optimal angle to the base grid to produce the final rotated grid.
 * Contains a test function to validate that rotation does not reduce planting points.
 
 ### slope_rules.py

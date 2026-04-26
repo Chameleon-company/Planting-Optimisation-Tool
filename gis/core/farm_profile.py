@@ -41,10 +41,16 @@ def build_farm_profile(
     """
     Build a complete farm profile from geometry.
 
+    Works for both existing farms and new/candidate farm boundaries — the
+    riparian check (US-018) is stateless with respect to whether the farm
+    record already exists.
+
     Args:
         geometry:          Farm geometry (point, polygon, or coordinates).
         year:              Year for temporal data extraction (default: 2024).
         farm_id:           Unique farm identifier (None for new/candidate farms).
+        riparian:          Riparian flag computed externally (e.g. PostGIS in backend).
+                           Pass None if unknown — profile will still include the field.
         **additional_fields: Any additional custom fields (e.g., farmer_name).
 
     Example:
