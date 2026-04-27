@@ -89,8 +89,8 @@ def impute_missing(profile: dict) -> tuple[dict, list[str]]:
     if missing_base:
         raise ValueError(f"Base features required for imputation are missing or None: {missing_base}")
 
-    imputed_fields = [f for f in TARGET_FEATURES if profile.get(f) is None]
-    if not imputed_fields:
+    missing_fields = [f for f in TARGET_FEATURES if profile.get(f) is None]
+    if not missing_fields:
         return profile.copy(), []
 
     row = {col: profile.get(col) for col in _feature_columns}
@@ -102,9 +102,11 @@ def impute_missing(profile: dict) -> tuple[dict, list[str]]:
     imputed_row = dict(zip(_feature_columns, imputed_array[0]))
 
     filled_profile = profile.copy()
-    for field in imputed_fields:
+    imputed_fields = []
+    for field in missing_fields:
         value = imputed_row.get(field)
         if value is not None and not np.isnan(value):
             filled_profile[field] = round(float(value), 3)
+            imputed_fields.append(field)
 
     return filled_profile, imputed_fields
