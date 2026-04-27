@@ -626,10 +626,10 @@ main.container {
 
 .species-grid {
   display: grid;
-  gap: 18px;
+  gap: 1.5rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 20px;
-  padding: 10px;
+  padding: 0.5rem 10% 3rem;
 }
 
 .species-empty {
@@ -651,8 +651,7 @@ main.container {
 .article-media {
   aspect-ratio: 4 / 3;
   background: var(--surface);
-  display: grid;
-  place-items: center;
+  overflow: hidden;
   width: 100%;
 }
 
