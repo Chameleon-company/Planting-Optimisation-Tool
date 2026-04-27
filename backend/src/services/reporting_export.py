@@ -236,6 +236,11 @@ def generate_pdf(report: FarmReportContract) -> bytes:
 def generate_all_farms_docx(reports: list[FarmReportContract]) -> bytes:
     doc = Document()
 
+    if LOGO_PATH_PNG.exists():
+        logo_para = doc.add_paragraph()
+        logo_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        logo_para.add_run().add_picture(str(LOGO_PATH_PNG), width=Inches(1.5))
+
     doc.add_heading("Planting Optimisation Tool - All Farms Report", level=1)
     if reports:
         doc.add_paragraph(f"Generated: {reports[0].generated_at.strftime('%Y-%m-%d %H:%M UTC')}")
@@ -244,11 +249,6 @@ def generate_all_farms_docx(reports: list[FarmReportContract]) -> bytes:
 
     for report in reports:
         farm = report.farm
-
-        if LOGO_PATH_PNG.exists():
-            logo_para = doc.add_paragraph()
-            logo_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            logo_para.add_run().add_picture(str(LOGO_PATH_PNG), width=Inches(1.5))
 
         doc.add_heading(f"Farm {farm.id}", level=2)
         doc.add_heading("Farm Profile", level=3)
