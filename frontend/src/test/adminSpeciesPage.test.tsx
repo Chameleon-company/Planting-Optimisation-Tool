@@ -7,7 +7,6 @@ import AdminSpeciesPage from "../pages/admin/AdminSpeciesPage";
 import {
   createSpecies,
   deleteSpecies,
-  getAgroforestryTypes,
   getAllSpecies,
   getSoilTextures,
   updateSpecies,
@@ -16,7 +15,6 @@ import {
 vi.mock("../utils/speciesApi", () => ({
   getAllSpecies: vi.fn(),
   getSoilTextures: vi.fn(),
-  getAgroforestryTypes: vi.fn(),
   createSpecies: vi.fn(),
   updateSpecies: vi.fn(),
   deleteSpecies: vi.fn(),
@@ -59,11 +57,6 @@ const mockSoilTextures = [
   { id: 4, name: "loam" },
 ];
 
-const mockAgroforestryTypes = [
-  { id: 1, type_name: "block" },
-  { id: 2, type_name: "boundary" },
-];
-
 function renderPage() {
   return render(
     <HelmetProvider>
@@ -78,7 +71,6 @@ describe("AdminSpeciesPage", () => {
 
     vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
     vi.mocked(getSoilTextures).mockResolvedValue(mockSoilTextures);
-    vi.mocked(getAgroforestryTypes).mockResolvedValue(mockAgroforestryTypes);
     vi.mocked(createSpecies).mockResolvedValue(mockSpecies[0]);
     vi.mocked(updateSpecies).mockResolvedValue(mockSpecies[0]);
     vi.mocked(deleteSpecies).mockResolvedValue(undefined);
