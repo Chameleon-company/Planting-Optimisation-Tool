@@ -66,8 +66,13 @@ async function handleResponse(res: Response) {
 
 // ---------- SPECIES ----------
 
-export async function getAllSpecies(): Promise<Species[]> {
-  const res = await fetch(`${API_BASE}/species`);
+export async function getAllSpecies(token: string): Promise<Species[]> {
+  const res = await fetch(`${API_BASE}/species`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   return handleResponse(res);
 }
 

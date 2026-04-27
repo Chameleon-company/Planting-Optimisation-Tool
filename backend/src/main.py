@@ -14,7 +14,18 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from src.dependencies import limiter
-from src.routers import ahp, auth, environmental_profile, farm, recommendation, reporting, sapling_estimation, soil_texture, species, user
+from src.routers import (
+    ahp,
+    auth,
+    environmental_profile,
+    farm,
+    recommendation,
+    reporting,
+    sapling_estimation,
+    soil_texture,
+    species,
+    user,
+)
 
 
 @asynccontextmanager

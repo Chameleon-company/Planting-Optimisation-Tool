@@ -105,7 +105,7 @@ async def read_recommendation_features():
     response_model=list[SpeciesRead],
     summary="Get all species",
 )
-@limiter.limit("30/minute")
+@limiter.limit("10/minute", key_func=get_user_id)
 async def read_all_species(
     request: Request,
     db: AsyncSession = Depends(get_db_session),
@@ -120,7 +120,7 @@ async def read_all_species(
     response_model=SpeciesRead,
     summary="Get a species by ID",
 )
-@limiter.limit("30/minute")
+@limiter.limit("10/minute", key_func=get_user_id)
 async def read_species(
     request: Request,
     species_id: int,

@@ -45,10 +45,17 @@ describe("speciesApi", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(mockJsonResponse([]));
 
-    const result = await getAllSpecies();
+    const result = await getAllSpecies("test-token");
 
     expect(result).toEqual([]);
-    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/species"));
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/species"),
+      expect.objectContaining({
+        headers: {
+          Authorization: "Bearer test-token",
+        },
+      })
+    );
   });
 
   it("creates species with auth token", async () => {
@@ -122,6 +129,8 @@ describe("speciesApi", () => {
       mockJsonResponse({ detail: "Validation failed" }, false)
     );
 
-    await expect(getAllSpecies()).rejects.toThrow("Validation failed");
+    await expect(getAllSpecies("test-token")).rejects.toThrow(
+      "Validation failed"
+    );
   });
 });

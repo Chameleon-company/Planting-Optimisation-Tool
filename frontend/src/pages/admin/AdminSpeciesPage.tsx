@@ -86,8 +86,15 @@ function AdminSpeciesPage() {
       setLoading(true);
       setError(null);
 
+      const token = getAccessToken();
+
+      if (!token) {
+        setError("You must be logged in as admin to view species.");
+        return;
+      }
+
       const [speciesData, soilData] = await Promise.all([
-        getAllSpecies(),
+        getAllSpecies(token),
         getSoilTextures(),
       ]);
 
