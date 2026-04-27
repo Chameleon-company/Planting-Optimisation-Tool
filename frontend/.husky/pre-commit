@@ -6,3 +6,6 @@ fi
 
 cd frontend
 npx lint-staged
+npm run lint:scripts
+npm run lint:styles
+npm run test
