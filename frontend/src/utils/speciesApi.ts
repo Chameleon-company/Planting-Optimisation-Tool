@@ -129,8 +129,3 @@ export async function getSoilTextures(): Promise<SoilTexture[]> {
   const res = await fetch(`${API_BASE}/soil-textures`);
   return handleResponse(res);
 }
-
-export async function getAgroforestryTypes(): Promise<AgroforestryType[]> {
-  const res = await fetch(`${API_BASE}/agroforestry-types`);
-  return handleResponse(res);
-}

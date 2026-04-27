@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createSpecies,
   deleteSpecies,
-  getAgroforestryTypes,
   getAllSpecies,
   getSoilTextures,
   updateSpecies,
@@ -116,16 +115,6 @@ describe("speciesApi", () => {
     const result = await getSoilTextures();
 
     expect(result).toEqual([{ id: 1, name: "sand" }]);
-  });
-
-  it("gets agroforestry types", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      mockJsonResponse([{ id: 1, type_name: "block" }])
-    );
-
-    const result = await getAgroforestryTypes();
-
-    expect(result).toEqual([{ id: 1, type_name: "block" }]);
   });
 
   it("throws API error message when request fails", async () => {

@@ -6,7 +6,6 @@ import {
   AgroforestryType,
   createSpecies,
   deleteSpecies,
-  getAgroforestryTypes,
   getAllSpecies,
   getSoilTextures,
   SoilTexture,
@@ -37,6 +36,13 @@ const emptyForm: SpeciesPayload = {
   agroforestry_types: [],
 };
 
+const AGROFORESTRY_TYPES = [
+  { id: 1, type_name: "block" },
+  { id: 2, type_name: "boundary" },
+  { id: 3, type_name: "intercropping" },
+  { id: 4, type_name: "mosaic" },
+];
+
 function buildSpeciesPayload(species: Species): SpeciesPayload {
   return {
     name: species.name,
@@ -64,9 +70,7 @@ function AdminSpeciesPage() {
 
   const [species, setSpecies] = useState<Species[]>([]);
   const [soilTextures, setSoilTextures] = useState<SoilTexture[]>([]);
-  const [agroforestryTypes, setAgroforestryTypes] = useState<
-    AgroforestryType[]
-  >([]);
+  const [agroforestryTypes] = useState<AgroforestryType[]>(AGROFORESTRY_TYPES);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -82,15 +86,13 @@ function AdminSpeciesPage() {
       setLoading(true);
       setError(null);
 
-      const [speciesData, soilData, agroforestryData] = await Promise.all([
+      const [speciesData, soilData] = await Promise.all([
         getAllSpecies(),
         getSoilTextures(),
-        getAgroforestryTypes(),
       ]);
 
       setSpecies(speciesData);
       setSoilTextures(soilData);
-      setAgroforestryTypes(agroforestryData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load species");
     } finally {
