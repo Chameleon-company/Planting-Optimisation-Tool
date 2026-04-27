@@ -109,6 +109,7 @@ async def read_recommendation_features():
 async def read_all_species(
     request: Request,
     db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
 ):
     species = await species_service.get_all_species(db)
     return species
@@ -124,6 +125,7 @@ async def read_species(
     request: Request,
     species_id: int,
     db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
 ):
     species = await species_service.get_species_by_id(db, species_id)
 
