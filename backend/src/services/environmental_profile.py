@@ -5,6 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.boundaries import FarmBoundary
+from src.models.farm import Farm
+from src.services.soil_ph import get_soil_ph_for_point
+from src.services.soil_texture_spatial import get_soil_texture_for_point
 
 
 class EnvironmentalProfileService:
@@ -15,6 +18,12 @@ class EnvironmentalProfileService:
         boundary_record = result.scalar_one_or_none()
 
         if not boundary_record:
+            return None
+
+        farm_result = await db.execute(select(Farm).where(Farm.id == farm_id))
+        farm_record = farm_result.scalar_one_or_none()
+
+        if not farm_record:
             return None
 
         # Geometry parsing
@@ -33,12 +42,44 @@ class EnvironmentalProfileService:
         lat_lon_ring = [(lat, lon) for (lon, lat) in list(target_poly.exterior.coords)]
         formatted_geometry = [lat_lon_ring]
 
-        # Call the external GEE logic
-        # Passing the boundary and farm_id
-        profile = build_farm_profile(geometry=formatted_geometry, farm_id=farm_id)
+        # Get centroid
+        centroid = target_poly.centroid
+        lat = centroid.y
+        lon = centroid.x
 
-        if not profile:
-            return None
+        # Get local soil pH from PostGIS
+        local_ph = await get_soil_ph_for_point(db, lat, lon)
+
+        # Get local soil texture from PostGIS
+        local_texture = await get_soil_texture_for_point(db, lat, lon)
+
+        # Call GEE + Hybrid logic
+        profile = build_farm_profile(geometry=formatted_geometry, farm_id=farm_id, soil_ph=local_ph, soil_texture=local_texture)
+
+        if profile and profile.get("status") != "failed":
+            profile["data_source"] = "gee"
+
+        if not profile or profile.get("status") == "failed":
+            profile = {
+                "id": farm_id,
+                "rainfall_mm": farm_record.rainfall_mm,
+                "temperature_celsius": farm_record.temperature_celsius,
+                "elevation_m": farm_record.elevation_m,
+                "soil_ph": local_ph if local_ph is not None else farm_record.ph,
+                "soil_texture_id": farm_record.soil_texture_id,
+                "soil_texture": local_texture,
+                "area_ha": farm_record.area_ha,
+                "latitude": farm_record.latitude,
+                "longitude": farm_record.longitude,
+                "coastal": farm_record.coastal,
+                "riparian": farm_record.riparian,
+                "nitrogen_fixing": farm_record.nitrogen_fixing,
+                "shade_tolerant": farm_record.shade_tolerant,
+                "bank_stabilising": farm_record.bank_stabilising,
+                "slope_degrees": farm_record.slope,
+                "status": "success",
+                "data_source": "fallback",
+            }
 
         # Data Normalization to enforce pydantic schema
 

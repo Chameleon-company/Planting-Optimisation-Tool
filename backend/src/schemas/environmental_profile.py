@@ -10,6 +10,7 @@ class FarmProfileResponse(FarmBase):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     status: str = "success"
     id: Optional[int] = None
+    data_source: Optional[str] = None
 
     rainfall_mm: Optional[int] = None
 
@@ -42,6 +43,7 @@ class FarmProfileResponse(FarmBase):
     shade_tolerant: Optional[bool] = None
     bank_stabilising: Optional[bool] = None
     soil_texture_id: Optional[int] = None
+    soil_texture: Optional[str] = None
 
     area_ha: Optional[Decimal] = None
     latitude: Optional[Decimal] = None

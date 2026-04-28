@@ -71,11 +71,25 @@ def build_farm_profile(
         # --- GEE extractions ---
         rainfall = get_rainfall(geometry, year=year)
         temperature = get_temperature(geometry, year=year)
-        ph = get_ph(geometry, year=year)
+        # US-017: Prefer local soil pH over GEE
+        local_ph = additional_fields.get("soil_ph") or additional_fields.get("ph")
+
+        if local_ph is not None:
+            ph = local_ph
+        else:
+            ph = get_ph(geometry, year=year)
         elevation = get_elevation(geometry, year=year)
         slope = get_slope(geometry, year=year)
         area_ha = get_area_ha(geometry)
-        texture_id = get_texture_id(geometry)
+        # Prefer local soil texture over GEE
+        local_texture = additional_fields.get("soil_texture")
+
+        if local_texture is not None:
+            texture_id = None
+            texture_name = local_texture
+        else:
+            texture_id = get_texture_id(geometry)
+            texture_name = None
         lat, lon = get_centroid_lat_lon(geometry)
 
         # --- Derived flags ---
@@ -94,6 +108,7 @@ def build_farm_profile(
             "slope_degrees": slope,
             "soil_ph": ph,
             "soil_texture_id": texture_id,
+            "soil_texture": texture_name,
             "area_ha": area_ha,
             "latitude": lat,
             "longitude": lon,
@@ -116,12 +131,7 @@ def build_farm_profile(
         }
 
 
-def update_farm_profile(
-    existing_profile: Dict[str, Any],
-    geometry,
-    fields: Optional[List[str]] = None,
-    year: Optional[int] = None,
-) -> Dict[str, Any]:
+def update_farm_profile(existing_profile: Dict[str, Any], geometry, fields: Optional[List[str]] = None, year: Optional[int] = None, **additional_fields) -> Dict[str, Any]:
     """
     Update specific fields in an existing farm profile.
 
@@ -150,11 +160,14 @@ def update_farm_profile(
     field_extractors = {
         "rainfall_mm": lambda: get_rainfall(geometry, year=year),
         "temperature_celsius": lambda: get_temperature(geometry, year=year),
-        "soil_ph": lambda: get_ph(geometry, year=year),
+        "soil_ph": lambda: (
+            additional_fields.get("soil_ph") or additional_fields.get("ph") if (additional_fields.get("soil_ph") or additional_fields.get("ph")) is not None else get_ph(geometry, year=year)
+        ),
         "elevation_m": lambda: get_elevation(geometry, year=year),
         "slope_degrees": lambda: get_slope(geometry, year=year),
         "area_ha": lambda: get_area_ha(geometry),
-        "soil_texture_id": lambda: get_texture_id(geometry),
+        "soil_texture_id": lambda: (None if additional_fields.get("soil_texture") is not None else get_texture_id(geometry)),
+        "soil_texture": lambda: additional_fields.get("soil_texture"),
     }
 
     updated_profile = existing_profile.copy()
@@ -316,6 +329,7 @@ def bulk_update_profiles(
                     geometries[farm_id],
                     fields,
                     year,
+                    **profile.to_dict(),
                 )
                 future_to_id[future] = farm_id
 
