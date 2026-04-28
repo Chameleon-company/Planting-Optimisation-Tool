@@ -195,7 +195,10 @@ describe("SpeciesModal", () => {
     // Create const img that is from the HTML labelled 'img'
     const img = screen.getByRole("img");
     // Expect img to have link to fake image
-    expect(img).toHaveAttribute("src", "https://image.fakeasset.net/test.jpg");
+    expect(img).toHaveAttribute(
+      "src",
+      "https://image.fakeasset.net/test.jpg?w=500&fm=webp&q=85"
+    );
   });
 
   it("should render rich text description content", () => {
@@ -241,7 +244,10 @@ describe("SpeciesCard", () => {
 
     // Expect image to have the correct src built from the url
     const img = screen.getByRole("img");
-    expect(img).toHaveAttribute("src", "https://image.fakeasset.net/test.jpg");
+    expect(img).toHaveAttribute(
+      "src",
+      "https://image.fakeasset.net/test.jpg?w=700&fm=webp&q=80"
+    );
   });
 
   it("should render a fallback image when no image is provided", () => {

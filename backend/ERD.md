@@ -15,6 +15,16 @@ erDiagram
     DATETIME timestamp
   }
 
+  auth_tokens {
+    INTEGER id PK "indexed"
+    INTEGER user_id FK
+    DATETIME created_at
+    DATETIME expires_at
+    VARCHAR token_hash "indexed"
+    VARCHAR token_type
+    DATETIME used_at "nullable"
+  }
+
   boundary {
     INTEGER id PK,FK
     geometry(MULTIPOLYGON-4326) boundary
@@ -46,13 +56,6 @@ erDiagram
     INTEGER temperature_celsius
   }
 
-  waterways {
-    INTEGER id PK
-    geometry(GEOMETRY-4326) geometry
-    VARCHAR name "nullable"
-    VARCHAR waterway "nullable"
-  }
-
   parameters {
     INTEGER id PK
     INTEGER species_id FK
@@ -61,6 +64,13 @@ erDiagram
     FLOAT trap_left_tol "nullable"
     FLOAT trap_right_tol "nullable"
     FLOAT weight "nullable"
+  }
+
+  planting_estimates {
+    INTEGER id PK
+    INTEGER farm_id FK
+    geometry(POINT-4326) geometry
+    FLOAT slope "nullable"
   }
 
   recommendations {
@@ -102,6 +112,21 @@ erDiagram
     INTEGER species_id PK,FK
   }
 
+  species_dependencies {
+    INTEGER id PK
+    INTEGER focal_species_id FK
+    INTEGER required_partner_id FK
+  }
+
+  species_exclusion_rules {
+    INTEGER id PK
+    INTEGER species_id FK
+    VARCHAR feature
+    VARCHAR operator
+    VARCHAR reason
+    JSON value
+  }
+
   species_soil_texture_association {
     INTEGER soil_texture_id PK,FK
     INTEGER species_id PK,FK
@@ -111,21 +136,34 @@ erDiagram
     INTEGER id PK
     VARCHAR(255) email UK "indexed"
     VARCHAR(255) hashed_password
-    VARCHAR(255) name UK "indexed"
+    BOOLEAN is_verified
+    VARCHAR(255) name "indexed"
     VARCHAR(50) role "indexed"
   }
 
+  waterways {
+    INTEGER id PK
+    geometry(GEOMETRY-4326) geometry
+    VARCHAR name "nullable"
+    VARCHAR waterway "nullable"
+  }
+
   users ||--o{ audit_logs : user_id
+  users ||--o{ auth_tokens : user_id
   farms ||--o| boundary : id
   farms ||--o| farm_agroforestry_association : farm_id
   agroforestry_types ||--o| farm_agroforestry_association : agroforestry_type_id
   soil_textures ||--o{ farms : soil_texture_id
   users ||--o{ farms : user_id
   species ||--o{ parameters : species_id
+  farms ||--o{ planting_estimates : farm_id
   farms ||--o{ recommendations : farm_id
   species ||--o{ recommendations : species_id
   species ||--o| species_agroforestry_association : species_id
   agroforestry_types ||--o| species_agroforestry_association : agroforestry_type_id
+  species ||--o{ species_dependencies : focal_species_id
+  species ||--o{ species_dependencies : required_partner_id
+  species ||--o{ species_exclusion_rules : species_id
   species ||--o| species_soil_texture_association : species_id
   soil_textures ||--o| species_soil_texture_association : soil_texture_id
 ```

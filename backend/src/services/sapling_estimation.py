@@ -12,7 +12,9 @@ class SaplingEstimationService:
     async def run_estimation(
         db: AsyncSession,
         farm_id: int,
-        spacing_m: float = 3.0,
+        spacing_x: float,
+        spacing_y: float,
+        max_slope: float,
     ):
         try:
             boundary_result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
@@ -61,7 +63,9 @@ class SaplingEstimationService:
 
             estimation_result = sapling_estimation(
                 farm_polygon=farm_polygon,
-                spacing_m=spacing_m,
+                spacing_x=spacing_x,
+                spacing_y=spacing_y,
+                max_slope=max_slope,
                 farm_boundary_crs="EPSG:4326",
                 dem_array=dem_row.valarray,
                 dem_upper_left_x=float(dem_row.ulx),
@@ -94,7 +98,8 @@ class SaplingEstimationService:
 
             return {
                 "id": farm_id,
-                "sapling_count": len(final_grid),
+                "pre_slope_count": estimation_result.get("pre_slope_count"),
+                "aligned_count": len(final_grid),
                 "optimal_angle": optimal_angle,
             }
 

@@ -1,12 +1,16 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src import cache
 from src.database import get_db_session
 from src.dependencies import get_user_id, limiter, require_role
 from src.schemas.environmental_profile import FarmProfileResponse
 from src.schemas.user import Role, UserRead
 from src.services import environmental_profile as environmental_profile_service
 from src.services import farm as farm_service
+from src.services.environmental_profile import ImputationError
 
 router = APIRouter(prefix="/profile", tags=["Environmental Profile"])
 
@@ -41,10 +45,20 @@ async def get_farm_profile(
     if not farms:
         raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id} not found.")
 
+    cache_key = f"profile:{farm_id}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
     service = environmental_profile_service.EnvironmentalProfileService()
-    profile_data = await service.run_environmental_profile(db, farm_id)
+
+    try:
+        profile_data = await service.run_environmental_profile(db, farm_id)
+    except ImputationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
 
     if not profile_data:
         raise HTTPException(status_code=404, detail=f"Farm boundary not found for farm_id: {farm_id}")
 
+    await cache.set(cache_key, json.dumps(profile_data))
     return profile_data
