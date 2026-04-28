@@ -9,7 +9,7 @@ export default function SpeciesCard({ item, onClick }: SpeciesCardProps) {
   const { name, image } = item.fields;
 
   const imageUrl = image?.fields?.file?.url
-    ? `https:${image.fields.file.url}`
+    ? `https:${image.fields.file.url}?w=700&fm=webp&q=80`
     : "https://placehold.co/600x400?text=No+Image";
 
   return (
