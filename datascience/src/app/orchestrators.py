@@ -136,3 +136,41 @@ def get_recommendations_service(farm_id):
     batch_result = get_batch_recommendations_service([farm_id])
 
     return batch_result[0]
+
+
+def get_raw_scores_batch(farm_id_list, target_species_ids=None):
+    """
+    Orchestrator to get raw feature scores for a list of farms.
+    If target_species_ids is provided, it filters the species list to only those IDs.
+
+    :param farm_id_list: List of farm IDs to process
+    :param target_species_ids: Optional list of species IDs to filter by (if None, all species are scored)
+    :returns: List of raw score dictionaries for all farm-species combinations
+    """
+    # Get params, config, and species data from repository
+    params = repository.get_params_dict()
+    cfg = repository.get_config()
+    all_species = repository.get_all_species()
+
+    # Filter the species list to only the ones needed
+    if target_species_ids:
+        species_to_score = [sp for sp in all_species if sp.get("id") in target_species_ids]
+    else:
+        species_to_score = all_species
+
+    # Build rules once for all calculations
+    optimised_rules = build_rules_dict(species_to_score, params, cfg)
+
+    # Get farm profiles from CSV via repository
+    farms_data_list = repository.get_farms_by_ids(farm_id_list)
+
+    all_raw_scores = []
+
+    # Process unique farms
+    for farm_data in farms_data_list:
+        # Score ALL species against this farm to create a complete lookup table
+        _, farm_scores = calculate_suitability(farm_data, species_to_score, optimised_rules, cfg)
+
+        all_raw_scores.extend(farm_scores)
+
+    return all_raw_scores

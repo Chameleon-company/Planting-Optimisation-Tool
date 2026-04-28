@@ -111,13 +111,13 @@ def test_scoring_exact_match(farms, species, basic_cfg, params_index):
 
     rules = build_rules_dict(species, params_index, basic_cfg)
 
-    explanations, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
+    results, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
 
     # Filter for Farm 101 and Species A
-    result = scores[0]
+    result = results[0]
 
     # Expect 1.0 because 6.5 is between 6.0-7.0 AND clay == clay
-    assert result[1] == pytest.approx(1.0)
+    assert result["mcda_score"] == pytest.approx(1.0)
 
 
 def test_scoring_exact_match2(farms, species, second_cfg, params_index):
@@ -127,13 +127,13 @@ def test_scoring_exact_match2(farms, species, second_cfg, params_index):
 
     rules = build_rules_dict(species, params_index, second_cfg)
 
-    explanations, scores = calculate_suitability(farms[0], species, rules, second_cfg)
+    results, scores = calculate_suitability(farms[0], species, rules, second_cfg)
 
     # Filter for Farm 101 and Species A
-    result = scores[0]
+    result = results[0]
 
     # Expect 1.0 because 6.5 is between 6.0-7.0 AND clay == clay
-    assert result[1] == pytest.approx(1.0)
+    assert result["mcda_score"] == pytest.approx(1.0)
 
 
 def test_scoring_mismatch(farms, species, basic_cfg, params_index):
@@ -144,12 +144,12 @@ def test_scoring_mismatch(farms, species, basic_cfg, params_index):
 
     rules = build_rules_dict(species, params_index, basic_cfg)
 
-    _, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
+    results, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
 
-    result = scores[1]
+    result = results[1]
 
     # Expect 0.0 because ph is out of range AND soil_texture mismatch
-    assert result[1] == pytest.approx(0.0)
+    assert result["mcda_score"] == pytest.approx(0.0)
 
     explanations, scores = calculate_suitability(farms[1], species, rules, basic_cfg)
 
@@ -290,12 +290,12 @@ def test_zero_denominator(basic_cfg, params_index):
 
     rules = build_rules_dict(species, params_index, basic_cfg)
 
-    explanations, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
+    results, scores = calculate_suitability(farms[0], species, rules, basic_cfg)
 
-    result = scores[0]
+    result = results[0]
 
     # Expect 0.0 because all features return a None score
-    assert result[1] == pytest.approx(0.0)
+    assert result["mcda_score"] == pytest.approx(0.0)
 
 
 def test_unknown_numeric_scorer(farms, species, params_index):
@@ -404,12 +404,12 @@ def test_numerical_trapezoid(params_index):
 
     rules = build_rules_dict(species, params_index, cfg)
 
-    explanations, scores = calculate_suitability(farms[0], species, rules, cfg)
+    results, scores = calculate_suitability(farms[0], species, rules, cfg)
 
     # First species should report missing data for the ph score
-    assert explanations[0]["features"]["rainfall_mm"]["reason"] == "within plateau [750.0, 1500.0]"
+    assert results[0]["features"]["rainfall_mm"]["reason"] == "within plateau [750.0, 1500.0]"
     # Expect 1.0 because rainfall is within plateau  AND clay == clay
-    assert scores[0][1] == pytest.approx(1.0)
+    assert results[0]["mcda_score"] == pytest.approx(1.0)
 
 
 def test_categorical_compatibility(params_index):
@@ -451,9 +451,9 @@ def test_categorical_compatibility(params_index):
 
     rules = build_rules_dict(species, params_index, cfg)
 
-    explanations, scores = calculate_suitability(farms[0], species, rules, cfg)
+    results, scores = calculate_suitability(farms[0], species, rules, cfg)
 
     # First species should report missing data for the ph score
-    assert explanations[0]["features"]["soil_texture"]["reason"] == "closest compatibility match loam at 0.30. closest compatibility match silt at 0.30"
+    assert results[0]["features"]["soil_texture"]["reason"] == "closest compatibility match loam at 0.30. closest compatibility match silt at 0.30"
     # Expect 0.3 because  clay:loam == 0.3
-    assert scores[0][1] == pytest.approx(0.3)
+    assert results[0]["mcda_score"] == pytest.approx(0.3)

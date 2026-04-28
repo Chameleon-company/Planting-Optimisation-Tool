@@ -373,3 +373,52 @@ async def test_delete_species_removes_record(
     # Try deleting again → should be 404
     response = await async_client.delete(f"/species/{species_id}", headers=admin_auth_headers)
     assert response.status_code == 404
+
+
+async def test_read_all_species_returns_created_species(
+    async_client: AsyncClient,
+    admin_auth_headers: dict,
+):
+    create_response = await async_client.post(
+        "/species",
+        json=VALID_SPECIES_PAYLOAD,
+        headers=admin_auth_headers,
+    )
+    assert create_response.status_code == 201
+
+    response = await async_client.get("/species", headers=admin_auth_headers)
+    assert response.status_code == 200
+    species_list = response.json()
+    assert any(item["id"] == create_response.json()["id"] for item in species_list)
+
+
+async def test_read_species_by_id_returns_full_species(
+    async_client: AsyncClient,
+    admin_auth_headers: dict,
+):
+    create_response = await async_client.post(
+        "/species",
+        json=VALID_SPECIES_PAYLOAD,
+        headers=admin_auth_headers,
+    )
+    assert create_response.status_code == 201
+
+    species_id = create_response.json()["id"]
+
+    response = await async_client.get(
+        f"/species/{species_id}",
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == species_id
+    assert data["name"] == VALID_SPECIES_PAYLOAD["name"]
+    assert data["common_name"] == VALID_SPECIES_PAYLOAD["common_name"]
+
+
+async def test_read_species_by_id_not_found(async_client: AsyncClient, admin_auth_headers: dict):
+    response = await async_client.get("/species/99999", headers=admin_auth_headers)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Species not found"

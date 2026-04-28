@@ -267,6 +267,10 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
         # Initialise the denominator score
         denom = 0.0
 
+        # Initialise a flat dictionary for this species' raw scores
+        # Include IDs for easy joining/merging later
+        current_raw_scores = {"farm_id": get_val(farm_data, cfg.get("ids", {}).get("farm", "id")), "species_id": species_id}
+
         # Iterate through the rules list
         for rule in rules:
             # Get feature name from rule
@@ -368,6 +372,8 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
 
             # Store score
             feature_scores[feat] = score
+            # Store the raw score in the flat dictionary
+            current_raw_scores[feat] = score
 
             # Accumulate scores for existing scores and weights
             if score is not None and w > 0:
@@ -391,6 +397,6 @@ def calculate_suitability(farm_data, species_list, optimised_rules, cfg):
             }
         )
 
-        scores.append((species_id, total_score))
+        scores.append(current_raw_scores)
 
     return results, scores

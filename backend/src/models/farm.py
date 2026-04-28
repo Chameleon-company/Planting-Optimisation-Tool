@@ -38,6 +38,14 @@ class Farm(Base):
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     external_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True, default=None)
 
+    # Imputation flags — True when the field was filled by the ML imputation service.
+
+    elevation_m_imputed: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    slope_imputed: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    temperature_celsius_imputed: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    rainfall_mm_imputed: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    ph_imputed: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+
     # Relationships
     # -------------
     # Links a Farm object to its corresponding SoilTexture object (1:1)
