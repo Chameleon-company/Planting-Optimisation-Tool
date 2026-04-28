@@ -16,7 +16,7 @@ export default function SpeciesModal({ item, onClose }: SpeciesModalProps) {
 
   // Build imageUrl from fields
   const imageUrl = image?.fields?.file?.url
-    ? `https:${image.fields.file.url}`
+    ? `https:${image.fields.file.url}?w=500&fm=webp&q=85`
     : "";
 
   return (

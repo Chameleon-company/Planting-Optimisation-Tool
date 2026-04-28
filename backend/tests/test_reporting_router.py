@@ -566,21 +566,62 @@ async def test_get_farm_report_supervisor_access(
     assert data["farm"]["id"] == farm.id
 
 
-@pytest.mark.skip(reason="all-farms DOCX times out against replicated DB (3200 farms) - see issue #434")
 @pytest.mark.asyncio
 async def test_export_all_farms_report_admin(
     async_client: AsyncClient,
-    async_session: AsyncSession,
-    setup_soil_texture,
     admin_auth_headers: dict,
-    test_officer_user: User,
-    test_supervisor_user: User,
+    mocker,
 ):
-    """Admin can download all-farms DOCX and PDF containing farms from all users."""
-    farm1 = make_farm(user_id=test_officer_user.id)
-    farm2 = make_farm(user_id=test_supervisor_user.id)
-    async_session.add_all([farm1, farm2])
-    await async_session.flush()
+    """Admin can download all-farms DOCX and PDF.
+    Monkeypatched to avoid querying the full replicated DB (3200+ farms).
+    performance of this endpoint is covered separately by load testing.
+    """
+    from datetime import datetime, timezone
+    from unittest.mock import AsyncMock
+
+    from src.domains.reporting import FarmReportContract, FarmReportMetadata
+
+    fake_reports = [
+        FarmReportContract(
+            farm=FarmReportMetadata(
+                id=1,
+                user_name="Officer User",
+                rainfall_mm=1500,
+                temperature_celsius=22,
+                elevation_m=500,
+                ph=6.5,
+                soil_texture="Loam",
+                area_ha=5.0,
+                latitude=-8.5,
+                longitude=126.5,
+            ),
+            recommendations=[],
+            exclusions=[],
+            generated_at=datetime.now(timezone.utc),
+        ),
+        FarmReportContract(
+            farm=FarmReportMetadata(
+                id=2,
+                user_name="Supervisor User",
+                rainfall_mm=1200,
+                temperature_celsius=25,
+                elevation_m=300,
+                ph=7.0,
+                soil_texture="Clay",
+                area_ha=3.0,
+                latitude=-8.6,
+                longitude=126.6,
+            ),
+            recommendations=[],
+            exclusions=[],
+            generated_at=datetime.now(timezone.utc),
+        ),
+    ]
+
+    mocker.patch(
+        "src.routers.reporting.reporting_service.get_all_farms_report",
+        new=AsyncMock(return_value=fake_reports),
+    )
 
     response_docx = await async_client.get("/reports/farms/export/docx", headers=admin_auth_headers)
     response_pdf = await async_client.get("/reports/farms/export/pdf", headers=admin_auth_headers)

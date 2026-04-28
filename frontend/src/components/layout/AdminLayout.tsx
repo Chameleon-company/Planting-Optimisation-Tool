@@ -56,6 +56,15 @@ export default function AdminLayout() {
             Audit Logs
           </NavLink>
 
+          <NavLink
+            to="/admin/species"
+            className={({ isActive }) =>
+              `admin-nav-link ${isActive ? "active" : ""}`
+            }
+          >
+            Species Management
+          </NavLink>
+
           <NavLink to="/" className="admin-nav-link">
             Home
           </NavLink>
