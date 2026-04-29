@@ -47,3 +47,10 @@ class FarmProfileResponse(FarmBase):
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
     coastal: Optional[bool] = None
+
+    # Imputation flags — True when the field was filled by the ML imputation service
+    elevation_m_imputed: Optional[bool] = None
+    slope_imputed: Optional[bool] = None
+    temperature_celsius_imputed: Optional[bool] = None
+    rainfall_mm_imputed: Optional[bool] = None
+    ph_imputed: Optional[bool] = None

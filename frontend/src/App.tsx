@@ -22,6 +22,7 @@ import RequireRole from "./components/auth/RequireRole";
 import WeightingHub from "./pages/admin/settings/WeightingHub";
 import AhpPage from "./pages/admin/settings/AhpPage";
 import HybridAhpPage from "./pages/admin/settings/HybridAhpPage";
+import AdminSpeciesPage from "./pages/admin/AdminSpeciesPage";
 
 // Export App
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
               }
             >
               <Route index element={<AdminDashboard />} />
+              <Route path="species" element={<AdminSpeciesPage />} />
               <Route path="settings">
                 <Route index element={<AdminSettings />} /> {/* The Hub Page */}
                 <Route path="weighting">

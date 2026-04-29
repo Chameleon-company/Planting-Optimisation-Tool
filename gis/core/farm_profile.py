@@ -53,11 +53,6 @@ def build_farm_profile(
                            Pass None if unknown — profile will still include the field.
         **additional_fields: Any additional custom fields (e.g., farmer_name).
 
-    Returns:
-        Dictionary with complete farm profile including:
-            - riparian (bool | None)
-            - distance_to_nearest_waterway_m (float | None)
-
     Example:
         # Existing farm
         profile = build_farm_profile(geometry=(-8.569, 126.676), farm_id=1, year=2024)
@@ -98,7 +93,6 @@ def build_farm_profile(
             "latitude": lat,
             "longitude": lon,
             "coastal": coastal_flag,
-            # US-018: riparian flag passed in from backend PostGIS result
             "riparian": riparian,
             "updated_at": datetime.now().isoformat(),
             "status": "success",
@@ -199,8 +193,6 @@ def bulk_create_profiles(
     Create profiles for multiple farms in parallel.
 
     GEE is initialised before calling this function (via init_gee()).
-    Each farm's riparian check makes a GEE call — ensure GEE credentials
-    are available in the environment.
 
     Args:
         farms:             List of farm dicts containing geometry and ID.
@@ -211,8 +203,7 @@ def bulk_create_profiles(
         progress_callback: Optional callback(current, total).
 
     Returns:
-        DataFrame with all farm profiles including riparian and
-        distance_to_nearest_waterway_m columns.
+        DataFrame with all farm profiles.
     """
     year = year or 2024
     profiles = []
@@ -289,11 +280,10 @@ def bulk_update_profiles(
         DataFrame with updated profiles.
 
     Example:
-        # Re-run only riparian check after buffer distance was confirmed
         updated_df = bulk_update_profiles(
             profiles_df=old_profiles,
             geometries=geometries,
-            fields=["riparian", "distance_to_nearest_waterway_m"],
+            fields=["rainfall_mm", "temperature_celsius"],
         )
     """
     year = year or 2024

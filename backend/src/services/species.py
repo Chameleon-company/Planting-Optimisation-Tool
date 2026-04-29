@@ -194,3 +194,25 @@ def get_recommendation_features() -> list[str]:
                 short_names.append(raw_short.title())
 
     return short_names
+
+
+async def get_all_species(db: AsyncSession):
+    result = await db.execute(
+        select(Species).options(
+            selectinload(Species.soil_textures),
+            selectinload(Species.agroforestry_types),
+        )
+    )
+    return result.scalars().all()
+
+
+async def get_species_by_id(db: AsyncSession, species_id: int):
+    result = await db.execute(
+        select(Species)
+        .where(Species.id == species_id)
+        .options(
+            selectinload(Species.soil_textures),
+            selectinload(Species.agroforestry_types),
+        )
+    )
+    return result.scalar_one_or_none()
