@@ -9,6 +9,7 @@ from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
 from src.services.soil_ph import get_soil_ph_for_point
 from src.services.soil_texture_spatial import get_soil_texture_for_point
+from src.models.soil_texture import SoilTexture
 
 # Maps from farm_profile.py output keys to imputation service keys
 _TO_IMPUTER = {"slope_degrees": "slope", "soil_ph": "ph"}
@@ -62,6 +63,16 @@ class EnvironmentalProfileService:
 
         # Get local soil texture from PostGIS
         local_texture = await get_soil_texture_for_point(db, lat, lon)
+        
+        # If local raster not available, fetch from DB
+        if local_texture is None and farm_record.soil_texture_id is not None:
+            result = await db.execute(
+            select(SoilTexture).where(SoilTexture.id == farm_record.soil_texture_id)
+         )
+            texture = result.scalar_one_or_none()
+
+            if texture:
+                local_texture = texture.name
 
         # Call GEE + Hybrid logic
         profile = build_farm_profile(
@@ -73,7 +84,7 @@ class EnvironmentalProfileService:
         )
 
         if profile and profile.get("status") != "failed":
-            profile["data_source"] = "gee"
+            profile["data_source"] = "hybrid"
 
         if profile is None:
             return None
