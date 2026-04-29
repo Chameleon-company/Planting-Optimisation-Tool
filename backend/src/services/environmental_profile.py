@@ -74,8 +74,11 @@ class EnvironmentalProfileService:
 
         if profile and profile.get("status") != "failed":
             profile["data_source"] = "gee"
+            
+        if profile is None:
+            return None
 
-        if not profile or profile.get("status") == "failed":
+        if profile.get("status") == "failed":
             profile = {
                 "id": farm_id,
                 "rainfall_mm": farm_record.rainfall_mm,
@@ -106,11 +109,11 @@ class EnvironmentalProfileService:
         # so they are treated as missing and picked up by the imputer rather than
         # silently becoming None only after Pydantic validation.
         rainfall = profile.get("rainfall_mm")
-        if rainfall is not None and not (1000 <= rainfall <= 3000):
+        if isinstance(rainfall, (int, float)) and not (1000 <= rainfall <= 3000):
             profile["rainfall_mm"] = None
 
         temp = profile.get("temperature_celsius")
-        if temp is not None and not (15 <= temp <= 30):
+        if isinstance(temp, (int, float)) and not (15 <= temp <= 30):
             profile["temperature_celsius"] = None
 
         # TARGET_FEATURES uses imputer naming (slope, ph).
