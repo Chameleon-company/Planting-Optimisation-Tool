@@ -50,7 +50,7 @@ class EnvironmentalProfileService:
         # Format for GIS parser
         lat_lon_ring = [(lat, lon) for (lon, lat) in list(target_poly.exterior.coords)]
         formatted_geometry = [lat_lon_ring]
-        
+
         # Get centroid for local raster queries
         centroid = target_poly.centroid
         lat, lon = centroid.y, centroid.x
@@ -74,7 +74,7 @@ class EnvironmentalProfileService:
 
         if profile and profile.get("status") != "failed":
             profile["data_source"] = "gee"
-            
+
         if profile is None:
             return None
 
