@@ -82,13 +82,13 @@ app.include_router(reporting.router)
 @app.exception_handler(RequestValidationError)
 async def request_validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = [{"field": ".".join(str(loc) for loc in err["loc"] if loc != "body"), "message": err["msg"]} for err in exc.errors()]
-    return JSONResponse(status_code=422, content={"detail": errors})
+    return JSONResponse(status_code=422, content={"detail": errors, "errors": errors})
 
 
 @app.exception_handler(ValidationError)
 async def pydantic_validation_exception_handler(request: Request, exc: ValidationError):
     errors = [{"field": ".".join(str(loc) for loc in err["loc"]), "message": err["msg"]} for err in exc.errors()]
-    return JSONResponse(status_code=422, content={"detail": errors})
+    return JSONResponse(status_code=422, content={"detail": errors, "errors": errors})
 
 
 @app.exception_handler(ResponseValidationError)
