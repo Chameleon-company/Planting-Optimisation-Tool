@@ -50,13 +50,13 @@ def sapling_estimation(
 
     initial_grid = generate_planting_points(farm_poly_projected, "EPSG:3857", bounds, spacing_x, spacing_y)
 
-    rotated_grid, optimal_angle = rotate_grid(farm_poly_projected, initial_grid, spacing_x, spacing_y)
+    rotated_grid, optimal_angle, rotation_results = rotate_grid(farm_poly_projected, initial_grid, spacing_x, spacing_y)
 
-    # ROTATION STATISTICS (computed at estimation level)
-    rotations_tested = np.arange(0, 91)
+    # Compute rotation statistics from actual evaluated rotation outcomes
+    rotation_counts = [count for _, count in rotation_results]
 
-    rotation_average = float(np.mean(rotations_tested))
-    rotation_std_dev = float(np.std(rotations_tested))
+    rotation_average = float(np.mean(rotation_counts))
+    rotation_std_dev = float(np.std(rotation_counts))
 
     if not rotation_tester(rotated_grid, initial_grid):
         raise ValueError("Rotated grid failed validation")
