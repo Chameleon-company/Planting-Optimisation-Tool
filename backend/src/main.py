@@ -19,6 +19,7 @@ from src.routers import (
     auth,
     environmental_profile,
     farm,
+    global_weights,
     recommendation,
     reporting,
     sapling_estimation,
@@ -77,6 +78,7 @@ app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
 app.include_router(ahp.router)
 app.include_router(reporting.router)
+app.include_router(global_weights.router)
 
 
 @app.exception_handler(RequestValidationError)
