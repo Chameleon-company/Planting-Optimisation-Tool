@@ -46,23 +46,19 @@ class GlobalWeightItemSchema(BaseModel):
 
 
 class GlobalWeightsRunSummarySchema(BaseModel):
-    #    run_id: UUID
     run_id: UUID = Field(
         title="Run ID",
         description="Unique identifier for this global weight computation run",
     )
-    #    created_at: datetime
     created_at: datetime = Field(
         title="Created at",
         description="Timestamp when the global weights were computed",
     )
-    #   rf_bootstraps: int
     rf_bootstraps: int = Field(
         title="RF bootstraps",
         description="Number of Random Forest bootstrap samples used",
         ge=1,
     )
-    #    rf_early_stopped: bool
     rf_early_stopped: bool = Field(
         title="RF early stopped",
         description="Whether RF bootstrapping stopped early due to convergence",
@@ -75,7 +71,6 @@ class GlobalWeightsRunSummarySchema(BaseModel):
 
 
 class GlobalWeightsRunDetailSchema(GlobalWeightsRunSummarySchema):
-    #    weights: List[GlobalWeightItemSchema]
     weights: List[GlobalWeightItemSchema] = Field(
         title="Global weights",
         description="List of global importance weights",
