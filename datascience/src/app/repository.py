@@ -32,12 +32,41 @@ def initialise_data():
     farms_df = pd.read_csv(farms_path)
     farms_df["id"] = farms_df.index + 1
 
+    soil_texture_map = {
+        1: "sand",
+        2: "loamy sand",
+        3: "sandy loam",
+        4: "loam",
+        5: "silty loam",
+        6: "silt",
+        7: "sandy clay loam",
+        8: "clay loam",
+        9: "silty clay loam",
+        10: "sandy clay",
+        11: "silty clay",
+        12: "clay",
+    }
+
+    # Create new column with names
+    farms_df["soil_texture"] = farms_df["soil_texture_id"].map(soil_texture_map)
+
     # Path to species CSV
     species_path = "../backend/src/scripts/data/species_20251222.csv"
 
     # Load species profile data from CSV file
     species_df = pd.read_csv(species_path)
     species_df["id"] = species_df.index + 1
+
+    def pipe_to_comma_format(csv_value):
+        if pd.isna(csv_value) or not str(csv_value).strip():
+            return ""
+
+        parts = [n.strip() for n in str(csv_value).split("|") if n.strip()]
+
+        return ",".join(parts)
+
+    species_df["soil_textures"] = species_df["preferred_soil_texture"].apply(pipe_to_comma_format)
+    species_df = species_df.drop(columns=["preferred_soil_texture"])
 
     # Path to species_params CSV
     species_params_path = "../backend/src/scripts/data/species_params20260112.csv"

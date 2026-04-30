@@ -98,3 +98,38 @@ async def read_recommendation_features():
     used for the suitability scoring UI.
     """
     return get_recommendation_features()
+
+
+@router.get(
+    "",
+    response_model=list[SpeciesRead],
+    summary="Get all species",
+)
+@limiter.limit("10/minute", key_func=get_user_id)
+async def read_all_species(
+    request: Request,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
+):
+    species = await species_service.get_all_species(db)
+    return species
+
+
+@router.get(
+    "/{species_id}",
+    response_model=SpeciesRead,
+    summary="Get a species by ID",
+)
+@limiter.limit("10/minute", key_func=get_user_id)
+async def read_species(
+    request: Request,
+    species_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
+):
+    species = await species_service.get_species_by_id(db, species_id)
+
+    if not species:
+        raise HTTPException(status_code=404, detail="Species not found")
+
+    return species

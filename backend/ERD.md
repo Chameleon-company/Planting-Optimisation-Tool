@@ -56,6 +56,13 @@ erDiagram
     INTEGER temperature_celsius
   }
 
+  waterways {
+    INTEGER id PK
+    geometry(GEOMETRY-4326) geometry
+    VARCHAR name "nullable"
+    VARCHAR waterway "nullable"
+  }
+
   parameters {
     INTEGER id PK
     INTEGER species_id FK

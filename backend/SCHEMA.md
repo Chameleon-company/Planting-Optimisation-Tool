@@ -54,6 +54,11 @@
 | `slope` | `Float` | No | No |  |
 | `user_id` | `Integer` | Yes | No | id |
 | `external_id` | `Integer` | Yes | No |  |
+| `elevation_m_imputed` | `Boolean` | No | No |  |
+| `slope_imputed` | `Boolean` | No | No |  |
+| `temperature_celsius_imputed` | `Boolean` | No | No |  |
+| `rainfall_mm_imputed` | `Boolean` | No | No |  |
+| `ph_imputed` | `Boolean` | No | No |  |
 ## TABLE: `boundary`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
