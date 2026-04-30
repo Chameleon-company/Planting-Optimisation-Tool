@@ -90,10 +90,9 @@ async def pydantic_validation_exception_handler(request: Request, exc: Validatio
     errors = [{"field": ".".join(str(loc) for loc in err["loc"]), "message": err["msg"]} for err in exc.errors()]
     return JSONResponse(status_code=422, content={"detail": errors})
 
+
 @app.exception_handler(ResponseValidationError)
-async def response_validation_exception_handler(
-    request: Request, exc: ResponseValidationError
-):
+async def response_validation_exception_handler(request: Request, exc: ResponseValidationError):
     errors = [
         {
             "field": ".".join(str(loc) for loc in err["loc"]),
@@ -102,6 +101,7 @@ async def response_validation_exception_handler(
         for err in exc.errors()
     ]
     return JSONResponse(status_code=422, content={"detail": errors})
+
 
 _request_logger = logging.getLogger("api.requests")
 
