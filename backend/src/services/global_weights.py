@@ -62,12 +62,12 @@ def parse_global_weights_csv(file) -> tuple[GlobalWeightsCSVMeta, list[GlobalWei
             messages = [err.get("msg").replace("Value error, ", "") for err in e.errors()]
             error_text = " | ".join(messages)
 
-            # Note: use i + 2 because i is 0-indexed, and row 1 is the CSV header.
-            raise GlobalWeightsCSVError(f"Row {i + 2} ({feature}): {error_text}")
+            # Note: use i + 1 because i is 0-indexed, and row 1 is the CSV header.
+            raise GlobalWeightsCSVError(f"Row {i + 1} {feature}: {error_text}")
 
         except ValueError:
             # Catches letters where a float should be (e.g., float("abc"))
-            raise GlobalWeightsCSVError(f"Row {i + 2} ({feature}) contains invalid numbers.")
+            raise GlobalWeightsCSVError(f"Row {i + 1} {feature}: contains invalid numbers.")
 
     if meta is None:
         raise GlobalWeightsCSVError("CSV is missing required __META__ row")
