@@ -27,6 +27,7 @@ from src.routers import (
     species,
     user,
 )
+from src.services.global_weights import GlobalWeightsCSVError
 
 
 @asynccontextmanager
@@ -91,6 +92,14 @@ async def request_validation_exception_handler(request: Request, exc: RequestVal
 async def pydantic_validation_exception_handler(request: Request, exc: ValidationError):
     errors = [{"field": ".".join(str(loc) for loc in err["loc"]), "message": err["msg"]} for err in exc.errors()]
     return JSONResponse(status_code=422, content={"detail": "Validation failed", "errors": errors})
+
+
+@app.exception_handler(GlobalWeightsCSVError)
+async def global_weights_csv_exception_handler(request: Request, exc: GlobalWeightsCSVError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
 
 
 _request_logger = logging.getLogger("api.requests")

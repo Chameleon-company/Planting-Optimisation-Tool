@@ -2,28 +2,43 @@ import csv
 import io
 from uuid import uuid4
 
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
 from src.schemas.global_weights import GlobalWeightsCSVMeta, GlobalWeightsCSVRow
+from src.services.species import get_recommend_config
+
+
+class GlobalWeightsCSVError(Exception):
+    """Custom exception for errors encountered during Global Weights CSV import."""
+
+    pass
 
 
 def parse_global_weights_csv(file) -> tuple[GlobalWeightsCSVMeta, list[GlobalWeightsCSVRow]]:
     reader = csv.DictReader(file)
 
+    # Grab the raw feature keys expected by the system
+    config_data = get_recommend_config()
+    expected_features = set(config_data.get("features", {}).keys())
+
+    # Track what we actually find in the CSV
+    found_features = set()
+
     meta = None
     rows: list[GlobalWeightsCSVRow] = []
 
     for i, raw in enumerate(reader):
-        feature = raw.get("feature")
+        feature = raw.get("feature", "")
 
         if i == 0 and feature == "__META__":
             rf_bootstraps = raw.get("rf_bootstraps")
             rf_early_stopped = raw.get("rf_early_stopped")
 
             if not rf_bootstraps or not rf_early_stopped:
-                raise ValueError("META row must define rf_bootstraps and rf_early_stopped")
+                raise GlobalWeightsCSVError("META row must define rf_bootstraps and rf_early_stopped")
 
             meta = GlobalWeightsCSVMeta(
                 rf_bootstraps=int(rf_bootstraps),
@@ -31,18 +46,37 @@ def parse_global_weights_csv(file) -> tuple[GlobalWeightsCSVMeta, list[GlobalWei
             )
 
             continue
-
-        rows.append(
-            GlobalWeightsCSVRow(
+        try:
+            row = GlobalWeightsCSVRow(
                 feature=raw["feature"],
                 mean_weight=float(raw["mean_weight"]),
                 ci_lower=float(raw["ci_lower"]),
                 ci_upper=float(raw["ci_upper"]),
             )
-        )
+            rows.append(row)
+
+            # Record the feature we just successfully parsed
+            found_features.add(feature)
+
+        except ValidationError as e:
+            messages = [err.get("msg").replace("Value error, ", "") for err in e.errors()]
+            error_text = " | ".join(messages)
+
+            # Note: use i + 2 because i is 0-indexed, and row 1 is the CSV header.
+            raise GlobalWeightsCSVError(f"Row {i + 2} ({feature}): {error_text}")
+
+        except ValueError:
+            # Catches letters where a float should be (e.g., float("abc"))
+            raise GlobalWeightsCSVError(f"Row {i + 2} ({feature}) contains invalid numbers.")
 
     if meta is None:
-        raise ValueError("CSV is missing required __META__ row")
+        raise GlobalWeightsCSVError("CSV is missing required __META__ row")
+
+    # Check for missing features
+    missing_features = expected_features - found_features
+    if missing_features:
+        missing_str = ", ".join(sorted(list(missing_features)))
+        raise GlobalWeightsCSVError(f"CSV is missing required features: {missing_str}")
 
     return meta, rows
 
