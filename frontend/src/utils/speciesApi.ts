@@ -65,11 +65,16 @@ async function handleResponse(res: Response) {
 }
 
 function formatFieldName(field: string): string {
-  return field
+  const base = field
     .replace("response.", "")
     .replace("body.", "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, char => char.toUpperCase());
+    .split("_")[0];
+
+  if (base.toLowerCase() === "ph") {
+    return "pH";
+  }
+
+  return base.replace(/\b\w/g, char => char.toUpperCase());
 }
 
 function formatApiError(error: unknown): string {
