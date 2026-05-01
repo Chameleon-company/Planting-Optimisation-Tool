@@ -18,7 +18,7 @@ export default function WeightingHub() {
 
         <h2>Weighting Methods</h2>
         <p>
-          Select a scoring method to configure its specific parameters and
+          Select a weighting method to configure its specific parameters and
           rules.
         </p>
 
@@ -52,8 +52,8 @@ export default function WeightingHub() {
             </div>
           </Link>
 
-          {/* Hybrid ML */}
-          <Link to="/admin/settings/weighting/hybrid" className="settings-card">
+          {/* Global Weights */}
+          <Link to="/admin/settings/weighting/global" className="settings-card">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -74,11 +74,8 @@ export default function WeightingHub() {
               <path d="M12 18v-5" />
             </svg>
             <div className="settings-card-text">
-              <h3>Hybrid AHP/ML</h3>
-              <p>
-                Nuanced scoring engine utilising machine learning models
-                alongside baseline parameters.
-              </p>
+              <h3>Global Weights</h3>
+              <p>Global weights derived from historical growth data.</p>
             </div>
           </Link>
         </div>

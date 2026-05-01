@@ -21,7 +21,7 @@ import AdminLogs from "./pages/admin/AdminLogs";
 import RequireRole from "./components/auth/RequireRole";
 import WeightingHub from "./pages/admin/settings/WeightingHub";
 import AhpPage from "./pages/admin/settings/AhpPage";
-import HybridAhpPage from "./pages/admin/settings/HybridAhpPage";
+import GlobalWeightsPage from "./pages/admin/settings/GlobalWeightsPage";
 import AdminSpeciesPage from "./pages/admin/AdminSpeciesPage";
 
 // Export App
@@ -56,12 +56,12 @@ export default function App() {
               <Route path="settings">
                 <Route index element={<AdminSettings />} /> {/* The Hub Page */}
                 <Route path="weighting">
-                  <Route index element={<WeightingHub />} />{" "}
                   {/* The intermediate menu */}
-                  <Route path="ahp" element={<AhpPage />} />{" "}
+                  <Route index element={<WeightingHub />} />{" "}
                   {/* The standard AHP tool */}
-                  <Route path="hybrid" element={<HybridAhpPage />} />{" "}
-                  {/* The ML tool */}
+                  <Route path="ahp" element={<AhpPage />} />{" "}
+                  {/* The global weights*/}
+                  <Route path="global" element={<GlobalWeightsPage />} />{" "}
                 </Route>
               </Route>
               <Route path="logs" element={<AdminLogs />} />
