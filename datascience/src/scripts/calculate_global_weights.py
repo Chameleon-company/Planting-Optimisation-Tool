@@ -12,18 +12,18 @@ Intended use:
 
 """
 
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from datetime import datetime
-from dataclasses import dataclass
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.inspection import permutation_importance
 from sklearn.linear_model import ElasticNetCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
-
 
 # === Configuration ====================================================================
 SEED = 42
@@ -298,16 +298,6 @@ def export_global_weights_csv(
     - bootstraps: number of bootstraps used
     - bootstrap_early_stopped: whether early stopping was triggered
     """
-    # Ensure feature is a column
-    df = summary_df.reset_index().rename(columns={"index": "feature"})
-
-    # Only keep required columns
-    df = df[["feature", "mean_weight", "ci_lower", "ci_upper"]]
-
-    # Add empty META columns to feature rows
-    df["bootstraps"] = np.nan
-    df["bootstrap_early_stopped"] = np.nan
-
     # Build META row
     meta_row = pd.DataFrame(
         [
@@ -317,10 +307,20 @@ def export_global_weights_csv(
                 "ci_lower": np.nan,
                 "ci_upper": np.nan,
                 "bootstraps": bootstraps,
-                "bootstrap_early_stopped": str(bootstrap_early_stopped).lower(),
+                "bootstrap_early_stopped": bootstrap_early_stopped,
             }
         ]
     )
+
+    # Ensure feature is a column
+    df = summary_df.reset_index().rename(columns={"index": "feature"})
+
+    # Only keep required columns
+    df = df[["feature", "mean_weight", "ci_lower", "ci_upper"]]
+
+    # Add empty META columns to feature rows
+    df["bootstraps"] = pd.Series([pd.NA] * len(df), dtype="Int64")
+    df["bootstrap_early_stopped"] = pd.Series([pd.NA] * len(df), dtype="boolean")
 
     # Concatenate META + data rows
     out_df = pd.concat([meta_row, df], ignore_index=True)
