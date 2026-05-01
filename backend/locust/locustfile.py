@@ -212,6 +212,11 @@ class HeavyConcurrentUser(HttpUser):
         self.client.get("/reports/farms/export/pdf", headers=self.headers)
 
     @task(1)
+    def all_farms_report_docx(self):
+        """All-farms DOCX export - measures document generation performance after fix for #434."""
+        self.client.get("/reports/farms/export/docx", headers=self.headers)
+
+    @task(1)
     def ahp_calculate(self):
         """AHP weight calculation - admin computation, run under concurrent load."""
         self.client.post(

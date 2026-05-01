@@ -273,6 +273,12 @@ The following endpoints have role-based access control implemented:
 | `/reports/farms` | GET | SUPERVISOR | Get reports for all farms under management |
 | `/reports/farms/export/docx` | GET | SUPERVISOR | Download all farms under management as DOCX |
 | `/reports/farms/export/pdf` | GET | SUPERVISOR | Download all farms under management as PDF |
+| `/parameters` | GET | ADMIN | List all scoring parameters |
+| `/parameters/{parameter_id}` | GET | ADMIN | Get a scoring parameter by ID |
+| `/parameters/species/{species_id}` | GET | ADMIN | List all scoring parameters for a species |
+| `/parameters` | POST | ADMIN | Create a new scoring parameter |
+| `/parameters/{parameter_id}` | PUT | ADMIN | Update an existing scoring parameter |
+| `/parameters/{parameter_id}` | DELETE | ADMIN | Delete a scoring parameter |
 
 Notes:
 

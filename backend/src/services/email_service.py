@@ -15,7 +15,7 @@ def _send_email_sync(subject: str, recipient: str, body: str, html_body: str | N
     if html_body:
         message.add_alternative(html_body, subtype="html")
 
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+    with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
         server.starttls()
         server.login(settings.smtp_username, settings.smtp_password)
         server.send_message(message)
