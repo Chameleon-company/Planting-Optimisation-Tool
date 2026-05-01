@@ -61,6 +61,10 @@ class EnvironmentalProfileService:
         # Get local soil pH from PostGIS
         local_ph = await get_soil_ph_for_point(db, lat, lon)
 
+        # Validate local pH (dataset range: 5–8.5)
+        if local_ph is not None and not (5 <= local_ph <= 8.5):
+            local_ph = None
+
         # Get local soil texture from PostGIS
         local_texture = await get_soil_texture_for_point(db, lat, lon)
 
@@ -93,7 +97,7 @@ class EnvironmentalProfileService:
                 "rainfall_mm": farm_record.rainfall_mm,
                 "temperature_celsius": farm_record.temperature_celsius,
                 "elevation_m": farm_record.elevation_m,
-                "soil_ph": local_ph if local_ph is not None else farm_record.ph,
+                "soil_ph": (local_ph if local_ph is not None else (farm_record.ph if farm_record.ph is not None and 5 <= farm_record.ph <= 8.5 else None)),
                 "soil_texture_id": farm_record.soil_texture_id,
                 "soil_texture": local_texture,
                 "area_ha": farm_record.area_ha,
@@ -118,11 +122,11 @@ class EnvironmentalProfileService:
         # so they are treated as missing and picked up by the imputer rather than
         # silently becoming None only after Pydantic validation.
         rainfall = profile.get("rainfall_mm")
-        if isinstance(rainfall, (int, float)) and not (1000 <= rainfall <= 3000):
+        if rainfall is not None and not (1000 <= rainfall <= 3000):
             profile["rainfall_mm"] = None
 
         temp = profile.get("temperature_celsius")
-        if isinstance(temp, (int, float)) and not (15 <= temp <= 30):
+        if temp is not None and not (15 <= temp <= 30):
             profile["temperature_celsius"] = None
 
         # TARGET_FEATURES uses imputer naming (slope, ph).
@@ -170,5 +174,12 @@ class EnvironmentalProfileService:
         # Round slope to 2 decimal places
         if profile.get("slope_degrees") is not None:
             profile["slope_degrees"] = round(float(profile["slope_degrees"]), 2)
+
+        # Fix incorrect imputation flags
+        if profile.get("rainfall_mm") is not None and 1000 <= float(profile["rainfall_mm"]) <= 3000:
+            profile.pop("rainfall_mm_imputed", None)
+
+        if profile.get("temperature_celsius") is not None and 15 <= float(profile["temperature_celsius"]) <= 30:
+            profile.pop("temperature_celsius_imputed", None)
 
         return profile

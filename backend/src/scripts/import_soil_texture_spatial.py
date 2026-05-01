@@ -35,6 +35,9 @@ async def import_soil_texture_spatial():
 
     gdf = gdf.to_crs(epsg=4326)
 
+    if TEXTURE_COLUMN not in gdf.columns:
+        raise ValueError(f"Column '{TEXTURE_COLUMN}' not found. Available columns: {list(gdf.columns)}")
+
     async with AsyncSessionLocal() as session:
         await session.execute(delete(SoilTextureSpatial))
 

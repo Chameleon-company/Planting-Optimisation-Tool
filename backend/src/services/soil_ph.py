@@ -11,7 +11,7 @@ async def get_soil_ph_for_point(
         """
         SELECT ph
         FROM soil_ph
-        WHERE ST_Contains(
+        WHERE ST_Intersects(
             geometry,
             ST_SetSRID(ST_Point(:longitude, :latitude), 4326)
         )
