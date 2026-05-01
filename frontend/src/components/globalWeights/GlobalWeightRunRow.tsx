@@ -52,9 +52,9 @@ export default function GlobalWeightRunRow({
           </div>
         </td>
         <td className="rec-td">{new Date(run.created_at).toLocaleString()}</td>
-        <td className="rec-td">{run.rf_bootstraps}</td>
+        <td className="rec-td">{run.bootstraps}</td>
         <td className="rec-td">
-          {run.rf_early_stopped ? (
+          {run.bootstrap_early_stopped ? (
             <span style={{ color: "#28a745", fontWeight: "bold" }}>Yes</span>
           ) : (
             <span style={{ color: "#6c757d" }}>No</span>

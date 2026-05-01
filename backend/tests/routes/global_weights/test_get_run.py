@@ -15,8 +15,8 @@ async def test_get_global_weight_run_detail(
     # Arrange
     run = GlobalWeightsRun(
         dataset_hash="hash",
-        rf_bootstraps=50,
-        rf_early_stopped=False,
+        bootstraps=50,
+        bootstrap_early_stopped=False,
         source="test source",
     )
     async_session.add(run)
@@ -46,7 +46,7 @@ async def test_get_global_weight_run_detail(
     payload = response.json()
 
     assert payload["run_id"] == str(run.id)
-    assert payload["rf_bootstraps"] == 50
+    assert payload["bootstraps"] == 50
     assert payload["source"] == "test source"
     assert len(payload["weights"]) == 1
     assert payload["weights"][0]["feature"] == "ph"

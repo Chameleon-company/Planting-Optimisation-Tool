@@ -30,8 +30,8 @@ def test_global_weights_run_repr():
     run = GlobalWeightsRun(
         id="00000000-0000-0000-0000-000000000000",
         dataset_hash="test-hash",
-        rf_bootstraps=100,
-        rf_early_stopped=True,
+        bootstraps=100,
+        bootstrap_early_stopped=True,
         source="unit test",
     )
 

@@ -31,8 +31,8 @@ async def list_global_weights_runs(
         GlobalWeightsRunSummarySchema(
             run_id=r.id,
             created_at=r.created_at,
-            rf_bootstraps=r.rf_bootstraps,
-            rf_early_stopped=r.rf_early_stopped,
+            bootstraps=r.bootstraps,
+            bootstrap_early_stopped=r.bootstrap_early_stopped,
             source=r.source,
         )
         for r in runs
@@ -62,8 +62,8 @@ async def get_global_weights_run(
     return GlobalWeightsRunDetailSchema(
         run_id=run.id,
         created_at=run.created_at,
-        rf_bootstraps=run.rf_bootstraps,
-        rf_early_stopped=run.rf_early_stopped,
+        bootstraps=run.bootstraps,
+        bootstrap_early_stopped=run.bootstrap_early_stopped,
         source=run.source,
         weights=[
             GlobalWeightItemSchema(

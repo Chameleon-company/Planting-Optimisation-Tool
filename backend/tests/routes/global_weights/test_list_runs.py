@@ -13,8 +13,8 @@ async def test_list_global_weight_runs(
     # Arrange
     run = GlobalWeightsRun(
         dataset_hash="abc",
-        rf_bootstraps=100,
-        rf_early_stopped=True,
+        bootstraps=100,
+        bootstrap_early_stopped=True,
         source="test source",
     )
     async_session.add(run)
@@ -32,6 +32,6 @@ async def test_list_global_weight_runs(
 
     assert isinstance(data, list)
     assert len(data) == 1
-    assert data[0]["rf_bootstraps"] == 100
-    assert data[0]["rf_early_stopped"] is True
+    assert data[0]["bootstraps"] == 100
+    assert data[0]["bootstrap_early_stopped"] is True
     assert data[0]["source"] == "test source"

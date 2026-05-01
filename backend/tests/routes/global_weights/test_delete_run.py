@@ -14,8 +14,8 @@ async def test_delete_global_weight_run(
     # Arrange
     run = GlobalWeightsRun(
         dataset_hash="hash",
-        rf_bootstraps=10,
-        rf_early_stopped=True,
+        bootstraps=10,
+        bootstrap_early_stopped=True,
         source="test",
     )
     async_session.add(run)

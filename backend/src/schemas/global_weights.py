@@ -54,12 +54,12 @@ class GlobalWeightsRunSummarySchema(BaseModel):
         title="Created at",
         description="Timestamp when the global weights were computed",
     )
-    rf_bootstraps: int = Field(
+    bootstraps: int = Field(
         title="RF bootstraps",
         description="Number of Random Forest bootstrap samples used",
         ge=1,
     )
-    rf_early_stopped: bool = Field(
+    bootstrap_early_stopped: bool = Field(
         title="RF early stopped",
         description="Whether RF bootstrapping stopped early due to convergence",
     )
@@ -78,8 +78,8 @@ class GlobalWeightsRunDetailSchema(GlobalWeightsRunSummarySchema):
 
 
 class GlobalWeightsCSVMeta(BaseModel):
-    rf_bootstraps: int = Field(ge=0)
-    rf_early_stopped: bool
+    bootstraps: int = Field(ge=0)
+    bootstrap_early_stopped: bool
 
 
 class GlobalWeightsCSVRow(BaseModel):

@@ -32,8 +32,8 @@ class GlobalWeightsRun(Base):
     dataset_hash: Mapped[str] = mapped_column(nullable=False)
 
     # RF bootstrap metadata
-    rf_bootstraps: Mapped[int] = mapped_column(nullable=False)
-    rf_early_stopped: Mapped[bool] = mapped_column(nullable=False)
+    bootstraps: Mapped[int] = mapped_column(nullable=False)
+    bootstrap_early_stopped: Mapped[bool] = mapped_column(nullable=False)
 
     # Optional source info (e.g. Imported from CSV)
     source: Mapped[str | None] = mapped_column(Text, nullable=True)

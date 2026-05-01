@@ -11,8 +11,8 @@ async def test_delete_global_weight_run_cascades(async_session):
     """Test that deleting a global weight run also deletes its associated weights."""
     run = GlobalWeightsRun(
         dataset_hash="hash",
-        rf_bootstraps=50,
-        rf_early_stopped=False,
+        bootstraps=50,
+        bootstrap_early_stopped=False,
     )
     async_session.add(run)
     await async_session.flush()

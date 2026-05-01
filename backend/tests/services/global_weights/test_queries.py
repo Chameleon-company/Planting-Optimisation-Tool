@@ -9,8 +9,8 @@ async def test_get_latest_global_weights(async_session):
     """Test retrieving the latest global weights."""
     run = GlobalWeightsRun(
         dataset_hash="hash",
-        rf_bootstraps=100,
-        rf_early_stopped=True,
+        bootstraps=100,
+        bootstrap_early_stopped=True,
         source="test",
     )
     async_session.add(run)

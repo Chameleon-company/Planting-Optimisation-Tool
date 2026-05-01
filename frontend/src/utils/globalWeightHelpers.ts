@@ -10,8 +10,8 @@ export interface GlobalWeightItem {
 export interface GlobalWeightsRunSummary {
   run_id: string;
   created_at: string;
-  rf_bootstraps: number;
-  rf_early_stopped: boolean;
+  bootstraps: number;
+  bootstrap_early_stopped: boolean;
   source: string | null;
 }
 

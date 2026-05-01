@@ -34,15 +34,15 @@ def parse_global_weights_csv(file) -> tuple[GlobalWeightsCSVMeta, list[GlobalWei
         feature = raw.get("feature", "")
 
         if i == 0 and feature == "__META__":
-            rf_bootstraps = raw.get("rf_bootstraps")
-            rf_early_stopped = raw.get("rf_early_stopped")
+            bootstraps = raw.get("bootstraps")
+            bootstrap_early_stopped = raw.get("bootstrap_early_stopped")
 
-            if not rf_bootstraps or not rf_early_stopped:
-                raise GlobalWeightsCSVError("META row must define rf_bootstraps and rf_early_stopped")
+            if not bootstraps or not bootstrap_early_stopped:
+                raise GlobalWeightsCSVError("META row must define bootstraps and bootstrap_early_stopped")
 
             meta = GlobalWeightsCSVMeta(
-                rf_bootstraps=int(rf_bootstraps),
-                rf_early_stopped=rf_early_stopped.lower() == "true",
+                bootstraps=int(bootstraps),
+                bootstrap_early_stopped=bootstrap_early_stopped.lower() == "true",
             )
 
             continue
@@ -101,8 +101,8 @@ async def import_global_weights_from_csv(
     run = GlobalWeightsRun(
         id=uuid4(),
         dataset_hash=dataset_hash,
-        rf_bootstraps=meta.rf_bootstraps,
-        rf_early_stopped=meta.rf_early_stopped,
+        bootstraps=meta.bootstraps,
+        bootstrap_early_stopped=meta.bootstrap_early_stopped,
         source="Imported from CSV",
     )
 

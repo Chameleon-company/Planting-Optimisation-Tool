@@ -1,8 +1,8 @@
-"""add global weights tables
+""" add global weights tables
 
-Revision ID: 07da42ffc600
+Revision ID: aee157e85e9c
 Revises: f4746a1d68d7
-Create Date: 2026-04-30 10:36:42.050823
+Create Date: 2026-05-01 16:03:55.096632
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '07da42ffc600'
+revision: str = 'aee157e85e9c'
 down_revision: Union[str, Sequence[str], None] = 'f4746a1d68d7'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,8 +25,8 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('dataset_hash', sa.String(), nullable=False),
-    sa.Column('rf_bootstraps', sa.Integer(), nullable=False),
-    sa.Column('rf_early_stopped', sa.Boolean(), nullable=False),
+    sa.Column('bootstraps', sa.Integer(), nullable=False),
+    sa.Column('bootstrap_early_stopped', sa.Boolean(), nullable=False),
     sa.Column('source', sa.Text(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
