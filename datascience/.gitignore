@@ -35,3 +35,4 @@ notebooks/*.csv
 # Input data files in the "notebooks" directory (sourced from MS Teams, not committed)
 notebooks/**/*.csv
 notebooks/**/*.xlsx
+src/scripts/**/*.csv
