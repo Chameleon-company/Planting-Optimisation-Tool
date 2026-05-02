@@ -1834,10 +1834,6 @@ main.container {
   border-color: #fecaca;
 }
 
-.admin-error-message {
-  color: #c0392b;
-}
-
 .admin-modal-backdrop {
   align-items: center;
   background: rgba(0, 0, 0, 0.45);
@@ -1987,4 +1983,14 @@ main.container {
   font-weight: 700;
   margin-right: 6px;
   padding: 4px 8px;
+}
+
+.admin-error-message {
+  background: #f8d7da;
+  border: 1px solid #f5c2c7;
+  border-radius: 8px;
+  color: #842029;
+  font-weight: 600;
+  margin: 12px 0;
+  padding: 12px 14px;
 }

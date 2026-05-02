@@ -55,7 +55,7 @@ def handle_port(port):
             continue
 
 
-def wait_for_api(url="127.0.0.1", port=8080, timeout=15):
+def wait_for_api(url="127.0.0.1", port=8080, timeout=60):
     """Checks if API is up without using external tools."""
     print(f"Waiting for API to respond on port {port}...")
     for i in range(timeout):

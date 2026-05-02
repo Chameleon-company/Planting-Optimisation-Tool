@@ -27,4 +27,4 @@ COPY backend/ backend/
 WORKDIR /app/backend
 
 # PORT is injected by Render at runtime. Falls back to 8080 for local use.
-CMD uv run uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080}
+CMD /app/backend/.venv/bin/uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080}
