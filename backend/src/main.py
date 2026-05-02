@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from core.gee_client import init_gee
 from fastapi import FastAPI, Request
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
@@ -84,13 +84,25 @@ app.include_router(reporting.router)
 @app.exception_handler(RequestValidationError)
 async def request_validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = [{"field": ".".join(str(loc) for loc in err["loc"] if loc != "body"), "message": err["msg"]} for err in exc.errors()]
-    return JSONResponse(status_code=422, content={"detail": "Validation failed", "errors": errors})
+    return JSONResponse(status_code=422, content={"detail": errors, "errors": errors})
 
 
 @app.exception_handler(ValidationError)
 async def pydantic_validation_exception_handler(request: Request, exc: ValidationError):
     errors = [{"field": ".".join(str(loc) for loc in err["loc"]), "message": err["msg"]} for err in exc.errors()]
-    return JSONResponse(status_code=422, content={"detail": "Validation failed", "errors": errors})
+    return JSONResponse(status_code=422, content={"detail": errors, "errors": errors})
+
+
+@app.exception_handler(ResponseValidationError)
+async def response_validation_exception_handler(request: Request, exc: ResponseValidationError):
+    errors = [
+        {
+            "field": ".".join(str(loc) for loc in err["loc"]),
+            "message": err["msg"],
+        }
+        for err in exc.errors()
+    ]
+    return JSONResponse(status_code=422, content={"detail": errors})
 
 
 _request_logger = logging.getLogger("api.requests")

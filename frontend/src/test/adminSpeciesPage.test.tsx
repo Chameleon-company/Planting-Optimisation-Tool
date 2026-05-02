@@ -240,3 +240,103 @@ describe("AdminSpeciesPage", () => {
     expect(await screen.findByText("Failed to fetch")).toBeInTheDocument();
   });
 });
+
+it("shows backend validation error inside the create modal and keeps it open", async () => {
+  const user = userEvent.setup();
+
+  vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+  vi.mocked(getSoilTextures).mockResolvedValue(mockSoilTextures);
+  vi.mocked(createSpecies).mockRejectedValue(
+    new Error("Temperature must be less than or equal to 50.")
+  );
+
+  renderPage();
+
+  await screen.findByRole("button", { name: /add species/i });
+
+  await user.click(screen.getByRole("button", { name: /add species/i }));
+
+  await user.type(screen.getByLabelText(/scientific name/i), "Invalid species");
+  await user.type(screen.getByLabelText(/common name/i), "Invalid common");
+
+  await user.click(screen.getByLabelText("sand"));
+  await user.click(screen.getByLabelText("block"));
+
+  await user.click(screen.getByRole("button", { name: /save species/i }));
+
+  expect(
+    await screen.findByText("Temperature must be less than or equal to 50.")
+  ).toBeInTheDocument();
+
+  expect(screen.getByRole("dialog")).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: /add species/i })
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByText(/species created successfully/i)
+  ).not.toBeInTheDocument();
+});
+
+it("clears backend validation error when the create modal is reopened", async () => {
+  const user = userEvent.setup();
+
+  vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+  vi.mocked(getSoilTextures).mockResolvedValue(mockSoilTextures);
+  vi.mocked(createSpecies).mockRejectedValueOnce(
+    new Error("Temperature must be less than or equal to 50.")
+  );
+
+  renderPage();
+
+  await screen.findByRole("button", { name: /add species/i });
+
+  await user.click(screen.getByRole("button", { name: /add species/i }));
+
+  await user.type(screen.getByLabelText(/scientific name/i), "Invalid species");
+  await user.type(screen.getByLabelText(/common name/i), "Invalid common");
+
+  await user.click(screen.getByLabelText("sand"));
+  await user.click(screen.getByLabelText("block"));
+
+  await user.click(screen.getByRole("button", { name: /save species/i }));
+
+  expect(
+    await screen.findByText("Temperature must be less than or equal to 50.")
+  ).toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: /cancel/i }));
+  await user.click(screen.getByRole("button", { name: /add species/i }));
+
+  expect(
+    screen.queryByText("Temperature must be less than or equal to 50.")
+  ).not.toBeInTheDocument();
+});
+
+it("shows backend validation error inside the edit modal and keeps it open", async () => {
+  const user = userEvent.setup();
+
+  vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+  vi.mocked(getSoilTextures).mockResolvedValue(mockSoilTextures);
+  vi.mocked(updateSpecies).mockRejectedValue(
+    new Error("pH must be between 0 and 14.")
+  );
+
+  renderPage();
+
+  await screen.findByRole("button", { name: /edit/i });
+
+  await user.click(screen.getByRole("button", { name: /edit/i }));
+  await user.click(screen.getByRole("button", { name: /save species/i }));
+
+  expect(
+    await screen.findByText("pH must be between 0 and 14.")
+  ).toBeInTheDocument();
+
+  expect(screen.getByRole("dialog")).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: /edit species/i })
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByText(/species updated successfully/i)
+  ).not.toBeInTheDocument();
+});
