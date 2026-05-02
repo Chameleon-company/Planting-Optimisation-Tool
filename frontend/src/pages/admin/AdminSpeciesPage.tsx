@@ -76,6 +76,7 @@ function AdminSpeciesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editingSpeciesId, setEditingSpeciesId] = useState<number | null>(null);
@@ -113,6 +114,7 @@ function AdminSpeciesPage() {
     setEditingSpeciesId(null);
     setFormData(emptyForm);
     setModalMode("create");
+    setFormError(null);
   }
 
   function openEditModal(item: Species) {
@@ -121,9 +123,13 @@ function AdminSpeciesPage() {
     setEditingSpeciesId(item.id);
     setFormData(buildSpeciesPayload(item));
     setModalMode("edit");
+    setFormError(null);
   }
 
   function closeModal() {
+    setFormError(null);
+    setError(null);
+    setSaving(false);
     setModalMode(null);
     setEditingSpeciesId(null);
     setFormData(emptyForm);
@@ -184,7 +190,11 @@ function AdminSpeciesPage() {
       closeModal();
       await loadSpecies();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save species");
+      const message =
+        err instanceof Error ? err.message : "Failed to save species.";
+
+      setFormError(message);
+      setError(null);
     } finally {
       setSaving(false);
     }
@@ -346,6 +356,11 @@ function AdminSpeciesPage() {
             </div>
 
             <form className="admin-species-form" onSubmit={handleSubmit}>
+              {formError && (
+                <div className="admin-error-message" role="alert">
+                  {formError}
+                </div>
+              )}
               <div className="admin-form-section">
                 <h4>Basic Details</h4>
 
