@@ -39,7 +39,7 @@ start:
     @echo "--- Starting Containers ---"
     @docker compose up -d {{SERVICE_NAME}} redis
     @echo "Waiting for DB to be ready..."
-    @{{PYTHON}} -c "import time; time.sleep(5)"
+    @{{PYTHON}} -c "import subprocess, time, sys; [time.sleep(1) for _ in range(60) if subprocess.run(['docker','compose','exec','-T','{{CONTAINER_NAME}}','pg_isready','-q'], capture_output=True).returncode != 0] or None; sys.exit(0) if subprocess.run(['docker','compose','exec','-T','{{CONTAINER_NAME}}','pg_isready','-q'], capture_output=True).returncode == 0 else (print('Database failed to become ready after 60s') or sys.exit(1))"
 
 # Migrates the database (alembic migration scripts)
 migrate: ensure-env
