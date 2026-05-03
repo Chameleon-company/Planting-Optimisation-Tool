@@ -134,3 +134,27 @@ describe("speciesApi", () => {
     );
   });
 });
+
+it("formats backend validation detail arrays", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    mockJsonResponse(
+      {
+        detail: [
+          { msg: "Temperature must be less than or equal to 50." },
+          { msg: "pH must be between 0 and 14." },
+        ],
+      },
+      false
+    )
+  );
+
+  await expect(createSpecies(speciesPayload, "test-token")).rejects.toThrow(
+    "Temperature must be less than or equal to 50. pH must be between 0 and 14."
+  );
+});
+
+it("falls back when backend error format is unknown", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(mockJsonResponse({}, false));
+
+  await expect(getAllSpecies("test-token")).rejects.toThrow("API error");
+});
