@@ -129,6 +129,12 @@ function LoginPage() {
                 <p className="login-field-error">{passwordError}</p>
               ) : null}
             </div>
+            <div className="login-form-meta">
+              <span />
+              <Link to="/forgot-password" className="login-link">
+                Forgot password?
+              </Link>
+            </div>
 
             {errorMessage ? (
               <div className="login-message login-message-error">

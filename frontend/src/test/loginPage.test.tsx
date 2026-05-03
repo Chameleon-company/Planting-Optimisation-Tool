@@ -70,6 +70,14 @@ describe("LoginPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders forgot password link that points to the forgot password page", () => {
+    renderLoginPage();
+
+    expect(
+      screen.getByRole("link", { name: /forgot password/i })
+    ).toHaveAttribute("href", "/forgot-password");
+  });
+
   it("submits credentials correctly when sign in is clicked", async () => {
     mockLogin.mockResolvedValueOnce(undefined);
 
