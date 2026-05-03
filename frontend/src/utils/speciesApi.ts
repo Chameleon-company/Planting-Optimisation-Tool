@@ -59,11 +59,64 @@ export interface SpeciesPayload {
 async function handleResponse(res: Response) {
   if (!res.ok) {
     const error = await res.json();
-    throw new Error(error.detail || "API error");
+    throw new Error(formatApiError(error));
   }
   return res.json();
 }
 
+function formatFieldName(field: string): string {
+  const base = field
+    .replace("response.", "")
+    .replace("body.", "")
+    .split("_")[0];
+
+  if (base.toLowerCase() === "ph") {
+    return "pH";
+  }
+
+  return base.replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function formatApiError(error: unknown): string {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "detail" in error &&
+    Array.isArray(error.detail)
+  ) {
+    return error.detail
+      .map(item => {
+        if (typeof item === "object" && item !== null) {
+          const field =
+            "field" in item && typeof item.field === "string"
+              ? formatFieldName(item.field)
+              : "";
+
+          if ("msg" in item && typeof item.msg === "string") {
+            return field ? `${field}: ${item.msg}` : item.msg;
+          }
+
+          if ("message" in item && typeof item.message === "string") {
+            return field ? `${field}: ${item.message}` : item.message;
+          }
+        }
+
+        return "Invalid species data.";
+      })
+      .join(" ");
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "detail" in error &&
+    typeof error.detail === "string"
+  ) {
+    return error.detail;
+  }
+
+  return "API error";
+}
 // ---------- SPECIES ----------
 
 export async function getAllSpecies(token: string): Promise<Species[]> {
