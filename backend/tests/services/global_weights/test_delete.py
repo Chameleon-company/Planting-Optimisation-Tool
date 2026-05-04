@@ -1,6 +1,8 @@
+from asyncio import run
 from uuid import uuid4
 
 import pytest
+from tests.conftest import async_session
 from sqlalchemy import select
 
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
@@ -17,23 +19,23 @@ async def test_delete_global_weight_run_cascades(async_session):
     async_session.add(run)
     await async_session.flush()
 
-    async_session.add(
-        GlobalWeights(
-            run_id=run.id,
-            feature="ph",
-            mean_weight=0.10,
-            ci_lower=0.0,
-            ci_upper=0.20,
-            ci_width=0.20,
-            touches_zero=True,
-        )
+    weight = GlobalWeights(
+        run_id=run.id,
+        feature="ph",
+        mean_weight=0.10,
+        ci_lower=0.0,
+        ci_upper=0.20,
+        ci_width=0.20,
+        touches_zero=True,
     )
+    async_session.add(weight)
     await async_session.commit()
 
     await async_session.delete(run)
     await async_session.commit()
 
-    remaining = (await async_session.execute(select(GlobalWeights))).scalars().all()
+    result = await async_session.execute(select(GlobalWeights).where(GlobalWeights.run_id == run.id))
+    remaining = result.scalars().all()
 
     assert remaining == []
 

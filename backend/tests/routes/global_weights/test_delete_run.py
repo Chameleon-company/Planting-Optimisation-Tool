@@ -21,17 +21,16 @@ async def test_delete_global_weight_run(
     async_session.add(run)
     await async_session.flush()
 
-    async_session.add(
-        GlobalWeights(
-            run_id=run.id,
-            feature="ph",
-            mean_weight=0.1,
-            ci_lower=0.0,
-            ci_upper=0.2,
-            ci_width=0.2,
-            touches_zero=True,
-        )
+    weight = GlobalWeights(
+        run_id=run.id,
+        feature="ph",
+        mean_weight=0.1,
+        ci_lower=0.0,
+        ci_upper=0.2,
+        ci_width=0.2,
+        touches_zero=True,
     )
+    async_session.add(weight)
     await async_session.commit()
 
     # Act
@@ -43,5 +42,6 @@ async def test_delete_global_weight_run(
     # Assert
     assert resp.status_code == 204
 
-    remaining = (await async_session.execute(select(GlobalWeights))).scalars().all()
+    result = await async_session.execute(select(GlobalWeights).where(GlobalWeights.run_id == run.id))
+    remaining = result.scalars().all()
     assert remaining == []
