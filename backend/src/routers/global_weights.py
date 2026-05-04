@@ -1,9 +1,8 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Response
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.responses import StreamingResponse
 
 from src.database import get_db_session
 from src.dependencies import require_role
@@ -118,7 +117,7 @@ async def import_global_weights(
     }
 
 
-@router.post("/epi-add-scores", response_class=StreamingResponse)
+@router.post("/epi-add-scores", response_class=Response)
 async def score_epi_csv(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db_session),
@@ -135,8 +134,8 @@ async def score_epi_csv(
         csv_bytes=csv_bytes,
     )
 
-    return StreamingResponse(
-        iter([output_bytes]),
+    return Response(
+        content=output_bytes,
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=epi_farm_species_scores_data.csv"},
     )
