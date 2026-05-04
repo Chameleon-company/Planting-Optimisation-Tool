@@ -28,6 +28,9 @@ export default function AdminLayout() {
         </div>
 
         <nav className="admin-nav">
+          <NavLink to="/" className="admin-nav-link">
+            Home
+          </NavLink>
           <NavLink
             to="/admin"
             end
@@ -39,15 +42,6 @@ export default function AdminLayout() {
           </NavLink>
 
           <NavLink
-            to="/admin/settings"
-            className={({ isActive }) =>
-              `admin-nav-link ${isActive ? "active" : ""}`
-            }
-          >
-            Settings
-          </NavLink>
-
-          <NavLink
             to="/admin/logs"
             className={({ isActive }) =>
               `admin-nav-link ${isActive ? "active" : ""}`
@@ -56,18 +50,6 @@ export default function AdminLayout() {
             Audit Logs
           </NavLink>
 
-          <NavLink
-            to="/admin/species"
-            className={({ isActive }) =>
-              `admin-nav-link ${isActive ? "active" : ""}`
-            }
-          >
-            Species Management
-          </NavLink>
-
-          <NavLink to="/" className="admin-nav-link">
-            Home
-          </NavLink>
         </nav>
       </aside>
 
