@@ -7,9 +7,7 @@ function ScoringParametersPage() {
         <title>Scoring Parameters | Planting Optimisation Tool</title>
       </Helmet>
       <h2>Scoring Parameters</h2>
-      <p>
-        UI for managing scoring parameters is currently not implemented
-      </p>
+      <p>UI for managing scoring parameters is currently not implemented</p>
     </>
   );
 }

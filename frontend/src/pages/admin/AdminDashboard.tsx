@@ -46,9 +46,7 @@ function AdminDashboard() {
             </svg>
             <div className="settings-card-text">
               <h3>Species Management</h3>
-              <p>
-                Configure tree species.
-              </p>
+              <p>Configure tree species.</p>
             </div>
           </NavLink>
 
@@ -203,7 +201,6 @@ function AdminDashboard() {
             </div>
           </NavLink>
         </div>
-
       </section>
     </>
   );

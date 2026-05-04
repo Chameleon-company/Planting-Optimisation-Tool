@@ -49,7 +49,6 @@ export default function AdminLayout() {
           >
             Audit Logs
           </NavLink>
-
         </nav>
       </aside>
 

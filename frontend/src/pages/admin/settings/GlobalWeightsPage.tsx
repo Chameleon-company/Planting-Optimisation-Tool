@@ -51,29 +51,72 @@ export default function GlobalWeightsPage() {
       <GlobalWeightsHeader />
 
       {/* EPI processing section */}
-      <div className="ahp-controls"
+      <div
+        className="ahp-controls"
         style={{
           marginBottom: epiError ? "16px" : "24px",
           padding: "20px",
           backgroundColor: "#f8fafc",
           border: "1px solid #e2e8f0",
-          borderRadius: "8px"
+          borderRadius: "8px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap", width: "100%" }}>
-
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "20px",
+            flexWrap: "wrap",
+            width: "100%",
+          }}
+        >
           {/* Text column */}
           <div style={{ flex: 1, minWidth: "300px" }}>
             <h3 style={{ margin: 0, marginBottom: "15px", fontSize: "1.2rem" }}>
               EPI Data Processor
             </h3>
             <p style={{ margin: 0, color: "#64748b", fontSize: "0.95rem" }}>
-              Upload a CSV containing <code style={{ backgroundColor: "#e2e8f0", padding: "2px 6px", borderRadius: "4px" }}>farm_id</code>, <code style={{ backgroundColor: "#e2e8f0", padding: "2px 6px", borderRadius: "4px" }}>species_id</code>, and <code style={{ backgroundColor: "#e2e8f0", padding: "2px 6px", borderRadius: "4px" }}>farm_mean_epi</code> to automatically generate and download an enriched file containing raw feature scores that can be used offline to generate the Global Weights CSV.
+              Upload a CSV containing{" "}
+              <code
+                style={{
+                  backgroundColor: "#e2e8f0",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                }}
+              >
+                farm_id
+              </code>
+              ,{" "}
+              <code
+                style={{
+                  backgroundColor: "#e2e8f0",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                }}
+              >
+                species_id
+              </code>
+              , and{" "}
+              <code
+                style={{
+                  backgroundColor: "#e2e8f0",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                }}
+              >
+                farm_mean_epi
+              </code>{" "}
+              to automatically generate and download an enriched file containing
+              raw feature scores that can be used offline to generate the Global
+              Weights CSV.
             </p>
           </div>
 
           {/* Button column */}
-          <div className="ahp-input-group" style={{ marginBottom: 0, flexShrink: 0 }}>
+          <div
+            className="ahp-input-group"
+            style={{ marginBottom: 0, flexShrink: 0 }}
+          >
             <input
               type="file"
               accept=".csv"
@@ -85,12 +128,17 @@ export default function GlobalWeightsPage() {
             <label
               htmlFor="epi-csv-upload"
               className="ahp-primary-btn"
-              style={{ margin: 0, textAlign: "center", display: "inline-block", backgroundColor: "#10b981", borderColor: "#10b981" }}
+              style={{
+                margin: 0,
+                textAlign: "center",
+                display: "inline-block",
+                backgroundColor: "#10b981",
+                borderColor: "#10b981",
+              }}
             >
               {isEpiLoading ? "Processing & Downloading..." : "Process EPI CSV"}
             </label>
           </div>
-
         </div>
       </div>
 
@@ -108,7 +156,9 @@ export default function GlobalWeightsPage() {
       {/* Upload Controls for Global Weights */}
       <div className="ahp-controls">
         <div className="ahp-input-group">
-          <h3 style={{ margin: 0, marginBottom: "15px", fontSize: "1.2rem" }}>Upload Global Weights (CSV)</h3>
+          <h3 style={{ margin: 0, marginBottom: "15px", fontSize: "1.2rem" }}>
+            Upload Global Weights (CSV)
+          </h3>
           <input
             type="file"
             accept=".csv"
