@@ -1,301 +1,291 @@
-/* ============ Page layout ============ ─ */
+/* ============ FARMS PAGE LAYOUT ============ */
 
 .farms-page {
-  margin: 0 auto;
-  max-width: 1200px;
-  padding: 2rem;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 .farms-page-header {
   align-items: center;
+  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
   justify-content: space-between;
-  margin-bottom: 1.75rem;
+  padding: 32px 7%;
 }
+
+/* ============ FARMS HEADER COMPONENT ============ */
 
 .farms-page-heading {
   align-items: baseline;
   display: flex;
-  gap: 0.75rem;
+  gap: 16px;
 }
 
 .farms-page-title {
-  color: var(--color-text-primary, #1a1a1a);
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: #fff;
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-weight: 700;
   margin: 0;
 }
 
 .farms-total-badge {
-  background: var(--color-background-secondary, #f4f4f2);
-  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
-  border-radius: 999px;
-  color: var(--color-text-secondary, #666);
-  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  color: #fff;
+  font-size: 0.9rem;
   font-weight: 500;
-  padding: 0.2rem 0.65rem;
+  padding: 6px 14px;
 }
 
-.farms-page-error {
-  background: var(--color-background-danger, #fcebeb);
-  border: 1px solid
-    color-mix(var(--color-text-danger, #a32d2d) 20%, transparent);
+/* ============ FARM ACTIONS BUTTONS ============ */
+
+.farm-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.farm-action-btn {
+  align-items: center;
+  background: #fff;
+  border: 0;
   border-radius: 8px;
-  color: var(--color-text-danger, #a32d2d);
-  font-size: 0.875rem;
-  margin-bottom: 1.25rem;
-  padding: 0.65rem 1rem;
+  color: #0e7a43;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 600;
+  gap: 8px;
+  padding: 10px 20px;
+  transition: all 0.2s ease;
 }
 
-/* ============ Table wrapper ============  */
+.farm-action-btn:hover {
+  background: #e8f5e9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.farm-action-btn-danger {
+  color: #c0392b;
+}
+
+.farm-action-btn-danger:hover {
+  background: #fdecea;
+  box-shadow: 0 4px 12px rgba(192, 59, 44, 0.15);
+}
+
+/* ============ FARMS TABLE ============ */
 
 .farms-table-wrapper {
-  background: var(--color-background-primary, #fff);
-  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
-  border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  padding: 32px 7%;
 }
 
 .farms-table {
-  border-collapse: collapse;
-  font-size: 0.875rem;
+  background: #fff;
+  border-collapse: separate;
+  border-radius: 12px;
+  border-spacing: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
   width: 100%;
 }
 
-/* ============ Table header ============ */
+.farms-table thead {
+  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
+}
 
 .farms-table-th {
-  background: var(--color-background-secondary, #f8f8f6);
-  border-bottom: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
-  color: var(--color-text-secondary, #666);
-  font-size: 0.75rem;
+  color: #fff;
+  font-size: 0.85rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
-  padding: 0.75rem 1rem;
+  padding: 16px 20px;
   text-align: left;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 
-/* ============ Table rows ============ */
+.farms-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 14px 20px;
+}
+
+.farms-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.farms-table tbody tr:hover {
+  background: #f0fdf4;
+}
 
 .farms-table-row {
-  border-bottom: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.06));
   cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.farms-table-row:last-child {
-  border-bottom: 0;
-}
-
-.farms-table-row:hover {
-  background: var(--color-background-secondary, #f8f8f6);
 }
 
 .farms-table-row-selected {
-  background: color-mix(var(--color-background-info, #e6f1fb) 40%, transparent);
+  background: #dcfce7;
 }
 
 .farms-table-row-selected:hover {
-  background: color-mix(var(--color-background-info, #e6f1fb) 60%, transparent);
+  background: #dcfce7;
 }
 
-.farms-table-td {
-  color: var(--color-text-primary, #1a1a1a);
-  padding: 0.875rem 1rem;
-  vertical-align: middle;
+/* Farm name cell with checkbox */
+.farms-table-td-name {
+  padding: 14px 20px;
 }
-
-.farms-table-td-coords {
-  color: var(--color-text-secondary, #666);
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* ============ Name cell with selector ============ */
 
 .farms-table-name-cell {
   align-items: center;
   display: flex;
-  gap: 0.625rem;
+  gap: 12px;
 }
 
 .farms-table-selector {
   align-items: center;
-  background: transparent;
-  border: 1.5px solid var(--color-border-secondary, rgba(0, 0, 0, 0.25));
+  border: 2px solid #cbd5e1;
   border-radius: 4px;
   cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
-  height: 16px;
+  display: inline-flex;
+  height: 18px;
   justify-content: center;
-  transition:
-    border-color 0.12s,
-    background 0.12s;
-  width: 16px;
-}
-
-.farms-table-selector:hover {
-  border-color: var(--color-text-secondary, #666);
+  transition: all 0.2s ease;
+  width: 18px;
 }
 
 .farms-table-selector-active {
-  background: var(--color-text-info, #185fa5);
-  border-color: var(--color-text-info, #185fa5);
+  background: #0e7a43;
+  border-color: #0e7a43;
+  position: relative;
 }
 
 .farms-table-selector-active::after {
-  border: 1.5px solid #fff;
-  border-left: 0;
-  border-top: 0;
-  display: block;
-  height: 7px;
-  transform: rotate(45deg) translateY(-1px);
-  width: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  position: absolute;
+}
+
+.farms-table-selector:hover {
+  border-color: #0e7a43;
+  transform: scale(1.05);
 }
 
 .farms-table-farm-name {
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* ============ Bool pills ============ */
+/* Table cell styling */
+.farms-table-td-coords {
+  color: #64748b;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
 
+/* Status pills */
 .farm-status-pill {
-  border-radius: 999px;
+  border-radius: 20px;
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  white-space: nowrap;
+  padding: 4px 12px;
+  text-align: center;
 }
 
 .farm-status-active {
-  background: #eaf3de;
-  color: #3b6d11;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .farm-status-inactive {
-  background: var(--color-background-secondary, #f1efe8);
-  color: var(--color-text-secondary, #5f5e5a);
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-/* ============ Empty & loading states ============ */
+/* ============ TABLE EMPTY STATES ============ */
 
 .farms-table-empty {
-  background: var(--color-background-primary, #fff);
-  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
-  border-radius: 12px;
-  padding: 3rem 2rem;
+  padding: 60px 7%;
   text-align: center;
 }
 
 .farms-table-empty-text {
-  color: var(--color-text-primary, #1a1a1a);
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin: 0 0 0.4rem;
+  color: #1e293b;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
 }
 
 .farms-table-empty-subtext {
-  color: var(--color-text-secondary, #666);
-  font-size: 0.85rem;
-  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
 }
 
+/* Table skeleton loading */
 .farms-table-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 12px;
 }
 
 .farms-table-skeleton-row {
-  animation: farm-skeleton-pulse 1.4s ease-in-out infinite;
-  background: var(--color-background-secondary, #f4f4f2);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
   border-radius: 8px;
   height: 48px;
 }
 
-.farms-table-skeleton-row:nth-child(2) {
-  animation-delay: 0.1s;
-}
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
 
-.farms-table-skeleton-row:nth-child(3) {
-  animation-delay: 0.2s;
-}
-
-.farms-table-skeleton-row:nth-child(4) {
-  animation-delay: 0.3s;
-}
-
-.farms-table-skeleton-row:nth-child(5) {
-  animation-delay: 0.4s;
-}
-
-@keyframes farm-skeleton-pulse {
-  0%,
   100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
+    background-position: -200% 0;
   }
 }
 
-/* ============ Table footer / pagination ============ */
+/* ============ TABLE FOOTER ============ */
 
 .farms-table-footer {
-  background: var(--color-background-secondary, #f8f8f6);
-  border-top: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
   display: flex;
   justify-content: flex-end;
-  padding: 0.75rem 1rem;
+  padding: 20px 24px;
 }
 
-/* ============ Modal overlay ============ */
+/* ============ MODAL STYLES ============ */
 
 .farms-modal-overlay {
   align-items: center;
-  animation: farms-modal-fade-in 0.15s ease;
-  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
+  bottom: 0;
   display: flex;
-  inset: 0;
   justify-content: center;
-  padding: 1rem;
+  left: 0;
   position: fixed;
+  right: 0;
+  top: 0;
   z-index: 1000;
 }
 
-@keyframes farms-modal-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
 .farms-modal {
-  animation: farms-modal-slide-in 0.18s ease;
-  background: var(--color-background-primary, #fff);
+  animation: modal-slide-in 0.3s ease;
+  background: #fff;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   max-height: 90vh;
-  max-width: 620px;
+  max-width: 900px;
   overflow-y: auto;
-  width: 100%;
+  width: 90%;
 }
 
-@keyframes farms-modal-slide-in {
+@keyframes modal-slide-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(-30px);
   }
 
   to {
@@ -306,283 +296,264 @@
 
 .farms-modal-header {
   align-items: center;
-  background: var(--color-background-primary, #fff);
-  border-bottom: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
+  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
+  border-radius: 16px 16px 0 0;
   display: flex;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  padding: 20px 28px;
 }
 
 .farms-modal-title {
-  color: var(--color-text-primary, #1a1a1a);
-  font-size: 1.1rem;
+  color: #fff;
+  font-size: 1.4rem;
   font-weight: 600;
   margin: 0;
 }
 
 .farms-modal-close {
-  background: 0;
+  background: rgba(255, 255, 255, 0.2);
   border: 0;
-  border-radius: 6px;
-  color: var(--color-text-secondary, #666);
+  border-radius: 8px;
+  color: #fff;
   cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0.25rem 0.5rem;
-  transition:
-    background 0.12s,
-    color 0.12s;
+  font-size: 1.2rem;
+  height: 32px;
+  transition: all 0.2s ease;
+  width: 32px;
 }
 
 .farms-modal-close:hover {
-  background: var(--color-background-secondary, #f4f4f2);
-  color: var(--color-text-primary, #1a1a1a);
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
 }
 
 .farms-modal-body {
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: 28px;
 }
 
-/* ============ Register form ============ */
+/* ============ FARM REGISTER/EDIT FORM ============ */
 
-.register-farm-section-label {
-  color: var(--color-text-secondary, #666);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  margin: 1.25rem 0 0.6rem;
-  text-transform: uppercase;
-}
-
-.register-farm-section-label:first-of-type {
-  margin-top: 0;
+.register-farm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .register-farm-grid {
   display: grid;
-  gap: 0.875rem;
-  grid-template-columns: 1fr 1fr;
-  margin-bottom: 0.25rem;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 .register-farm-field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-}
-
-.register-farm-label {
-  color: var(--color-text-secondary, #555);
-  font-size: 0.82rem;
-  font-weight: 500;
-}
-
-.register-farm-required {
-  color: var(--color-text-danger, #a32d2d);
-}
-
-.register-farm-input {
-  background: var(--color-background-primary, #fff);
-  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.2));
-  border-radius: 8px;
-  box-sizing: border-box;
-  color: var(--color-text-primary, #1a1a1a);
-  font-family: inherit;
-  font-size: 0.875rem;
-  padding: 0.55rem 0.75rem;
-  transition:
-    border-color 0.12s,
-    box-shadow 0.12s;
-  width: 100%;
-}
-
-.register-farm-input:focus {
-  border-color: var(--color-text-info, #185fa5);
-  box-shadow: 0 0 0 3px
-    color-mix(var(--color-text-info, #185fa5) 15%, transparent);
-  outline: 0;
-}
-
-.register-farm-input:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.register-farm-input-error {
-  border-color: var(--color-border-danger, #a32d2d);
-}
-
-.register-farm-input-error:focus {
-  border-color: var(--color-border-danger, #a32d2d);
-  box-shadow: 0 0 0 3px
-    color-mix(var(--color-text-danger, #a32d2d) 12%, transparent);
-}
-
-.register-farm-error {
-  color: var(--color-text-danger, #a32d2d);
-  font-size: 0.78rem;
-}
-
-.register-farm-toggle-group {
-  display: flex;
-  flex-wrap: wrap;
   gap: 8px;
 }
 
-.register-farm-toggle {
-  background: var(--surface);
-  border: 1px solid var(--border);
+.register-farm-field-full {
+  grid-column: 1 / -1;
+}
+
+.register-farm-label {
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.register-farm-required {
+  color: #e53e3e;
+}
+
+.register-farm-input {
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  color: var(--text);
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+.register-farm-input:focus {
+  border-color: #0e7a43;
+  box-shadow: 0 0 0 3px rgba(14, 122, 67, 0.1);
+  outline: none;
+}
+
+.register-farm-input-error {
+  border-color: #e53e3e;
+}
+
+.register-farm-error {
+  color: #e53e3e;
+  font-size: 0.75rem;
+}
+
+/* Toggle button groups */
+.register-farm-toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.register-farm-toggle {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
   cursor: pointer;
-  font-size: 0.875rem;
-  padding: 6px 14px;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.register-farm-toggle:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
 }
 
 .register-farm-toggle-active {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: #0e7a43;
+  border-color: #0e7a43;
   color: #fff;
 }
 
-/* ============ Form footer ============ */
-
-.register-farm-submit-error {
-  background: var(--color-background-danger, #fcebeb);
-  border: 1px solid
-    color-mix(var(--color-text-danger, #a32d2d) 20%, transparent);
-  border-radius: 8px;
-  color: var(--color-text-danger, #a32d2d);
-  font-size: 0.85rem;
-  margin: 1rem 0 0;
-  padding: 0.6rem 0.85rem;
-}
-
+/* Form actions */
 .register-farm-actions {
-  border-top: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
   display: flex;
-  gap: 0.625rem;
+  gap: 12px;
   justify-content: flex-end;
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
+  margin-top: 8px;
 }
 
 .register-farm-btn {
   border: 0;
   border-radius: 8px;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.55rem 1.1rem;
-  transition:
-    opacity 0.12s,
-    background 0.12s;
-}
-
-.register-farm-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.register-farm-btn-secondary {
-  background: var(--color-background-secondary, #f4f4f2);
-  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
-  color: var(--color-text-primary, #1a1a1a);
-}
-
-.register-farm-btn-secondary:hover:not(:disabled) {
-  background: var(--color-background-tertiary, #ededea);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 24px;
+  transition: all 0.2s ease;
 }
 
 .register-farm-btn-primary {
-  background: var(--color-text-info, #185fa5);
+  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
   color: #fff;
 }
 
 .register-farm-btn-primary:hover:not(:disabled) {
-  opacity: 0.88;
+  box-shadow: 0 4px 12px rgba(14, 122, 67, 0.3);
+  transform: translateY(-1px);
 }
 
-/* ============ FarmManageActions ============ */
-
-.farm-actions {
-  align-items: center;
-  display: flex;
-  gap: 0.5rem;
+.register-farm-btn-secondary {
+  background: #f1f5f9;
+  color: #1e293b;
 }
 
-.farm-action-btn {
-  background: var(--color-background-secondary, #f4f4f2);
-  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
+.register-farm-btn-secondary:hover:not(:disabled) {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.register-farm-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.register-farm-submit-error {
+  background: #fee2e2;
+  border-left: 4px solid #e53e3e;
   border-radius: 8px;
-  color: var(--color-text-primary, #1a1a1a);
-  cursor: pointer;
-  font-family: inherit;
+  color: #991b1b;
   font-size: 0.85rem;
-  font-weight: 500;
-  padding: 0.5rem 0.9rem;
-  transition: background 0.12s;
+  padding: 12px;
 }
 
-.farm-action-btn:hover {
-  background: var(--color-background-tertiary, #ededea);
+/* ============ ERROR STATE ============ */
+
+.farms-page-error {
+  background: #fee2e2;
+  border-left: 4px solid #e53e3e;
+  border-radius: 8px;
+  color: #991b1b;
+  margin: 20px 7%;
+  padding: 12px 20px;
 }
 
-.farm-action-btn-danger {
-  background: var(--color-background-danger, #fcebeb);
-  border-color: color-mix(var(--color-text-danger, #a32d2d) 20%, transparent);
-  color: var(--color-text-danger, #a32d2d);
-}
+/* ============ RESPONSIVE DESIGN ============ */
 
-.farm-action-btn-danger:hover {
-  background: color-mix(var(--color-text-danger, #a32d2d) 10%);
-}
-
-/* ============ Responsive ============ */
-
-@media (max-width: 700px) {
-  .farms-page {
-    padding: 1rem;
-  }
-
+@media (max-width: 768px) {
   .farms-page-header {
-    align-items: flex-start;
     flex-direction: column;
+    gap: 16px;
   }
 
-  .farms-table {
-    font-size: 0.8rem;
+  .farms-page-heading {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .farm-actions {
+    justify-content: center;
+  }
+
+  .farms-table-wrapper {
+    padding: 20px 4%;
   }
 
   .farms-table-th,
-  .farms-table-td {
-    padding: 0.65rem 0.6rem;
+  .farms-table td {
+    padding: 10px 12px;
   }
 
-  .farms-table th:nth-child(4),
-  .farms-table td:nth-child(4),
-  .farms-table th:nth-child(5),
-  .farms-table td:nth-child(5) {
-    display: none;
+  .farms-modal {
+    max-height: 95vh;
+    width: 95%;
+  }
+
+  .farms-modal-body {
+    padding: 20px;
   }
 
   .register-farm-grid {
     grid-template-columns: 1fr;
   }
+}
 
-  .farms-modal {
-    border-radius: 12px;
-    max-width: 100%;
+@media (max-width: 480px) {
+  .farm-action-btn {
+    font-size: 0.8rem;
+    padding: 8px 14px;
   }
 
-  .register-farm-checks {
-    gap: 0.5rem 0.75rem;
+  .farms-table-th,
+  .farms-table td {
+    font-size: 0.8rem;
+    padding: 8px 10px;
   }
+
+  .register-farm-toggle {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+}
+
+/* ============ SCROLLBAR STYLING ============ */
+
+.farms-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.farms-modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.farms-modal::-webkit-scrollbar-thumb {
+  background: #0e7a43;
+  border-radius: 4px;
+}
+
+.farms-modal::-webkit-scrollbar-thumb:hover {
+  background: #0a5c32;
 }

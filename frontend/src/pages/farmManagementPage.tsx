@@ -97,13 +97,13 @@ export default function FarmsPage() {
   const isLoading = farmsLoading || mutationLoading;
 
   return (
-    <div className="farmsPage">
+    <div className="farms-page">
       <Helmet>
         <title>Farm Management | Planting Optimisation Tool</title>
       </Helmet>
 
       {/* Header Container */}
-      <div className="farmsPageHeader">
+      <div className="farms-page-header">
         <FarmsHeader isLoading={farmsLoading} totalFarms={totalFarms} />
 
         {/* Component to call mutations */}
@@ -114,7 +114,7 @@ export default function FarmsPage() {
         />
       </div>
 
-      {error && <p className="farmsPageError">{error}</p>}
+      {error && <p className="farms-table-empty">{error}</p>}
 
       {/* Table to display conslidated farms data */}
       <FarmsTable

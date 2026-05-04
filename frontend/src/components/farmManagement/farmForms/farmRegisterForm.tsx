@@ -110,6 +110,7 @@ export default function RegisterFarmForm({
         latitude: parseFloat(form.latitude),
         longitude: parseFloat(form.longitude),
         coastal: form.coastal,
+        riparian: false,
         nitrogen_fixing: form.nitrogen_fixing,
         shade_tolerant: form.shade_tolerant,
         bank_stabilising: form.bank_stabilising,

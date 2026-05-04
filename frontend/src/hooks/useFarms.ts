@@ -14,6 +14,7 @@ export interface FarmCreatePayload {
   latitude: number;
   longitude: number;
   coastal: boolean;
+  riparian: boolean;
   nitrogen_fixing: boolean;
   shade_tolerant: boolean;
   bank_stabilising: boolean;

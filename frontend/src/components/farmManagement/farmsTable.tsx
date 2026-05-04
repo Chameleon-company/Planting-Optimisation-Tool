@@ -51,10 +51,10 @@ export default function FarmsTable({
   // if loading then display empty loading array with css styling
   if (isLoading) {
     return (
-      <div className="farmsTableEmpty">
-        <div className="farmsTableSkeleton">
+      <div className="farms-table-empty">
+        <div className="farms-table-skeleton">
           {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="farmsTableSkeletonRow" />
+            <div key={i} className="farms-table-skeleton-row" />
           ))}
         </div>
       </div>
@@ -64,9 +64,9 @@ export default function FarmsTable({
   // If the user has no farms, display this
   if (farms.length === 0) {
     return (
-      <div className="farmsTableEmpty">
-        <p className="farmsTableEmptyText">No farms registered yet.</p>
-        <p className="farmsTableEmptySubtext">
+      <div className="farms-table-empty">
+        <p className="farms-table-empty-text">No farms registered yet.</p>
+        <p className="farms-table-empty-subtext">
           Use the Register farm button to add your first property.
         </p>
       </div>
