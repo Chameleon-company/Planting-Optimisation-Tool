@@ -8,6 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
 from src.models.soil_texture import SoilTexture
+from src.schemas.constants import (
+    RAINFALL_MAX,
+    RAINFALL_MIN,
+    SOIL_PH_MAX,
+    SOIL_PH_MIN,
+    TEMPERATURE_MAX,
+    TEMPERATURE_MIN,
+)
 from src.services.soil_ph import get_soil_ph_for_point
 from src.services.soil_texture_spatial import get_soil_texture_for_point
 
@@ -62,7 +70,7 @@ class EnvironmentalProfileService:
         local_ph = await get_soil_ph_for_point(db, lat, lon)
 
         # Validate local pH (dataset range: 5–8.5)
-        if local_ph is not None and not (5 <= local_ph <= 8.5):
+        if local_ph is not None and not (SOIL_PH_MIN <= local_ph <= SOIL_PH_MAX):
             local_ph = None
 
         # Get local soil texture from PostGIS
@@ -122,11 +130,11 @@ class EnvironmentalProfileService:
         # so they are treated as missing and picked up by the imputer rather than
         # silently becoming None only after Pydantic validation.
         rainfall = profile.get("rainfall_mm")
-        if rainfall is not None and not (1000 <= rainfall <= 3000):
+        if rainfall is not None and not (RAINFALL_MIN <= rainfall <= RAINFALL_MAX):
             profile["rainfall_mm"] = None
 
         temp = profile.get("temperature_celsius")
-        if temp is not None and not (15 <= temp <= 30):
+        if temp is not None and not (TEMPERATURE_MIN <= temp <= TEMPERATURE_MAX):
             profile["temperature_celsius"] = None
 
         # TARGET_FEATURES uses imputer naming (slope, ph).
