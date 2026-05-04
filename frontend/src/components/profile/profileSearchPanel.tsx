@@ -36,20 +36,20 @@ export default function FarmSearchPanel({
         isLoading={isLoading}
       />
 
-      {error && <p className="farmListEmpty">{error}</p>}
+      {error && <p className="farm-list-empty">{error}</p>}
 
       {isSearching && isLoading && (
-        <p className="farmListEmpty">Loading profile...</p>
+        <p className="farm-list-empty">Loading profile...</p>
       )}
 
       {isSearching && !isLoading && profile && (
         <div>
           <FarmCard isSearched={true} farm={profile} />
 
-          <div className="farmBottomRow">
+          <div className="farm-bottom-row">
             {canEdit && (
               <button
-                className="farmActionBtn"
+                className="farm-action-btn"
                 onClick={() => navigate("/farms")}
               >
                 Manage
@@ -62,9 +62,9 @@ export default function FarmSearchPanel({
       {isSearching && !isLoading && !profile && !error && (
         <>
           {!user && (
-            <p className="farmListEmpty">You must be logged in to search.</p>
+            <p className="farm-list-empty">You must be logged in to search.</p>
           )}
-          {user && <p className="farmListEmpty">No profile found.</p>}
+          {user && <p className="farm-list-empty">No profile found.</p>}
         </>
       )}
     </>

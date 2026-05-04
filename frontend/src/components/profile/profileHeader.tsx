@@ -10,9 +10,9 @@ export default function ProfileHeader({
   farmCount,
 }: FarmProfileHeaderProps) {
   return (
-    <header className="farmProfileHeader">
-      <h1 className="farmProfileTitle">Environmental Profile</h1>
-      <p className="farmProfileSubtitle">
+    <header className="farm-profile-header">
+      <h1 className="farm-profile-title">Environmental Profile</h1>
+      <p className="farm-profile-subtitle">
         {userName
           ? `${userName} · ${farmCount} ${farmCount === 1 ? "Farm" : "Farms"}`
           : ""}

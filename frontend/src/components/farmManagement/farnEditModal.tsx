@@ -31,19 +31,19 @@ export default function EditFarmModal({
 
   return (
     <div
-      className="farmsModalOverlay"
+      className="farms-modal-overlay"
       onClick={e => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="farmsModal">
-        <div className="farmsModalHeader">
-          <h2 className="farmsModalTitle">Edit farm #{farm.id}</h2>
-          <button className="farmsModalClose" onClick={onClose}>
+      <div className="farms-modal">
+        <div className="farms-modal-header">
+          <h2 className="farms-modal-title">Edit farm #{farm.id}</h2>
+          <button className="farms-modal-close" onClick={onClose}>
             ✕
           </button>
         </div>
-        <div className="farmsModalBody">
+        <div className="farms-modal-body">
           <FarmEditForm farm={farm} onSuccess={onSuccess} onCancel={onClose} />
         </div>
       </div>

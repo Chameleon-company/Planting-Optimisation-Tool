@@ -25,13 +25,13 @@ export default function FarmList({
   const canEdit = user?.role === "supervisor" || user?.role === "admin";
 
   if (isLoading) {
-    return <p className="farmListEmpty">Loading farms...</p>;
+    return <p className="farm-list-empty">Loading farms...</p>;
   }
 
   // Not logged in
   if (!user) {
     return (
-      <p className="farmListEmpty">
+      <p className="farm-list-empty">
         You need to be logged in to see your farms.
       </p>
     );
@@ -41,12 +41,12 @@ export default function FarmList({
   if (farms.length === 0) {
     return (
       <>
-        <p className="farmListEmpty">No farms found.</p>
-        <div className="farmBottomRow">
-          <div className="farmBottomRow">
+        <p className="farm-list-empty">No farms found.</p>
+        <div className="farm-bottom-row">
+          <div className="farm-bottom-row">
             {canEdit && (
               <button
-                className="farmActionBtn"
+                className="farm-action-btn"
                 onClick={() => navigate("/farms")}
               >
                 Manage
@@ -61,17 +61,17 @@ export default function FarmList({
   // Logged in with farms displays all data
   return (
     <div>
-      <div className="farmList">
+      <div className="farm-list">
         {farms.map(farm => (
           <FarmCard isSearched={false} key={farm.id} farm={farm} />
         ))}
       </div>
 
-      <div className="farmBottomRow">
+      <div className="farm-bottom-row">
         <FarmPageNav page={page} totalPages={totalPages} setPage={setPage} />
 
         {canEdit && (
-          <button className="farmActionBtn" onClick={() => navigate("/farms")}>
+          <button className="farm-action-btn" onClick={() => navigate("/farms")}>
             (put Emoji here) Manage
           </button>
         )}

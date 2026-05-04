@@ -147,7 +147,7 @@ export default function FarmEditForm({
   };
 
   return (
-    <form className="registerFarmForm" onSubmit={handleSubmit} noValidate>
+    <form className="register-farm-form" onSubmit={handleSubmit} noValidate>
       <FarmFormFields
         form={form}
         errors={errors}
@@ -157,12 +157,12 @@ export default function FarmEditForm({
         onBooleanToggle={handleBooleanToggle}
       />
 
-      {submitError && <p className="registerFarmSubmitError">{submitError}</p>}
+      {submitError && <p className="register-farm-submit-error">{submitError}</p>}
 
-      <div className="registerFarmActions">
+      <div className="register-farm-actions">
         <button
           type="button"
-          className="registerFarmBtn registerFarmBtnSecondary"
+          className="register-farm-btn register-farm-btn-secondary"
           onClick={onCancel}
           disabled={isSubmitting}
         >
@@ -170,7 +170,7 @@ export default function FarmEditForm({
         </button>
         <button
           type="submit"
-          className="registerFarmBtn registerFarmBtnPrimary"
+          className="register-farm-btn register-farm-btn-primary"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Saving…" : "Save changes"}

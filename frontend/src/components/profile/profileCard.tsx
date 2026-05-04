@@ -17,56 +17,56 @@ export default function FarmCard({ farm, isSearched }: FarmCardProps) {
   ].filter(Boolean) as string[];
 
   return (
-    <div className={`farmCard ${isSearched ? "searchedCard" : ""}`}>
-      <div className="farmCardHeader">
-        <span className="farmCardId">Farm #{farm.id}</span>
-        <span className="farmCardArea">
+    <div className={`farm-card ${isSearched ? "searched-card" : ""}`}>
+      <div className="farm-card-header">
+        <span className="farm-card-id">Farm #{farm.id}</span>
+        <span className="farm-card-area">
           {Number(farm.area_ha).toFixed(3)} ha
         </span>
       </div>
 
-      <div className="farmCardGrid">
-        <div className="farmCardStat">
-          <span className="farmCardStatLabel">Rainfall</span>
-          <span className="farmCardStatValue">{farm.rainfall_mm} mm</span>
+      <div className="farm-card-grid">
+        <div className="farm-card-stat">
+          <span className="farm-card-stat-label">Rainfall</span>
+          <span className="farm-card-stat-value">{farm.rainfall_mm} mm</span>
         </div>
-        <div className="farmCardStat">
-          <span className="farmCardStatLabel">Temperature</span>
-          <span className="farmCardStatValue">
+        <div className="farm-card-stat">
+          <span className="farm-card-stat-label">Temperature</span>
+          <span className="farm-card-stat-value">
             {farm.temperature_celsius}°C
           </span>
         </div>
-        <div className="farmCardStat">
-          <span className="farmCardStatLabel">Elevation</span>
-          <span className="farmCardStatValue">{farm.elevation_m} m</span>
+        <div className="farm-card-stat">
+          <span className="farm-card-stat-label">Elevation</span>
+          <span className="farm-card-stat-value">{farm.elevation_m} m</span>
         </div>
-        <div className="farmCardStat">
-          <span className="farmCardStatLabel">Soil pH</span>
-          <span className="farmCardStatValue">
+        <div className="farm-card-stat">
+          <span className="farm-card-stat-label">Soil pH</span>
+          <span className="farm-card-stat-value">
             {farm.ph ? Number(farm.ph).toFixed(1) : "N/A"}
           </span>
         </div>
-        <div className="farmCardStat">
-          <span className="farmCardStatLabel">Slope</span>
-          <span className="farmCardStatValue">
+        <div className="farm-card-stat">
+          <span className="farm-card-stat-label">Slope</span>
+          <span className="farm-card-stat-value">
             {farm.slope ? Number(farm.slope).toFixed(2) : "N/A"}°
           </span>
         </div>
-        <div className="farmCardStat">
-          <span className="farmCardStatLabel">Soil Type</span>
-          <span className="farmCardStatValue">{farm.soil_texture.name}</span>
+        <div className="farm-card-stat">
+          <span className="farm-card-stat-label">Soil Type</span>
+          <span className="farm-card-stat-value">{farm.soil_texture.name}</span>
         </div>
       </div>
 
-      <div className="farmCardCoords">
+      <div className="farm-card-coords">
         📍 {Number(farm.latitude).toFixed(5)},{" "}
         {Number(farm.longitude).toFixed(5)}
       </div>
 
       {farm.agroforestry_type.length > 0 && (
-        <div className="farmCardTags">
+        <div className="farm-card-tags">
           {farm.agroforestry_type.map(type => (
-            <span key={type.name} className="farmTag farmTagAgroforestry">
+            <span key={type.name} className="farm-tag farm-tag-agroforestry">
               {type.name}
             </span>
           ))}
@@ -74,9 +74,9 @@ export default function FarmCard({ farm, isSearched }: FarmCardProps) {
       )}
 
       {tags.length > 0 && (
-        <div className="farmCardTags">
+        <div className="farm-card-tags">
           {tags.map(tag => (
-            <span key={tag} className="farmTag farmTagTrait">
+            <span key={tag} className="farm-tag farm-tag-trait">
               {tag}
             </span>
           ))}

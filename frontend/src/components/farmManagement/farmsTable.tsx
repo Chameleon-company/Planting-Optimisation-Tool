@@ -75,13 +75,13 @@ export default function FarmsTable({
 
   // Return table
   return (
-    <div className="farmsTableWrapper">
-      <table className="farmsTable">
+    <div className="farms-table-wrapper">
+      <table className="farms-table">
         <thead>
           {/* Table header element, map columns to table */}
           <tr>
             {COLUMNS.map(col => (
-              <th key={col} className="farmsTableTh">
+              <th key={col} className="farms-table-th">
                 {col}
               </th>
             ))}
@@ -112,7 +112,7 @@ export default function FarmsTable({
 
       {/* Page navigation logic from /profile */}
       {totalPages > 1 && (
-        <div className="farmsTableFooter">
+        <div className="farms-table-footer">
           <FarmPageNav page={page} totalPages={totalPages} setPage={setPage} />
         </div>
       )}

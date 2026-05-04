@@ -13,7 +13,7 @@ interface FarmsTableRowProps {
 function BoolCoastal({ value }: { value: boolean }) {
   return (
     <span
-      className={`farmStatusPill ${value ? "farmStatusActive" : "farmStatusInactive"}`}
+      className={`farm-status-pill ${value ? "farm-status-active" : "farm-status-inactive"}`}
     >
       {value ? "Yes" : "No"}
     </span>
@@ -30,15 +30,15 @@ export default function FarmsTableRow({
     // Change .css depending on if selected, on click triggers onrowclick handing row's farm
     // title when hovered over with mouse will display 'View farm dashboard'
     <tr
-      className={`farmsTableRow ${isSelected ? "farmsTableRowSelected" : ""}`}
+      className={`farms-table-row ${isSelected ? "farms-table-row-selected" : ""}`}
       onClick={() => onRowClick(farm)}
       title="View farm dashboard"
     >
       {/* Farm ID and row selector */}
-      <td className="farmsTableTd farmsTableTdName">
-        <div className="farmsTableNameCell">
+      <td className="farms-table-td farms-table-td-name">
+        <div className="farms-table-name-cell">
           <span
-            className={`farmsTableSelector ${isSelected ? "farmsTableSelectorActive" : ""}`}
+            className={`farms-table-selector ${isSelected ? "farms-table-selector-active" : ""}`}
             // If checkbox clicked, trigger on row select
             onClick={e => onRowSelect(e, farm.id)}
             title={isSelected ? "Deselect" : "Select"}
@@ -51,20 +51,20 @@ export default function FarmsTableRow({
                 onRowSelect(e as unknown as React.MouseEvent, farm.id);
             }}
           />
-          <span className="farmsTableFarmName">Farm #{farm.id}</span>
+          <span className="farms-table-farm-name">Farm #{farm.id}</span>
         </div>
       </td>
 
       {/* Rows for consildated data on farms */}
-      <td className="farmsTableTd farmsTableTdCoords">
+      <td className="farms-table-td farms-table-td-coords">
         {Number(farm.latitude).toFixed(4)}, {Number(farm.longitude).toFixed(4)}
       </td>
-      <td className="farmsTableTd">{farm.area_ha} ha</td>
-      <td className="farmsTableTd">{farm.rainfall_mm} mm</td>
-      <td className="farmsTableTd">{farm.soil_texture.name}</td>
-      <td className="farmsTableTd">{farm.temperature_celsius}°C</td>
+      <td className="farms-table-td">{farm.area_ha} ha</td>
+      <td className="farms-table-td">{farm.rainfall_mm} mm</td>
+      <td className="farms-table-td">{farm.soil_texture.name}</td>
+      <td className="farms-table-td">{farm.temperature_celsius}°C</td>
 
-      <td className="farmsTableTd">
+      <td className="farms-table-td">
         <BoolCoastal value={farm.coastal} />
       </td>
     </tr>
