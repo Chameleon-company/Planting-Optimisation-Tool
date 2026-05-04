@@ -247,7 +247,7 @@ def get_texture_id(geometry, year: int | None = None) -> int | None:
         return None
 
     if isinstance(texture_value, (int, float)):
-        return int(texture_value)
+        return int(round(texture_value))
 
     norm_name = _normalize_texture_name(texture_value)
     if norm_name is None:

@@ -319,7 +319,6 @@ def bulk_update_profiles(
                     geometries[farm_id],
                     fields,
                     year,
-                    **profile.to_dict(),
                 )
                 future_to_id[future] = farm_id
 

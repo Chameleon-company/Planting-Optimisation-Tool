@@ -103,7 +103,7 @@ DATASETS = {
         "asset_id": "OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02",
         "band": "b0",
         "scale": 250,
-        "reducer": "mean",
+        "reducer": "mode",
         "description": "USDA Soil Texture Classes",
         "unit": "class",
     },

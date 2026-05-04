@@ -175,11 +175,4 @@ class EnvironmentalProfileService:
         if profile.get("slope_degrees") is not None:
             profile["slope_degrees"] = round(float(profile["slope_degrees"]), 2)
 
-        # Fix incorrect imputation flags
-        if profile.get("rainfall_mm") is not None and 1000 <= float(profile["rainfall_mm"]) <= 3000:
-            profile.pop("rainfall_mm_imputed", None)
-
-        if profile.get("temperature_celsius") is not None and 15 <= float(profile["temperature_celsius"]) <= 30:
-            profile.pop("temperature_celsius_imputed", None)
-
         return profile
