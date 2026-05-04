@@ -40,8 +40,8 @@ export default function FarmsTable({
   // If there is no user, then display nothing
   if (!user) {
     return (
-      <div className="farmsTableEmpty">
-        <p className="farmsTableEmptyText">
+      <div className="farms-table-empty">
+        <p className="farms-table-empty-text">
           You must be logged in to view farms.
         </p>
       </div>
