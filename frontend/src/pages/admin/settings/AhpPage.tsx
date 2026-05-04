@@ -7,10 +7,10 @@ import {
   useAhpCalculation,
 } from "@/hooks/useAhp";
 
-import AhpHeader from "@/components/admin/ahp/AhpHeader";
-import { SpeciesSelector } from "@/components/admin/ahp/SpeciesSelector";
-import AhpComparison from "@/components/admin/ahp/AhpComparison";
-import AhpResultsTable from "@/components/admin/ahp/AhpResultsTable";
+import AhpHeader from "@/components/ahp/AhpHeader";
+import { SpeciesSelector } from "@/components/ahp/SpeciesSelector";
+import AhpComparison from "@/components/ahp/AhpComparison";
+import AhpResultsTable from "@/components/ahp/AhpResultsTable";
 
 export default function AhpPage() {
   // Custom Hooks

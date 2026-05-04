@@ -3,9 +3,9 @@ import { it, expect, describe, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import UserEvent from "@testing-library/user-event";
 
-import { SpeciesSelector } from "@/components/admin/ahp/SpeciesSelector";
-import AhpComparison from "@/components/admin/ahp/AhpComparison";
-import AhpResultsTable from "@/components/admin/ahp/AhpResultsTable";
+import { SpeciesSelector } from "@/components/ahp/SpeciesSelector";
+import AhpComparison from "@/components/ahp/AhpComparison";
+import AhpResultsTable from "@/components/ahp/AhpResultsTable";
 
 // Mock the species hook for the dropdown component
 vi.mock("@/hooks/useAhp", () => ({
