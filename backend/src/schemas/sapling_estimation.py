@@ -19,3 +19,7 @@ class SaplingEstimationResponse(BaseModel):
     aligned_count: Optional[int] = None
 
     optimal_angle: Optional[int] = None
+
+    # added rotational
+    rotation_average: Optional[float] = None
+    rotation_std_dev: Optional[float] = None

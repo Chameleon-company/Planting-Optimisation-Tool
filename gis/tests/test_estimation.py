@@ -53,3 +53,13 @@ def test_sapling_estimation(create_farm_polygon, create_dem_array):
 
     # Ensure slope values match grid size
     assert len(result["slope_values"]) == len(final_grid)
+
+    # US-045: Rotation statistics validation
+    assert "rotation_average" in result
+    assert "rotation_std_dev" in result
+
+    assert isinstance(result["rotation_average"], (float, int))
+    assert isinstance(result["rotation_std_dev"], (float, int))
+
+    assert result["rotation_std_dev"] >= 0
+    assert result["rotation_average"] >= 0
