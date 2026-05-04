@@ -1,5 +1,5 @@
 import pytest
-
+from sqlalchemy import delete
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
 from src.services.global_weights import get_latest_global_weights
 
@@ -46,3 +46,20 @@ async def test_get_latest_global_weights(async_session):
         "ph": 0.11,
         "soil_texture": 0.19,
     }
+
+
+@pytest.mark.asyncio
+async def test_get_latest_global_weights_no_run(async_session):
+    """
+    Test that get_latest_global_weights returns None
+    when the database has no GlobalWeightsRun records.
+    """
+    # Delete all runs in this transaction only
+    await async_session.execute(delete(GlobalWeightsRun))
+    await async_session.flush()  # Send the delete to the DB
+
+    # Query the clean, empty test database
+    result = await get_latest_global_weights(db=async_session)
+
+    # It should hit the `if not run:` block and return None
+    assert result is None

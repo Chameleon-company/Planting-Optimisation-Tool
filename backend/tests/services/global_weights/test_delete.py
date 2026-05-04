@@ -1,8 +1,6 @@
-from asyncio import run
 from uuid import uuid4
 
 import pytest
-from tests.conftest import async_session
 from sqlalchemy import select
 
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
