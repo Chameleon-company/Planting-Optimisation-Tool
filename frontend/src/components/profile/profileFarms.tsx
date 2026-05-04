@@ -1,12 +1,13 @@
-import FarmCard from "./profileAllCards";
+import FarmCard from "./profileCard";
 import FarmPageNav from "./profilePageNav";
-import ProfileEditActions from "./profileEditButtons";
+
+import { useAuth } from "@/contexts/AuthContext";
 import { Farm } from "@/hooks/useUserProfiles";
+import { useNavigate } from "react-router-dom";
 
 interface FarmListProps {
   farms: Farm[];
   isLoading: boolean;
-  user: { name: string } | null;
   page: number;
   totalPages: number;
   setPage: (page: number) => void;
@@ -15,11 +16,14 @@ interface FarmListProps {
 export default function FarmList({
   farms,
   isLoading,
-  user,
   page,
   totalPages,
   setPage,
 }: FarmListProps) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const canEdit = user?.role === "supervisor" || user?.role === "admin";
+
   if (isLoading) {
     return <p className="farmListEmpty">Loading farms...</p>;
   }
@@ -39,7 +43,16 @@ export default function FarmList({
       <>
         <p className="farmListEmpty">No farms found.</p>
         <div className="farmBottomRow">
-          <ProfileEditActions />
+          <div className="farmBottomRow">
+            {canEdit && (
+              <button
+                className="farmActionBtn"
+                onClick={() => navigate("/farms")}
+              >
+                Manage
+              </button>
+            )}
+          </div>
         </div>
       </>
     );
@@ -50,13 +63,18 @@ export default function FarmList({
     <div>
       <div className="farmList">
         {farms.map(farm => (
-          <FarmCard key={farm.id} farm={farm} />
+          <FarmCard isSearched={false} key={farm.id} farm={farm} />
         ))}
       </div>
 
       <div className="farmBottomRow">
         <FarmPageNav page={page} totalPages={totalPages} setPage={setPage} />
-        <ProfileEditActions />
+
+        {canEdit && (
+          <button className="farmActionBtn" onClick={() => navigate("/farms")}>
+            (put Emoji here) Manage
+          </button>
+        )}
       </div>
     </div>
   );

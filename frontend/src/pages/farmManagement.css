@@ -1,0 +1,605 @@
+/* ============ Page layout ============ ─ */
+
+.farms-page {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 2rem;
+}
+
+.farms-page-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+
+.farms-page-heading {
+  align-items: baseline;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.farms-page-title {
+  color: var(--color-text-primary, #1a1a1a);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.farms-total-badge {
+  background: var(--color-background-secondary, #f4f4f2);
+  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
+  border-radius: 999px;
+  color: var(--color-text-secondary, #666);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.2rem 0.65rem;
+}
+
+.farms-page-error {
+  background: var(--color-background-danger, #fcebeb);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-danger, #a32d2d) 20%, transparent);
+  border-radius: 8px;
+  color: var(--color-text-danger, #a32d2d);
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+  padding: 0.65rem 1rem;
+}
+
+/* ============ Table wrapper ============  */
+
+.farms-table-wrapper {
+  background: var(--color-background-primary, #fff);
+  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.farms-table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+/* ============ Table header ============ */
+
+.farms-table-th {
+  background: var(--color-background-secondary, #f8f8f6);
+  border-bottom: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
+  color: var(--color-text-secondary, #666);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ============ Table rows ============ */
+
+.farms-table-row {
+  border-bottom: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.06));
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.farms-table-row:last-child {
+  border-bottom: 0;
+}
+
+.farms-table-row:hover {
+  background: var(--color-background-secondary, #f8f8f6);
+}
+
+.farms-table-row-selected {
+  background: color-mix(
+    in srgb,
+    var(--color-background-info, #e6f1fb) 40%,
+    transparent
+  );
+}
+
+.farms-table-row-selected:hover {
+  background: color-mix(
+    in srgb,
+    var(--color-background-info, #e6f1fb) 60%,
+    transparent
+  );
+}
+
+.farms-table-td {
+  color: var(--color-text-primary, #1a1a1a);
+  padding: 0.875rem 1rem;
+  vertical-align: middle;
+}
+
+.farms-table-td-coords {
+  color: var(--color-text-secondary, #666);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ============ Name cell with selector ============ */
+
+.farms-table-name-cell {
+  align-items: center;
+  display: flex;
+  gap: 0.625rem;
+}
+
+.farms-table-selector {
+  align-items: center;
+  background: transparent;
+  border: 1.5px solid var(--color-border-secondary, rgba(0, 0, 0, 0.25));
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  height: 16px;
+  justify-content: center;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+  width: 16px;
+}
+
+.farms-table-selector:hover {
+  border-color: var(--color-text-secondary, #666);
+}
+
+.farms-table-selector-active {
+  background: var(--color-text-info, #185fa5);
+  border-color: var(--color-text-info, #185fa5);
+}
+
+.farms-table-selector-active::after {
+  border: 1.5px solid #fff;
+  border-left: 0;
+  border-top: 0;
+  content: "";
+  display: block;
+  height: 7px;
+  transform: rotate(45deg) translateY(-1px);
+  width: 4px;
+}
+
+.farms-table-farm-name {
+  font-weight: 500;
+}
+
+/* ============ Bool pills ============ */
+
+.farm-status-pill {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  white-space: nowrap;
+}
+
+.farm-status-active {
+  background: #eaf3de;
+  color: #3b6d11;
+}
+
+.farm-status-inactive {
+  background: var(--color-background-secondary, #f1efe8);
+  color: var(--color-text-secondary, #5f5e5a);
+}
+
+/* ============ Empty & loading states ============ */
+
+.farms-table-empty {
+  background: var(--color-background-primary, #fff);
+  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.farms-table-empty-text {
+  color: var(--color-text-primary, #1a1a1a);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0 0 0.4rem;
+}
+
+.farms-table-empty-subtext {
+  color: var(--color-text-secondary, #666);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.farms-table-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.farms-table-skeleton-row {
+  animation: farm-skeleton-pulse 1.4s ease-in-out infinite;
+  background: var(--color-background-secondary, #f4f4f2);
+  border-radius: 8px;
+  height: 48px;
+}
+
+.farms-table-skeleton-row:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.farms-table-skeleton-row:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.farms-table-skeleton-row:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.farms-table-skeleton-row:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes farm-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============ Table footer / pagination ============ */
+
+.farms-table-footer {
+  background: var(--color-background-secondary, #f8f8f6);
+  border-top: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
+}
+
+/* ============ Modal overlay ============ */
+
+.farms-modal-overlay {
+  align-items: center;
+  animation: farms-modal-fade-in 0.15s ease;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 1000;
+}
+
+@keyframes farms-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.farms-modal {
+  animation: farms-modal-slide-in 0.18s ease;
+  background: var(--color-background-primary, #fff);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  max-height: 90vh;
+  max-width: 620px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+@keyframes farms-modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.farms-modal-header {
+  align-items: center;
+  background: var(--color-background-primary, #fff);
+  border-bottom: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
+  display: flex;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.farms-modal-title {
+  color: var(--color-text-primary, #1a1a1a);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.farms-modal-close {
+  background: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--color-text-secondary, #666);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.farms-modal-close:hover {
+  background: var(--color-background-secondary, #f4f4f2);
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+.farms-modal-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+/* ============ Register form ============ */
+
+.register-farm-section-label {
+  color: var(--color-text-secondary, #666);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 1.25rem 0 0.6rem;
+  text-transform: uppercase;
+}
+
+.register-farm-section-label:first-of-type {
+  margin-top: 0;
+}
+
+.register-farm-grid {
+  display: grid;
+  gap: 0.875rem;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 0.25rem;
+}
+
+.register-farm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.register-farm-label {
+  color: var(--color-text-secondary, #555);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.register-farm-required {
+  color: var(--color-text-danger, #a32d2d);
+}
+
+.register-farm-input {
+  background: var(--color-background-primary, #fff);
+  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.2));
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: var(--color-text-primary, #1a1a1a);
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 0.55rem 0.75rem;
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+  width: 100%;
+}
+
+.register-farm-input:focus {
+  border-color: var(--color-text-info, #185fa5);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-text-info, #185fa5) 15%, transparent);
+  outline: 0;
+}
+
+.register-farm-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.register-farm-input-error {
+  border-color: var(--color-border-danger, #a32d2d);
+}
+
+.register-farm-input-error:focus {
+  border-color: var(--color-border-danger, #a32d2d);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-text-danger, #a32d2d) 12%, transparent);
+}
+
+.register-farm-error {
+  color: var(--color-text-danger, #a32d2d);
+  font-size: 0.78rem;
+}
+
+.register-farm-toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.register-farm-toggle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 6px 14px;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.register-farm-toggle-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* ============ Form footer ============ */
+
+.register-farm-submit-error {
+  background: var(--color-background-danger, #fcebeb);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-danger, #a32d2d) 20%, transparent);
+  border-radius: 8px;
+  color: var(--color-text-danger, #a32d2d);
+  font-size: 0.85rem;
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.85rem;
+}
+
+.register-farm-actions {
+  border-top: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
+  display: flex;
+  gap: 0.625rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+}
+
+.register-farm-btn {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.55rem 1.1rem;
+  transition:
+    opacity 0.12s,
+    background 0.12s;
+}
+
+.register-farm-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.register-farm-btn-secondary {
+  background: var(--color-background-secondary, #f4f4f2);
+  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+.register-farm-btn-secondary:hover:not(:disabled) {
+  background: var(--color-background-tertiary, #ededea);
+}
+
+.register-farm-btn-primary {
+  background: var(--color-text-info, #185fa5);
+  color: #fff;
+}
+
+.register-farm-btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+/* ============ FarmManageActions ============ */
+
+.farm-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.farm-action-btn {
+  background: var(--color-background-secondary, #f4f4f2);
+  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
+  border-radius: 8px;
+  color: var(--color-text-primary, #1a1a1a);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 0.9rem;
+  transition: background 0.12s;
+}
+
+.farm-action-btn:hover {
+  background: var(--color-background-tertiary, #ededea);
+}
+
+.farm-action-btn-danger {
+  background: var(--color-background-danger, #fcebeb);
+  border-color: color-mix(
+    in srgb,
+    var(--color-text-danger, #a32d2d) 20%,
+    transparent
+  );
+  color: var(--color-text-danger, #a32d2d);
+}
+
+.farm-action-btn-danger:hover {
+  background: color-mix(
+    in srgb,
+    var(--color-background-danger, #fcebeb) 70%,
+    var(--color-text-danger, #a32d2d) 10%
+  );
+}
+
+/* ============ Responsive ============ */
+
+@media (max-width: 700px) {
+  .farms-page {
+    padding: 1rem;
+  }
+
+  .farms-page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .farms-table {
+    font-size: 0.8rem;
+  }
+
+  .farms-table-th,
+  .farms-table-td {
+    padding: 0.65rem 0.6rem;
+  }
+
+  .farms-table th:nth-child(4),
+  .farms-table td:nth-child(4),
+  .farms-table th:nth-child(5),
+  .farms-table td:nth-child(5) {
+    display: none;
+  }
+
+  .register-farm-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .farms-modal {
+    border-radius: 12px;
+    max-width: 100%;
+  }
+
+  .register-farm-checks {
+    gap: 0.5rem 0.75rem;
+  }
+}

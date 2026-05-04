@@ -1,15 +1,15 @@
 import FarmSearchInput from "./profileSearchInput";
-import EnvironmentalProfileCard from "./profileSearchedCard";
-import ProfileEditActions from "./profileEditButtons";
-import { EnvironmentalProfile } from "@/hooks/useSearchProfiles";
+import FarmCard from "./profileCard";
+import { Farm } from "@/hooks/useUserProfiles";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FarmSearchPanelProps {
   query: string;
   setQuery: (q: string) => void;
-  profile: EnvironmentalProfile | null;
+  profile: Farm | null;
   isLoading: boolean;
   error: string | null;
-  user: { name: string } | null;
 }
 
 export default function FarmSearchPanel({
@@ -18,8 +18,11 @@ export default function FarmSearchPanel({
   profile,
   isLoading,
   error,
-  user,
 }: FarmSearchPanelProps) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const canEdit = user?.role === "supervisor" || user?.role === "admin";
+
   const handleClear = () => setQuery("");
 
   const isSearching = query.trim().length > 0;
@@ -41,10 +44,17 @@ export default function FarmSearchPanel({
 
       {isSearching && !isLoading && profile && (
         <div>
-          <EnvironmentalProfileCard profile={profile} />
+          <FarmCard isSearched={true} farm={profile} />
 
           <div className="farmBottomRow">
-            <ProfileEditActions />
+            {canEdit && (
+              <button
+                className="farmActionBtn"
+                onClick={() => navigate("/farms")}
+              >
+                Manage
+              </button>
+            )}
           </div>
         </div>
       )}

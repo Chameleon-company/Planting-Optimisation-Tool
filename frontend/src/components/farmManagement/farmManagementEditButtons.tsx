@@ -1,21 +1,22 @@
 import { useAuth } from "@/contexts/AuthContext";
 
-interface ProfileEditProps {
+interface FarmEditProps {
   onAdd?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export default function ProfileEditActions({
+export default function FarmManageActions({
   onAdd,
   onEdit,
   onDelete,
-}: ProfileEditProps) {
+}: FarmEditProps) {
   // Call user details from context
   const { user } = useAuth();
 
-  // Officer role cannot add, edit or delete, supervisor can read and edit
-  // If user is admin show all post buttons, component is non-functional and currently cosmetic
+  // Depending on the user's role, show certain buttons to certain roles only
+  // This works with other role checks so that supervisors can only access
+  // and thus edit their own farms
   const canEdit = user?.role === "supervisor" || user?.role === "admin";
   const canAdd = user?.role === "admin";
   const canDelete = user?.role === "admin";
@@ -39,7 +40,7 @@ export default function ProfileEditActions({
       )}
       {canAdd && (
         <button className="farmActionBtn" onClick={onAdd}>
-          ➕ Add
+          ➕ Register
         </button>
       )}
     </div>

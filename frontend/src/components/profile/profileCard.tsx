@@ -2,10 +2,11 @@ import { Farm } from "@/hooks/useUserProfiles";
 
 interface FarmCardProps {
   farm: Farm;
+  isSearched: boolean;
 }
 
 // Create farm card that parses data from backend to be displayed in the frontend
-export default function FarmCard({ farm }: FarmCardProps) {
+export default function FarmCard({ farm, isSearched }: FarmCardProps) {
   // Convert boolean tags to strings to be displayed
   const tags = [
     farm.coastal && "Coastal",
@@ -16,7 +17,7 @@ export default function FarmCard({ farm }: FarmCardProps) {
   ].filter(Boolean) as string[];
 
   return (
-    <div className="farmCard">
+    <div className={`farmCard ${isSearched ? "searchedCard" : ""}`}>
       <div className="farmCardHeader">
         <span className="farmCardId">Farm #{farm.id}</span>
         <span className="farmCardArea">
