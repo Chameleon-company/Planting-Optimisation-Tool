@@ -3,8 +3,8 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { useGlobalWeightRuns } from "@/hooks/useGlobalWeightRuns";
 import { useEpiScoring } from "@/hooks/useEpiScoring";
-import GlobalWeightRunTable from "@/components/admin/globalWeights/GlobalWeightRunTable";
-import GlobalWeightsHeader from "@/components/admin/globalWeights/GlobalWeightsHeader";
+import GlobalWeightRunTable from "@/components/globalWeights/GlobalWeightRunTable";
+import GlobalWeightsHeader from "@/components/globalWeights/GlobalWeightsHeader";
 
 export default function GlobalWeightsPage() {
   const { runs, isLoading, error, uploadCsv, fetchRunDetails, deleteRun } =
