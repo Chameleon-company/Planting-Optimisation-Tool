@@ -153,7 +153,6 @@
   border: 1.5px solid #fff;
   border-left: 0;
   border-top: 0;
-  content: "";
   display: block;
   height: 7px;
   transform: rotate(45deg) translateY(-1px);
@@ -543,10 +542,7 @@
 }
 
 .farm-action-btn-danger:hover {
-  background: color-mix(
-    var(--color-background-danger, #fcebeb) 70%,
-    var(--color-text-danger, #a32d2d) 10%
-  );
+  background: color-mix(var(--color-text-danger, #a32d2d) 10%);
 }
 
 /* ============ Responsive ============ */
