@@ -62,3 +62,4 @@ def test_sapling_estimation(create_farm_polygon, create_dem_array):
     assert isinstance(result["rotation_std_dev"], (float, int))
 
     assert result["rotation_std_dev"] >= 0
+    assert result["rotation_average"] >= 0

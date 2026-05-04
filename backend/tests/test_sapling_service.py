@@ -85,6 +85,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     assert isinstance(result["rotation_std_dev"], (float, int))
 
     assert result["rotation_std_dev"] >= 0
+    assert result["rotation_average"] >= 0
 
     rows = await async_session.execute(
         text("SELECT COUNT(*) FROM planting_estimates WHERE farm_id = :id"),
