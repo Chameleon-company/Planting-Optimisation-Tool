@@ -3,12 +3,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import StreamingResponse
 
 from src.database import get_db_session
 from src.dependencies import require_role
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
 from src.schemas.global_weights import GlobalWeightItemSchema, GlobalWeightsRunDetailSchema, GlobalWeightsRunSummarySchema
 from src.schemas.user import Role, UserRead
+from src.services.epi_processing import process_epi_csv
 from src.services.global_weights import import_global_weights_from_csv
 
 router = APIRouter(prefix="/global-weights", tags=["Global Weights"])
@@ -114,3 +116,27 @@ async def import_global_weights(
         "status": "success",
         "run_id": run_id,
     }
+
+
+@router.post("/epi-add-scores", response_class=StreamingResponse)
+async def score_epi_csv(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.ADMIN)),
+):
+    """Endpoint to process an EPI CSV file and return a new CSV with scores added."""
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+
+    csv_bytes = await file.read()
+
+    output_bytes = await process_epi_csv(
+        db=db,
+        csv_bytes=csv_bytes,
+    )
+
+    return StreamingResponse(
+        iter([output_bytes]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=epi_farm_species_scores_data.csv"},
+    )

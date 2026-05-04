@@ -28,6 +28,7 @@ from src.routers import (
     species,
     user,
 )
+from src.services.epi_processing import EpiCSVError
 from src.services.global_weights import GlobalWeightsCSVError
 
 
@@ -110,6 +111,14 @@ async def response_validation_exception_handler(request: Request, exc: ResponseV
 
 @app.exception_handler(GlobalWeightsCSVError)
 async def global_weights_csv_exception_handler(request: Request, exc: GlobalWeightsCSVError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(EpiCSVError)
+async def epi_csv_exception_handler(request: Request, exc: EpiCSVError):
     return JSONResponse(
         status_code=400,
         content={"detail": str(exc)},
