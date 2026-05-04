@@ -161,7 +161,7 @@ describe("RegisterFarmModal interactions", () => {
     const onClose = vi.fn();
     render(<RegisterFarmModal onClose={onClose} onSuccess={vi.fn()} />);
     // Click the overlay element itself, not the modal card inside it
-    const overlay = document.querySelector(".farmsModalOverlay") as HTMLElement;
+    const overlay = document.querySelector(".farms-modal-overlay") as HTMLElement;
     await user.click(overlay);
     expect(onClose).toHaveBeenCalled();
   });

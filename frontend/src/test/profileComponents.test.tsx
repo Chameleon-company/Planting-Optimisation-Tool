@@ -144,7 +144,7 @@ describe("FarmCard", () => {
       <FarmCard farm={mockFarm(1)} isSearched={true} />
     );
     // The wrapper div should carry the extra CSS class when rendered as a search result
-    expect(container.firstChild).toHaveClass("searchedCard");
+    expect(container.firstChild).toHaveClass("searched-card");
   });
 
   it("does not apply the searchedCard class when isSearched is false", () => {
