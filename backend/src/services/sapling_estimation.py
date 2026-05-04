@@ -101,6 +101,8 @@ class SaplingEstimationService:
                 "pre_slope_count": estimation_result.get("pre_slope_count"),
                 "aligned_count": len(final_grid),
                 "optimal_angle": optimal_angle,
+                "rotation_average": estimation_result.get("rotation_average"),
+                "rotation_std_dev": estimation_result.get("rotation_std_dev"),
             }
 
         except Exception as e:
