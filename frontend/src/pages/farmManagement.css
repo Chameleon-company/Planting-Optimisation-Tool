@@ -41,7 +41,7 @@
 .farms-page-error {
   background: var(--color-background-danger, #fcebeb);
   border: 1px solid
-    color-mix(in srgb, var(--color-text-danger, #a32d2d) 20%, transparent);
+    color-mix(var(--color-text-danger, #a32d2d) 20%, transparent);
   border-radius: 8px;
   color: var(--color-text-danger, #a32d2d);
   font-size: 0.875rem;
@@ -96,19 +96,11 @@
 }
 
 .farms-table-row-selected {
-  background: color-mix(
-    in srgb,
-    var(--color-background-info, #e6f1fb) 40%,
-    transparent
-  );
+  background: color-mix(var(--color-background-info, #e6f1fb) 40%, transparent);
 }
 
 .farms-table-row-selected:hover {
-  background: color-mix(
-    in srgb,
-    var(--color-background-info, #e6f1fb) 60%,
-    transparent
-  );
+  background: color-mix(var(--color-background-info, #e6f1fb) 60%, transparent);
 }
 
 .farms-table-td {
@@ -411,7 +403,7 @@
 .register-farm-input:focus {
   border-color: var(--color-text-info, #185fa5);
   box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--color-text-info, #185fa5) 15%, transparent);
+    color-mix(var(--color-text-info, #185fa5) 15%, transparent);
   outline: 0;
 }
 
@@ -427,7 +419,7 @@
 .register-farm-input-error:focus {
   border-color: var(--color-border-danger, #a32d2d);
   box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--color-text-danger, #a32d2d) 12%, transparent);
+    color-mix(var(--color-text-danger, #a32d2d) 12%, transparent);
 }
 
 .register-farm-error {
@@ -465,7 +457,7 @@
 .register-farm-submit-error {
   background: var(--color-background-danger, #fcebeb);
   border: 1px solid
-    color-mix(in srgb, var(--color-text-danger, #a32d2d) 20%, transparent);
+    color-mix(var(--color-text-danger, #a32d2d) 20%, transparent);
   border-radius: 8px;
   color: var(--color-text-danger, #a32d2d);
   font-size: 0.85rem;
@@ -546,17 +538,12 @@
 
 .farm-action-btn-danger {
   background: var(--color-background-danger, #fcebeb);
-  border-color: color-mix(
-    in srgb,
-    var(--color-text-danger, #a32d2d) 20%,
-    transparent
-  );
+  border-color: color-mix(var(--color-text-danger, #a32d2d) 20%, transparent);
   color: var(--color-text-danger, #a32d2d);
 }
 
 .farm-action-btn-danger:hover {
   background: color-mix(
-    in srgb,
     var(--color-background-danger, #fcebeb) 70%,
     var(--color-text-danger, #a32d2d) 10%
   );
