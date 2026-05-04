@@ -1,9 +1,60 @@
 import io
+from uuid import uuid4
 
 import pytest
+from sqlalchemy import delete, select
 
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
-from src.services.global_weights import GlobalWeightsCSVError, import_global_weights_from_csv, parse_global_weights_csv
+from src.services.global_weights import GlobalWeightsCSVError, get_latest_global_weights, import_global_weights_from_csv, parse_global_weights_csv
+
+
+@pytest.mark.asyncio
+async def test_delete_global_weight_run_cascades(async_session):
+    """Test that deleting a global weight run also deletes its associated weights."""
+    run = GlobalWeightsRun(
+        dataset_hash="hash",
+        bootstraps=50,
+        bootstrap_early_stopped=False,
+    )
+    async_session.add(run)
+    await async_session.flush()
+
+    weight = GlobalWeights(
+        run_id=run.id,
+        feature="ph",
+        mean_weight=0.10,
+        ci_lower=0.0,
+        ci_upper=0.20,
+        ci_width=0.20,
+        touches_zero=True,
+    )
+    async_session.add(weight)
+    await async_session.commit()
+
+    await async_session.delete(run)
+    await async_session.commit()
+
+    result = await async_session.execute(select(GlobalWeights).where(GlobalWeights.run_id == run.id))
+    remaining = result.scalars().all()
+
+    assert remaining == []
+
+
+@pytest.mark.asyncio
+async def test_delete_global_weight_run_not_found(
+    async_client,
+    admin_auth_headers,
+):
+    """Test deleting a non-existent global weight run."""
+    non_existent_id = uuid4()
+
+    response = await async_client.delete(
+        f"/global-weights/runs/{non_existent_id}",
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Global weight run not found"}
 
 
 def test_parse_global_weights_csv_valid():
@@ -150,3 +201,64 @@ rainfall_mm,0.30,0.15,0.45,,
 
     with pytest.raises(GlobalWeightsCSVError, match=expected_error):
         parse_global_weights_csv(io.StringIO(csv_data))
+
+
+@pytest.mark.asyncio
+async def test_get_latest_global_weights(async_session):
+    """Test retrieving the latest global weights."""
+    run = GlobalWeightsRun(
+        dataset_hash="hash",
+        bootstraps=100,
+        bootstrap_early_stopped=True,
+        source="test",
+    )
+    async_session.add(run)
+    await async_session.flush()
+
+    async_session.add_all(
+        [
+            GlobalWeights(
+                run_id=run.id,
+                feature="ph",
+                mean_weight=0.11,
+                ci_lower=0.0,
+                ci_upper=0.25,
+                ci_width=0.25,
+                touches_zero=True,
+            ),
+            GlobalWeights(
+                run_id=run.id,
+                feature="soil_texture",
+                mean_weight=0.19,
+                ci_lower=0.07,
+                ci_upper=0.41,
+                ci_width=0.34,
+                touches_zero=False,
+            ),
+        ]
+    )
+    await async_session.commit()
+
+    weights = await get_latest_global_weights(async_session)
+
+    assert weights == {
+        "ph": 0.11,
+        "soil_texture": 0.19,
+    }
+
+
+@pytest.mark.asyncio
+async def test_get_latest_global_weights_no_run(async_session):
+    """
+    Test that get_latest_global_weights returns None
+    when the database has no GlobalWeightsRun records.
+    """
+    # Delete all runs in this transaction only
+    await async_session.execute(delete(GlobalWeightsRun))
+    await async_session.flush()  # Send the delete to the DB
+
+    # Query the clean, empty test database
+    result = await get_latest_global_weights(db=async_session)
+
+    # It should hit the `if not run:` block and return None
+    assert result is None

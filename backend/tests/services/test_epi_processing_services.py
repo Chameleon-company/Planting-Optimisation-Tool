@@ -1,4 +1,4 @@
-from unittest.mock import ANY, AsyncMock, patch, Mock
+from unittest.mock import ANY, AsyncMock, Mock, patch
 
 import pandas as pd
 import pytest
