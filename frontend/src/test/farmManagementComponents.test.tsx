@@ -12,6 +12,7 @@ import { useUserProfiles } from "@/hooks/useUserProfiles";
 import EditFarmModal from "@/components/farmManagement/farnEditModal";
 import { validate } from "@/components/farmManagement/farmForms/validate";
 import { useFarms } from "@/hooks/useFarms";
+import { FarmCreatePayload } from "@/hooks/useFarms";
 
 // Shared mock data
 const mockFarm = (id: number): Farm => ({
@@ -148,7 +149,7 @@ describe("FarmsTable", () => {
     render(<FarmsTable {...baseProps} isLoading={true} />);
     // A loading placeholder should appear while the API request is loading
     // The skeleton wrapper should be in the DOM
-    expect(document.querySelector(".farmsTableSkeleton")).toBeInTheDocument();
+    expect(document.querySelector(".farms-table-skeleton")).toBeInTheDocument();
   });
 
   it("shows an empty state when the farm array is empty", () => {
@@ -432,8 +433,6 @@ describe("validate", () => {
 
 // useFarms hook Tests
 
-import { FarmCreatePayload } from "@/hooks/useFarms";
-
 const createMockFarmPayload = (
   overrides?: Partial<FarmCreatePayload>
 ): FarmCreatePayload => ({
@@ -446,6 +445,7 @@ const createMockFarmPayload = (
   latitude: 0,
   longitude: 0,
   coastal: false,
+  riparian: false,
   nitrogen_fixing: false,
   shade_tolerant: false,
   bank_stabilising: false,
@@ -481,6 +481,7 @@ describe("useFarms", () => {
       latitude: -37.8,
       longitude: 144.9,
       coastal: false,
+      riparian: false,
       nitrogen_fixing: true,
       shade_tolerant: false,
       bank_stabilising: false,
