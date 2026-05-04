@@ -135,7 +135,9 @@ export default function RegisterFarmForm({
         onBooleanToggle={handleBooleanToggle}
       />
 
-      {submitError && <p className="register-farm-submit-error">{submitError}</p>}
+      {submitError && (
+        <p className="register-farm-submit-error">{submitError}</p>
+      )}
 
       <div className="register-farm-actions">
         <button

@@ -71,7 +71,10 @@ export default function FarmList({
         <FarmPageNav page={page} totalPages={totalPages} setPage={setPage} />
 
         {canEdit && (
-          <button className="farm-action-btn" onClick={() => navigate("/farms")}>
+          <button
+            className="farm-action-btn"
+            onClick={() => navigate("/farms")}
+          >
             (put Emoji here) Manage
           </button>
         )}

@@ -431,6 +431,29 @@ describe("validate", () => {
 });
 
 // useFarms hook Tests
+
+import { FarmCreatePayload } from "@/hooks/useFarms";
+
+const createMockFarmPayload = (
+  overrides?: Partial<FarmCreatePayload>
+): FarmCreatePayload => ({
+  rainfall_mm: 0,
+  temperature_celsius: 0,
+  elevation_m: 0,
+  ph: 7,
+  soil_texture_id: 1,
+  area_ha: 1,
+  latitude: 0,
+  longitude: 0,
+  coastal: false,
+  nitrogen_fixing: false,
+  shade_tolerant: false,
+  bank_stabilising: false,
+  slope: 0,
+  agroforestry_type_ids: [],
+  ...overrides,
+});
+
 describe("useFarms", () => {
   beforeEach(() => {
     // Ensure a valid token is returned for all hook tests
@@ -491,7 +514,7 @@ describe("useFarms", () => {
     const { result } = renderHook(() => useFarms());
     let ok: boolean;
     await act(async () => {
-      ok = await result.current.createFarm({} as any);
+      ok = await result.current.createFarm(createMockFarmPayload());
     });
 
     // A failed request should show API error message and return false
@@ -576,7 +599,9 @@ describe("useFarms", () => {
 
     let ok: boolean;
     await act(async () => {
-      ok = await result.current.createFarm({} as any);
+      ok = await result.current.createFarm(
+        {} as Partial<FarmCreatePayload> as FarmCreatePayload
+      );
     });
     expect(ok!).toBe(false);
   });
@@ -585,13 +610,11 @@ describe("useFarms", () => {
 // useUserProfiles hook
 describe("useUserProfiles", () => {
   it("fetches farms with the correct URL and Authorization header", async () => {
-    const fetchSpy = vi
-      .spyOn(global, "fetch")
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify([mockFarm(1), mockFarm(2)]), {
-          status: 200,
-        })
-      );
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify([mockFarm(1), mockFarm(2)]), {
+        status: 200,
+      })
+    );
 
     const { result } = renderHook(() => useUserProfiles());
 
