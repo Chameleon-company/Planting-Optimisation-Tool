@@ -16,7 +16,6 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogs from "./pages/admin/AdminLogs";
 import RequireRole from "./components/auth/RequireRole";
 import WeightingHub from "./pages/admin/settings/WeightingHub";
@@ -58,7 +57,6 @@ export default function App() {
               <Route index element={<AdminDashboard />} />
               <Route path="species" element={<AdminSpeciesPage />} />
               <Route path="settings">
-                <Route index element={<AdminSettings />} /> {/* The Hub Page */}
                 <Route path="weighting">
                   {/* The intermediate menu */}
                   <Route index element={<WeightingHub />} />{" "}

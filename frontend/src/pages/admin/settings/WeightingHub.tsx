@@ -11,8 +11,8 @@ export default function WeightingHub() {
       <section className="admin-page-content">
         {/* A back button for easy navigation */}
         <div className="admin-back-nav">
-          <Link to="/admin/settings" className="admin-back-link">
-            ← Back to Settings
+          <Link to="/admin" className="admin-back-link">
+            ← Back to Dashboard
           </Link>
         </div>
 
