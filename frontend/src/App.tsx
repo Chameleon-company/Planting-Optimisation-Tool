@@ -23,6 +23,10 @@ import WeightingHub from "./pages/admin/settings/WeightingHub";
 import AhpPage from "./pages/admin/settings/AhpPage";
 import GlobalWeightsPage from "./pages/admin/settings/GlobalWeightsPage";
 import AdminSpeciesPage from "./pages/admin/AdminSpeciesPage";
+import ScoringParametersPage from "./pages/admin/settings/ScoringParametersPage";
+import ExclusionRulesPage from "./pages/admin/settings/ExclusionRulesPage";
+import DependencyRulesPage from "./pages/admin/settings/DependencyRulesPage";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 // Export App
 export default function App() {
@@ -63,8 +67,12 @@ export default function App() {
                   {/* The global weights*/}
                   <Route path="global" element={<GlobalWeightsPage />} />{" "}
                 </Route>
+                <Route path="scoring" element={<ScoringParametersPage />} />
+                <Route path="exclusions" element={<ExclusionRulesPage />} />
+                <Route path="dependencies" element={<DependencyRulesPage />} />
               </Route>
               <Route path="logs" element={<AdminLogs />} />
+              <Route path="users" element={<AdminUsers />} />
             </Route>
           </Routes>
         </BrowserRouter>
