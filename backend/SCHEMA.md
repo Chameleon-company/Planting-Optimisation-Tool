@@ -24,6 +24,12 @@
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | `Integer` | No | Yes |  |
 | `type_name` | `String` | No | No |  |
+## TABLE: `dem_table`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `rid` | `Integer` | No | Yes |  |
+| `rast` | `Raster` | Yes | No |  |
 ## TABLE: `audit_logs`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
