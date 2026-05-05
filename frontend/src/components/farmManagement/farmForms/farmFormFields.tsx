@@ -1,7 +1,3 @@
-import {
-  SOIL_TEXTURE_OPTIONS,
-  AGROFORESTRY_TYPE_OPTIONS,
-} from "@/components/farmManagement/farmForms/farmConstantsForm";
 import type {
   FormState,
   FormErrors,
@@ -20,6 +16,16 @@ const BOOLEAN_FLAGS: { name: BooleanFlag; label: string }[] = [
   { name: "bank_stabilising", label: "Bank stabilising" },
 ];
 
+interface SoilTexture {
+  id: number;
+  name: string;
+}
+
+interface AgroforestryType {
+  id: number;
+  name: string;
+}
+
 interface FarmFormFieldsProps {
   form: FormState;
   errors: FormErrors;
@@ -29,6 +35,8 @@ interface FarmFormFieldsProps {
   ) => void;
   onAgroforestryToggle: (id: number) => void;
   onBooleanToggle: (name: BooleanFlag) => void;
+  soilTextures: SoilTexture[];
+  agroforestryTypes: AgroforestryType[];
 }
 
 export default function FarmFormFields({
@@ -38,6 +46,8 @@ export default function FarmFormFields({
   onChange,
   onAgroforestryToggle,
   onBooleanToggle,
+  soilTextures,
+  agroforestryTypes,
 }: FarmFormFieldsProps) {
   return (
     <div className="register-farm-grid">
@@ -214,9 +224,9 @@ export default function FarmFormFields({
           disabled={isSubmitting}
         >
           <option value="">Select soil texture…</option>
-          {SOIL_TEXTURE_OPTIONS.map(opt => (
+          {soilTextures.map(opt => (
             <option key={opt.id} value={opt.id}>
-              {opt.label}
+              {opt.name}
             </option>
           ))}
         </select>
@@ -231,7 +241,7 @@ export default function FarmFormFields({
           Agroforestry type <span className="register-farm-required">*</span>
         </label>
         <div className="register-farm-toggle-group">
-          {AGROFORESTRY_TYPE_OPTIONS.map(opt => (
+          {agroforestryTypes.map(opt => (
             <button
               key={opt.id}
               type="button"
@@ -239,7 +249,7 @@ export default function FarmFormFields({
               onClick={() => onAgroforestryToggle(opt.id)}
               disabled={isSubmitting}
             >
-              {opt.label}
+              {opt.name}
             </button>
           ))}
         </div>

@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Farm } from "@/hooks/useUserProfiles";
 import { FarmUpdatePayload } from "@/hooks/useFarms";
-import {
-  SOIL_TEXTURE_OPTIONS,
-  AGROFORESTRY_TYPE_OPTIONS,
-} from "@/components/farmManagement/farmForms/farmConstantsForm";
+import { AGROFORESTRY_TYPE_OPTIONS } from "@/components/farmManagement/farmForms/farmConstantsForm";
+import { useSoilTextures } from "@/hooks/useSoilTextures";
+// import { useAgroforestryTypes } from "@/hooks/useAgroforestryTypes";
 import type {
   FormState,
   FormErrors,
@@ -18,19 +17,12 @@ interface EditFarmFormProps {
   onSuccess: (farmId: number, payload: FarmUpdatePayload) => Promise<void>;
 }
 
-function getSoilTextureId(farm: Farm): string {
-  const match = SOIL_TEXTURE_OPTIONS.find(
-    opt => opt.label.toLowerCase() === farm.soil_texture.name.toLowerCase()
-  );
-  return match ? String(match.id) : "";
-}
-
 function getAgroforestryIds(farm: Farm): number[] {
   return farm.agroforestry_type
     .map(
       at =>
         AGROFORESTRY_TYPE_OPTIONS.find(
-          opt => opt.label.toLowerCase() === at.name.toLowerCase()
+          opt => opt.name.toLowerCase() === at.name.toLowerCase()
         )?.id
     )
     .filter((id): id is number => id !== undefined);
@@ -41,13 +33,16 @@ export default function FarmEditForm({
   onSuccess,
   onCancel,
 }: EditFarmFormProps) {
+  const { soilTextures, isLoading: soilTexturesLoading } = useSoilTextures();
+  // const { agroforestryTypes, isLoading: agroforestryTypesLoading } = useAgroforestryTypes();
+
   // Set form as type formstate to what it currently says it is in the db
   const [form, setForm] = useState<FormState>({
     rainfall_mm: String(farm.rainfall_mm),
     temperature_celsius: String(farm.temperature_celsius),
     elevation_m: String(farm.elevation_m),
     ph: String(farm.ph),
-    soil_texture_id: getSoilTextureId(farm),
+    soil_texture_id: "",
     area_ha: String(farm.area_ha),
     latitude: String(farm.latitude),
     longitude: String(farm.longitude),
@@ -62,6 +57,22 @@ export default function FarmEditForm({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Add soil_texture_id into form once soilTextures have loaded
+  useEffect(() => {
+    const match = soilTextures.find(
+      st => st.name.toLowerCase() === farm.soil_texture.name.toLowerCase()
+    );
+    if (match) {
+      setForm(prev => ({ ...prev, soil_texture_id: String(match.id) }));
+    }
+  }, [soilTextures]);
+
+  // add agroforestry_type_ids into form once agroforestryTypes have loaded
+  // useEffect(() => {
+  //   const ids = getAgroforestryIds(farm, agroforestryTypes);
+  //   setForm(prev => ({ ...prev, agroforestry_type_ids: ids }));
+  // }, [agroforestryTypes]);
 
   // Function to update modal as user types in inputs, including typing and selecting elements
   const handleChange = (
@@ -151,10 +162,14 @@ export default function FarmEditForm({
       <FarmFormFields
         form={form}
         errors={errors}
-        isSubmitting={isSubmitting}
+        isSubmitting={isSubmitting || soilTexturesLoading}
+        // isSubmitting={isSubmitting || soilTexturesLoading || agroforestryTypesLoading}
         onChange={handleChange}
         onAgroforestryToggle={handleAgroforestryToggle}
         onBooleanToggle={handleBooleanToggle}
+        soilTextures={soilTextures}
+        agroforestryTypes={AGROFORESTRY_TYPE_OPTIONS}
+        // agroforestryTypes={agroforestryTypes}
       />
 
       {submitError && (
@@ -173,7 +188,8 @@ export default function FarmEditForm({
         <button
           type="submit"
           className="register-farm-btn register-farm-btn-primary"
-          disabled={isSubmitting}
+          disabled={isSubmitting || soilTexturesLoading}
+          // disabled={isSubmitting || soilTexturesLoading || agroforestryTypesLoading}
         >
           {isSubmitting ? "Saving…" : "Save changes"}
         </button>

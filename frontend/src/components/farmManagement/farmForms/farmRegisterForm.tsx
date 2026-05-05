@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { FarmCreatePayload } from "@/hooks/useFarms";
+import { AGROFORESTRY_TYPE_OPTIONS } from "@/components/farmManagement/farmForms/farmConstantsForm";
+import { useSoilTextures } from "@/hooks/useSoilTextures";
+// import { useAgroforestryTypes } from "@/hooks/useAgroforestryTypes";
 import type {
   FormState,
   FormErrors,
@@ -34,6 +37,9 @@ export default function RegisterFarmForm({
   onSuccess,
   onCancel,
 }: RegisterFarmFormProps) {
+  const { soilTextures, isLoading: soilTexturesLoading } = useSoilTextures();
+  // const { agroforestryTypes, isLoading: agroforestryTypesLoading } = useAgroforestryTypes();
+
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,10 +136,14 @@ export default function RegisterFarmForm({
       <FarmFormFields
         form={form}
         errors={errors}
-        isSubmitting={isSubmitting}
+        isSubmitting={isSubmitting || soilTexturesLoading}
+        // isSubmitting={isSubmitting || soilTexturesLoading || agroforestryTypesLoading}
         onChange={handleChange}
         onAgroforestryToggle={handleAgroforestryToggle}
         onBooleanToggle={handleBooleanToggle}
+        soilTextures={soilTextures}
+        agroforestryTypes={AGROFORESTRY_TYPE_OPTIONS}
+        // agroforestryTypes={agroforestryTypes}
       />
 
       {submitError && (
@@ -152,7 +162,8 @@ export default function RegisterFarmForm({
         <button
           type="submit"
           className="register-farm-btn register-farm-btn-primary"
-          disabled={isSubmitting}
+          disabled={isSubmitting || soilTexturesLoading}
+          // disabled={isSubmitting || soilTexturesLoading || agroforestryTypesLoading}
         >
           {isSubmitting ? "Registering…" : "Register farm"}
         </button>

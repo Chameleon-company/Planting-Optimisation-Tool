@@ -41,11 +41,29 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
+const mockSoilTextures = vi.fn();
+vi.mock("@/hooks/useSoilTextures", () => ({
+  useSoilTextures: () => mockSoilTextures(),
+}));
+
+const mockAgroforestryTypes = vi.fn();
+vi.mock("@/hooks/useAgroforestryTypes", () => ({
+  mockAgroforestryTypes: () => mockSoilTextures(),
+}));
+
 beforeEach(() => {
   // Default to an admin user so all action buttons are visible unless overridden
   mockUseAuth.mockReturnValue({
     user: { name: "Test Admin", role: "admin" },
     getAccessToken: () => "mock-token",
+  });
+  mockSoilTextures.mockReturnValue({
+    soilTextures: [],
+    isLoading: false,
+  });
+  mockAgroforestryTypes.mockReturnValue({
+    agroforestryTypes: [],
+    isLoading: false,
   });
 });
 

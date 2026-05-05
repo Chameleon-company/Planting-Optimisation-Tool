@@ -1,25 +1,11 @@
-// Mirrored from the backend's SoilTextureID
-export const SOIL_TEXTURE_OPTIONS = [
-  { id: 1, label: "Sand" },
-  { id: 2, label: "Loamy sand" },
-  { id: 3, label: "Sandy loam" },
-  { id: 4, label: "Loam" },
-  { id: 5, label: "Silty loam" },
-  { id: 6, label: "Silt" },
-  { id: 7, label: "Sandy clay loam" },
-  { id: 8, label: "Clay loam" },
-  { id: 9, label: "Silty clay loam" },
-  { id: 10, label: "Sandy clay" },
-  { id: 11, label: "Silty clay" },
-  { id: 12, label: "Clay" },
-];
 
 // Mirrored from the backend's AgroforestryTypeID
+// To be deleted when agrofor endpoint is added
 export const AGROFORESTRY_TYPE_OPTIONS = [
-  { id: 1, label: "Block" },
-  { id: 2, label: "Boundary" },
-  { id: 3, label: "Intercropping" },
-  { id: 4, label: "Mosaic" },
+  { id: 1, name: "Block" },
+  { id: 2, name: "Boundary" },
+  { id: 3, name: "Intercropping" },
+  { id: 4, name: "Mosaic" },
 ];
 
 // Interface for modal's set form use state
