@@ -178,3 +178,24 @@ async def test_list_global_weight_runs(
     assert target_run["bootstraps"] == 100
     assert target_run["bootstrap_early_stopped"] is True
     assert target_run["source"] == "test source"
+
+
+@pytest.mark.asyncio
+async def test_global_weights_csv_invalid_file_extension(
+    async_client,
+    admin_auth_headers,
+):
+    """Test that uploading a file without a .csv extension raises a 400 error."""
+    # Create a fake text file instead of a CSV
+    file_content = b"just some text content"
+    files = {"file": ("test_data.txt", file_content, "text/plain")}
+
+    response = await async_client.post(
+        "/global-weights/import",
+        headers=admin_auth_headers,
+        files=files,
+    )
+
+    # Assert
+    assert response.status_code == 400
+    assert response.json() == {"detail": "File must be a CSV"}
