@@ -1,3 +1,4 @@
+from decimal import Decimal
 from enum import Enum, IntEnum
 
 
@@ -34,3 +35,38 @@ class AgroforestryTypeID(IntEnum):
     BOUNDARY = 2
     INTERCROPPING = 3
     MOSAIC = 4
+
+
+# Validation Constants
+
+# Soil pH
+SOIL_PH_MIN = Decimal("5.0")
+SOIL_PH_MAX = Decimal("8.5")
+
+# Rainfall
+RAINFALL_MIN = 500
+RAINFALL_MAX = 3000
+
+# Temperature
+TEMPERATURE_MIN = 15
+TEMPERATURE_MAX = 30
+
+# Elevation
+ELEVATION_MIN = 0
+ELEVATION_MAX = 2963
+
+# Area
+AREA_MIN = 0
+AREA_MAX = 100
+
+# Latitude
+LATITUDE_MIN = -90
+LATITUDE_MAX = 90
+
+# Longitude
+LONGITUDE_MIN = -180
+LONGITUDE_MAX = 180
+
+# Slope
+SLOPE_MIN = 0
+SLOPE_MAX = 90
