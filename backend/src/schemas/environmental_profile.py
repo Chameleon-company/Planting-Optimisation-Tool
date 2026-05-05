@@ -3,6 +3,12 @@ from typing import Optional
 
 from pydantic import ConfigDict, Field, field_validator
 
+from src.schemas.constants import (
+    RAINFALL_MAX,
+    RAINFALL_MIN,
+    TEMPERATURE_MAX,
+    TEMPERATURE_MIN,
+)
 from src.schemas.farm import FarmBase
 
 
@@ -10,6 +16,7 @@ class FarmProfileResponse(FarmBase):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     status: str = "success"
     id: Optional[int] = None
+    data_source: Optional[str] = None
 
     rainfall_mm: Optional[int] = None
 
@@ -18,7 +25,7 @@ class FarmProfileResponse(FarmBase):
     def validate_rainfall_bounds(cls, v):
         # If it's outside of the bounds of the data_dictionary
         # It is invalid and should return None
-        if v is not None and (v < 1000 or v > 3000):
+        if v is not None and (v < RAINFALL_MIN or v > RAINFALL_MAX):
             return None
         return v
 
@@ -29,7 +36,7 @@ class FarmProfileResponse(FarmBase):
     def validate_temp_bounds(cls, v):
         # If it's outside of the bounds of the data_dictionary
         # It is invalid and should return None
-        if v is not None and (v < 15 or v > 30):
+        if v is not None and (v < TEMPERATURE_MIN or v > TEMPERATURE_MAX):
             return None
         return v
 
@@ -42,6 +49,7 @@ class FarmProfileResponse(FarmBase):
     shade_tolerant: Optional[bool] = None
     bank_stabilising: Optional[bool] = None
     soil_texture_id: Optional[int] = None
+    soil_texture: Optional[str] = None
 
     area_ha: Optional[Decimal] = None
     latitude: Optional[Decimal] = None

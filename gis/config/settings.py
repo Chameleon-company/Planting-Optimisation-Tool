@@ -100,14 +100,12 @@ DATASETS = {
     },
     "soil_texture": {
         "type": "raster",
-        "asset_id": "OpenLandMap/SOL/SOL_PH-H2O_USDA-4C1A2A_M/v02",  # Using pH as proxy to demonstrate extraction
+        "asset_id": "OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02",
         "band": "b0",
         "scale": 250,
-        "reducer": "mean",
-        "description": "Placeholder using OpenLandMap pH - demonstrates GEE extraction capability",
-        "unit": "pH_value",
-        "scale_factor": 0.1,
-        "note": "This is a demonstration placeholder. Replace with actual soil texture asset when available.",
+        "reducer": "mode",
+        "description": "USDA Soil Texture Classes",
+        "unit": "class",
     },
     "dem": {
         "type": "raster",

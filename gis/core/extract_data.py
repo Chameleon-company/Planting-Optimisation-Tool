@@ -91,6 +91,16 @@ def _extract_from_raster(geometry, dataset_name: str, year: int | None = None):
 
     value = _ee_to_float(stats.get(band_name))
 
+    # ----------- STEP 2: Fallback to CENTROID -----------
+    if value is None:
+        stats = img.reduceRegion(
+            reducer=reducer,
+            geometry=geometry.centroid(),
+            scale=config["scale"],
+            maxPixels=1e9,
+        )
+        value = _ee_to_float(stats.get(band_name))
+
     if value is None:
         return None
 
@@ -237,7 +247,7 @@ def get_texture_id(geometry, year: int | None = None) -> int | None:
         return None
 
     if isinstance(texture_value, (int, float)):
-        return None
+        return int(round(texture_value))
 
     norm_name = _normalize_texture_name(texture_value)
     if norm_name is None:
