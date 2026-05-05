@@ -8,7 +8,7 @@ from sqlalchemy.future import select
 from src.models.auth_token import AuthToken
 from src.models.user import User
 from src.services.authentication import create_auth_token, hash_token
-from src.utils.security import verify_password
+from src.utils.security import get_password_hash, verify_password
 
 pytestmark = pytest.mark.asyncio
 
@@ -427,6 +427,64 @@ async def test_forgot_password_email_is_normalized(async_client: AsyncClient):
     assert response.status_code == 200
 
 
+async def test_validate_reset_password_token_success(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+):
+    """Test that a valid reset token is accepted before form submission."""
+    raw_token = await create_auth_token(
+        async_session,
+        user_id=test_admin_user.id,
+        token_type="password_reset",
+    )
+
+    response = await async_client.get(
+        "/auth/reset-password/validate",
+        params={"token": raw_token},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "Reset token is valid"
+
+
+async def test_validate_reset_password_token_invalid_fails(async_client: AsyncClient):
+    """Test that an invalid reset token is rejected on page load."""
+    response = await async_client.get(
+        "/auth/reset-password/validate",
+        params={"token": "invalid-reset-token"},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid or expired token"
+
+
+async def test_validate_reset_password_token_expired_fails(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+):
+    """Test that an expired reset token is rejected on page load."""
+    raw_token = "expired-reset-token-check"
+
+    expired_token = AuthToken(
+        user_id=test_admin_user.id,
+        token_hash=hash_token(raw_token),
+        token_type="password_reset",
+        expires_at=datetime.now(timezone.utc) - timedelta(minutes=1),
+    )
+    async_session.add(expired_token)
+    await async_session.commit()
+
+    response = await async_client.get(
+        "/auth/reset-password/validate",
+        params={"token": raw_token},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid or expired token"
+
+
 async def test_reset_password_success_and_token_single_use(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -476,6 +534,35 @@ async def test_reset_password_success_and_token_single_use(
     )
     assert reuse_response.status_code == 400
     assert "invalid" in reuse_response.json()["detail"].lower()
+
+
+async def test_reset_password_rejects_same_current_password(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+):
+    """Test that reset-password rejects the user's current password."""
+    current_password = "SamePass1!"
+    test_admin_user.hashed_password = get_password_hash(current_password)
+    async_session.add(test_admin_user)
+    await async_session.commit()
+
+    raw_token = await create_auth_token(
+        async_session,
+        user_id=test_admin_user.id,
+        token_type="password_reset",
+    )
+
+    response = await async_client.post(
+        "/auth/reset-password",
+        json={
+            "token": raw_token,
+            "new_password": current_password,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "New password must be different from the current password"
 
 
 async def test_reset_password_expired_token_fails(

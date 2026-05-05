@@ -1616,7 +1616,7 @@ main.container {
   white-space: pre-line;
 }
 
-.login-message-placeholder {
+.login-message-info {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--muted);

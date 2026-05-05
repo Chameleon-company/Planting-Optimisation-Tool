@@ -55,6 +55,9 @@ describe("ForgotPasswordPage", () => {
     expect(
       screen.getByRole("link", { name: /back to sign in/i })
     ).toHaveAttribute("href", "/login");
+    expect(
+      screen.queryByText(/remember your password/i)
+    ).not.toBeInTheDocument();
   });
 
   it("shows validation when email is empty", async () => {

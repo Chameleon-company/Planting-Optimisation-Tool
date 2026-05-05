@@ -40,6 +40,26 @@ function renderLoginPage() {
   );
 }
 
+function renderLoginPageWithState() {
+  return render(
+    <HelmetProvider>
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: "/login",
+            state: {
+              successMessage:
+                "Password reset successfully. You can now sign in.",
+            },
+          },
+        ]}
+      >
+        <LoginPage />
+      </MemoryRouter>
+    </HelmetProvider>
+  );
+}
+
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -76,6 +96,14 @@ describe("LoginPage", () => {
     expect(
       screen.getByRole("link", { name: /forgot password/i })
     ).toHaveAttribute("href", "/forgot-password");
+  });
+
+  it("shows reset success message from navigation state", () => {
+    renderLoginPageWithState();
+
+    expect(
+      screen.getByText("Password reset successfully. You can now sign in.")
+    ).toBeInTheDocument();
   });
 
   it("submits credentials correctly when sign in is clicked", async () => {

@@ -1,8 +1,8 @@
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useResetPassword } from "../../hooks/useResetPassword";
+import { useValidateResetToken } from "../../hooks/useValidateResetToken";
 
 const getPasswordValidationErrors = (password: string) => {
   const errors: string[] = [];
@@ -33,9 +33,11 @@ const getPasswordValidationErrors = (password: string) => {
 function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
+  const navigate = useNavigate();
 
   const { resetPassword, isLoading, errorMessage, successMessage } =
     useResetPassword();
+  const { isCheckingToken, tokenErrorMessage } = useValidateResetToken(token);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -60,8 +62,9 @@ function ResetPasswordPage() {
       ? "Passwords do not match."
       : "";
 
-  const isInvalidToken = !token;
-  const isDisabled = isLoading || isInvalidToken || successMessage !== "";
+  const isInvalidToken = !token || tokenErrorMessage !== "";
+  const isDisabled =
+    isLoading || isCheckingToken || isInvalidToken || successMessage !== "";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -76,7 +79,15 @@ function ResetPasswordPage() {
       return;
     }
 
-    await resetPassword(token, newPassword);
+    const resetSucceeded = await resetPassword(token, newPassword);
+
+    if (resetSucceeded) {
+      navigate("/login", {
+        state: {
+          successMessage: "Password reset successfully. You can now sign in.",
+        },
+      });
+    }
   };
 
   return (
@@ -96,15 +107,22 @@ function ResetPasswordPage() {
             </p>
           </div>
 
-          {isInvalidToken ? (
+          {isCheckingToken ? (
+            <div className="register-success">
+              <h2 className="login-title">Checking reset link</h2>
+              <p className="register-success-body">
+                Please wait while we validate your password reset link.
+              </p>
+            </div>
+          ) : isInvalidToken ? (
             <div className="register-success">
               <div className="register-success-icon verify-email-icon--error">
                 !
               </div>
               <h2 className="login-title">Invalid reset link</h2>
               <p className="register-success-body">
-                This reset link is missing a token. Please request a new
-                password reset email.
+                {tokenErrorMessage ||
+                  "This reset link is missing a token. Please request a new password reset email."}
               </p>
               <Link
                 to="/forgot-password"
@@ -128,6 +146,14 @@ function ResetPasswordPage() {
           ) : (
             <form className="login-form" onSubmit={handleSubmit} noValidate>
               <div className="login-form-group">
+                <div className="login-message login-message-info">
+                  Password must be at least 8 characters and include uppercase,
+                  lowercase, number, and special character.
+                  <p>
+                    Your reset link can only be used once and expires after 10
+                    minutes.
+                  </p>
+                </div>
                 <label htmlFor="new-password">New password</label>
                 <div className="login-password-wrapper">
                   <input
@@ -152,10 +178,6 @@ function ResetPasswordPage() {
                     {showNewPassword ? "Hide" : "Show"}
                   </button>
                 </div>
-                <p className="login-password-hint">
-                  Password must be at least 8 characters and include uppercase,
-                  lowercase, number, and special character.
-                </p>
                 {newPasswordError ? (
                   <p className="login-field-error">{newPasswordError}</p>
                 ) : null}
@@ -203,12 +225,6 @@ function ResetPasswordPage() {
                 </div>
               ) : null}
 
-              {!errorMessage ? (
-                <div className="login-message login-message-placeholder">
-                  Your reset link can only be used once and may expire.
-                </div>
-              ) : null}
-
               <button
                 type="submit"
                 className="login-submit-btn"
@@ -218,9 +234,9 @@ function ResetPasswordPage() {
               </button>
 
               <p className="login-footer-text">
-                Need another link?{" "}
+                Link expired?{" "}
                 <Link to="/forgot-password" className="login-link">
-                  Request reset email
+                  Request a new reset link
                 </Link>
               </p>
             </form>

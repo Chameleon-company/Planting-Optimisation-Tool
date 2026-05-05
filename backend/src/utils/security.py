@@ -21,6 +21,7 @@ def validate_password(password: str) -> None:
     - At least 1 uppercase letter
     - At least 1 lowercase letter
     - At least 1 number
+    - At least 1 special character
     """
     if len(password) < 8:
         raise ValueError("Password must be at least 8 characters long")

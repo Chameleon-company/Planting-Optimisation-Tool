@@ -70,7 +70,7 @@ function ForgotPasswordPage() {
             ) : null}
 
             {!errorMessage && !successMessage ? (
-              <div className="login-message login-message-placeholder">
+              <div className="login-message login-message-info">
                 Enter your email to request a password reset link.
               </div>
             ) : null}
@@ -84,7 +84,6 @@ function ForgotPasswordPage() {
             </button>
 
             <p className="login-footer-text">
-              Remember your password?{" "}
               <Link to="/login" className="login-link">
                 Back to sign in
               </Link>

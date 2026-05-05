@@ -31,12 +31,14 @@ export function useResetPassword() {
       }
 
       setSuccessMessage("Password reset successfully. You can now sign in.");
+      return true;
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : "Unable to reset password. Please try again.";
       setErrorMessage(message);
+      return false;
     } finally {
       setIsLoading(false);
     }

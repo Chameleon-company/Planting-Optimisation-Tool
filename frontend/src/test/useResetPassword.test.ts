@@ -19,9 +19,15 @@ describe("useResetPassword", () => {
 
     const { result } = renderHook(() => useResetPassword());
 
+    let didReset = false;
+
     await act(async () => {
-      await result.current.resetPassword("reset-token", "Password1234@");
+      didReset = await result.current.resetPassword(
+        "reset-token",
+        "Password1234@"
+      );
     });
+    expect(didReset).toBe(true);
 
     expect(mockFetch).toHaveBeenCalledWith(
       "http://127.0.0.1:8080/auth/reset-password",
@@ -52,9 +58,15 @@ describe("useResetPassword", () => {
 
     const { result } = renderHook(() => useResetPassword());
 
+    let didReset = true;
+
     await act(async () => {
-      await result.current.resetPassword("expired-token", "Password1234@");
+      didReset = await result.current.resetPassword(
+        "expired-token",
+        "Password1234@"
+      );
     });
+    expect(didReset).toBe(false);
 
     expect(result.current.successMessage).toBe("");
     expect(result.current.errorMessage).toBe("Invalid or expired token");

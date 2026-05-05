@@ -3,9 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HelmetProvider } from "react-helmet-async";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
+import { useValidateResetToken } from "../hooks/useValidateResetToken";
 
 const mockResetPassword = vi.fn();
 
@@ -15,6 +16,9 @@ const mockResetPasswordHook = vi.hoisted(() => ({
 
 vi.mock("../hooks/useResetPassword", () => ({
   useResetPassword: mockResetPasswordHook.useResetPassword,
+}));
+vi.mock("../hooks/useValidateResetToken", () => ({
+  useValidateResetToken: vi.fn(),
 }));
 
 function renderResetPasswordPage(route = "/reset-password?token=reset-token") {
@@ -37,6 +41,11 @@ describe("ResetPasswordPage", () => {
       errorMessage: "",
       successMessage: "",
     });
+
+    vi.mocked(useValidateResetToken).mockReturnValue({
+      isCheckingToken: false,
+      tokenErrorMessage: "",
+    });
   });
 
   it("renders the reset password form when token exists", () => {
@@ -48,11 +57,65 @@ describe("ResetPasswordPage", () => {
     expect(screen.getByLabelText(/^new password$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^confirm password$/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/your reset link can only be used once and may expire/i)
+      screen.getByText(
+        /password must be at least 8 characters and include uppercase, lowercase, number, and special character/i
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        /your reset link can only be used once and expires after 10 minutes/i
+      )
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /request reset email/i })
+      screen.getByRole("link", { name: /request a new reset link/i })
     ).toHaveAttribute("href", "/forgot-password");
+  });
+
+  it("shows checking message while reset token is being validated", () => {
+    vi.mocked(useValidateResetToken).mockReturnValue({
+      isCheckingToken: true,
+      tokenErrorMessage: "",
+    });
+
+    renderResetPasswordPage();
+
+    expect(
+      screen.getByRole("heading", { name: /checking reset link/i })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        /please wait while we validate your password reset link/i
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("button", { name: /reset password/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows invalid reset link message when token validation fails", () => {
+    vi.mocked(useValidateResetToken).mockReturnValue({
+      isCheckingToken: false,
+      tokenErrorMessage: "Invalid or expired token",
+    });
+
+    renderResetPasswordPage();
+
+    expect(
+      screen.getByRole("heading", { name: /invalid reset link/i })
+    ).toBeInTheDocument();
+
+    expect(screen.getByText("Invalid or expired token")).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("link", { name: /request new reset link/i })
+    ).toHaveAttribute("href", "/forgot-password");
+
+    expect(
+      screen.queryByRole("button", { name: /reset password/i })
+    ).not.toBeInTheDocument();
   });
 
   it("shows invalid reset link state when token is missing", () => {
@@ -173,6 +236,38 @@ describe("ResetPasswordPage", () => {
     );
 
     expect(mockResetPassword).toHaveBeenCalledWith("abc123", "Password1234@");
+  });
+
+  it("redirects to login after a successful password reset", async () => {
+    mockResetPassword.mockResolvedValueOnce(true);
+
+    render(
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/reset-password?token=abc123"]}>
+          <Routes>
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/login" element={<h1>Login route reached</h1>} />
+          </Routes>
+        </MemoryRouter>
+      </HelmetProvider>
+    );
+
+    await userEvent.type(
+      screen.getByLabelText(/^new password$/i),
+      "Password1234@"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/^confirm password$/i),
+      "Password1234@"
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /reset password/i })
+    );
+
+    expect(mockResetPassword).toHaveBeenCalledWith("abc123", "Password1234@");
+    expect(
+      await screen.findByRole("heading", { name: /login route reached/i })
+    ).toBeInTheDocument();
   });
 
   it("shows loading state while reset is in progress", () => {
