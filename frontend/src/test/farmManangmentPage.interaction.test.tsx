@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Farm } from "@/hooks/useUserProfiles";
 
-import EditFarmModal from "@/components/farmManagement/farnEditModal";
+import EditFarmModal from "@/components/farmManagement/farmsEditModal";
 import FarmManageActions from "@/components/farmManagement/farmManagementEditButtons";
 import FarmsTable from "@/components/farmManagement/farmsTable";
 import RegisterFarmModal from "@/components/farmManagement/farmRegisterModal";

@@ -9,7 +9,7 @@ import type { FormState } from "@/components/farmManagement/farmForms/farmConsta
 import FarmsTable from "@/components/farmManagement/farmsTable";
 import RegisterFarmModal from "@/components/farmManagement/farmRegisterModal";
 import { useUserProfiles } from "@/hooks/useUserProfiles";
-import EditFarmModal from "@/components/farmManagement/farnEditModal";
+import EditFarmModal from "@/components/farmManagement/farmsEditModal";
 import { validate } from "@/components/farmManagement/farmForms/validate";
 import { useFarms } from "@/hooks/useFarms";
 import { FarmCreatePayload } from "@/hooks/useFarms";

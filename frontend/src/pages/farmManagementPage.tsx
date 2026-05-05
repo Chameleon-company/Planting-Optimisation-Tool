@@ -10,7 +10,7 @@ import { useUserProfiles, Farm } from "@/hooks/useUserProfiles";
 
 import FarmsTable from "@/components/farmManagement/farmsTable";
 import RegisterFarmModal from "@/components/farmManagement/farmRegisterModal";
-import EditFarmModal from "@/components/farmManagement/farnEditModal";
+import EditFarmModal from "@/components/farmManagement/farmsEditModal";
 import FarmManageActions from "@/components/farmManagement/farmManagementEditButtons";
 import FarmsHeader from "@/components/farmManagement/farmHeader";
 import "./farmManagement.css";
