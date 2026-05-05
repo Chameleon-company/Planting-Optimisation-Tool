@@ -35,11 +35,11 @@ export function useFarms() {
   const createFarm = useCallback(
     // Async, with a FarmCreatePayload, promising a function with a boolean end result
     async (payload: FarmCreatePayload): Promise<boolean> => {
-    const token = getAccessToken();
+      const token = getAccessToken();
       if (!token) {
         setError("You must be logged in to perform this action.");
-      return false;
-    }
+        return false;
+      }
 
       setIsLoading(true);
       setError(null);
@@ -88,8 +88,8 @@ export function useFarms() {
       const token = getAccessToken();
       if (!token) {
         setError("You must be logged in to perform this action.");
-      return false;
-    }
+        return false;
+      }
 
       setIsLoading(true);
       setError(null);
@@ -134,8 +134,8 @@ export function useFarms() {
       const token = getAccessToken();
       if (!token) {
         setError("You must be logged in to perform this action.");
-      return false;
-    }
+        return false;
+      }
 
       setIsLoading(true);
       setError(null);

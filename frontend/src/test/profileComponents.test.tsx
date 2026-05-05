@@ -27,7 +27,7 @@ const mockFarm = (id: number): Farm => ({
   shade_tolerant: false,
   bank_stabilising: false,
   slope: 3.75,
-  agroforestry_type: [{ name: "Silvopasture" }],
+  agroforestry_type: [{ id: 1, type_name: "Silvopasture" }],
 });
 
 // Mock Functions
@@ -131,7 +131,7 @@ describe("FarmCard", () => {
   it("renders multiple agroforestry type tags when present", () => {
     const farm = {
       ...mockFarm(1),
-      agroforestry_type: [{ name: "Silvopasture" }, { name: "Alley Cropping" }],
+      agroforestry_type: [{ id: 1, type_name: "Silvopasture" }, { id: 2, type_name: "Alley Cropping" }],
     };
     render(<FarmCard farm={farm} isSearched={false} />);
     // Both agroforestry types should be rendered as separate tags

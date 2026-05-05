@@ -26,7 +26,7 @@ const mockFarm = (id: number): Farm => ({
   shade_tolerant: false,
   bank_stabilising: false,
   slope: 5.25,
-  agroforestry_type: [{ id: 1 ,type_name: "Block" }],
+  agroforestry_type: [{ id: 1, type_name: "Block" }],
 });
 
 // Mock Functions
