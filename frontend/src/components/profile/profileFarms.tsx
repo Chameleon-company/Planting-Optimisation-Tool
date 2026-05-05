@@ -75,7 +75,7 @@ export default function FarmList({
             className="farm-action-btn"
             onClick={() => navigate("/farms")}
           >
-            (put Emoji here) Manage
+            Manage
           </button>
         )}
       </div>

@@ -1,4 +1,3 @@
-
 // Mirrored from the backend's AgroforestryTypeID
 // To be deleted when agrofor endpoint is added
 export const AGROFORESTRY_TYPE_OPTIONS = [
