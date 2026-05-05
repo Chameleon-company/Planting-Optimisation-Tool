@@ -11,6 +11,7 @@ __pycache__/
 
 # Ignore coverage file
 .coverage
+coverage.xml
 
 # Ruff stuff:
 .ruff_cache/
