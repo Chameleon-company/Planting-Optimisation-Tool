@@ -6,8 +6,9 @@
 # This script is meant for testing and development purposes, and is not intended for
 # production use.
 # ======================================================================================
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 from app.orchestrators import get_raw_scores_batch
 
