@@ -1,5 +1,5 @@
 // Mirrored from the backend's AgroforestryTypeID
-// To be deleted when agrofor endpoint is added
+// To be deleted when the agroforestry endpoint is added
 export const AGROFORESTRY_TYPE_OPTIONS = [
   { id: 1, name: "Block" },
   { id: 2, name: "Boundary" },
@@ -7,7 +7,7 @@ export const AGROFORESTRY_TYPE_OPTIONS = [
   { id: 4, name: "Mosaic" },
 ];
 
-// Interface for modal's set form use state
+// Interface for the form's useState value
 export interface FormState {
   rainfall_mm: string;
   temperature_celsius: string;
@@ -25,7 +25,7 @@ export interface FormState {
   agroforestry_type_ids: number[];
 }
 
-// Interface for modal's use state error's
+// Interface for the form's error useState
 export interface FormErrors {
   rainfall_mm?: string;
   temperature_celsius?: string;

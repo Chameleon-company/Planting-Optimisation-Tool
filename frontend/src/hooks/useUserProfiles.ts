@@ -7,7 +7,8 @@ export interface SoilTexture {
   name: string;
 }
 export interface AgroforestryType {
-  name: string;
+  id: number;
+  type_name: string;
 }
 export interface Farm {
   id: number;

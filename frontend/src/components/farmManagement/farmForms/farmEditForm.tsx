@@ -22,7 +22,7 @@ function getAgroforestryIds(farm: Farm): number[] {
     .map(
       at =>
         AGROFORESTRY_TYPE_OPTIONS.find(
-          opt => opt.name.toLowerCase() === at.name.toLowerCase()
+          opt => opt.name.toLowerCase() === at.type_name.toLowerCase()
         )?.id
     )
     .filter((id): id is number => id !== undefined);
@@ -68,7 +68,7 @@ export default function FarmEditForm({
     }
   }, [soilTextures]);
 
-  // add agroforestry_type_ids into form once agroforestryTypes have loaded
+  // Sync agroforestry_type_ids into form once agroforestryTypes have loaded
   // useEffect(() => {
   //   const ids = getAgroforestryIds(farm, agroforestryTypes);
   //   setForm(prev => ({ ...prev, agroforestry_type_ids: ids }));

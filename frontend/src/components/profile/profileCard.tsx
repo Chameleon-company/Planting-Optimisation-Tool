@@ -66,8 +66,8 @@ export default function FarmCard({ farm, isSearched }: FarmCardProps) {
       {farm.agroforestry_type.length > 0 && (
         <div className="farm-card-tags">
           {farm.agroforestry_type.map(type => (
-            <span key={type.name} className="farm-tag farm-tag-agroforestry">
-              {type.name}
+            <span key={type.id} className="farm-tag farm-tag-agroforestry">
+              {type.type_name}
             </span>
           ))}
         </div>

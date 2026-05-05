@@ -22,7 +22,7 @@ export interface FarmCreatePayload {
   agroforestry_type_ids: number[];
 }
 
-// Updating accepts a a portion of a payload when updating
+// Updating accepts a partial payload
 export type FarmUpdatePayload = Partial<FarmCreatePayload>;
 
 export function useFarms() {
@@ -35,11 +35,15 @@ export function useFarms() {
   const createFarm = useCallback(
     // Async, with a FarmCreatePayload, promising a function with a boolean end result
     async (payload: FarmCreatePayload): Promise<boolean> => {
-      const token = getAccessToken();
-      if (!token) return false;
+    const token = getAccessToken();
+      if (!token) {
+        setError("You must be logged in to perform this action.");
+      return false;
+    }
 
       setIsLoading(true);
       setError(null);
+
       // Try/Catch, using post, calling the API, handing payload as JSON package
       try {
         const res = await fetch(`${API_BASE}/farms`, {
@@ -73,19 +77,23 @@ export function useFarms() {
         setIsLoading(false);
       }
     },
-    // Refetch when getAccessToken is called
+    // Refetch when getToken is called
     [getAccessToken]
   );
 
-  // Update/PUT, admins any, supervisor only their own,
+  // Update/PUT, admins any farm, supervisors only their own
   const updateFarm = useCallback(
     // Same async, requring at least partial payload and a farmID
     async (farmId: number, payload: FarmUpdatePayload): Promise<boolean> => {
       const token = getAccessToken();
-      if (!token) return false;
+      if (!token) {
+        setError("You must be logged in to perform this action.");
+      return false;
+    }
 
       setIsLoading(true);
       setError(null);
+
       // Try/catch, JSON-ify payload, fetching API update call using farmID
       try {
         const res = await fetch(`${API_BASE}/farms/${farmId}`, {
@@ -120,14 +128,18 @@ export function useFarms() {
     [getAccessToken]
   );
 
-  // Delete/DELETE, Admins only, responding with 204 res
+  // Delete/DELETE, admins only, responds with 204 No Content on success
   const deleteFarm = useCallback(
     async (farmId: number): Promise<boolean> => {
       const token = getAccessToken();
-      if (!token) return false;
+      if (!token) {
+        setError("You must be logged in to perform this action.");
+      return false;
+    }
 
       setIsLoading(true);
       setError(null);
+
       // Call delte API call, using farmID
       try {
         const res = await fetch(`${API_BASE}/farms/${farmId}`, {
