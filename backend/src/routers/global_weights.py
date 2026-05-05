@@ -105,6 +105,9 @@ async def import_global_weights(
     dataset_hash: str = "manual-import",
     db: AsyncSession = Depends(get_db_session),
 ):
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+
     run_id = await import_global_weights_from_csv(
         db=db,
         csv_file=file.file,
