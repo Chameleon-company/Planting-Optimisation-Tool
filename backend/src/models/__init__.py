@@ -10,7 +10,9 @@ from src.models.farm import Farm
 from src.models.parameters import Parameter
 from src.models.planting_estimates import PlantingEstimate
 from src.models.recommendations import Recommendation
+from src.models.soil_ph import SoilPH
 from src.models.soil_texture import SoilTexture
+from src.models.soil_texture_spatial import SoilTextureSpatial
 from src.models.species import Species
 from src.models.user import User
 from src.models.waterways import Waterway
@@ -33,4 +35,6 @@ __all__ = [
     "PlantingEstimate",
     "SpeciesExclusionRule",
     "SpeciesDependency",
+    "SoilPH",
+    "SoilTextureSpatial",
 ]
