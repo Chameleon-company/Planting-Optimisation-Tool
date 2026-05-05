@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
-from src.dependencies import require_role
+from src.dependencies import get_user_id, limiter, require_role
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
 from src.schemas.global_weights import GlobalWeightItemSchema, GlobalWeightsRunDetailSchema, GlobalWeightsRunSummarySchema
 from src.schemas.user import Role, UserRead
@@ -20,7 +20,9 @@ router = APIRouter(prefix="/global-weights", tags=["Global Weights"])
     response_model=list[GlobalWeightsRunSummarySchema],
     response_model_exclude_none=True,
 )
+@limiter.limit("30/minute", key_func=get_user_id)
 async def list_global_weights_runs(
+    request: Request,
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.ADMIN)),
 ):
@@ -45,7 +47,9 @@ async def list_global_weights_runs(
     response_model=GlobalWeightsRunDetailSchema,
     response_model_exclude_none=True,
 )
+@limiter.limit("30/minute", key_func=get_user_id)
 async def get_global_weights_run(
+    request: Request,
     run_id: UUID,
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.ADMIN)),
@@ -84,9 +88,12 @@ async def get_global_weights_run(
     "/runs/{run_id}",
     status_code=204,
 )
+@limiter.limit("10/minute", key_func=get_user_id)
 async def delete_global_weights_run(
+    request: Request,
     run_id: UUID,
     db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.ADMIN)),
 ):
     result = await db.execute(select(GlobalWeightsRun).where(GlobalWeightsRun.id == run_id))
     run = result.scalar_one_or_none()
@@ -100,10 +107,13 @@ async def delete_global_weights_run(
 
 
 @router.post("/import", status_code=201)
+@limiter.limit("10/minute", key_func=get_user_id)
 async def import_global_weights(
+    request: Request,
     file: UploadFile = File(...),
     dataset_hash: str = "manual-import",
     db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.ADMIN)),
 ):
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="File must be a CSV")
@@ -121,7 +131,9 @@ async def import_global_weights(
 
 
 @router.post("/epi-add-scores", response_class=Response)
+@limiter.limit("10/minute", key_func=get_user_id)
 async def score_epi_csv(
+    request: Request,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.ADMIN)),
