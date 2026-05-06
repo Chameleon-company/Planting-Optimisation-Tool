@@ -66,6 +66,12 @@
 | `id` | `Integer` | No | Yes | id |
 | `boundary` | `Geometry` | No | No |  |
 | `external_id` | `Integer` | Yes | No |  |
+## TABLE: `dem_table`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `rid` | `Integer` | No | Yes |  |
+| `rast` | `Raster` | Yes | No |  |
 ## TABLE: `species_exclusion_rules`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -133,12 +139,28 @@
 | `score_mcda` | `Float` | No | No |  |
 | `key_reasons` | `ARRAY` | No | No |  |
 | `created_at` | `DateTime` | No | No |  |
+## TABLE: `soil_ph`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `ph` | `Float` | Yes | No |  |
+| `source` | `String` | Yes | No |  |
+| `geometry` | `Geometry` | No | No |  |
 ## TABLE: `soil_textures`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | `Integer` | No | Yes |  |
 | `name` | `String` | No | No |  |
+## TABLE: `soil_texture_spatial`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `texture` | `String` | Yes | No |  |
+| `source` | `String` | Yes | No |  |
+| `geometry` | `Geometry` | No | No |  |
 ## TABLE: `users`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |

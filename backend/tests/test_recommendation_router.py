@@ -8,7 +8,7 @@ import src.routers.recommendation as rec_router
 from src.models.farm import Farm
 from src.models.user import User
 
-FARM_DATA = {
+_FARM_DATA = {
     "rainfall_mm": 1500,
     "temperature_celsius": 22,
     "elevation_m": 500,
@@ -22,10 +22,10 @@ FARM_DATA = {
     "nitrogen_fixing": False,
     "shade_tolerant": False,
     "bank_stabilising": False,
-    "slope": 10.5,
+    "slope": 10.0,
 }
 
-MOCK_REC = {
+_MOCK_REC = {
     "farm_id": None,
     "timestamp_utc": "2025-01-01T00:00:00+00:00",
     "recommendations": [],
@@ -64,12 +64,12 @@ async def test_get_recommendations_officer_own_farm(
     monkeypatch,
 ):
     """Test that officer can get recommendations for their own farm."""
-    farm = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
 
-    _patch_dependencies(monkeypatch, [{**MOCK_REC, "farm_id": farm.id}])
+    _patch_dependencies(monkeypatch, [{**_MOCK_REC, "farm_id": farm.id}])
 
     response = await async_client.get(f"/recommendations/{farm.id}", headers=officer_auth_headers)
 
@@ -86,7 +86,7 @@ async def test_get_recommendations_officer_other_farm_forbidden(
     setup_soil_texture,
 ):
     """Test that officer cannot get recommendations for another user's farm."""
-    farm = Farm(**FARM_DATA, user_id=test_admin_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_admin_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -107,12 +107,12 @@ async def test_get_recommendations_supervisor_any_farm(
     monkeypatch,
 ):
     """Test that supervisor can get recommendations for a farm belonging to another user."""
-    farm = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
 
-    _patch_dependencies(monkeypatch, [{**MOCK_REC, "farm_id": farm.id}])
+    _patch_dependencies(monkeypatch, [{**_MOCK_REC, "farm_id": farm.id}])
 
     response = await async_client.get(f"/recommendations/{farm.id}", headers=supervisor_auth_headers)
 
@@ -130,12 +130,12 @@ async def test_get_recommendations_admin_any_farm(
     monkeypatch,
 ):
     """Test that admin can get recommendations for a farm belonging to another user."""
-    farm = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
 
-    _patch_dependencies(monkeypatch, [{**MOCK_REC, "farm_id": farm.id}])
+    _patch_dependencies(monkeypatch, [{**_MOCK_REC, "farm_id": farm.id}])
 
     response = await async_client.get(f"/recommendations/{farm.id}", headers=admin_auth_headers)
 
@@ -164,12 +164,12 @@ async def test_get_recommendations_cache_hit(
     monkeypatch,
 ):
     """Test that a cached result is returned from cache without calling the pipeline."""
-    farm = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
 
-    cached_result = {**MOCK_REC, "farm_id": farm.id}
+    cached_result = {**_MOCK_REC, "farm_id": farm.id}
     monkeypatch.setattr(rec_router.cache, "get", AsyncMock(return_value=json.dumps(cached_result)))
 
     mock_pipeline = AsyncMock()
@@ -200,16 +200,16 @@ async def test_batch_recommendations_officer_own_farms(
     monkeypatch,
 ):
     """Test that officer can get batch recommendations for their own farms."""
-    farm1 = Farm(**FARM_DATA, user_id=test_officer_user.id)
-    farm2 = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    farm1 = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm2 = Farm(**_FARM_DATA, user_id=test_officer_user.id)
     async_session.add_all([farm1, farm2])
     await async_session.commit()
     await async_session.refresh(farm1)
     await async_session.refresh(farm2)
 
     mock_results = [
-        {**MOCK_REC, "farm_id": farm1.id},
-        {**MOCK_REC, "farm_id": farm2.id},
+        {**_MOCK_REC, "farm_id": farm1.id},
+        {**_MOCK_REC, "farm_id": farm2.id},
     ]
     _patch_dependencies(monkeypatch, mock_results)
 
@@ -234,7 +234,7 @@ async def test_batch_recommendations_officer_other_farms_forbidden(
     setup_soil_texture,
 ):
     """Test that officer cannot get batch recommendations for another user's farms."""
-    farm = Farm(**FARM_DATA, user_id=test_admin_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_admin_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -259,12 +259,12 @@ async def test_batch_recommendations_supervisor_any_farms(
     monkeypatch,
 ):
     """Test that supervisor can get batch recommendations for a farm belonging to another user."""
-    farm = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
 
-    _patch_dependencies(monkeypatch, [{**MOCK_REC, "farm_id": farm.id}])
+    _patch_dependencies(monkeypatch, [{**_MOCK_REC, "farm_id": farm.id}])
 
     response = await async_client.post(
         "/recommendations/batch",
@@ -286,12 +286,12 @@ async def test_batch_recommendations_admin_any_farms(
     monkeypatch,
 ):
     """Test that admin can get batch recommendations for a farm belonging to another user."""
-    farm = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
 
-    _patch_dependencies(monkeypatch, [{**MOCK_REC, "farm_id": farm.id}])
+    _patch_dependencies(monkeypatch, [{**_MOCK_REC, "farm_id": farm.id}])
 
     response = await async_client.post(
         "/recommendations/batch",

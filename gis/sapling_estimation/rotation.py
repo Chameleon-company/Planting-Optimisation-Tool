@@ -32,11 +32,15 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_x: float,
     center = farm_poly_shp.centroid  # Mark the center of the farm polygon as the rotation origin
     optimal_angle = 0  # Stores the optimal rotation angle
     highest_count = -1  # Stores the highest point count
+    # Stores (angle, count) pairs for each rotation step to enable statistical analysis of rotation performance in estimate layer
+    rotation_results = []
 
     # Loops through every degree from 0 to 90 and rotates the polygon
     for angle in range(0, 91):
         rotated_polygon = rotate(farm_poly_shp, -angle, origin=center)  # Rotates polygon
         count = base_grid.within(rotated_polygon).sum()  # Count number of points within the rotated farm polygon
+        # Record number of planting points that fall within the farm polygon for this rotation angle
+        rotation_results.append((angle, count))
 
         # Update new optimal angle and highest count if more points fall within the current rotated farm polygon
         if count > highest_count:
@@ -48,7 +52,7 @@ def rotate_grid(farm_polygon, planting_grid: gpd.GeoDataFrame, spacing_x: float,
     final_grid["geometry"] = final_grid.geometry.apply(lambda g: rotate(g, optimal_angle, origin=center))
     final_grid = final_grid[final_grid.within(farm_poly_shp)]  # Keep only the points within the polygon
 
-    return final_grid, optimal_angle
+    return final_grid, optimal_angle, rotation_results
 
 
 # Rotation Mechanism Tester Code

@@ -75,6 +75,18 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     assert "pre_slope_count" in result
     assert result["pre_slope_count"] >= result["aligned_count"]
 
+    # -------------------------
+    # US-045 (Rotation stats #280)
+    # -------------------------
+    assert "rotation_average" in result
+    assert "rotation_std_dev" in result
+
+    assert isinstance(result["rotation_average"], (float, int))
+    assert isinstance(result["rotation_std_dev"], (float, int))
+
+    assert result["rotation_std_dev"] >= 0
+    assert result["rotation_average"] >= 0
+
     rows = await async_session.execute(
         text("SELECT COUNT(*) FROM planting_estimates WHERE farm_id = :id"),
         {"id": farm.id},

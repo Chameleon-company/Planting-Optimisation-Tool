@@ -774,3 +774,39 @@ def test_custom_fields_preservation(gee_initialized, test_point):
     assert updated["crop_type"] == "Coffee"
 
     print("\nCustom fields preserved after update")
+
+
+# Hybrid pH Test
+
+
+def test_hybrid_ph_preference(gee_initialized):
+    """
+    Ensure local soil_ph overrides GEE value when provided.
+    """
+
+    profile = build_farm_profile(
+        geometry=(-8.55, 125.57),
+        soil_ph=6.8,  # simulate value from PostGIS raster
+    )
+
+    assert profile["soil_ph"] == 6.8, "Local soil_ph should override GEE value"
+
+    print("\nSUCCESS: Hybrid pH logic working (local overrides GEE)")
+
+
+# Hybrid Soil Texture Test
+
+
+def test_hybrid_soil_texture_preference(gee_initialized):
+    """
+    Ensure local soil_texture overrides GEE value when provided.
+    """
+
+    profile = build_farm_profile(
+        geometry=(-8.55, 125.57),
+        soil_texture="Clay",  # simulate PostGIS raster value
+    )
+
+    assert profile["soil_texture"] == "Clay", "Local soil_texture should override GEE value"
+
+    print("\nSUCCESS: Hybrid soil texture logic working (local overrides GEE)")
