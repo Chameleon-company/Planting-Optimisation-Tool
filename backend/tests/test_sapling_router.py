@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from geoalchemy2 import WKTElement
 from sqlalchemy import text
@@ -114,21 +116,26 @@ async def test_cache_hit(
         "max_slope": 15,
     }
 
-    # First request creates cache
+    # First request creates cache by populating redis
     request = await async_client.post(
         "/sapling_estimation/calculate",
         json=payload,
         headers=officer_auth_headers,
     )
+    assert request.status_code == 200  # First request should return 200
     cache = request.json()
 
-    # Second request should return cached result
-    request2 = await async_client.post(
-        "/sapling_estimation/calculate",
-        json=payload,
-        headers=officer_auth_headers,
-    )
-    data = request2.json()
+    # Second request should access and return cached result
+    with patch(  # Patch run_estimation function so it cannot recompute
+        "src.services.sapling_estimation.SaplingEstimationService.run_estimation",
+        side_effect=Exception("Cache hit error: Second request should access cache and not call service"),
+    ):
+        request2 = await async_client.post(
+            "/sapling_estimation/calculate",
+            json=payload,
+            headers=officer_auth_headers,
+        )
 
+    # The second request succeeds if results come from cache/Redis
     assert request2.status_code == 200  # Second request should return 200
-    assert data == cache  # Second request should return the same result as cache
+    assert request2.json() == cache  # Second request should return the same result as cache
