@@ -15,22 +15,28 @@ The two components are explicitly separated to avoid conceptual overlap and doub
 ## 2. Data and Data Cleaning
 
 ### TreeO2 dataset preparation and cleaning
+
 The available dataset (TreeO2, December 5th 2025) consists of tree monitoring data collected from farmers across multiple municipalities in Timor-Leste. Because the raw field data is subject to entry errors, missing values, and reuse of physical tags (`fob_id`), a rigorous data cleaning pipeline is required to extract reliable survival outcomes and environmental features for predictive modelling. The cleaning pipeline was conducted as part of the survivability modelling work and is contained in the `datasciece/notebooks/survivability_model.ipynb` notebook. Within the notebook, the following processes were conducted:
 
 **Standardisation and base cleaning**
+
 The first phase of the cleaning process ensures data consistency and structural integrity. All duplicate rows are removed, and records missing critical numeric fields—such as trunk circumference, planting year, planting month, and farmer IDs are dropped from the dataset. To ensure categorical uniformity, the `tree_species` column undergoes extensive string manipulation: parenthetical text and excess spaces are removed, hyphenation is standardised, and names are correctly capitalised. Additionally, known local aliases are mapped to canonical names to align with the species data in the POT database.
 
 **Tag recycling and survival inference**
+
 A core challenge of the TreeO2 dataset is determining actual tree mortality, as physical NFC tags (`fob_id`) are frequently moved from dead trees to newly planted saplings. The pipeline algorithmically detects these "recycled" tags by tracking the chronological order of scans and flagging impossible biological or spatial jumps. Anomalies such as spatial shifts exceeding 50 meters, trunk circumference drops greater than 20%, or sudden changes in tree species, planting year, or farm ownership trigger a "recycled" flag. Based on these detected changes, the pipeline splits a single `fob_id` into distinct lifecycles (`tree_instance_id`). If a tag progresses to a new lifecycle, the previous instance is definitively classified as dead (`is_dead = 1`). 
 
 **Geospatial imputation and boundary matching**
+
 Finally, the pipeline rectifies geospatial inaccuracies to prepare the data for environmental feature extraction. Invalid coordinates (recorded as `-1`) are treated as missing and imputed using the geographic centroid of the respective farmer's previously scanned trees. The cleaned points are then converted to a local coordinate reference system (EPSG:32752) and spatially joined against a master database of mapped farm boundaries. Trees that fall precisely within a boundary, or sit within a calculated acceptable distance threshold (capped at 5 kilometres, driven by a 95th-percentile cutoff), are assigned a standardised `farm_id`. Any unmatched trees are dropped, resulting in a robust, geolocated dataset perfectly structured for machine learning.
 
 ### Growth cleaning and rate extraction
 **Dataset augmentation and age calculation**
+
 The output from the initial base-cleaning notebook is passed through a secondary Python script (`datascience/src/scripts/growth_cleaning.py`) designed specifically to handle the complexities of tree growth data. First, the script normalises tree species names and maps them to a standardised `species_id` using the reference dataset ingested into the POT database. It then calculates the exact fractional age of each tree at the time of scanning (`age_years_at_scan`) based on its planting date, and removes near-duplicate scans within a few days of each other to establish a clean, chronological timeline for each tree instance.
 
 **Robust anomaly detection and correction**
+
 Because physical measurements in the field are prone to entry errors (e.g., recording 10cm as 100cm), the script employs a rigorous statistical and rules-based cleaning pipeline to correct or drop impossible growth trajectories:
 
 * Species-aware growth thresholds: The script calculates a 95th-percentile annual growth limit for each species based on valid near-annual scan intervals.
@@ -42,6 +48,7 @@ Because physical measurements in the field are prone to entry errors (e.g., reco
 * Cohort outlier removal: After chronological cleaning, a secondary statistical pass calculates robust z-scores on log-circumferences grouped by species and 1-year age bins, dropping any remaining statistical outliers.
 
 **Growth Rate Extraction**
+
 Once the measurements are validated, the script drops any tree instances with fewer than 2 remaining valid scans. For the surviving trees, it calculates a biologically realistic, annualised net growth rate (`net_growth_rate_cm_yr`) by comparing the first and last valid circumference measurements over the tree's recorded lifespan. Trees showing net-negative growth over a span greater than 6 months (indicating a missed tag reset) or exceeding biological maximums are filtered out.
 
 **Generated Outputs**
