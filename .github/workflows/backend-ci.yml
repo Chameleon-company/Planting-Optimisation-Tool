@@ -38,6 +38,12 @@ jobs:
           - 5432:5432
         options: "--health-cmd \"pg_isready -U postgres\" --health-interval 10s --health-timeout 5s --health-retries 5"
 
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: "--health-cmd \"redis-cli ping\" --health-interval 5s --health-timeout 5s --health-retries 5"
+
     steps:
     - uses: actions/checkout@v4
       with:
@@ -82,6 +88,7 @@ jobs:
         echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
         # Points at POT_db for alembic; the test step overrides this to pot_test_db
         echo "DATABASE_URL=postgresql+asyncpg://postgres:devpassword@localhost:5432/POT_db" >> $GITHUB_ENV
+        echo "REDIS_URL=redis://localhost:6379" >> $GITHUB_ENV
 
     - name: Enable PostGIS Extension
       run: |
