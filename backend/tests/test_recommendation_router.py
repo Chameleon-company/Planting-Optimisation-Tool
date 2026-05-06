@@ -276,6 +276,33 @@ async def test_batch_recommendations_supervisor_any_farms(
     assert isinstance(response.json(), list)
 
 
+async def test_batch_recommendations_admin_any_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+    monkeypatch,
+):
+    """Test that admin can get batch recommendations for a farm belonging to another user."""
+    farm = Farm(**FARM_DATA, user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.commit()
+    await async_session.refresh(farm)
+
+    _patch_dependencies(monkeypatch, [{**MOCK_REC, "farm_id": farm.id}])
+
+    response = await async_client.post(
+        "/recommendations/batch",
+        json=[farm.id],
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
 async def test_batch_recommendations_no_valid_farms(
     async_client: AsyncClient,
     test_officer_user: User,
