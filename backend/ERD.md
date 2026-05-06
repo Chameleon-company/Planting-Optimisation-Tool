@@ -31,6 +31,11 @@ erDiagram
     INTEGER external_id UK "nullable"
   }
 
+  dem_table {
+    INTEGER rid PK
+    raster rast "nullable"
+  }
+
   farm_agroforestry_association {
     INTEGER agroforestry_type_id PK,FK
     INTEGER farm_id PK,FK
@@ -44,23 +49,21 @@ erDiagram
     BOOLEAN bank_stabilising
     BOOLEAN coastal
     INTEGER elevation_m
+    BOOLEAN elevation_m_imputed
     INTEGER external_id UK "nullable"
     FLOAT latitude
     FLOAT longitude
     BOOLEAN nitrogen_fixing
     FLOAT ph
+    BOOLEAN ph_imputed
     INTEGER rainfall_mm
+    BOOLEAN rainfall_mm_imputed
     BOOLEAN riparian
     BOOLEAN shade_tolerant
     FLOAT slope
+    BOOLEAN slope_imputed
     INTEGER temperature_celsius
-  }
-
-  waterways {
-    INTEGER id PK
-    geometry(GEOMETRY-4326) geometry
-    VARCHAR name "nullable"
-    VARCHAR waterway "nullable"
+    BOOLEAN temperature_celsius_imputed
   }
 
   parameters {

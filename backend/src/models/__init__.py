@@ -5,6 +5,7 @@ from src.models.association import (
 )
 from src.models.audit_log import AuditLog
 from src.models.boundaries import FarmBoundary
+from src.models.dem_table import DemTable
 from src.models.exclusion_rules import SpeciesDependency, SpeciesExclusionRule
 from src.models.farm import Farm
 from src.models.parameters import Parameter
@@ -35,6 +36,7 @@ __all__ = [
     "PlantingEstimate",
     "SpeciesExclusionRule",
     "SpeciesDependency",
+    "DemTable",
     "SoilPH",
     "SoilTextureSpatial",
 ]
