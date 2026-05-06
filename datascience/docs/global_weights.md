@@ -9,26 +9,26 @@ This document describes a hybrid data‑driven and expert‑informed weighting f
 1.  Global criterion importance weights are learned empirically from observed farm–species performance data using machine‑learning (ML) models, and
 2.  Species‑specific sensitivity modifiers are derived using the Analytic Hierarchy Process (AHP) based on expert knowledge.
 
-The two components are explicitly separated to avoid conceptual overlap and double counting. Global weights capture *system‑level importance* of environmental criteria, while AHP captures *species‑level sensitivity* to those criteria.
+The two components are explicitly separated to avoid conceptual overlap and double-counting. Global weights capture *system‑level importance* of environmental criteria, while AHP captures *species‑level sensitivity* to those criteria.
 
 
 ## 2. Data and Data Cleaning
 
 ### TreeO2 dataset preparation and cleaning
-The available dataset (TreeO2 December 5th 2025) consists of tree monitoring data collected from farmers across multiple municipalities in Timor-Leste. Because the raw field data is subject to entry errors, missing values, and physical tag (`fob_id`) reuse, a rigorous data cleaning pipeline is required to extract reliable survival outcomes and environmental features for predictive modeling. The cleaning pipeline was conducted as part of the survivability modelling work and is contained in the `datasciece/notebooks/survivability_model.ipynb` notebook. Within the notebook the following processes were conducted:
+The available dataset (TreeO2, December 5th 2025) consists of tree monitoring data collected from farmers across multiple municipalities in Timor-Leste. Because the raw field data is subject to entry errors, missing values, and reuse of physical tags (`fob_id`), a rigorous data cleaning pipeline is required to extract reliable survival outcomes and environmental features for predictive modelling. The cleaning pipeline was conducted as part of the survivability modelling work and is contained in the `datasciece/notebooks/survivability_model.ipynb` notebook. Within the notebook, the following processes were conducted:
 
 **Standardisation and base cleaning**
 The first phase of the cleaning process ensures data consistency and structural integrity. All duplicate rows are removed, and records missing critical numeric fields—such as trunk circumference, planting year, planting month, and farmer IDs are dropped from the dataset. To ensure categorical uniformity, the `tree_species` column undergoes extensive string manipulation: parenthetical text and excess spaces are removed, hyphenation is standardised, and names are correctly capitalised. Additionally, known local aliases are mapped to canonical names to align with the species data in the POT database.
 
 **Tag recycling and survival inference**
-A core challenge of the TreeO2 dataset is determining actual tree mortality, as physical NFC tags (`fob_id`) are frequently moved from dead trees to newly planted saplings. The pipeline algorithmically detects these "recycled" tags by tracking chronological scans and flagging impossible biological or spatial jumps. Anomalies such as spatial shifts exceeding 50 meters, trunk circumference drops greater than 20%, or sudden changes in tree species, planting year, or farm ownership trigger a "recycled" flag. Based on these detected changes, the pipeline splits a single `fob_id` into distinct lifecycles (`tree_instance_id`). If a tag progresses to a new lifecycle, the previous instance is definitively classified as dead (`is_dead = 1`). 
+A core challenge of the TreeO2 dataset is determining actual tree mortality, as physical NFC tags (`fob_id`) are frequently moved from dead trees to newly planted saplings. The pipeline algorithmically detects these "recycled" tags by tracking the chronological order of scans and flagging impossible biological or spatial jumps. Anomalies such as spatial shifts exceeding 50 meters, trunk circumference drops greater than 20%, or sudden changes in tree species, planting year, or farm ownership trigger a "recycled" flag. Based on these detected changes, the pipeline splits a single `fob_id` into distinct lifecycles (`tree_instance_id`). If a tag progresses to a new lifecycle, the previous instance is definitively classified as dead (`is_dead = 1`). 
 
 **Geospatial imputation and boundary matching**
-Finally, the pipeline rectifies geospatial inaccuracies to prepare the data for environmental feature extraction. Invalid coordinates (recorded as `-1`) are treated as missing and imputed using the geographic centroid of the respective farmer's previously scanned trees. The cleaned points are then converted to a local coordinate reference system (EPSG:32752) and spatially joined against a master database of mapped farm boundaries. Trees that fall precisely within a boundary, or sit within a calculated acceptable distance threshold (capped at 5 kilometers, driven by a 95th-percentile cutoff), are assigned a standardized `farm_id`. Any trees that remain unmatched are dropped, resulting in a robust, geolocated dataset perfectly structured for machine learning.
+Finally, the pipeline rectifies geospatial inaccuracies to prepare the data for environmental feature extraction. Invalid coordinates (recorded as `-1`) are treated as missing and imputed using the geographic centroid of the respective farmer's previously scanned trees. The cleaned points are then converted to a local coordinate reference system (EPSG:32752) and spatially joined against a master database of mapped farm boundaries. Trees that fall precisely within a boundary, or sit within a calculated acceptable distance threshold (capped at 5 kilometres, driven by a 95th-percentile cutoff), are assigned a standardised `farm_id`. Any unmatched trees are dropped, resulting in a robust, geolocated dataset perfectly structured for machine learning.
 
 ### Growth cleaning and rate extraction
 **Dataset augmentation and age calculation**
-The output from the initial base-cleaning notebook is passed through a secondary Python script (`datascience/src/scripts/growth_cleaning.py`) designed specifically to handle the complexities of tree growth data. First, the script normalises tree species names and maps them to a standardised `species_id` using the reference dataset ingested into the POT database. It then calculates the exact fractional age of each tree at the time of scanning (`age_years_at_scan`) based on its planting date and removes near-duplicate scans occurring within a few days of each other to establish a clean chronological timeline for each tree instance.
+The output from the initial base-cleaning notebook is passed through a secondary Python script (`datascience/src/scripts/growth_cleaning.py`) designed specifically to handle the complexities of tree growth data. First, the script normalises tree species names and maps them to a standardised `species_id` using the reference dataset ingested into the POT database. It then calculates the exact fractional age of each tree at the time of scanning (`age_years_at_scan`) based on its planting date, and removes near-duplicate scans within a few days of each other to establish a clean, chronological timeline for each tree instance.
 
 **Robust anomaly detection and correction**
 Because physical measurements in the field are prone to entry errors (e.g., recording 10cm as 100cm), the script employs a rigorous statistical and rules-based cleaning pipeline to correct or drop impossible growth trajectories:
@@ -42,29 +42,29 @@ Because physical measurements in the field are prone to entry errors (e.g., reco
 * Cohort outlier removal: After chronological cleaning, a secondary statistical pass calculates robust z-scores on log-circumferences grouped by species and 1-year age bins, dropping any remaining statistical outliers.
 
 **Growth Rate Extraction**
-Once the measurements are validated, the script drops any tree instances that have fewer than two remaining valid scans. For the surviving trees, it calculates a biologically realistic, annualised net growth rate (`net_growth_rate_cm_yr`) by comparing the first and last valid circumference measurements over the tree's recorded lifespan. Trees showing net-negative growth over a span greater than 6 months (indicating a missed tag reset) or exceeding biological maximums are filtered out.
+Once the measurements are validated, the script drops any tree instances with fewer than 2 remaining valid scans. For the surviving trees, it calculates a biologically realistic, annualised net growth rate (`net_growth_rate_cm_yr`) by comparing the first and last valid circumference measurements over the tree's recorded lifespan. Trees showing net-negative growth over a span greater than 6 months (indicating a missed tag reset) or exceeding biological maximums are filtered out.
 
 **Generated Outputs**
-The script finalizes the pipeline by exporting three distinct artifacts for downstream analysis and reporting:
+The script finalises the pipeline by exporting three distinct artifacts for downstream analysis and reporting:
 
 1.  Cleaned circumference data (`datascience/notebooks/farm_species_age_circumference.csv`): A dataset containing the corrected, scan-by-scan `trunk_circumference_clean` and exact age for every valid tree instance.
 
 2.  Cleaned growth rates (`datascience/notebooks/farm_species_age_circumference_growth_rates.csv`): A summary dataset containing a single row per tree instance, featuring its total age span and calculated `net_growth_rate_cm_yr`.
 
-3.  Visual QA report (`datascience.docs/Growth_Cleaning_Report.pdf`): An automated PDF document detailing the data retention metrics, alongside generated box-plots showing the distribution of trunk circumferences by age bin for each species, and a summary distribution of annualized growth rates.
+3.  Visual QA report (`datascience.docs/Growth_Cleaning_Report.pdf`): An automated PDF document detailing the data retention metrics, alongside generated box-plots showing the distribution of trunk circumferences by age bin for each species, and a summary distribution of annualised growth rates.
 
 **Why I measure rates, not size**
 
-When evaluating environmental suitability, the ultimate goal is to answer: *"Which farms provide the best conditions for this species?"* Intuitively, one might assume that farms with the largest trees (greatest trunk circumference) are the best environments. However, in biological data, absolute size is primarily a function of *time*, not just environment. Age acts as a massive confounding variable. A 10-year-old tree planted in highly degraded, unsuitable soil will almost certainly have a larger absolute circumference than a 2-year-old tree planted in perfectly optimal conditions. If I attempt to correlate raw trunk circumference directly to environmental features (like rainfall or pH), the statistical models will fatally misinterpret the data. The models will associate the environments of the older trees with "success", regardless of the actual soil quality.
+When evaluating environmental suitability, the ultimate goal is to answer: *"Which farms provide the best conditions for this species?"* Intuitively, one might assume that farms with the largest trees (the greatest trunk circumference) are the best environments. However, in biological data, absolute size is primarily a function of *time*, not just environment. Age is a major confounding variable. A 10-year-old tree planted in highly degraded, unsuitable soil will almost certainly have a larger absolute circumference than a 2-year-old tree planted in perfectly optimal conditions. If I attempt to correlate raw trunk circumference directly with environmental features (such as rainfall or pH), the statistical models will fatally misinterpret the data. The models will associate the environments of the older trees with "success", regardless of the actual soil quality.
 
 
 ### Isolating the environmental signal via age standardisation
 Raw trunk circumferences and annualised growth rates cannot be directly compared across different environments because tree age remains an overwhelming confounding variable. To extract the true environmental signal, I must fully control for time.
 
-The `datascience/src/scripts/gen_expected_performance_index.py` script achieves this by establishing an age-standardised biological baseline. By taking the annualised growth rate and standardising it through my modelling pipeline, the "Age Effect" is mathematically removed. This allows me to compare the biological efficiency of a 2-year-old sapling directly against a 10-year-old mature tree, cleanly isolating how the local environment accelerates or suppresses expected growth.
+The `datascience/src/scripts/gen_expected_performance_index.py` script achieves this by establishing an age-standardised biological baseline. By taking the annualised growth rate and standardising it through my modelling pipeline, the "Age Effect" is mathematically removed. This allows me to compare the biological efficiency of a 2-year-old sapling directly with that of a 10-year-old mature tree, cleanly isolating how the local environment accelerates or suppresses expected growth.
 
 **Gamma GAM application**
-To decouple tree age from environmental suitability, the script first calculates a "mid-age" to represent the tree's biological age during its measured growth window. It then fits a Gamma Generalised Additive Model (GAM) with a log-link function strictly against this age variable. Unlike standard linear regression, the Gamma distribution naturally handles right-skewed, strictly positive biological growth data and accounts for the heteroscedasticity of tree maturity (variance increases as trees grow older). To prevent mathematical failure on trees that experienced zero net growth—a critical negative biological signal an epsilon bound (`1e-9`) is applied to the predictions.
+To decouple tree age from environmental suitability, the script first calculates a "mid-age" to represent the tree's biological age during its measured growth window. It then fits a Gamma Generalised Additive Model (GAM) with a log-link function strictly against this age variable. Unlike standard linear regression, the Gamma distribution naturally handles right-skewed, strictly positive biological growth data and accounts for heteroscedasticity in tree maturity (variance increases with age). To prevent mathematical failure on trees that experienced zero net growth—a critical negative biological signal, an epsilon bound (`1e-9`) is applied to the predictions.
 
 **Expected Performance Index (EPI)**
 Once the GAM is fitted, it generates the predicted mean growth rate for a tree of any specific age. The script then calculates the Expected Performance Index (EPI) using a simple ratio: `Actual Growth / Expected Growth`. 
@@ -89,13 +89,13 @@ The pipeline ultimately produces two artifacts:
 
 1.  Aggregated EPI dataset (`datascience\src\scripts\aggregated_epi_data.csv`): The final, noise-reduced farm-level target variables, ready to be populated with the raw scores for each feature in each farm/species combination to be fed into downstream weight-extraction models.
 
-2.  EPI visual report (`EPI_Report.pdf`): An automated PDF document detailing model fit statistics (AIC, Deviance), plotting the GAM fit curves with confidence intervals against observed data, generating species-specific EPI histograms, and providing a violin plot to visualize the distribution of farm-level performance across all species.
+2.  EPI visual report (`EPI_Report.pdf`): An automated PDF document detailing model fit statistics (AIC, Deviance), plotting the GAM fit curves with confidence intervals against observed data, generating species-specific EPI histograms, and providing a violin plot to visualise the distribution of farm-level performance across all species.
 
 
 ### Feature alignment and final dataset assembly
 
 **Bridging biological targets with environmental features**
-The final step before predictive modeling can begin is to align the target variable, the Expected Performance Index (EPI) with the actual environmental conditions present at each farm. While the previous script successfully isolated the biological "Age Effect" to create a clean measure of environmental suitability (the EPI), the weight-extraction models still need to know *what* those environmental conditions were in order to learn from them. 
+The final step before predictive modelling can begin is to align the target variable, the Expected Performance Index (EPI), with the actual environmental conditions present at each farm. While the previous script successfully isolated the biological "Age Effect" to create a clean measure of environmental suitability (the EPI), the weight-extraction models still need to know *what* those environmental conditions were in order to learn from them. 
 
 This merging script serves as the bridge between the cleaned biological data and the backend environmental scoring engine.
 
@@ -118,7 +118,7 @@ The result is a downloadable machine‑learning‑ready dataset (`epi_farm_speci
 Not all species are present on all farms, and the EPI is recognised as noisy due to unobserved factors (management, genetics, local site effects). The modelling objective is therefore **not precise performance prediction**, but robust estimation of **relative importance among environmental criteria**.
 
 
-The following diagram provides a system‑level overview of the full workflow used to derive global environmental importance weights from observed farm–species performance data, integrate expert‑elicited species sensitivities via AHP, and produce final MCDA‑based species rankings.
+The following diagram provides a system‑level overview of the full workflow for deriving global environmental importance weights from observed farm–species performance data, integrating expert‑elicited species sensitivities via AHP, and producing final MCDA‑based species rankings.
 
 ![System‑level overview of the full workflow](images/weights-workflow.png)
 
@@ -136,10 +136,10 @@ A central design principle of this framework is the strict separation of two dis
 ### Rationale for global criterion weights
 A critical methodological decision is not to extract species-specific weights directly from the performance data. Conflating these two roles by calculating separate ML weights for every species is avoided for two main reasons:
 
-1. Conceptual alignment with MCDA principles: In Multi-Criteria Decision Analysis (MCDA), criterion weights represent the priorities of the *decision context* (the shared farm environment), not the properties of the alternatives (the species). Allowing importance weights to change arbitrarily per species would imply that the fundamental farm environment changes depending on the plant being considered. Instead, species differences, such as tolerance thresholds and stressor responses—belong purely in the *scoring layer* (via AHP modifiers and suitability functions), preserving a consistent baseline framework.
+1. Conceptual alignment with MCDA principles: In Multi-Criteria Decision Analysis (MCDA), criterion weights represent the priorities of the *decision context* (the shared farm environment), not the properties of the alternatives (the species). Allowing importance weights to change arbitrarily per species would imply that the fundamental farm environment changes depending on the plant being considered. Instead, species differences, such as tolerance thresholds and stressor responses, belong purely in the *scoring layer* (via AHP modifiers and suitability functions), preserving a consistent baseline framework.
 
 2. Statistical robustness
-Attempting to learn species-specific weights directly from historical performance data is statistically problematic. Because data is partitioned across species, the effective sample size per species drops significantly. Combined with the natural noise of biological data (e.g., unobserved management practices or micro-site variations) and baseline species effects, species-specific modeling leads to severe over-fitting, weight instability, and noise amplification.
+Attempting to learn species-specific weights directly from historical performance data is statistically problematic. Because data is partitioned across species, the effective sample size per species drops significantly. Combined with the natural noise of biological data (e.g., unobserved management practices or micro-site variations) and baseline species effects, species-specific modelling leads to severe over-fitting, weight instability, and noise amplification.
 
 
 ### Implications and advantages
@@ -246,7 +246,7 @@ Bootstrapping is not required to compute point estimates of global weights, but 
 
 ### 4.6 Updating global weights
 
-Once the combined EPI and raw feature dataset has been generated (`epi_farm_species_scores_data.csv`), global weights can be recalculated using the provided data science workflow.
+Once the combined EPI and raw-feature dataset has been generated (`epi_farm_species_scores_data.csv`), global weights can be recalculated using the provided data-science workflow.
 
 The `epi_farm_species_scores_data.csv` file should be placed in the following directory:
 
@@ -283,12 +283,12 @@ $$
 w_{s,j}^{\text{AHP}}
 $$
 
-represent relative sensitivity, not global importance. They are species‑conditional and may differ substantially across species.
+represent relative sensitivity rather than global importance. They are species‑conditional and may differ substantially across species.
 
 
 ## 6. Combining global weights and AHP sensitivities
 
-To integrate empirical and expert information while avoiding double counting, global ML weights and AHP sensitivities are combined multiplicatively:
+To integrate empirical and expert information while avoiding double-counting, global ML weights and AHP sensitivities are combined multiplicatively:
 
 $$
 \tilde{w}_{s,j} = w_j^{\text{global}} \times w_{s,j}^{\text{AHP}}
@@ -334,14 +334,14 @@ Global weights are system‑level parameters and may be applied to species not p
 
 *   Environmental criteria are defined consistently
 
-*   Species‑specific suitability and AHP sensitivity information is available
+*   Species‑specific suitability and AHP sensitivity information are available
 
 *   New species fall within the ecological scope of the observed system
 
 This allows the framework to scale from the 9 observed species to a larger candidate set without re‑estimating global importance.
 
 
-## 9. When should the global weights by updated
+## 9. When should the global weights be updated
 
 The scoring has three distinct layers:
 
@@ -357,7 +357,7 @@ The scoring has three distinct layers:
 
 3.  Decision layer (MCDA): Global weights × species sensitivities (AHP) × farm scores
 
-This table shows when the global importance weights should be re-calculated.
+This table shows when the global importance weights should be recalculated.
 
 | Change                               | Recompute global weights?  |
 | ------------------------------------ | -------------------------  |
@@ -386,7 +386,7 @@ The proposed framework:
 
 *   Remains extensible to new species and scenarios
 
-By design, it prioritises robust decision support over predictive accuracy, making it well suited to real‑world species selection problems under uncertainty.
+By design, it prioritises robust decision support over predictive accuracy, making it well-suited to real-world species-selection problems under uncertainty.
 
 ## Appendix A: End‑to‑end workflow
 
