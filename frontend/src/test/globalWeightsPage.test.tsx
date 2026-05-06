@@ -18,7 +18,7 @@ describe("GlobalWeightsPage", () => {
     vi.clearAllMocks();
 
     // Default mock implementation for useGlobalWeightRuns
-    (useGlobalWeightRuns as any).mockReturnValue({
+    vi.mocked(useGlobalWeightRuns).mockReturnValue({
       runs: [],
       isLoading: false,
       error: null,
@@ -28,7 +28,7 @@ describe("GlobalWeightsPage", () => {
     });
 
     // Default mock implementation for useEpiScoring
-    (useEpiScoring as any).mockReturnValue({
+    vi.mocked(useEpiScoring).mockReturnValue({
       processEpiCsv: mockProcessEpiCsv,
       isEpiLoading: false,
       epiError: null,
@@ -78,7 +78,7 @@ describe("GlobalWeightsPage", () => {
 
   it("displays error messages formatted as a list when they occur", () => {
     const multiError = "Row 1: Missing ID | Row 2: Invalid Score";
-    (useGlobalWeightRuns as any).mockReturnValue({
+    vi.mocked(useGlobalWeightRuns).mockReturnValue({
       runs: [],
       isLoading: false,
       error: multiError,
@@ -95,7 +95,7 @@ describe("GlobalWeightsPage", () => {
   });
 
   it("shows loading state on buttons during processing", () => {
-    (useEpiScoring as any).mockReturnValue({
+    vi.mocked(useEpiScoring).mockReturnValue({
       processEpiCsv: vi.fn(),
       isEpiLoading: true,
       epiError: null,
