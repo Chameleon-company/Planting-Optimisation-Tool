@@ -1,17 +1,9 @@
-from unittest import result
-
 from geoalchemy2.shape import from_shape
-from sqlalchemy import func, select, text
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from geoalchemy2 import Geography
-from geoalchemy2.shape import from_shape
-from sqlalchemy import func, select, cast
 from src.models.waterways import Waterway
-
-
-CRS_ANALYSIS = 32751  # UTM 51S
-RIPARIAN_BUFFER_M: float = 15.0
+from src.schemas.constants import CRS_ANALYSIS, RIPARIAN_BUFFER_M
 
 
 async def get_riparian_flags(
@@ -19,7 +11,7 @@ async def get_riparian_flags(
     shapely_farm_geom: object,
 ) -> dict:
     """
-    Check if a farm location falls within a riparian zone.
+    Check if a farm boundary intersects a riparian zone.
 
     This function uses PostGIS spatial queries to determine if the farm geometry
     intersects with a buffered area around waterways.
@@ -48,38 +40,26 @@ async def get_riparian_flags(
     )
 
     stmt = select(
-        func.exists(
-            select(1)
-            .select_from(Waterway)
-            .where(
-                func.ST_Intersects(
-                    farm_geom_utm,
-                    func.ST_Buffer(
-                        waterway_geom_utm,
-                        RIPARIAN_BUFFER_M,
-                    ),
-                )
+        func.bool_or(
+            func.ST_Intersects(
+                farm_geom_utm,
+                func.ST_Buffer(
+                    waterway_geom_utm,
+                    RIPARIAN_BUFFER_M,
+                ),
             )
-            .scalar_subquery()
-        )
-    )
-
-    riparian = bool(await db.scalar(stmt))
-
-    stmt = select(
+        ).label("riparian"),
         func.min(
             func.ST_Distance(
                 func.ST_Boundary(farm_geom_utm),
                 waterway_geom_utm,
             )
-        )
+        ).label("distance_to_waterway_m"),
     ).select_from(Waterway)
 
-    distance_m = await db.scalar(stmt)
+    row = (await db.execute(stmt)).first()
 
-    print(f"Riparian: {riparian}")
-    print(f"Distance to waterway (m): {distance_m}")
     return {
-        "riparian": bool(riparian),
-        "distance_to_waterway_m": None if distance_m is None else round(float(distance_m), 1),
+        "riparian": bool(row.riparian),
+        "distance_to_nearest_waterway_m": None if row.distance_to_waterway_m is None else round(float(row.distance_to_waterway_m), 1),
     }
