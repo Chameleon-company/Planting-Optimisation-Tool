@@ -52,6 +52,7 @@ Because physical measurements in the field are prone to entry errors (e.g., reco
 Once the measurements are validated, the script drops any tree instances with fewer than 2 remaining valid scans. For the surviving trees, it calculates a biologically realistic, annualised net growth rate (`net_growth_rate_cm_yr`) by comparing the first and last valid circumference measurements over the tree's recorded lifespan. Trees showing net-negative growth over a span greater than 6 months (indicating a missed tag reset) or exceeding biological maximums are filtered out.
 
 **Generated Outputs**
+
 The script finalises the pipeline by exporting three distinct artifacts for downstream analysis and reporting:
 
 1.  Cleaned circumference data (`datascience/notebooks/farm_species_age_circumference.csv`): A dataset containing the corrected, scan-by-scan `trunk_circumference_clean` and exact age for every valid tree instance.
@@ -71,9 +72,11 @@ Raw trunk circumferences and annualised growth rates cannot be directly compared
 The `datascience/src/scripts/gen_expected_performance_index.py` script achieves this by establishing an age-standardised biological baseline. By taking the annualised growth rate and standardising it through my modelling pipeline, the "Age Effect" is mathematically removed. This allows me to compare the biological efficiency of a 2-year-old sapling directly with that of a 10-year-old mature tree, cleanly isolating how the local environment accelerates or suppresses expected growth.
 
 **Gamma GAM application**
+
 To decouple tree age from environmental suitability, the script first calculates a "mid-age" to represent the tree's biological age during its measured growth window. It then fits a Gamma Generalised Additive Model (GAM) with a log-link function strictly against this age variable. Unlike standard linear regression, the Gamma distribution naturally handles right-skewed, strictly positive biological growth data and accounts for heteroscedasticity in tree maturity (variance increases with age). To prevent mathematical failure on trees that experienced zero net growth—a critical negative biological signal, an epsilon bound (`1e-9`) is applied to the predictions.
 
 **Expected Performance Index (EPI)**
+
 Once the GAM is fitted, it generates the predicted mean growth rate for a tree of any specific age. The script then calculates the Expected Performance Index (EPI) using a simple ratio: `Actual Growth / Expected Growth`. 
 
 Pinning this baseline strictly at `1.0` creates a universal biological standard:
@@ -85,6 +88,7 @@ Pinning this baseline strictly at `1.0` creates a universal biological standard:
 * *Example:* An EPI of 1.2 indicates a tree grew 20% faster than the species average for its exact age.
 
 **Farm-level aggregation**
+
 Before exporting the final metrics, the tree-level EPIs are aggregated to the farm level (grouped by `farm_id` and `species_id`). This vital step achieves two things:
 
 1.  Noise reduction: Individual trees exhibit random variance (e.g., an isolated fungal infection or a lightning strike). Averaging the EPI of all trees of a specific species on a single farm smooths out this individual noise, yielding a highly stable "Farm Performance Score".
@@ -92,6 +96,7 @@ Before exporting the final metrics, the tree-level EPIs are aggregated to the fa
 2.  Feature alignment: Because environmental features (Rainfall, Temperature, Soil texture) are scored at the farm level rather than the tree level, this aggregation perfectly aligns the target variable with the spatial inputs required for accurate mathematical extraction.
 
 **Generated outputs**
+
 The pipeline ultimately produces two artifacts:
 
 1.  Aggregated EPI dataset (`datascience\src\scripts\aggregated_epi_data.csv`): The final, noise-reduced farm-level target variables, ready to be populated with the raw scores for each feature in each farm/species combination to be fed into downstream weight-extraction models.
@@ -102,6 +107,7 @@ The pipeline ultimately produces two artifacts:
 ### Feature alignment and final dataset assembly
 
 **Bridging biological targets with environmental features**
+
 The final step before predictive modelling can begin is to align the target variable, the Expected Performance Index (EPI), with the actual environmental conditions present at each farm. While the previous script successfully isolated the biological "Age Effect" to create a clean measure of environmental suitability (the EPI), the weight-extraction models still need to know *what* those environmental conditions were in order to learn from them. 
 
 This merging script serves as the bridge between the cleaned biological data and the backend environmental scoring engine.
