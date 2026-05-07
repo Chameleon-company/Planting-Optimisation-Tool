@@ -23,7 +23,7 @@ import WeightingHub from "./pages/admin/settings/WeightingHub";
 import AhpPage from "./pages/admin/settings/AhpPage";
 import HybridAhpPage from "./pages/admin/settings/HybridAhpPage";
 import AdminSpeciesPage from "./pages/admin/AdminSpeciesPage";
-import FarmsPage from "./pages/farmManagementPage";
+import FarmsManagmentPage from "./pages/farmManagementPage";
 // Export App
 export default function App() {
   return (
@@ -37,7 +37,14 @@ export default function App() {
             <Route element={<MainLayout />}>
               <Route path="/" index element={<HomePage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/farms" element={<FarmsPage />} />
+              <Route
+                path="/farms"
+                element={
+                  <RequireRole allowedRoles={["admin", "supervisor"]}>
+                    <FarmsManagmentPage />
+                  </RequireRole>
+                }
+              />
               <Route path="/calculator" element={<CalculatorPage />} />
               <Route path="/recommendation" element={<RecommendationPage />} />
               <Route path="/species" element={<SpeciesPage />} />

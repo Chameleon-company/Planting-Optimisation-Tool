@@ -15,7 +15,7 @@ import FarmManageActions from "@/components/farmManagement/farmManagementEditBut
 import FarmsHeader from "@/components/farmManagement/farmHeader";
 import "./farmManagement.css";
 
-export default function FarmsPage() {
+export default function FarmsManagmentPage() {
   // Call user, and create useState's for if the register modal is open, which farm is being edited,
   // and the current farmID being edited
   const { user } = useAuth();

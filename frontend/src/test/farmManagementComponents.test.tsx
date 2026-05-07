@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { renderHook } from "@testing-library/react";
 import { act } from "react";
 import { Farm } from "@/hooks/useUserProfiles";
@@ -8,11 +8,11 @@ import type { FormState } from "@/components/farmManagement/farmForms/farmConsta
 
 import FarmsTable from "@/components/farmManagement/farmsTable";
 import RegisterFarmModal from "@/components/farmManagement/farmRegisterModal";
-import { useUserProfiles } from "@/hooks/useUserProfiles";
 import EditFarmModal from "@/components/farmManagement/farmsEditModal";
 import { validate } from "@/components/farmManagement/farmForms/validate";
 import { useFarms } from "@/hooks/useFarms";
 import { FarmCreatePayload } from "@/hooks/useFarms";
+import FarmsManagmentPage from "@/pages/farmManagementPage";
 
 // Shared mock data
 const mockFarm = (id: number): Farm => ({
@@ -40,17 +40,45 @@ vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
+vi.mock("@/hooks/useSoilTextures", () => ({
+  useSoilTextures: () => ({
+    soilTextures: [{ id: 1, name: "Sandy Loam" }, { id: 2, name: "Clay" }],
+    isLoading: false,
+  }),
+}));
+
 const mockNavigate = vi.fn();
+const mockRefetch = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
+  mockRefetch: () => mockRefetch,
+}));
+
+const defaultProfiles = {
+  farms: [mockFarm(1)],
+  isLoading: false,
+  error: null as string | null,
+  page: 1,
+  setPage: vi.fn(),
+  totalFarms: 1,
+  totalPages: 1,
+  refetch: mockRefetch,
+};
+
+let profilesOverride: Partial<typeof defaultProfiles> = {};
+
+vi.mock("@/hooks/useUserProfiles", () => ({
+  useUserProfiles: () => ({ ...defaultProfiles, ...profilesOverride }),
 }));
 
 beforeEach(() => {
+  profilesOverride = {};
   // Default to an admin user so all action buttons are visible unless overridden
   mockUseAuth.mockReturnValue({
     user: { name: "Test Admin", role: "admin" },
     getAccessToken: () => "mock-token",
   });
+  vi.clearAllMocks();
 });
 
 afterEach(() => {
@@ -229,7 +257,7 @@ describe("RegisterFarmModal", () => {
 
   it("locks the page scroll while the modal is open", () => {
     render(<RegisterFarmModal onClose={vi.fn()} onSuccess={vi.fn()} />);
-    // Modal should stop background scrolling \\
+    // Modal should stop background scrolling
     expect(document.body.style.overflow).toBe("hidden");
   });
 
@@ -257,15 +285,55 @@ describe("EditFarmModal", () => {
     render(<EditFarmModal farm={farm} onClose={vi.fn()} onSuccess={vi.fn()} />);
     // Every numeric field should be seeded from the farm object
     expect(screen.getByDisplayValue("1200")).toBeInTheDocument(); // rainfall_mm
-    expect(screen.getByDisplayValue("22")).toBeInTheDocument(); // temperature_celsius
-    expect(screen.getByDisplayValue("300")).toBeInTheDocument(); // elevation_m
-    expect(screen.getByDisplayValue("6.5")).toBeInTheDocument(); // ph
+    expect(screen.getByDisplayValue("22")).toBeInTheDocument();   // temperature_celsius
+    expect(screen.getByDisplayValue("300")).toBeInTheDocument();  // elevation_m
+    expect(screen.getByDisplayValue("6.5")).toBeInTheDocument();  // ph
   });
 
   it("renders Save changes and Cancel buttons", () => {
     render(<EditFarmModal farm={farm} onClose={vi.fn()} onSuccess={vi.fn()} />);
     expect(screen.getByText("Save changes")).toBeInTheDocument();
     expect(screen.getByText("Cancel")).toBeInTheDocument();
+  });
+
+  it("locks the page scroll while the modal is open", () => {
+    render(<EditFarmModal farm={farm} onClose={vi.fn()} onSuccess={vi.fn()} />);
+    expect(document.body.style.overflow).toBe("hidden");
+  });
+
+  it("restores page scroll when the modal unmounts", () => {
+    const { unmount } = render(
+      <EditFarmModal farm={farm} onClose={vi.fn()} onSuccess={vi.fn()} />
+    );
+    unmount();
+    expect(document.body.style.overflow).toBe("");
+  });
+});
+
+// FarmsManagementPage render Tests
+describe("FarmsManagementPage render", () => {
+  it("renders the page shell with actions and table", () => {
+    render(<FarmsManagmentPage />);
+    expect(screen.getByRole("heading", { name: "Farm Management" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /register/i })).toBeInTheDocument();
+    expect(screen.getByRole("table")).toBeInTheDocument();
+  });
+
+  it("does not show register or edit modal on initial render", () => {
+    render(<FarmsManagmentPage />);
+    expect(screen.queryByTestId("register-modal")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("edit-modal")).not.toBeInTheDocument();
+  });
+
+  it("displays an error message when farmsError is set", () => {
+    profilesOverride = { error: "Failed to load farms" };
+    render(<FarmsManagmentPage />);
+    expect(screen.getByText("Failed to load farms")).toBeInTheDocument();
+  });
+
+  it("does not display error paragraph when there is no error", () => {
+    render(<FarmsManagmentPage />);
+    expect(screen.queryByText("Failed to load farms")).not.toBeInTheDocument();
   });
 });
 
@@ -605,99 +673,5 @@ describe("useFarms", () => {
       );
     });
     expect(ok!).toBe(false);
-  });
-});
-
-// useUserProfiles hook
-describe("useUserProfiles", () => {
-  it("fetches farms with the correct URL and Authorization header", async () => {
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify([mockFarm(1), mockFarm(2)]), {
-        status: 200,
-      })
-    );
-
-    const { result } = renderHook(() => useUserProfiles());
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    // Must call the correct profile endpoint
-    expect(url).toMatch(/\/auth\/users\/me\/items$/);
-    // The auth header must be present
-    expect((init.headers as Record<string, string>)["Authorization"]).toBe(
-      "Bearer mock-token"
-    );
-  });
-
-  it("returns farms sorted by id ascending", async () => {
-    // Farms should be in order
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify([mockFarm(3), mockFarm(1), mockFarm(2)]), {
-        status: 200,
-      })
-    );
-
-    const { result } = renderHook(() => useUserProfiles());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    const ids = result.current.farms.map(f => f.id);
-    expect(ids).toEqual([1, 2, 3]);
-  });
-
-  it("sets error state on a failed fetch", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response("Internal Server Error", { status: 500 })
-    );
-
-    const { result } = renderHook(() => useUserProfiles());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    expect(result.current.error).toBeTruthy();
-    expect(result.current.farms).toHaveLength(0);
-  });
-
-  it("does not fetch when no token is available", async () => {
-    mockUseAuth.mockReturnValue({ getAccessToken: () => null });
-    const fetchSpy = vi.spyOn(global, "fetch");
-
-    const { result } = renderHook(() => useUserProfiles());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    // No call should be made without valid token
-    expect(fetchSpy).not.toHaveBeenCalled();
-  });
-
-  it("computes totalFarms from the full unsliced array", async () => {
-    // Feed 12 farms more than one page
-    const manyFarms = Array.from({ length: 12 }, (_, i) => mockFarm(i + 1));
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify(manyFarms), { status: 200 })
-    );
-
-    const { result } = renderHook(() => useUserProfiles());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    // totalFarms should reflect the full count, not the current page slice
-    expect(result.current.totalFarms).toBe(12);
-    expect(result.current.totalPages).toBe(2);
-    // Only the first page of 9 should be returned in 'farms'
-    expect(result.current.farms).toHaveLength(9);
-  });
-
-  it("returns the correct page slice after setPage is called", async () => {
-    const manyFarms = Array.from({ length: 12 }, (_, i) => mockFarm(i + 1));
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify(manyFarms), { status: 200 })
-    );
-
-    const { result } = renderHook(() => useUserProfiles());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    act(() => result.current.setPage(1));
-
-    // Page 1 (0-indexed) should contain farms 10-12
-    expect(result.current.farms).toHaveLength(3);
-    expect(result.current.farms[0].id).toBe(10);
   });
 });
