@@ -11,17 +11,17 @@ test("renders weighting hub and its navigation cards", () => {
     </HelmetProvider>
   );
 
-  // Check for the back button[cite: 9]
+  // Check for the back button
   expect(
     screen.getByRole("link", { name: /← Back to Dashboard/i })
   ).toBeInTheDocument();
 
-  // Check for the main page heading[cite: 9]
+  // Check for the main page heading
   expect(
     screen.getByRole("heading", { name: "Weighting Methods" })
   ).toBeInTheDocument();
 
-  // Check for the navigation cards[cite: 9]
+  // Check for the navigation cards
   expect(
     screen.getByRole("heading", { name: /Traditional AHP/i })
   ).toBeInTheDocument();
@@ -29,7 +29,7 @@ test("renders weighting hub and its navigation cards", () => {
     screen.getByRole("heading", { name: /Global Weights/i })
   ).toBeInTheDocument();
 
-  // Check if the card descriptions are present[cite: 9]
+  // Check if the card descriptions are present
   expect(
     screen.getByText(
       /Expert-driven pairwise comparison matrix and Eigenvector weighting./i

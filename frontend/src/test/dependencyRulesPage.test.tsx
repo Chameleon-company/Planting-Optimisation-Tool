@@ -9,12 +9,12 @@ test("renders dependency rules placeholder", () => {
     </HelmetProvider>
   );
 
-  // Check for the main heading[cite: 6]
+  // Check for the main heading
   expect(
     screen.getByRole("heading", { name: /Dependency Rules/i })
   ).toBeInTheDocument();
 
-  // Check for the placeholder text[cite: 6]
+  // Check for the placeholder
   expect(
     screen.getByText(
       /UI for managing species dependency rules is currently not implemented/i

@@ -9,12 +9,12 @@ test("renders scoring parameters placeholder", () => {
     </HelmetProvider>
   );
 
-  // Check for the main heading[cite: 8]
+  // Check for the main heading[
   expect(
     screen.getByRole("heading", { name: /Scoring Parameters/i })
   ).toBeInTheDocument();
 
-  // Check for the placeholder text[cite: 8]
+  // Check for the placeholder text
   expect(
     screen.getByText(
       /UI for managing scoring parameters is currently not implemented/i

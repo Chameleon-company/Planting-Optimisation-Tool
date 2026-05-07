@@ -9,12 +9,12 @@ test("renders exclusion rules placeholder", () => {
     </HelmetProvider>
   );
 
-  // Check for the main heading[cite: 7]
+  // Check for the main heading
   expect(
     screen.getByRole("heading", { name: /Exclusion Rules/i })
   ).toBeInTheDocument();
 
-  // Check for the placeholder text[cite: 7]
+  // Check for the placeholder text
   expect(
     screen.getByText(
       /UI for managing species exclusion rules is currently not implemented/i
