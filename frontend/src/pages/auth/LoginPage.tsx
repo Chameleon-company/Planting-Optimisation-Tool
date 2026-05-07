@@ -1,11 +1,15 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 function LoginPage() {
   const { login, isLoading, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resetSuccessMessage =
+    (location.state as { successMessage?: string } | null)?.successMessage ??
+    "";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -129,6 +133,18 @@ function LoginPage() {
                 <p className="login-field-error">{passwordError}</p>
               ) : null}
             </div>
+            <div className="login-form-meta">
+              <span />
+              <Link to="/forgot-password" className="login-link">
+                Forgot password?
+              </Link>
+            </div>
+
+            {resetSuccessMessage ? (
+              <div className="login-message login-message-success">
+                {resetSuccessMessage}
+              </div>
+            ) : null}
 
             {errorMessage ? (
               <div className="login-message login-message-error">

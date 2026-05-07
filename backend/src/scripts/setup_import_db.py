@@ -125,6 +125,7 @@ def main():
         run_module("src.scripts.import_species_dependencies")
         run_module("src.scripts.import_soil_ph")
         run_module("src.scripts.import_soil_texture_spatial")
+        run_module("src.scripts.import_tl_waterways")
 
     except subprocess.CalledProcessError as e:
         print(f"{RED}Ingestion failed during: {e}{NC}")
