@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import userEvent from "@testing-library/user-event";
 
 // Page to test
 import FarmsManagmentPage from "../pages/farmManagementPage";
@@ -120,4 +121,61 @@ describe("FarmsManagmentPage", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/edit farm/i)).not.toBeInTheDocument();
   });
+
+  it("opens the register modal when Register button is clicked", async () => {
+  render(
+    <BrowserRouter>
+      <FarmsManagmentPage />
+    </BrowserRouter>
+  );
+  await userEvent.click(screen.getByText(/register/i));
+  expect(
+    screen.getByRole("heading", { name: /register farm/i })
+  ).toBeInTheDocument();
+});
+
+it("closes the register modal when Cancel is clicked", async () => {
+  render(
+    <BrowserRouter>
+      <FarmsManagmentPage />
+    </BrowserRouter>
+  );
+  await userEvent.click(screen.getByText(/register/i));
+  expect(
+    screen.getByRole("heading", { name: /register farm/i })
+  ).toBeInTheDocument();
+
+  await userEvent.click(screen.getByText("Cancel"));
+  expect(
+    screen.queryByRole("heading", { name: /register farm/i })
+  ).not.toBeInTheDocument();
+});
+
+it("opens the edit modal when a farm is selected and Edit is clicked", async () => {
+  render(
+    <BrowserRouter>
+      <FarmsManagmentPage />
+    </BrowserRouter>
+  );
+  const checkbox = screen.getByRole("checkbox");
+  await userEvent.click(checkbox);
+  await userEvent.click(screen.getByText(/edit/i));
+
+  expect(screen.getByText(/edit farm #1/i)).toBeInTheDocument();
+});
+
+it("closes the edit modal when Cancel is clicked", async () => {
+  render(
+    <BrowserRouter>
+      <FarmsManagmentPage />
+    </BrowserRouter>
+  );
+  const checkbox = screen.getByRole("checkbox");
+  await userEvent.click(checkbox);
+  await userEvent.click(screen.getByText(/edit/i));
+  expect(screen.getByText(/edit farm #1/i)).toBeInTheDocument();
+
+  await userEvent.click(screen.getByText("Cancel"));
+  expect(screen.queryByText(/edit farm #1/i)).not.toBeInTheDocument();
+});
 });
