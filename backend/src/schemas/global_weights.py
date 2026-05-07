@@ -78,7 +78,7 @@ class GlobalWeightsRunDetailSchema(GlobalWeightsRunSummarySchema):
 
 
 class GlobalWeightsCSVMeta(BaseModel):
-    bootstraps: int = Field(ge=0)
+    bootstraps: int = Field(ge=1)
     bootstrap_early_stopped: bool
 
 
