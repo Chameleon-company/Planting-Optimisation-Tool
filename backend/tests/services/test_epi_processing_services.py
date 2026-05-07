@@ -82,3 +82,17 @@ async def test_process_epi_csv_database_validation_failure(mock_get_farm, mock_g
     # Ensure our database functions were actually called with the IDs from the CSV
     mock_get_farm.assert_called_once_with(mock_db, [99])
     mock_get_species.assert_called_once_with(mock_db, [105])
+
+
+@pytest.mark.asyncio
+async def test_process_epi_csv_invalid_csv_raises_error():
+    # Unterminated quote causes pandas ParserError
+    bad_csv = b'farm_id,species_id,farm_mean_epi\n1,2,"0.85'
+
+    with pytest.raises(EpiCSVError) as excinfo:
+        await process_epi_csv(
+            db=None,  # Safe: error occurs before DB usage
+            csv_bytes=bad_csv,
+        )
+
+    assert "Error reading EPI CSV" in str(excinfo.value)
