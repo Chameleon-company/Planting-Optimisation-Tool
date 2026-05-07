@@ -66,3 +66,27 @@ async def test_score_epi_csv_invalid_file_extension(
     # Assert
     assert response.status_code == 400
     assert response.json() == {"detail": "File must be a CSV"}
+
+
+# RBAC Tests for /global-weights/epi-add-scores
+@pytest.mark.asyncio
+async def test_upload_epi_csv_unauthenticated(async_client):
+    """Test that unauthenticated request to EPI upload is rejected (401)."""
+    response = await async_client.post("/global-weights/epi-add-scores")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_upload_epi_csv_officer_forbidden(async_client, officer_auth_headers):
+    """Test that an officer cannot access EPI upload (403)."""
+    # We don't need a real file because the 403 should trigger before file processing
+    response = await async_client.post("/global-weights/epi-add-scores", headers=officer_auth_headers)
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_upload_epi_csv_supervisor_forbidden(async_client, supervisor_auth_headers):
+    """Test that a supervisor cannot access EPI upload (403)."""
+    # We don't need a real file because the 403 should trigger before file processing
+    response = await async_client.post("/global-weights/epi-add-scores", headers=supervisor_auth_headers)
+    assert response.status_code == 403
