@@ -1,12 +1,13 @@
-import FarmCard from "./profileAllCards";
+import FarmCard from "./profileCard";
 import FarmPageNav from "./profilePageNav";
-import ProfileEditActions from "./profileEditButtons";
+
+import { useAuth } from "@/contexts/AuthContext";
 import { Farm } from "@/hooks/useUserProfiles";
+import { useNavigate } from "react-router-dom";
 
 interface FarmListProps {
   farms: Farm[];
   isLoading: boolean;
-  user: { name: string } | null;
   page: number;
   totalPages: number;
   setPage: (page: number) => void;
@@ -15,19 +16,22 @@ interface FarmListProps {
 export default function FarmList({
   farms,
   isLoading,
-  user,
   page,
   totalPages,
   setPage,
 }: FarmListProps) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const canEdit = user?.role === "supervisor" || user?.role === "admin";
+
   if (isLoading) {
-    return <p className="farmListEmpty">Loading farms...</p>;
+    return <p className="farm-list-empty">Loading farms...</p>;
   }
 
   // Not logged in
   if (!user) {
     return (
-      <p className="farmListEmpty">
+      <p className="farm-list-empty">
         You need to be logged in to see your farms.
       </p>
     );
@@ -37,9 +41,18 @@ export default function FarmList({
   if (farms.length === 0) {
     return (
       <>
-        <p className="farmListEmpty">No farms found.</p>
-        <div className="farmBottomRow">
-          <ProfileEditActions />
+        <p className="farm-list-empty">No farms found.</p>
+        <div className="farm-bottom-row">
+          <div className="farm-bottom-row">
+            {canEdit && (
+              <button
+                className="farm-action-btn"
+                onClick={() => navigate("/farms")}
+              >
+                Manage
+              </button>
+            )}
+          </div>
         </div>
       </>
     );
@@ -48,15 +61,23 @@ export default function FarmList({
   // Logged in with farms displays all data
   return (
     <div>
-      <div className="farmList">
+      <div className="farm-list">
         {farms.map(farm => (
-          <FarmCard key={farm.id} farm={farm} />
+          <FarmCard isSearched={false} key={farm.id} farm={farm} />
         ))}
       </div>
 
-      <div className="farmBottomRow">
+      <div className="farm-bottom-row">
         <FarmPageNav page={page} totalPages={totalPages} setPage={setPage} />
-        <ProfileEditActions />
+
+        {canEdit && (
+          <button
+            className="farm-action-btn"
+            onClick={() => navigate("/farms")}
+          >
+            Manage
+          </button>
+        )}
       </div>
     </div>
   );

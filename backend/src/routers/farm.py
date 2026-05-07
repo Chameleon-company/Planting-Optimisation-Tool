@@ -6,7 +6,6 @@ from src.dependencies import get_current_user, require_role
 from src.schemas.farm import FarmCreate, FarmRead, FarmUpdate
 from src.schemas.user import Role, UserRead
 from src.services import farm as farm_service
-from src.services.riparian import get_riparian_flags
 
 # The router instance
 router = APIRouter(prefix="/farms", tags=["Farms"])
@@ -28,9 +27,6 @@ async def create_farm(
     """Creates a new farm record with validated data.
     Requires ADMIN.
     """
-    # Compute riparian flag before writing to DB so the farm is created with the correct value in one transaction.
-    riparian_result = await get_riparian_flags(db, latitude=float(farm_data.latitude), longitude=float(farm_data.longitude))
-    farm_data.riparian = riparian_result["riparian"]
 
     return await farm_service.create_farm_record(db=db, farm_data=farm_data, user_id=current_user.id)
 
@@ -114,16 +110,6 @@ async def update_farm(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user does not have adequate permissions.",
         )
-
-    latitude = farm_data.latitude if farm_data.latitude is not None else existing_farm.latitude
-    longitude = farm_data.longitude if farm_data.longitude is not None else existing_farm.longitude
-
-    riparian_result = await get_riparian_flags(
-        db,
-        latitude=float(latitude),
-        longitude=float(longitude),
-    )
-    farm_data.riparian = riparian_result["riparian"]
 
     updated_farm = await farm_service.update_farm_record(
         db=db,

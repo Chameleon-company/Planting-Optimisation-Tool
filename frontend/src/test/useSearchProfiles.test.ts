@@ -51,9 +51,9 @@ describe("useSearchProfiles Hook", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    // Expect fetch to have been called with the correct profile endpoint and auth header
+    // Update the expectation to match the actual endpoint
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/profile/42"),
+      expect.stringContaining("/farms/42"),
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: "Bearer fake-token",

@@ -1,6 +1,14 @@
 import pytest
 from httpx import AsyncClient
 
+from src.utils.security import validate_password
+
+
+def test_validate_password_requires_special_character():
+    """Test password validation rejects passwords without a special character."""
+    with pytest.raises(ValueError, match="special character"):
+        validate_password("Password123")
+
 
 # Species validation tests
 @pytest.mark.parametrize(
