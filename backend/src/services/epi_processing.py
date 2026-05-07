@@ -51,7 +51,10 @@ async def process_epi_csv(
     cfg = get_recommend_config()
 
     # Read CSV
-    epi_df = pd.read_csv(io.BytesIO(csv_bytes))
+    try:
+        epi_df = pd.read_csv(io.BytesIO(csv_bytes))
+    except Exception as e:
+        raise EpiCSVError(f"Error reading EPI CSV: {str(e)}")
 
     # Validate schema
     validate_epi_dataframe(epi_df)
