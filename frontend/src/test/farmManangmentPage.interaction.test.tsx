@@ -268,7 +268,9 @@ describe("RegisterFarmForm", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /Block/i }));
 
-    await userEvent.click(screen.getByRole("button", { name: "Register farm" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Register farm" })
+    );
     await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
 
     const payload = onSuccess.mock.calls[0][0];
@@ -282,7 +284,9 @@ describe("RegisterFarmForm", () => {
 
   it("shows validation errors on empty submit and does not call onSuccess", async () => {
     render(<RegisterFarmForm onCancel={onCancel} onSuccess={onSuccess} />);
-    await userEvent.click(screen.getByRole("button", { name: "Register farm" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Register farm" })
+    );
     expect(onSuccess).not.toHaveBeenCalled();
     expect(screen.getByText(/rainfall is required/i)).toBeInTheDocument();
     expect(screen.getByText(/temperature is required/i)).toBeInTheDocument();
@@ -302,8 +306,12 @@ describe("RegisterFarmForm", () => {
     await userEvent.type(screen.getByLabelText(/slope/i), "3.2");
     await userEvent.click(screen.getByRole("button", { name: /Block/i }));
 
-    await userEvent.click(screen.getByRole("button", { name: "Register farm" }));
-    await waitFor(() => expect(screen.getByText(/failed to register farm/i)).toBeInTheDocument());
+    await userEvent.click(
+      screen.getByRole("button", { name: "Register farm" })
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/failed to register farm/i)).toBeInTheDocument()
+    );
     expect(onCancel).not.toHaveBeenCalled();
   });
 
@@ -368,7 +376,10 @@ describe("FarmEditForm ", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseAuth.mockReturnValue({ user: { name: "Admin", role: "admin" }, getAccessToken: () => "mock-token" });
+    mockUseAuth.mockReturnValue({
+      user: { name: "Admin", role: "admin" },
+      getAccessToken: () => "mock-token",
+    });
     mockSoilTextures.mockReturnValue({
       soilTextures: [{ id: 1, name: "Loam" }],
       isLoading: false,
@@ -377,8 +388,12 @@ describe("FarmEditForm ", () => {
 
   it("clears a validation error after correcting a field", async () => {
     const user = userEvent.setup();
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
-    await waitFor(() => expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument());
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument()
+    );
     const rainfall = screen.getByDisplayValue("1200");
     await user.clear(rainfall);
     await user.click(screen.getByText("Save changes"));
@@ -390,22 +405,33 @@ describe("FarmEditForm ", () => {
 
   it("submits updated data correctly", async () => {
     const user = userEvent.setup();
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
-    await waitFor(() => expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument());
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument()
+    );
     const rainfall = screen.getByDisplayValue("1200");
     await user.clear(rainfall);
     await user.type(rainfall, "900");
     await user.click(screen.getByRole("button", { name: /Coastal/i }));
     await user.click(screen.getByText("Save changes"));
 
-    await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(5, expect.objectContaining({
-      rainfall_mm: 900,
-      coastal: true,
-    })));
+    await waitFor(() =>
+      expect(onSuccess).toHaveBeenCalledWith(
+        5,
+        expect.objectContaining({
+          rainfall_mm: 900,
+          coastal: true,
+        })
+      )
+    );
   });
 
   it("renders with pre-filled farm values", () => {
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
     expect(screen.getByDisplayValue("1200")).toBeInTheDocument();
     expect(screen.getByDisplayValue("22")).toBeInTheDocument();
     expect(screen.getByDisplayValue("6.5")).toBeInTheDocument();
@@ -413,8 +439,12 @@ describe("FarmEditForm ", () => {
   });
 
   it("updates a field and clears its error", async () => {
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
-    await waitFor(() => expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument());
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument()
+    );
     const rainfall = screen.getByDisplayValue("1200");
     await userEvent.clear(rainfall);
     await userEvent.click(screen.getByText("Save changes"));
@@ -425,7 +455,9 @@ describe("FarmEditForm ", () => {
   });
 
   it("toggles boolean fields", async () => {
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
     const coastal = screen.getByRole("button", { name: /Coastal/i });
     expect(coastal).not.toHaveClass("register-farm-toggle-active");
     await userEvent.click(coastal);
@@ -433,8 +465,12 @@ describe("FarmEditForm ", () => {
   });
 
   it("submits changes and calls onSuccess with farm id and updated payload", async () => {
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
-    await waitFor(() => expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument());
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument()
+    );
     const rainfall = screen.getByDisplayValue("1200");
     await userEvent.clear(rainfall);
     await userEvent.type(rainfall, "900");
@@ -442,15 +478,22 @@ describe("FarmEditForm ", () => {
     await userEvent.click(screen.getByText("Save changes"));
 
     await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
-    expect(onSuccess).toHaveBeenCalledWith(5, expect.objectContaining({
-      rainfall_mm: 900,
-      coastal: true,
-    }));
+    expect(onSuccess).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({
+        rainfall_mm: 900,
+        coastal: true,
+      })
+    );
   });
 
   it("shows validation errors when required field is missing", async () => {
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
-    await waitFor(() => expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument());
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument()
+    );
     const rainfall = screen.getByDisplayValue("1200");
     await userEvent.clear(rainfall);
     await userEvent.click(screen.getByText("Save changes"));
@@ -460,9 +503,15 @@ describe("FarmEditForm ", () => {
 
   it("shows error when onSuccess throws", async () => {
     onSuccess.mockRejectedValueOnce(new Error("Server error"));
-    render(<FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />);
-    await waitFor(() => expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument());
+    render(
+      <FarmEditForm farm={farm} onCancel={onCancel} onSuccess={onSuccess} />
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(/Saving…/i)).not.toBeInTheDocument()
+    );
     await userEvent.click(screen.getByText("Save changes"));
-    await waitFor(() => expect(screen.getByText(/failed to update farm/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/failed to update farm/i)).toBeInTheDocument()
+    );
   });
 });

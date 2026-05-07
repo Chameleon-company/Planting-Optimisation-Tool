@@ -115,7 +115,9 @@ describe("FarmsManagmentPage", () => {
         <FarmsManagmentPage />
       </BrowserRouter>
     );
-    expect(screen.queryByRole("heading", { name: /register farm/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /register farm/i })
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/edit farm/i)).not.toBeInTheDocument();
   });
 });

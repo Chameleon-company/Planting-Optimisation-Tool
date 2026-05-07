@@ -42,7 +42,10 @@ vi.mock("@/contexts/AuthContext", () => ({
 
 vi.mock("@/hooks/useSoilTextures", () => ({
   useSoilTextures: () => ({
-    soilTextures: [{ id: 1, name: "Sandy Loam" }, { id: 2, name: "Clay" }],
+    soilTextures: [
+      { id: 1, name: "Sandy Loam" },
+      { id: 2, name: "Clay" },
+    ],
     isLoading: false,
   }),
 }));
@@ -285,9 +288,9 @@ describe("EditFarmModal", () => {
     render(<EditFarmModal farm={farm} onClose={vi.fn()} onSuccess={vi.fn()} />);
     // Every numeric field should be seeded from the farm object
     expect(screen.getByDisplayValue("1200")).toBeInTheDocument(); // rainfall_mm
-    expect(screen.getByDisplayValue("22")).toBeInTheDocument();   // temperature_celsius
-    expect(screen.getByDisplayValue("300")).toBeInTheDocument();  // elevation_m
-    expect(screen.getByDisplayValue("6.5")).toBeInTheDocument();  // ph
+    expect(screen.getByDisplayValue("22")).toBeInTheDocument(); // temperature_celsius
+    expect(screen.getByDisplayValue("300")).toBeInTheDocument(); // elevation_m
+    expect(screen.getByDisplayValue("6.5")).toBeInTheDocument(); // ph
   });
 
   it("renders Save changes and Cancel buttons", () => {
@@ -314,8 +317,12 @@ describe("EditFarmModal", () => {
 describe("FarmsManagementPage render", () => {
   it("renders the page shell with actions and table", () => {
     render(<FarmsManagmentPage />);
-    expect(screen.getByRole("heading", { name: "Farm Management" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /register/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Farm Management" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /register/i })
+    ).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
 
