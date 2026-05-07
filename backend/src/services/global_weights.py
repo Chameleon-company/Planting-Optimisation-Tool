@@ -20,6 +20,22 @@ class GlobalWeightsCSVError(Exception):
 def parse_global_weights_csv(file) -> tuple[GlobalWeightsCSVMeta, list[GlobalWeightsCSVRow]]:
     reader = csv.DictReader(file)
 
+    # DictReader is silent on empty files
+    if reader.fieldnames is None:
+        raise GlobalWeightsCSVError("CSV file is empty or missing a header row")
+
+    required_columns = {
+        "feature",
+        "mean_weight",
+        "ci_lower",
+        "ci_upper",
+    }
+
+    missing_columns = required_columns - set(reader.fieldnames or [])
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise GlobalWeightsCSVError(f"CSV is missing required columns: {missing}")
+
     # Grab the raw feature keys expected by the system
     config_data = get_recommend_config()
     expected_features = set(config_data.get("features", {}).keys())
@@ -40,12 +56,19 @@ def parse_global_weights_csv(file) -> tuple[GlobalWeightsCSVMeta, list[GlobalWei
             if not bootstraps or not bootstrap_early_stopped:
                 raise GlobalWeightsCSVError("META row must define bootstraps and bootstrap_early_stopped")
 
+            value = bootstrap_early_stopped.strip().lower()
+            if value not in {"true", "false"}:
+                raise GlobalWeightsCSVError("META row bootstrap_early_stopped must be 'true' or 'false'")
+
             meta = GlobalWeightsCSVMeta(
                 bootstraps=int(bootstraps),
-                bootstrap_early_stopped=bootstrap_early_stopped.lower() == "true",
+                bootstrap_early_stopped=value == "true",
             )
 
             continue
+        # Reject unknown features
+        if feature not in expected_features:
+            raise GlobalWeightsCSVError(f"Row {i + 1} has unknown feature: '{feature}'")
         try:
             row = GlobalWeightsCSVRow(
                 feature=raw["feature"],
