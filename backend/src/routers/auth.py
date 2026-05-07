@@ -10,7 +10,7 @@ All endpoints use JWT tokens for stateless authentication.
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -87,7 +87,7 @@ async def login_for_access_token(
 
 @router.post("/register")
 @limiter.limit("10/minute")
-async def register_user(request: Request, user: UserCreate, db: AsyncSession = Depends(get_db_session)):
+async def register_user(request: Request, user: UserCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db_session)):
     """Register a new user account."""
 
     normalized_email = user.email.strip().lower()
@@ -123,7 +123,8 @@ async def register_user(request: Request, user: UserCreate, db: AsyncSession = D
 
     verification_link = f"{settings.frontend_base_url}/verify-email?token={token}"
 
-    await send_email(
+    background_tasks.add_task(
+        send_email,
         subject="Verify your account",
         recipient=db_user.email,
         body=f"Click this link to verify your account:\n{verification_link}",
@@ -233,6 +234,7 @@ async def verify_email(
 @router.post("/forgot-password")
 async def forgot_password(
     request: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db_session),
 ):
     normalized_email = request.email.strip().lower()
@@ -251,7 +253,8 @@ async def forgot_password(
 
         reset_link = f"{settings.frontend_base_url}/reset-password?token={token}"
 
-        await send_email(
+        background_tasks.add_task(
+            send_email,
             subject="Reset your password",
             recipient=user.email,
             body=f"Click this link to reset your password:\n{reset_link}",

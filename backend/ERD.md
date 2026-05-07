@@ -93,6 +93,20 @@ erDiagram
     FLOAT score_mcda
   }
 
+  soil_ph {
+    INTEGER id PK
+    geometry(MULTIPOLYGON-4326) geometry
+    FLOAT ph "nullable"
+    VARCHAR(100) source "nullable"
+  }
+
+  soil_texture_spatial {
+    INTEGER id PK
+    geometry(MULTIPOLYGON-4326) geometry
+    VARCHAR(100) source "nullable"
+    VARCHAR(100) texture "nullable"
+  }
+
   soil_textures {
     INTEGER id PK
     VARCHAR(15) name UK

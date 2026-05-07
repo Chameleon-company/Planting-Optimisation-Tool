@@ -14,7 +14,7 @@ import geoalchemy2
 
 # revision identifiers, used by Alembic.
 revision: str = '160313f63d58'
-down_revision: Union[str, Sequence[str], None] = None
+down_revision: Union[str, Sequence[str], None] = 'e3c7a8f2b1d9'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
