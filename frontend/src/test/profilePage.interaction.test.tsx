@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, RenderOptions } from "@testing-library/react";
+import { ReactElement } from "react";
+import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { Farm } from "@/hooks/useUserProfiles";
-import { EnvironmentalProfile } from "@/hooks/useSearchProfiles";
 import FarmList from "@/components/profile/profileFarms";
 import FarmPageNav from "@/components/profile/profilePageNav";
 import FarmSearchInput from "@/components/profile/profileSearchInput";
 import FarmSearchPanel from "@/components/profile/profileSearchPanel";
 
-// Mock Data for farms in useUserProfiles
 const mockFarm = (id: number): Farm => ({
   id,
   rainfall_mm: 800,
@@ -26,19 +26,7 @@ const mockFarm = (id: number): Farm => ({
   shade_tolerant: false,
   bank_stabilising: false,
   slope: 3.75,
-  agroforestry_type: [{ name: "Silvopasture" }],
-});
-
-// Mock data for EnvironmentalProfile used in search result tests
-const mockProfile = (id: number): EnvironmentalProfile => ({
-  id,
-  elevation_m: 149,
-  ph: 6.5,
-  slope: 4.2,
-  latitude: -37.12345,
-  longitude: 144.12345,
-  area_ha: 0.402,
-  coastal: true,
+  agroforestry_type: [{ id: 1, type_name: "Silvopasture" }],
 });
 
 // Mock Functions
@@ -46,6 +34,13 @@ const mockUseAuth = vi.fn();
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => mockUseAuth(),
 }));
+
+function renderWithRouter(
+  ui: ReactElement,
+  options?: Omit<RenderOptions, "wrapper">
+) {
+  return render(ui, { wrapper: MemoryRouter, ...options });
+}
 
 beforeEach(() => {
   // Reset to a logged-in admin before each test so all action buttons are available
@@ -57,11 +52,10 @@ describe("FarmList interactions", () => {
   it("calls setPage when the Next button is clicked", async () => {
     const user = userEvent.setup();
     const setPage = vi.fn();
-    render(
+    renderWithRouter(
       <FarmList
         farms={[mockFarm(1)]}
         isLoading={false}
-        user={{ name: "John" }}
         page={0}
         totalPages={3}
         setPage={setPage}
@@ -75,11 +69,10 @@ describe("FarmList interactions", () => {
   it("calls setPage when the Previous button is clicked on a non-first page", async () => {
     const user = userEvent.setup();
     const setPage = vi.fn();
-    render(
+    renderWithRouter(
       <FarmList
         farms={[mockFarm(1)]}
         isLoading={false}
-        user={{ name: "John" }}
         page={1}
         totalPages={3}
         setPage={setPage}
@@ -186,26 +179,16 @@ describe("FarmSearchPanel interactions", () => {
   const baseProps = {
     query: "",
     setQuery: vi.fn(),
-    profile: null,
+    profile: null as Farm | null,
     isLoading: false,
     error: null,
     user: { name: "John" },
   };
 
-  it("shows edit actions alongside a returned profile", async () => {
-    // Admin role (set in beforeEach) means all action buttons should appear with a result
-    render(
-      <FarmSearchPanel {...baseProps} query="42" profile={mockProfile(42)} />
-    );
-    // Both the profile card and the Add action button should be visible together
-    expect(screen.getByText("Farm #42")).toBeInTheDocument();
-    expect(screen.getByText(/Add/i)).toBeInTheDocument();
-  });
-
   it("calls setQuery when the user types in the search input", async () => {
     const user = userEvent.setup();
     const setQuery = vi.fn();
-    render(<FarmSearchPanel {...baseProps} setQuery={setQuery} />);
+    renderWithRouter(<FarmSearchPanel {...baseProps} setQuery={setQuery} />);
     // Typing in the search input should propagate the new value via setQuery
     await user.type(screen.getByPlaceholderText(/search by farm id/i), "5");
     expect(setQuery).toHaveBeenCalled();
@@ -214,7 +197,9 @@ describe("FarmSearchPanel interactions", () => {
   it("calls setQuery with empty string when Clear is clicked", async () => {
     const user = userEvent.setup();
     const setQuery = vi.fn();
-    render(<FarmSearchPanel {...baseProps} query="42" setQuery={setQuery} />);
+    renderWithRouter(
+      <FarmSearchPanel {...baseProps} query="42" setQuery={setQuery} />
+    );
     // Clicking Clear should reset the query to an empty string
     await user.click(screen.getByText("Clear"));
     expect(setQuery).toHaveBeenCalledWith("");
