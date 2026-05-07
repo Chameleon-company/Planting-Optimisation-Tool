@@ -81,7 +81,7 @@ async def create_parameter(
         ) from exc
 
 
-@router.put("/{parameter_id}", response_model=ParameterRead)
+@router.patch("/{parameter_id}", response_model=ParameterRead)
 @limiter.limit("10/minute", key_func=get_user_id)
 async def update_parameter(
     request: Request,
