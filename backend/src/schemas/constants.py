@@ -70,3 +70,9 @@ LONGITUDE_MAX = 180
 # Slope
 SLOPE_MIN = 0
 SLOPE_MAX = 90
+
+# CRS for riparian analysis
+CRS_ANALYSIS = 32751  # UTM 51S
+
+# Riparian buffer distance in meters
+RIPARIAN_BUFFER_M: float = 15.0

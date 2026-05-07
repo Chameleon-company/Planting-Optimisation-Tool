@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import "./profile.css";
 import ProfileHeader from "@/components/profile/profileHeader";
 import FarmList from "@/components/profile/profileFarms";
 import FarmSearchPanel from "@/components/profile/profileSearchPanel";
@@ -7,11 +8,15 @@ import FarmSearchPanel from "@/components/profile/profileSearchPanel";
 import { useUserProfiles } from "../hooks/useUserProfiles";
 import { useSearchProfiles } from "../hooks/useSearchProfiles";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 
 function ProfilePage() {
   const { user } = useAuth();
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get("farmId") ?? "");
+  const [debouncedQuery, setDebouncedQuery] = useState(
+    searchParams.get("farmId") ?? ""
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,14 +51,12 @@ function ProfilePage() {
         profile={profile}
         isLoading={isProfileLoading}
         error={error}
-        user={user}
       />
 
       {!isSearching && (
         <FarmList
           farms={farms}
           isLoading={isLoading}
-          user={user}
           page={page}
           totalPages={totalPages}
           setPage={setPage}

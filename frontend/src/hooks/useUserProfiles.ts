@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -7,7 +7,8 @@ export interface SoilTexture {
   name: string;
 }
 export interface AgroforestryType {
-  name: string;
+  id: number;
+  type_name: string;
 }
 export interface Farm {
   id: number;
@@ -30,7 +31,6 @@ export interface Farm {
 
 export function useUserProfiles() {
   const { getAccessToken } = useAuth();
-  const token = getAccessToken();
 
   const [allFarms, setAllFarms] = useState<Farm[]>([]);
   const [page, setPage] = useState(0);
@@ -38,44 +38,48 @@ export function useUserProfiles() {
   const [error, setError] = useState<string | null>(null);
   const PAGE_SIZE = 9;
 
-  useEffect(() => {
+  const token = getAccessToken();
+
+  const fetchFarms = useCallback(async () => {
+    const token = getAccessToken();
     if (!token) {
+      setAllFarms([]);
       setError(null);
       return;
     }
 
-    const fetchFarms = async () => {
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const res = await fetch(`${API_BASE}/auth/users/me/items`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
+    try {
+      const res = await fetch(`${API_BASE}/auth/users/me/items`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
 
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText || `Failed to fetch farms (${res.status})`);
-        }
-
-        const data = await res.json();
-        setAllFarms(data);
-      } catch (err: unknown) {
-        setAllFarms([]);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
-      } finally {
-        setIsLoading(false);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || `Failed to fetch farms (${res.status})`);
       }
-    };
+
+      const data: Farm[] = await res.json();
+      const sorted = data.sort((a, b) => a.id - b.id);
+      setAllFarms(sorted);
+    } catch (err: unknown) {
+      setAllFarms([]);
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getAccessToken, token]);
+
+  useEffect(() => {
     fetchFarms();
-  }, [token]);
+  }, [fetchFarms]);
 
   const farms = allFarms.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.ceil(allFarms.length / PAGE_SIZE);
@@ -88,5 +92,6 @@ export function useUserProfiles() {
     setPage,
     totalPages,
     totalFarms: allFarms.length,
+    refetch: fetchFarms,
   };
 }
