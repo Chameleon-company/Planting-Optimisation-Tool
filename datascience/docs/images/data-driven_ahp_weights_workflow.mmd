@@ -1,0 +1,54 @@
+flowchart TD
+
+    %% Define Styles
+    classDef data fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef expert fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef combined fill:#e8f5e9,stroke:#43a047,stroke-width:2px;
+    classDef output fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef process fill:#fdecea,stroke:#c62828,stroke-width:2px;
+    classDef scoring fill:#fdecea,stroke:#c62828,stroke-width:2px;
+    style SE fill:#fff5f3,stroke:#c62828,stroke-width:2px;
+
+    %% Inputs
+    A1[Species-specific suitability scores]:::process
+    A["Farm/Species Scores<br/>(scaled 0-1)"]:::data
+    B["Observed species performance<br/>(EPI for 9 species)"]:::data
+    A1 -->A
+    A --> D[Machine Learning models]:::data
+    B --> D
+
+    D --> D1["Elastic Net<br/>(regularised linear)"]:::data
+    D --> D2["Random Forest<br/>(permutation importance)"]:::data
+
+    D1 --> E[Raw criterion importance]:::data
+    D2 --> E
+
+    E --> F["Normalisation<br/>Global importance weights"]:::data
+
+    %% Bootstrap 
+    F --> G["Farm-level bootstrap<br/>Confidence Intervals"]:::data
+    H[Global Weights]:::data
+    G --> H
+
+    %% AHP side
+    I[Expert Knowledge]:::expert
+    I --> J[Species-specific AHP matrices]:::expert
+    J --> K[Species sensitivity weights]:::expert
+
+    %% Weight combination
+    H --> L[Combine weights]:::combined
+    K --> L
+
+    L --> L1[Per-species renormalisation]:::combined
+
+    %% MCDA
+    subgraph SE[Scoring Engine]
+        M[Species-specific suitability scores]:::process
+        N["<b>Suitability scoring</b><br>Weighted linear combination"]:::process
+        O["<b>Weight normalisation</b><br>Handling missing data"]:::process
+    end
+
+    L1 --> N
+    M --> N
+    N --> O
+    O --> P["Species ranking<br/>per Farm"]:::output

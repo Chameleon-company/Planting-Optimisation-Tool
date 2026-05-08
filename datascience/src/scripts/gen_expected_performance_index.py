@@ -1,5 +1,6 @@
 import argparse
 from io import BytesIO
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -466,9 +467,12 @@ def main():
     # Rename for clarity
     farm_targets.rename(columns={"epi": "farm_mean_epi"}, inplace=True)
 
+    script_dir = Path(__file__).parent
+    csv_path = script_dir / "aggregated_epi_data.csv"
+
     try:
-        farm_targets.drop(columns=["species"]).to_csv("notebooks/aggregated_epi_data.csv", index=False)
-        print("[saved] Aggregated EPI data exported to: notebooks/aggregated_epi_data.csv")
+        farm_targets.drop(columns=["species"]).to_csv(csv_path, index=False)
+        print(f"[saved] Aggregated EPI data exported to: {csv_path}")
     except Exception as e:
         print(f"ERROR: Could not save CSV: {e}")
 
