@@ -279,6 +279,12 @@ The following endpoints have role-based access control implemented:
 | `/parameters` | POST | ADMIN | Create a new scoring parameter |
 | `/parameters/{parameter_id}` | PUT | ADMIN | Update an existing scoring parameter |
 | `/parameters/{parameter_id}` | DELETE | ADMIN | Delete a scoring parameter |
+| `/ahp/calculate-and-save` | POST | ADMIN | Calculates weights and updates database |
+| `/global-weights/runs` | GET | ADMIN | List the stories global weights runs |
+| `/global-weights/runs/{run_id}` | GET | ADMIN | Get the global weights for a particular run |
+| `/global-weights/runs/{run_id}` | DELETE | ADMIN | Delete a run |
+| `/global-weights/import` | POST | ADMIN | Import a global weights run |
+| `/global-weights/epi-add-scores` | POST | ADMIN | Add raw scores to uploaded EPI data and download as CSV |
 
 Notes:
 
