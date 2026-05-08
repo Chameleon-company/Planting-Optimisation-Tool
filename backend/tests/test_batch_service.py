@@ -15,7 +15,7 @@ from src.services.batch_estimation import SaplingBatchEstimationService
 async def setup_farms(async_session, test_officer_user):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
     await async_session.execute(text("TRUNCATE farms RESTART IDENTITY CASCADE;"))
-    await async_session.execute(text("TRUNCATE farm_boundaries RESTART IDENTITY CASCADE;"))
+    await async_session.execute(text("TRUNCATE boundary RESTART IDENTITY CASCADE;"))
 
     await async_session.execute(
         text(
@@ -83,6 +83,7 @@ async def setup_farms(async_session, test_officer_user):
 @pytest.mark.asyncio
 async def test_cache_miss(
     async_session,
+    setup_farms,
     test_officer_user,
 ):
     mock_result = {

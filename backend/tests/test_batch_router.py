@@ -12,8 +12,9 @@ async def test_cache_miss(async_client, officer_auth_headers):
     }
 
     mock_result = {
+        "status": "success",
         "farm_count": 5,
-        "results": [{"aligned_count": 80, "pre_slope_count": 100} for _ in range(5)],
+        "results": [{"farm_id": i, "status": "success", "aligned_count": 80, "pre_slope_count": 100} for i in range(1, 6)],
     }
 
     with patch(
@@ -43,8 +44,9 @@ async def test_cache_hit(async_client, officer_auth_headers):
     }
 
     mock_cache = {
+        "status": "success",
         "farm_count": 5,
-        "results": [{"aligned_count": 80, "pre_slope_count": 100} for _ in range(5)],
+        "results": [{"farm_id": i, "status": "success", "aligned_count": 80, "pre_slope_count": 100} for i in range(1, 6)],
     }
 
     with patch(
