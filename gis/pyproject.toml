@@ -10,6 +10,7 @@ dependencies = [
     "geopandas>=1.1.1",
     "shapely>=2.1.2",
     # Testing
+    "diff-cover>=9.2.0",
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
@@ -38,6 +39,7 @@ include-package-data = true
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+addopts = "--cov=core --cov=config --cov=sapling_estimation --cov-report=xml"
 
 [tool.ruff]
 line-length = 200
