@@ -13,6 +13,8 @@ permissions:
 jobs:
   comment:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     if: >
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request'
@@ -46,7 +48,7 @@ jobs:
 
     - name: Post coverage comment
       if: steps.check.outputs.result == 'true'
-      uses: marocchino/sticky-pull-request-comment@v2
+      uses: marocchino/sticky-pull-request-comment@v3
       with:
         header: diff-coverage
         number: ${{ steps.pr.outputs.number }}

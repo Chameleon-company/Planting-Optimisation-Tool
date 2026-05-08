@@ -72,6 +72,7 @@ jobs:
         with open('diff-coverage.md') as f:
             content = f.read()
         content = re.split(r'\n{2,}## gis/', content)[0].strip()
+        content = f"### GIS Diff Coverage\n\n{content}"
         with open('diff-coverage.md', 'w') as f:
             f.write(content)
         EOF
