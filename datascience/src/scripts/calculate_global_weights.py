@@ -120,7 +120,7 @@ def fit_elastic_net_weights(df, config: MCDAConfig):
 
 
 # === Random Forest permutation importance =============================================
-def fit_rf_weights(df, config: MCDAConfig):
+def fit_rf_weights(df, config: MCDAConfig, clip_tracker=None):
     """
     Fit a Random Forest model and extract normalised permutation importance as weights.
 
@@ -158,6 +158,16 @@ def fit_rf_weights(df, config: MCDAConfig):
     )
 
     env_importance = perm.importances_mean[: len(config.env_cols)]
+
+    # Check for negative values before clipping
+    neg_mask = env_importance < 0
+    if neg_mask.any() and clip_tracker is not None:
+        for i, is_neg in enumerate(neg_mask):
+            if is_neg:
+                feature_name = config.env_cols[i]
+                # Increment the count for this specific feature
+                clip_tracker[feature_name] = clip_tracker.get(feature_name, 0) + 1
+
     # Clip negative importances to zero
     # Permutation importance can be negative if a feature’s shuffle actually improves
     # the model's performance (often due to chance or over-fit on small datasets).
@@ -173,7 +183,7 @@ def fit_rf_weights(df, config: MCDAConfig):
 
 
 # === Combined weights =================================================================
-def fit_combined_weights(df, config: MCDAConfig):
+def fit_combined_weights(df, config: MCDAConfig, clip_tracker=None):
     """
     Average the weights from Elastic Net and Random Forest for a more robust estimate.
 
@@ -184,7 +194,7 @@ def fit_combined_weights(df, config: MCDAConfig):
     - Series of normalised combined weights for environmental variables
     """
     w_enet = fit_elastic_net_weights(df, config)
-    w_rf = fit_rf_weights(df, config)
+    w_rf = fit_rf_weights(df, config, clip_tracker=clip_tracker)
 
     combined = (w_enet + w_rf) / 2
     total_sum = combined.sum()
@@ -222,6 +232,9 @@ def bootstrap_global_weights_early_stop(
     last_ci_width = None
     last_mean_rank = None
 
+    # Initialise tracker: {feature_name: count_of_clips}
+    clip_tracker = {col: 0 for col in config.env_cols}
+
     for i in range(max_boot):
         # Update progress on the same line
         print(f"Bootstrap Progress: {i + 1}/{max_boot} iterations...", end="\r", flush=True)
@@ -232,9 +245,9 @@ def bootstrap_global_weights_early_stop(
         if method == "elastic_net":
             w = fit_elastic_net_weights(boot_df, config)
         elif method == "rf":
-            w = fit_rf_weights(boot_df, config)
+            w = fit_rf_weights(boot_df, config, clip_tracker=clip_tracker)
         elif method == "combined":
-            w = fit_combined_weights(boot_df, config)
+            w = fit_combined_weights(boot_df, config, clip_tracker=clip_tracker)
         else:
             raise ValueError("method must be 'elastic_net', 'rf', or 'combined'")
 
@@ -267,7 +280,7 @@ def bootstrap_global_weights_early_stop(
         last_mean_rank = curr_mean_rank
 
     print()  # Ensure the next output starts on a new line
-    return pd.DataFrame(weights), early_stop
+    return pd.DataFrame(weights), early_stop, clip_tracker
 
 
 # === Confidence interval summary ======================================================
@@ -298,6 +311,19 @@ def summarise_bootstrap_weights(boot_df, alpha=0.05):
     summary["n_bootstraps"] = len(boot_df)
 
     return summary
+
+
+# === Clip tracking summary ============================================================
+def print_clipping_summary(clip_tracker, total_boots):
+    """Prints a table showing how often each variable was clipped in bootstrapping."""
+    print("\n" + "=" * 55)
+    print(f"{'Feature':<25} | {'Clips':<10} | {'% of Boots'}")
+    print("-" * 55)
+
+    for feature, count in clip_tracker.items():
+        pct = (count / total_boots) * 100
+        print(f"{feature:<25} | {count:<10} | {pct:>8.1f}%")
+    print("=" * 55 + "\n")
 
 
 # === Export to CSV for Planting Optimisation Tool =====================================
@@ -373,11 +399,12 @@ if __name__ == "__main__":
     )
 
     # === Bootstrap weights with early stopping ===
-    boot, boot_early_stop = bootstrap_global_weights_early_stop(
+    boot, boot_early_stop, tracker = bootstrap_global_weights_early_stop(
         df,
         config,
         method="combined",
     )
+    print_clipping_summary(tracker, len(boot))
 
     # === Summarise bootstrap results ===
     summary = summarise_bootstrap_weights(boot)
