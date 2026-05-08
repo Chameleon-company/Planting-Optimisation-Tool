@@ -7,7 +7,7 @@ from src.services import farm as farm_service
 from src.services.sapling_estimation import SaplingEstimationService
 
 
-class SaplingBulkEstimationService:
+class SaplingBatchEstimationService:
     async def run_batch_estimation(
         self,
         db: AsyncSession,
