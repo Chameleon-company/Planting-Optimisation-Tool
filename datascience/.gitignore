@@ -11,6 +11,7 @@ __pycache__/
 
 # Ignore coverage file
 .coverage
+coverage.xml
 
 # Ruff stuff:
 .ruff_cache/
@@ -35,3 +36,4 @@ notebooks/*.csv
 # Input data files in the "notebooks" directory (sourced from MS Teams, not committed)
 notebooks/**/*.csv
 notebooks/**/*.xlsx
+src/scripts/**/*.csv

@@ -14,6 +14,7 @@ from suitability_scoring import (
 from src.domains.suitability_scoring import SuitabilityFarm
 from src.models.exclusion_rules import SpeciesDependency, SpeciesExclusionRule
 from src.models.recommendations import Recommendation
+from src.services.global_weights import get_latest_global_weights
 from src.services.species import get_species_by_ids
 from src.services.species_parameters import get_species_parameters_as_dicts
 
@@ -23,7 +24,13 @@ async def run_recommendation_pipeline(db: AsyncSession, farms, all_species, cfg)
     # Get species (over-ride) parameters from database
     species_params_rows = await get_species_parameters_as_dicts(db)
     params_dict = build_species_params_dict(species_params_rows, cfg)
-    optimised_rules = build_rules_dict(all_species, params_dict, cfg)
+    global_weights = await get_latest_global_weights(db)
+    optimised_rules = build_rules_dict(
+        all_species,
+        params_dict,
+        cfg,
+        global_weights=global_weights,
+    )
 
     # This is here to allow exclusion to be disabled if scoring without exclusion is wanted
     enable_exclusion = cfg.get("enable_exclusions", True)
