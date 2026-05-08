@@ -111,7 +111,11 @@ def fit_elastic_net_weights(df, config: MCDAConfig):
     coef = pipeline.named_steps["model"].coef_
     env_coef = np.abs(coef[: len(config.env_cols)])
 
-    weights = env_coef / env_coef.sum()
+    total_coef = env_coef.sum()
+    if total_coef == 0:
+        raise ValueError("Elastic Net importance sum is zero. Coefficients are all null.")
+
+    weights = env_coef / total_coef
     return pd.Series(weights, index=config.env_cols, name="elastic_net_weight")
 
 
@@ -154,7 +158,16 @@ def fit_rf_weights(df, config: MCDAConfig):
     )
 
     env_importance = perm.importances_mean[: len(config.env_cols)]
-    weights = env_importance / env_importance.sum()
+    # Clip negative importances to zero
+    # Permutation importance can be negative if a feature’s shuffle actually improves
+    # the model's performance (often due to chance or over-fit on small datasets).
+    env_importance = np.clip(env_importance, a_min=0, a_max=None)
+    total_importance = env_importance.sum()
+
+    if total_importance == 0:
+        raise ValueError("Random Forest importance sum is zero. Models may be uninformative.")
+
+    weights = env_importance / total_importance
 
     return pd.Series(weights, index=config.env_cols, name="rf_weight")
 
@@ -174,7 +187,11 @@ def fit_combined_weights(df, config: MCDAConfig):
     w_rf = fit_rf_weights(df, config)
 
     combined = (w_enet + w_rf) / 2
-    combined = combined / combined.sum()
+    total_sum = combined.sum()
+    if total_sum == 0:
+        raise ValueError("Combined weight sum is zero.")
+
+    combined = combined / total_sum
 
     return combined.rename("combined_weight")
 
@@ -206,6 +223,8 @@ def bootstrap_global_weights_early_stop(
     last_mean_rank = None
 
     for i in range(max_boot):
+        # Update progress on the same line
+        print(f"Bootstrap Progress: {i + 1}/{max_boot} iterations...", end="\r", flush=True)
         sampled_farms = rng.choice(farms, size=len(farms), replace=True)
         boot_df = pd.concat(df[df[config.farm_col] == f] for f in sampled_farms).reset_index(drop=True)
 
@@ -247,6 +266,7 @@ def bootstrap_global_weights_early_stop(
         last_ci_width = curr_ci_width
         last_mean_rank = curr_mean_rank
 
+    print()  # Ensure the next output starts on a new line
     return pd.DataFrame(weights), early_stop
 
 
