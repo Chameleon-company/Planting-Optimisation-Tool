@@ -262,3 +262,69 @@ async def test_get_latest_global_weights_no_run(async_session):
 
     # It should hit the `if not run:` block and return None
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_parse_global_weights_csv_empty_file():
+    """Test that an empty CSV file raises a clear error."""
+    csv_data = ""
+
+    with pytest.raises(
+        GlobalWeightsCSVError,
+        match="CSV file is empty or missing a header row",
+    ):
+        parse_global_weights_csv(io.StringIO(csv_data))
+
+
+@pytest.mark.asyncio
+async def test_parse_global_weights_csv_wrong_headers():
+    """Test that missing required headers raises an error."""
+    csv_data = """feature,mean_weight
+__META__,
+ph,0.11
+"""
+
+    with pytest.raises(
+        GlobalWeightsCSVError,
+        match=r"CSV is missing required columns: .*ci_lower.*ci_upper",
+    ):
+        parse_global_weights_csv(io.StringIO(csv_data))
+
+
+@pytest.mark.asyncio
+async def test_parse_global_weights_csv_unknown_feature():
+    """Test that unknown features not defined in config are rejected."""
+    csv_data = """feature,mean_weight,ci_lower,ci_upper,bootstraps,bootstrap_early_stopped
+__META__,,,,120,true
+ph,0.11,0.00,0.25,,
+unknown_feature,0.20,0.10,0.30,,
+soil_texture,0.19,0.07,0.41,,
+elevation_m,0.20,0.10,0.30,,
+rainfall_mm,0.30,0.15,0.45,,
+temperature_celsius,0.20,0.10,0.30,,
+"""
+
+    with pytest.raises(
+        GlobalWeightsCSVError,
+        match=r"Row 3 has unknown feature: 'unknown_feature'",
+    ):
+        parse_global_weights_csv(io.StringIO(csv_data))
+
+
+@pytest.mark.asyncio
+async def test_parse_global_weights_csv_invalid_bootstrap_early_stopped_value():
+    """Test that invalid bootstrap_early_stopped values are rejected."""
+    csv_data = """feature,mean_weight,ci_lower,ci_upper,bootstraps,bootstrap_early_stopped
+__META__,,,,120,maybe
+ph,0.11,0.00,0.25,,
+soil_texture,0.19,0.07,0.41,,
+elevation_m,0.20,0.10,0.30,,
+rainfall_mm,0.30,0.15,0.45,,
+temperature_celsius,0.20,0.10,0.30,,
+"""
+
+    with pytest.raises(
+        GlobalWeightsCSVError,
+        match="bootstrap_early_stopped must be 'true' or 'false'",
+    ):
+        parse_global_weights_csv(io.StringIO(csv_data))
