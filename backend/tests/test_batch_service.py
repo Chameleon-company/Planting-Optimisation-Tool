@@ -14,6 +14,9 @@ from src.services.batch_estimation import SaplingBatchEstimationService
 @pytest.fixture
 async def setup_farms(async_session, test_officer_user):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(text("TRUNCATE farms RESTART IDENTITY CASCADE;"))
+    await async_session.execute(text("TRUNCATE farm_boundaries RESTART IDENTITY CASCADE;"))
+
     await async_session.execute(
         text(
             """

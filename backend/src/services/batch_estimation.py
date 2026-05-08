@@ -26,6 +26,7 @@ class SaplingBatchEstimationService:
         # Loop through each farm and access cache for each farm, if cache is not found, run estimation for that farm
         for farm in farms:
             cache_key = f"sapling:{farm.id}:{spacing_x}:{spacing_y}:{max_slope}"
+            print("CACHE KEY:", cache_key)
             cached = await cache.get(cache_key)
 
             if cached:

@@ -17,7 +17,7 @@ async def test_cache_miss(async_client, officer_auth_headers):
     }
 
     with patch(
-        "src.routers.sapling_estimation.SaplingBatchEstimationService.run_batch_estimation",
+        "src.services.batch_estimation.SaplingBatchEstimationService.run_batch_estimation",
         new=AsyncMock(return_value=mock_result),
     ) as mock_run_batch_estimation:
         response = await async_client.post(
@@ -48,7 +48,7 @@ async def test_cache_hit(async_client, officer_auth_headers):
     }
 
     with patch(
-        "src.routers.sapling_estimation.SaplingBatchEstimationService.run_batch_estimation",
+        "src.services.batch_estimation.SaplingBatchEstimationService.run_batch_estimation",
         new=AsyncMock(return_value=mock_cache),
     ) as mock_run_batch_estimation:
         response = await async_client.post(
