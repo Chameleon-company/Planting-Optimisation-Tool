@@ -120,9 +120,7 @@ async def test_cache_hit(
     test_officer_user,
 ):
     farms = setup_farms
-    farm = farms[0]
 
-    cache_key = f"sapling:{farm.id}:10:10:15"
     mock_cache = {
         "status": "success",
         "pre_slope_count": 100,
@@ -132,7 +130,9 @@ async def test_cache_hit(
         "rotation_std_dev": 1.0,
     }
 
-    await cache.set(cache_key, json.dumps(mock_cache))
+    for farm in farms:
+        cache_key = f"sapling:{farm.id}:10:10:15"
+        await cache.set(cache_key, json.dumps(mock_cache))
 
     with patch(
         "src.services.sapling_estimation.SaplingEstimationService.run_estimation",
