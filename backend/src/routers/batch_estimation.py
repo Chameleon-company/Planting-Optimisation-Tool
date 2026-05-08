@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
@@ -17,6 +17,7 @@ router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
 )
 @limiter.limit("10/minute", key_func=get_user_id)
 async def get_batch_estimation(
+    request: Request,
     data: SaplingBatchEstimationRequest,
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.OFFICER)),
