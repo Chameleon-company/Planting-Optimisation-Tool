@@ -10,7 +10,7 @@ All endpoints use JWT tokens for stateless authentication.
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,7 +31,7 @@ from src.services.authentication import (
     mark_token_used,
 )
 from src.services.email_service import send_email
-from src.utils.security import get_password_hash, validate_password
+from src.utils.security import get_password_hash, validate_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -87,7 +87,7 @@ async def login_for_access_token(
 
 @router.post("/register")
 @limiter.limit("10/minute")
-async def register_user(request: Request, user: UserCreate, db: AsyncSession = Depends(get_db_session)):
+async def register_user(request: Request, user: UserCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db_session)):
     """Register a new user account."""
 
     normalized_email = user.email.strip().lower()
@@ -123,7 +123,8 @@ async def register_user(request: Request, user: UserCreate, db: AsyncSession = D
 
     verification_link = f"{settings.frontend_base_url}/verify-email?token={token}"
 
-    await send_email(
+    background_tasks.add_task(
+        send_email,
         subject="Verify your account",
         recipient=db_user.email,
         body=f"Click this link to verify your account:\n{verification_link}",
@@ -233,6 +234,7 @@ async def verify_email(
 @router.post("/forgot-password")
 async def forgot_password(
     request: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db_session),
 ):
     normalized_email = request.email.strip().lower()
@@ -251,13 +253,34 @@ async def forgot_password(
 
         reset_link = f"{settings.frontend_base_url}/reset-password?token={token}"
 
-        await send_email(
+        background_tasks.add_task(
+            send_email,
             subject="Reset your password",
             recipient=user.email,
             body=f"Click this link to reset your password:\n{reset_link}",
         )
 
     return {"message": "If an account with that email exists, a password reset email has been sent."}
+
+
+@router.get("/reset-password/validate")
+async def validate_reset_password_token(
+    token: str,
+    db: AsyncSession = Depends(get_db_session),
+):
+    token_obj = await get_valid_token(
+        db,
+        token=token,
+        token_type="password_reset",
+    )
+
+    if not token_obj:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token",
+        )
+
+    return {"message": "Reset token is valid"}
 
 
 @router.post("/reset-password")
@@ -287,6 +310,12 @@ async def reset_password(
         )
 
     validate_password(request.new_password)
+    if verify_password(request.new_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current password",
+        )
+
     user.hashed_password = get_password_hash(request.new_password)
 
     await mark_token_used(db, token_obj)

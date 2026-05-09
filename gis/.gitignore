@@ -1,2 +1,7 @@
 # Assets & temporary data
 assets/
+
+# Coverage files
+.coverage
+coverage.xml
+diff-coverage.md

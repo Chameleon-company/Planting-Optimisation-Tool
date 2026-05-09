@@ -35,6 +35,16 @@ def reset_rate_limiter():
     limiter.reset()
 
 
+@pytest.fixture(autouse=True)
+async def flush_redis():
+    from src import cache
+
+    redis = cache.get_redis()
+    if redis:
+        await redis.flushdb()
+    yield
+
+
 # Database Engine
 @pytest.fixture(scope="session")
 async def db_engine():

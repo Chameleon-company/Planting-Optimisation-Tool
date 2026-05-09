@@ -28,4 +28,24 @@ describe("App", () => {
       await screen.findByRole("button", { name: /add species/i })
     ).toBeInTheDocument();
   });
+
+  it("renders forgot password page route", () => {
+    window.history.pushState({}, "", "/forgot-password");
+
+    render(<App />);
+
+    expect(
+      screen.getByRole("heading", { name: /forgot your password/i })
+    ).toBeInTheDocument();
+  });
+
+  it("renders reset password page route", () => {
+    window.history.pushState({}, "", "/reset-password?token=reset-token");
+
+    render(<App />);
+
+    expect(
+      screen.getByRole("heading", { name: /reset your password/i })
+    ).toBeInTheDocument();
+  });
 });
