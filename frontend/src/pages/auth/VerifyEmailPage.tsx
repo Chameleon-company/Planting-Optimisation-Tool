@@ -14,7 +14,7 @@ function VerifyEmailPage() {
       hasVerified.current = true;
       verify(token);
     }
-  }, []);
+  }, [token, verify]);
 
   return (
     <>
