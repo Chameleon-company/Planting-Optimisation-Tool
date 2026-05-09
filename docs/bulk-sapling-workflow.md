@@ -2,24 +2,23 @@
 
 ## Overview
 
-This document explains the end-to-end workflow for the bulk sapling calculation feature.
+This document explains the backend workflow for the bulk sapling estimation process.
 
-The workflow allows Managers or Farmers to calculate sapling estimates for all farms linked to their account using a single UI action without requiring spreadsheet uploads or manual farm selection.
+The workflow describes how authenticated users can request batch sapling estimation processing through the bulk estimation API endpoint.
 
 The workflow spans multiple layers of the application:
 
-- Frontend UI
 - API Layer
 - Backend Services
 - GIS Batch Processing
-- Results Rendering
+
 
 ---
 
 ## Workflow Diagram
 
 ```text
-Frontend UI
+API Client
      ↓
 Bulk Estimate API
      ↓
@@ -28,37 +27,12 @@ Backend Service
 GIS Batch Processor
      ↓
 Unified Response Payload
-     ↓
-Frontend Results Table
 ```
 
 ---
 
-# 1. Frontend UI Trigger
 
-The frontend provides a "Run Portfolio Calculation" button that allows the user to start bulk sapling calculations across all owned farms.
-
-When the button is clicked:
-
-1. A loading spinner is displayed
-2. A POST request is sent to the backend API
-3. The user's authentication token is attached automatically
-4. The UI waits for the calculation results
-5. Returned results are rendered in a sortable table
-
-Example request:
-
-```http
-POST /api/saplings/bulk-estimate
-Authorization: Bearer <JWT>
-```
-
-
-The backend determines ownership exclusively using the authenticated session token.
-
----
-
-# 2. API Layer
+# 1. API Layer
 
 The backend exposes a secure endpoint for bulk sapling calculations.
 
@@ -68,24 +42,50 @@ Endpoint:
 POST /api/saplings/bulk-estimate
 ```
 
+Example request:
+
+```http
+POST /api/saplings/bulk-estimate
+Authorization: Bearer <JWT>
+Content-Type: application/json
+```
+
+Example request body:
+
+```json
+{}
+```
+
+## Authorization
+
+The endpoint requires an authenticated user session.
+
+Supported roles include:
+
+- admin
+- supervisor
+- officer
+
 Responsibilities of the API layer:
 
 - Validate authentication token
 - Extract authenticated user information
 - Forward processing to backend services
-- Return unified batch results to the frontend
+- Return unified batch results to the requesting client
 
 Security is enforced server-side using the authenticated session.
 
-The system must NEVER accept or process farm IDs from the frontend request body.
+The system must NEVER accept or process farm IDs provided by the requesting client.
 
 All farm selection and ownership validation must be derived exclusively from the authenticated user token/session.
 
 ---
 
-# 3. Backend Service
+# 2. Backend Service
 
 The backend service retrieves all farms associated with the authenticated user.
+
+The workflow coordinates user farm retrieval, batch estimation processing, GIS execution, and response aggregation services.
 
 Example backend process:
 
@@ -101,7 +101,7 @@ This ensures users can only process farms they are authorized to access.
 
 ---
 
-# 4. GIS Batch Processing
+# 3. GIS Batch Processing
 
 The GIS processing layer performs sapling estimation calculations for all validated farms.
 
@@ -113,13 +113,17 @@ Responsibilities include:
 - Batch processing across multiple farms
 
 
+The GIS processor performs calculations independently for each farm in the batch request.
+
+Batch processing allows multiple farm estimations to be executed within a single request while ensuring failures for one farm do not block processing for remaining farms.
+
 The GIS service returns a unified dataset containing sapling estimates for each farm.
 
 Failures for individual farms do not block processing for the remaining farms in the batch.
 
 ---
 
-# 5. Unified Response Payload
+# 4. Unified Response Payload
 
 The backend aggregates all GIS calculation results into a single response payload.
 
@@ -137,41 +141,32 @@ Example response:
 }
 ```
 
-The unified payload is returned directly to the frontend bulk calculator UI.
+Possible status values include:
+
+- SUCCESS — estimation completed successfully
+- FAILURE — estimation failed for the specified farm
+
+The unified payload is returned to the requesting API client.
 
 ---
 
-# 6. Frontend Results Rendering
+# 5. Error Handling
 
-The frontend displays the returned calculation results in a clear and sortable table.
+Possible error responses include:
 
-The results table supports sorting by:
+- 401 Unauthorized — missing or invalid authentication token
+- 403 Forbidden — unauthorized farm access
+- 500 Internal Server Error — processing failure during estimation
 
-- Farm Name
-- Recommended Saplings
-- Status
-
-The UI also handles:
-
-- Loading states
-- Empty states
-- API error messages
-- Partial batch failures
-
-Example empty state:
-
-```text
-No farms found for this account.
-```
+Failures for individual farms do not stop processing for remaining farms in the batch.
 
 ---
+
 
 # End-to-End Sequence
 
 ```text
-User clicks "Run Portfolio Calculation"
-        ↓
-Frontend sends POST request
+Client sends POST request
         ↓
 Backend validates JWT token
         ↓
@@ -183,21 +178,18 @@ GIS calculates sapling estimates
         ↓
 Backend aggregates results
         ↓
-Unified response returned to frontend
-        ↓
-UI renders sortable results table
+Unified response returned to client
 ```
 
 ---
 
 # Summary
 
-The bulk sapling workflow provides a secure and scalable way to calculate sapling estimates across all farms owned by an authenticated user.
+The bulk sapling workflow provides a secure and scalable way to calculate sapling estimates across all farms associated with an authenticated user.
 
 The workflow connects:
 
-- Angular frontend UI
 - Secure backend API
 - Backend services
 - GIS batch processing
-- Unified results rendering
+- Unified response generation
