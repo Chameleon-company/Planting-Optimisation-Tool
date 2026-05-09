@@ -9,9 +9,10 @@ __pycache__/
 # Jupyter checkpoints
 .ipynb_checkpoints/
 
-# Ignore coverage file
+# Ignore coverage files
 .coverage
 coverage.xml
+diff-coverage.md
 
 # Ruff stuff:
 .ruff_cache/
