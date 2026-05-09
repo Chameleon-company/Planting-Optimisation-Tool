@@ -64,7 +64,7 @@ function RegisterPage() {
               <div className="register-success-icon">&#10003;</div>
               <h1 className="login-title">Account created!</h1>
               <p className="register-success-body">
-                {"We've sent a verification email to"}
+                {"We've sent a verification email to "}
                 <strong>{email}</strong>.
                 <br />
                 {
