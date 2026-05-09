@@ -4,7 +4,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_cache_miss(async_client, officer_auth_headers):
+async def test_service_request(async_client, officer_auth_headers):
     payload = {
         "spacing_x": 10,
         "spacing_y": 10,
@@ -36,7 +36,7 @@ async def test_cache_miss(async_client, officer_auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_cache_hit(async_client, officer_auth_headers):
+async def test_service_return(async_client, officer_auth_headers):
     payload = {
         "spacing_x": 10,
         "spacing_y": 10,
