@@ -1,10 +1,11 @@
 import { Helmet } from "react-helmet-async";
 import { useEffect, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useVerifyEmail } from "../../hooks/useVerifyEmail";
 
 function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const token = searchParams.get("token");
   const { status, errorMessage, verify } = useVerifyEmail();
   const hasVerified = useRef(false);
@@ -14,7 +15,17 @@ function VerifyEmailPage() {
       hasVerified.current = true;
       verify(token);
     }
-  }, []);
+  }, [token, verify]);
+
+  useEffect(() => {
+    if (status !== "success") return;
+
+    const timer = window.setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+
+    return () => window.clearTimeout(timer);
+  }, [status, navigate]);
 
   return (
     <>
@@ -51,7 +62,7 @@ function VerifyEmailPage() {
               <div className="register-success-icon">&#10003;</div>
               <h1 className="login-title">Email verified!</h1>
               <p className="register-success-body">
-                Your account has been activated. You can now sign in.
+                Your account has been activated. Redirecting you to sign in...
               </p>
               <Link
                 to="/login"

@@ -193,4 +193,30 @@ describe("LoginPage", () => {
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
+
+  it("shows verification resend message when unverified login fails", async () => {
+    mockLogin.mockRejectedValueOnce(
+      new Error("Email not verified. A new verification email has been sent.")
+    );
+
+    renderLoginPage();
+
+    await userEvent.type(
+      screen.getByPlaceholderText(/enter your email/i),
+      "unverified@test.com"
+    );
+    await userEvent.type(
+      screen.getByPlaceholderText(/enter your password/i),
+      "Password123!"
+    );
+    await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    expect(
+      await screen.findByText(
+        "Your email is not verified. We sent a new verification link. Please check your email and try signing in again."
+      )
+    ).toBeInTheDocument();
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });

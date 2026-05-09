@@ -27,6 +27,7 @@ vi.mock("react-router-dom", async () => {
   return {
     ...actual,
     useSearchParams: vi.fn(),
+    useNavigate: () => mockNavigate,
   };
 });
 
@@ -34,6 +35,7 @@ import { useVerifyEmail } from "../hooks/useVerifyEmail";
 import { useSearchParams } from "react-router-dom";
 
 const mockVerify = vi.fn();
+const mockNavigate = vi.fn();
 
 const defaultHookReturn = {
   status: "loading" as const,
@@ -54,6 +56,7 @@ function renderPage() {
 describe("VerifyEmailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
     vi.mocked(useVerifyEmail).mockReturnValue(defaultHookReturn);
     vi.mocked(useSearchParams).mockReturnValue([
       new URLSearchParams("token=abc123"),
@@ -132,4 +135,32 @@ describe("VerifyEmailPage", () => {
     ).toBeInTheDocument();
     expect(mockVerify).not.toHaveBeenCalled();
   });
+});
+
+it("redirects to login after successful verification", async () => {
+  vi.useFakeTimers();
+
+  try {
+    vi.mocked(useVerifyEmail).mockReturnValue({
+      ...defaultHookReturn,
+      status: "success",
+    });
+
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams("token=test-token"),
+      vi.fn(),
+    ]);
+
+    renderPage();
+
+    expect(
+      screen.getByRole("heading", { name: /email verified/i })
+    ).toBeInTheDocument();
+
+    vi.advanceTimersByTime(3000);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/login");
+  } finally {
+    vi.useRealTimers();
+  }
 });

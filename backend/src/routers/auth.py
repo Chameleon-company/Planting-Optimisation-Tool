@@ -36,6 +36,53 @@ from src.utils.security import get_password_hash, validate_password, verify_pass
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
+async def send_verification_email_for_user(db: AsyncSession, user: User) -> None:
+    token = await create_auth_token(
+        db=db,
+        user_id=user.id,
+        token_type="email_verification",
+    )
+
+    verification_link = f"{settings.frontend_base_url}/verify-email?token={token}"
+
+    await send_email(
+        recipient=user.email,
+        subject="Verify your email",
+        body=(f"Please verify your email address by clicking this link:\n{verification_link}"),
+    )
+
+
+@router.post("/resend-verification")
+@limiter.limit("5/minute")
+async def resend_verification_email(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
+    result = await db.execute(select(User).where(User.email == payload.email.lower()))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found",
+        )
+
+    if user.is_verified:
+        return {"message": "Account is already verified"}
+
+    await invalidate_user_tokens(
+        db,
+        user_id=user.id,
+        token_type="email_verification",
+    )
+
+    await send_verification_email_for_user(db, user)
+    await db.commit()
+
+    return {"message": "Verification email sent"}
+
+
 @router.post("/token", response_model=Token)
 @limiter.limit("10/minute")
 async def login_for_access_token(
@@ -71,16 +118,43 @@ async def login_for_access_token(
         }
     """
     try:
-        user = await authentication_service.authenticate_user(db, email=form_data.username, password=form_data.password)
+        user = await authentication_service.authenticate_user(
+            db,
+            email=form_data.username,
+            password=form_data.password,
+        )
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+        normalized_email = form_data.username.strip().lower()
+
+        result = await db.execute(select(User).where(User.email == normalized_email))
+        existing_user = result.scalar_one_or_none()
+
+        if existing_user and not existing_user.is_verified:
+            await invalidate_user_tokens(
+                db,
+                user_id=existing_user.id,
+                token_type="email_verification",
+            )
+            await send_verification_email_for_user(db, existing_user)
+            await db.commit()
+
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email not verified. A new verification email has been sent.",
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # Create JWT token with user ID and role in the payload
+
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
 

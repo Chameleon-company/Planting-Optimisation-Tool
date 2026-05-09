@@ -56,7 +56,13 @@ function LoginPage() {
         error instanceof Error
           ? error.message
           : "Login failed. Please try again.";
-      setErrorMessage(message);
+
+      const displayMessage =
+        message ===
+        "Email not verified. A new verification email has been sent."
+          ? "Your email is not verified. We sent a new verification link. Please check your email and try signing in again."
+          : message;
+      setErrorMessage(displayMessage);
       console.error("Login failed:", error);
     }
   };
