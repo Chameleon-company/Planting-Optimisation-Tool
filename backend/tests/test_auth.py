@@ -642,3 +642,114 @@ async def test_reset_password_expired_token_fails(
     )
     assert response.status_code == 400
     assert "expired" in response.json()["detail"].lower() or "invalid" in response.json()["detail"].lower()
+
+
+async def test_resend_verification_email_user_not_found(
+    async_client: AsyncClient,
+):
+    response = await async_client.post(
+        "/auth/resend-verification",
+        json={"email": "missing@test.com"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Account not found"
+
+
+async def test_resend_verification_email_already_verified(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+):
+    response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "verified@test.com",
+            "name": "Verified User",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+
+    assert response.status_code == 200
+
+    result = await async_session.execute(select(User).where(User.email == "verified@test.com"))
+    user = result.scalar_one()
+    user.is_verified = True
+    await async_session.commit()
+
+    resend_response = await async_client.post(
+        "/auth/resend-verification",
+        json={"email": "verified@test.com"},
+    )
+
+    assert resend_response.status_code == 200
+    assert resend_response.json()["message"] == "Account is already verified"
+
+
+async def test_resend_verification_email_success(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    sent_emails = []
+
+    async def mock_send_email(
+        recipient: str,
+        subject: str,
+        body: str | None = None,
+        html_body: str | None = None,
+        **kwargs,
+    ):
+        sent_emails.append(
+            {
+                "recipient": recipient,
+                "subject": subject,
+                "body": body or "",
+                "html_body": html_body or "",
+            }
+        )
+
+    monkeypatch.setattr(
+        "src.routers.auth.send_email",
+        mock_send_email,
+    )
+
+    response = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "resend@test.com",
+            "name": "Resend User",
+            "password": "Password1!",
+            "role": "officer",
+        },
+    )
+
+    assert response.status_code == 200
+
+    sent_emails.clear()
+
+    resend_response = await async_client.post(
+        "/auth/resend-verification",
+        json={"email": "resend@test.com"},
+    )
+
+    assert resend_response.status_code == 200
+    assert resend_response.json()["message"] == "Verification email sent"
+
+    assert len(sent_emails) == 1
+    assert sent_emails[0]["recipient"] == "resend@test.com"
+
+    result = await async_session.execute(select(User).where(User.email == "resend@test.com"))
+    user = result.scalar_one()
+
+    token_result = await async_session.execute(
+        select(AuthToken).where(
+            AuthToken.user_id == user.id,
+            AuthToken.token_type == "email_verification",
+            AuthToken.used_at.is_(None),
+        )
+    )
+
+    tokens = token_result.scalars().all()
+
+    assert len(tokens) >= 1
