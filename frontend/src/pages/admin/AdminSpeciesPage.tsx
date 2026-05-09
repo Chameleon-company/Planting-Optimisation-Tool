@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -82,7 +82,7 @@ function AdminSpeciesPage() {
   const [editingSpeciesId, setEditingSpeciesId] = useState<number | null>(null);
   const [formData, setFormData] = useState<SpeciesPayload>(emptyForm);
 
-  async function loadSpecies() {
+  const loadSpecies = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -106,7 +106,7 @@ function AdminSpeciesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [getAccessToken]);
 
   function openCreateModal() {
     setError(null);
@@ -227,7 +227,7 @@ function AdminSpeciesPage() {
 
   useEffect(() => {
     void loadSpecies();
-  }, []);
+  }, [loadSpecies]);
 
   return (
     <>

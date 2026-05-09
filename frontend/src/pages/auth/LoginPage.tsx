@@ -166,7 +166,7 @@ function LoginPage() {
             </button>
 
             <p className="login-footer-text">
-              Don't have an account?{" "}
+              {"Don't have an account?"}{" "}
               <Link to="/register" className="login-link">
                 Register
               </Link>
