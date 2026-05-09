@@ -74,6 +74,7 @@ jobs:
         with open('diff-coverage.md') as f:
             content = f.read()
         content = re.split(r'\n{2,}## datascience/', content)[0].strip()
+        content = f"### Data Science Diff Coverage\n\n{content}"
         with open('diff-coverage.md', 'w') as f:
             f.write(content)
         EOF

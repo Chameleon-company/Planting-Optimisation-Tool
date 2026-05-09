@@ -163,7 +163,7 @@ def parse_prefs(prefs_raw):
         return [s.strip() for s in prefs_raw.split(",")]
 
 
-def build_rules_dict(species_list, params, cfg):
+def build_rules_dict(species_list, params, cfg, global_weights=None):
     """
     Builds a dictionary of rules for each species/feature combination
 
@@ -177,6 +177,9 @@ def build_rules_dict(species_list, params, cfg):
 
     # Fetch feature dictionary
     features_cfg = cfg["features"]
+    feature_keys = set(features_cfg.keys())
+
+    use_global = global_weights is not None and feature_keys.issubset(global_weights.keys())
 
     # Create a rules dictionary for optimisation
     # Structure: { species_id: [ (feature_key, rule_metadata, pre_calc_values), ... ] }
@@ -190,13 +193,21 @@ def build_rules_dict(species_list, params, cfg):
             # Resolve overrides and defaults once
             combined_params = get_feature_params(params, cfg, sp_id, feat)
 
-            weight = combined_params["weight"]
+            species_weight = combined_params["weight"]
+
+            if use_global:
+                global_weight = global_weights[feat]
+            else:
+                global_weight = 1.0
+
+            raw_weight = species_weight * global_weight
+
             score_method = combined_params["score_method"]
 
             # Pack the specific data needed for scoring this feature
             rule_data = {
                 "feat": feat,
-                "weight": weight,
+                "weight": raw_weight,
                 "short_name": meta["short"],
                 "type": meta["type"],
                 "score_method": score_method,
@@ -229,6 +240,12 @@ def build_rules_dict(species_list, params, cfg):
                 rule_data["args"] = (prefs, cat_cfg)
 
             rules_list.append(rule_data)
+
+        total_weight = sum(r["weight"] for r in rules_list)
+
+        if total_weight > 0:
+            for r in rules_list:
+                r["weight"] /= total_weight
 
         rules[sp_id] = rules_list
     return rules

@@ -18,14 +18,18 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogs from "./pages/admin/AdminLogs";
 import RequireRole from "./components/auth/RequireRole";
 import WeightingHub from "./pages/admin/settings/WeightingHub";
 import AhpPage from "./pages/admin/settings/AhpPage";
-import HybridAhpPage from "./pages/admin/settings/HybridAhpPage";
+import GlobalWeightsPage from "./pages/admin/settings/GlobalWeightsPage";
 import AdminSpeciesPage from "./pages/admin/AdminSpeciesPage";
 import FarmsManagmentPage from "./pages/farmManagementPage";
+import ScoringParametersPage from "./pages/admin/settings/ScoringParametersPage";
+import ExclusionRulesPage from "./pages/admin/settings/ExclusionRulesPage";
+import DependencyRulesPage from "./pages/admin/settings/DependencyRulesPage";
+import AdminUsers from "./pages/admin/AdminUsers";
+
 // Export App
 export default function App() {
   return (
@@ -66,17 +70,20 @@ export default function App() {
               <Route index element={<AdminDashboard />} />
               <Route path="species" element={<AdminSpeciesPage />} />
               <Route path="settings">
-                <Route index element={<AdminSettings />} /> {/* The Hub Page */}
                 <Route path="weighting">
-                  <Route index element={<WeightingHub />} />{" "}
                   {/* The intermediate menu */}
-                  <Route path="ahp" element={<AhpPage />} />{" "}
+                  <Route index element={<WeightingHub />} />{" "}
                   {/* The standard AHP tool */}
-                  <Route path="hybrid" element={<HybridAhpPage />} />{" "}
-                  {/* The ML tool */}
+                  <Route path="ahp" element={<AhpPage />} />{" "}
+                  {/* The global weights*/}
+                  <Route path="global" element={<GlobalWeightsPage />} />{" "}
                 </Route>
+                <Route path="scoring" element={<ScoringParametersPage />} />
+                <Route path="exclusions" element={<ExclusionRulesPage />} />
+                <Route path="dependencies" element={<DependencyRulesPage />} />
               </Route>
               <Route path="logs" element={<AdminLogs />} />
+              <Route path="users" element={<AdminUsers />} />
             </Route>
           </Routes>
         </BrowserRouter>
