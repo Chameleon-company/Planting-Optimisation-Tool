@@ -6,6 +6,7 @@ from sqlalchemy import text
 
 from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
+from src.models.planting_estimates import PlantingEstimate
 
 
 @pytest.fixture
@@ -139,3 +140,51 @@ async def test_cache_hit(
     # The second request succeeds if results come from cache/Redis
     assert request2.status_code == 200  # Second request should return 200
     assert request2.json() == cache  # Second request should return the same result as cache
+
+
+async def test_get_planting_grid_returns_geojson(
+    async_client,
+    async_session,
+    setup_farm,
+    officer_auth_headers,
+):
+    farm = setup_farm
+
+    estimate = PlantingEstimate(
+        farm_id=farm.id,
+        slope=5.0,
+        geometry=WKTElement("POINT (125.001 -9.001)", srid=4326),
+    )
+    async_session.add(estimate)
+    await async_session.commit()
+
+    response = await async_client.get(f"/sapling_estimation/{farm.id}/grid", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["type"] == "FeatureCollection"
+    assert len(data["features"]) == 1
+    assert data["features"][0]["geometry"]["type"] == "Point"
+
+
+async def test_get_planting_grid_404_when_no_estimates(
+    async_client,
+    setup_farm,
+    officer_auth_headers,
+):
+    farm = setup_farm
+
+    response = await async_client.get(f"/sapling_estimation/{farm.id}/grid", headers=officer_auth_headers)
+
+    assert response.status_code == 404
+
+
+async def test_get_planting_grid_requires_auth(
+    async_client,
+    setup_farm,
+):
+    farm = setup_farm
+
+    response = await async_client.get(f"/sapling_estimation/{farm.id}/grid")
+
+    assert response.status_code == 401

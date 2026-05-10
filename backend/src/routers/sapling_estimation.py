@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src import cache
 from src.database import get_db_session
 from src.dependencies import get_user_id, limiter, require_role
-from src.schemas.sapling_estimation import SaplingEstimationRequest, SaplingEstimationResponse
+from src.schemas.sapling_estimation import PlantingGridResponse, SaplingEstimationRequest, SaplingEstimationResponse
 from src.schemas.user import Role, UserRead
 from src.services import farm as farm_service
 from src.services import sapling_estimation as sapling_estimation_service
@@ -68,3 +68,25 @@ async def get_sapling_estimation(
 
     await cache.set(cache_key, json.dumps(estimation_data))
     return estimation_data
+
+
+@router.get("/{farm_id}/grid", response_model=PlantingGridResponse)
+@limiter.limit("10/minute", key_func=get_user_id)
+async def get_planting_grid(
+    request: Request,
+    farm_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.OFFICER)),
+):
+    """
+    Returns saved planting estimate points for a farm as a GeoJSON FeatureCollection.
+
+    TODO: Officer-level ownership filtering is not applied here due to problems with the RBAC
+    implementation.
+    Officers are not directly associated with farms as owners in the current implementation.
+    Restrict to owned farms once the RBAC implementation is complete.
+    """
+    grid = await sapling_estimation_service.get_planting_grid(db, farm_id)
+    if not grid["features"]:
+        raise HTTPException(status_code=404, detail=f"No planting estimates found for farm {farm_id}.")
+    return grid
