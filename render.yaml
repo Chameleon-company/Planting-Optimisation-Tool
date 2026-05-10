@@ -9,7 +9,8 @@ projects:
       name: pot-backend
       runtime: docker
       repo: https://github.com/Chameleon-company/Planting-Optimisation-Tool
-      plan: free
+      plan: starter
+      preDeployCommand: cd /app/backend && .venv/bin/alembic upgrade head
       envVars:
       - key: GEE_SERVICE_ACCOUNT
         sync: false

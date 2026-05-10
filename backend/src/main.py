@@ -17,6 +17,7 @@ from src.dependencies import limiter
 from src.routers import (
     ahp,
     auth,
+    batch_estimation,
     environmental_profile,
     farm,
     global_weights,
@@ -80,6 +81,7 @@ app.include_router(recommendation.router)
 app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
+app.include_router(batch_estimation.router)
 app.include_router(ahp.router)
 app.include_router(reporting.router)
 app.include_router(global_weights.router)

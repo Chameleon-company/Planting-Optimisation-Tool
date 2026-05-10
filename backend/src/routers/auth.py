@@ -232,12 +232,14 @@ async def verify_email(
 
 
 @router.post("/forgot-password")
+@limiter.limit("10/minute")
 async def forgot_password(
-    request: ForgotPasswordRequest,
+    request: Request,
+    payload: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db_session),
 ):
-    normalized_email = request.email.strip().lower()
+    normalized_email = payload.email.strip().lower()
     result = await db.execute(select(User).filter(User.email == normalized_email))
     user = result.scalar_one_or_none()
 
@@ -264,7 +266,9 @@ async def forgot_password(
 
 
 @router.get("/reset-password/validate")
+@limiter.limit("10/minute")
 async def validate_reset_password_token(
+    request: Request,
     token: str,
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -284,13 +288,15 @@ async def validate_reset_password_token(
 
 
 @router.post("/reset-password")
+@limiter.limit("10/minute")
 async def reset_password(
-    request: ResetPasswordRequest,
+    request: Request,
+    payload: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db_session),
 ):
     token_obj = await get_valid_token(
         db,
-        token=request.token,
+        token=payload.token,
         token_type="password_reset",
     )
 
@@ -309,14 +315,14 @@ async def reset_password(
             detail="User not found",
         )
 
-    validate_password(request.new_password)
-    if verify_password(request.new_password, user.hashed_password):
+    validate_password(payload.new_password)
+    if verify_password(payload.new_password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="New password must be different from the current password",
         )
 
-    user.hashed_password = get_password_hash(request.new_password)
+    user.hashed_password = get_password_hash(payload.new_password)
 
     await mark_token_used(db, token_obj)
     await db.commit()

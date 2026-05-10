@@ -9,7 +9,7 @@ function NotFoundContent() {
       <h1 className="not-found-code">404</h1>
       <h2 className="not-found-title">Page not found</h2>
       <p className="not-found-description">
-        The page you're looking for doesn't exist or has been moved.
+        {"The page you're looking for doesn't exist or has been moved."}
       </p>
       <button
         className="btn-primary not-found-btn"
