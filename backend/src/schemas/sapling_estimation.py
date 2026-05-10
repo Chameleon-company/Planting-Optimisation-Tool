@@ -3,6 +3,11 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
+class PlantingGridResponse(BaseModel):
+    type: str
+    features: list[dict]
+
+
 class SaplingEstimationRequest(BaseModel):
     farm_id: int
     spacing_x: float

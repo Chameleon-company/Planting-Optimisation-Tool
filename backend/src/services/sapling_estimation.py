@@ -1,5 +1,6 @@
 from geoalchemy2.shape import from_shape, to_shape
 from sapling_estimation.estimate import sapling_estimation
+from shapely.geometry import mapping
 from sqlalchemy import delete, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -108,3 +109,17 @@ class SaplingEstimationService:
         except Exception as e:
             await db.rollback()
             return {"status": "failed", "message": str(e)}
+
+
+async def get_planting_grid(db: AsyncSession, farm_id: int) -> dict:
+    result = await db.execute(select(PlantingEstimate).where(PlantingEstimate.farm_id == farm_id))
+    estimates = list(result.scalars().all())
+    features = [
+        {
+            "type": "Feature",
+            "geometry": mapping(to_shape(est.geometry)),
+            "properties": {"slope": est.slope},
+        }
+        for est in estimates
+    ]
+    return {"type": "FeatureCollection", "features": features}

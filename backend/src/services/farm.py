@@ -1,8 +1,11 @@
+from geoalchemy2.shape import to_shape
+from shapely.geometry import mapping
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.models import AgroforestryType, Farm
+from src.models.boundaries import FarmBoundary
 from src.schemas.farm import FarmCreate, FarmUpdate
 
 
@@ -121,6 +124,15 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
         .where(Farm.id == db_farm.id)
     )
     return result.scalar_one()
+
+
+async def get_farm_boundary(db: AsyncSession, farm_id: int) -> dict | None:
+    result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
+    boundary = result.scalar_one_or_none()
+    if boundary is None:
+        return None
+    shape = to_shape(boundary.boundary)
+    return {"type": "Feature", "geometry": mapping(shape), "properties": {"farm_id": farm_id}}
 
 
 async def delete_farm_record(db: AsyncSession, farm_id: int) -> bool:
