@@ -161,7 +161,7 @@ async def test_login_unverified_correct_password_returns_403(
     )
     tokens = token_result.scalars().all()
 
-    assert len(tokens) >= 1
+    assert len(tokens) == 1
 
 
 async def test_login_unverified_wrong_password_returns_401(async_client: AsyncClient):
@@ -752,4 +752,4 @@ async def test_resend_verification_email_success(
 
     tokens = token_result.scalars().all()
 
-    assert len(tokens) >= 1
+    assert len(tokens) == 1

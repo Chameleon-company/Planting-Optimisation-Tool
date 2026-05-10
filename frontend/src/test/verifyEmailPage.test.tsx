@@ -64,6 +64,34 @@ describe("VerifyEmailPage", () => {
     ]);
   });
 
+  it("redirects to login after successful verification", async () => {
+    vi.useFakeTimers();
+
+    try {
+      vi.mocked(useVerifyEmail).mockReturnValue({
+        ...defaultHookReturn,
+        status: "success",
+      });
+
+      vi.mocked(useSearchParams).mockReturnValue([
+        new URLSearchParams("token=test-token"),
+        vi.fn(),
+      ]);
+
+      renderPage();
+
+      expect(
+        screen.getByRole("heading", { name: /email verified/i })
+      ).toBeInTheDocument();
+
+      vi.advanceTimersByTime(3000);
+
+      expect(mockNavigate).toHaveBeenCalledWith("/login");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("shows loading state while verifying", () => {
     renderPage();
 
@@ -135,32 +163,4 @@ describe("VerifyEmailPage", () => {
     ).toBeInTheDocument();
     expect(mockVerify).not.toHaveBeenCalled();
   });
-});
-
-it("redirects to login after successful verification", async () => {
-  vi.useFakeTimers();
-
-  try {
-    vi.mocked(useVerifyEmail).mockReturnValue({
-      ...defaultHookReturn,
-      status: "success",
-    });
-
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams("token=test-token"),
-      vi.fn(),
-    ]);
-
-    renderPage();
-
-    expect(
-      screen.getByRole("heading", { name: /email verified/i })
-    ).toBeInTheDocument();
-
-    vi.advanceTimersByTime(3000);
-
-    expect(mockNavigate).toHaveBeenCalledWith("/login");
-  } finally {
-    vi.useRealTimers();
-  }
 });
