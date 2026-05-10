@@ -1,51 +1,97 @@
-# Bulk Sapling Calculation Workflow
+# Bulk Sapling Batch Estimation Workflow
 
 ## Overview
 
-This document explains the backend workflow for the bulk sapling estimation process.
+This document describes the currently implemented backend workflow for batch sapling estimation.
 
-The workflow describes how authenticated users can request batch sapling estimation processing through the bulk estimation API endpoint.
+The workflow allows authenticated requests to run sapling estimation across farms associated with the authenticated user through the batch estimation API endpoint.
 
-The workflow spans multiple layers of the application:
+This implementation is defined across:
 
-- API Layer
-- Backend Services
-- GIS Batch Processing
+- `backend/src/routers/batch_estimation.py`
+- `backend/src/schemas/batch_estimation.py`
+- `backend/src/services/batch_estimation.py`
 
+## Scope
+
+Frontend/UI integration described in US-047 is not currently implemented in the application.
+
+This document describes the backend/API processing workflow currently implemented in the codebase.
 
 ---
 
 ## Workflow Diagram
 
 ```text
-API Client
-     ↓
-Bulk Estimate API
-     ↓
-Backend Service
-     ↓
-GIS Batch Processor
-     ↓
-Unified Response Payload
+Client Request
+      ↓
+batch_estimation router
+      ↓
+SaplingBatchEstimationService.run_batch_estimation()
+      ↓
+farm_service.list_farms_by_user()
+      ↓
+Cache lookup
+      ↓
+SaplingEstimationService.run_estimation()
+      ↓
+Batch response returned
 ```
 
 ---
 
+# 1. Batch Estimation Router
 
-# 1. API Layer
+File:
 
-The backend exposes a secure endpoint for bulk sapling calculations.
+```text
+backend/src/routers/batch_estimation.py
+```
 
 Endpoint:
 
 ```http
-POST /api/saplings/bulk-estimate
+POST /sapling_estimation/batch_calculate
+```
+
+The endpoint uses the following dependencies:
+
+- `get_db_session`
+- `require_role(Role.OFFICER)`
+- `SaplingBatchEstimationService.run_batch_estimation()`
+
+Rate limiting is applied using:
+
+```python
+@limiter.limit("10/minute", key_func=get_user_id)
+```
+
+The authenticated user ID is passed into the batch estimation service using:
+
+```python
+current_user.id
+```
+
+---
+
+# 2. Request Schema
+
+File:
+
+```text
+backend/src/schemas/batch_estimation.py
+```
+
+Request model:
+
+```python
+SaplingBatchEstimationRequest
 ```
 
 Example request:
 
 ```http
-POST /api/saplings/bulk-estimate
+POST /sapling_estimation/batch_calculate
 Authorization: Bearer <JWT>
 Content-Type: application/json
 ```
@@ -53,143 +99,211 @@ Content-Type: application/json
 Example request body:
 
 ```json
-{}
+{
+  "spacing_x": 10,
+  "spacing_y": 10,
+  "max_slope": 15
+}
 ```
 
-## Authorization
+Request fields:
 
-The endpoint requires an authenticated user session.
-
-Supported roles include:
-
-- admin
-- supervisor
-- officer
-
-Responsibilities of the API layer:
-
-- Validate authentication token
-- Extract authenticated user information
-- Forward processing to backend services
-- Return unified batch results to the requesting client
-
-Security is enforced server-side using the authenticated session.
-
-The system must NEVER accept or process farm IDs provided by the requesting client.
-
-All farm selection and ownership validation must be derived exclusively from the authenticated user token/session.
+- `spacing_x`
+- `spacing_y`
+- `max_slope`
 
 ---
 
-# 2. Backend Service
+# 3. Batch Estimation Service
 
-The backend service retrieves all farms associated with the authenticated user.
+File:
 
-The workflow coordinates user farm retrieval, batch estimation processing, GIS execution, and response aggregation services.
+```text
+backend/src/services/batch_estimation.py
+```
 
-Example backend process:
+Main service function:
 
-1. Extract authenticated user ID
-2. Query database for owned farms
-3. Validate farm ownership
-4. Build validated farm list
-5. Pass farm IDs to GIS batch processing
-6. Aggregate GIS results
-7. Return unified response payload
+```python
+SaplingBatchEstimationService.run_batch_estimation()
+```
 
-This ensures users can only process farms they are authorized to access.
+The batch estimation service retrieves farms associated with the authenticated user using:
+
+```python
+farm_service.list_farms_by_user(db, user_id)
+```
+
+If no farms are found, the service returns:
+
+```json
+{
+  "status": "success",
+  "farm_count": 0,
+  "results": []
+}
+```
+
+The service processes farms sequentially using:
+
+```python
+for farm in farms:
+```
+
+For each farm:
+
+1. A cache key is generated:
+
+```python
+sapling:{farm.id}:{spacing_x}:{spacing_y}:{max_slope}
+```
+
+2. Cached estimation data is checked using:
+
+```python
+cache.get(cache_key)
+```
+
+3. If cached data is not available, the service runs:
+
+```python
+SaplingEstimationService().run_estimation()
+```
+
+4. Successful estimation results are stored using:
+
+```python
+cache.set(cache_key, json.dumps(data))
+```
+
+The batch service appends the following fields for each farm result:
+
+- `status`
+- `farm_id`
+- `pre_slope_count`
+- `aligned_count`
+- `optimal_angle`
+- `rotation_average`
+- `rotation_std_dev`
 
 ---
 
-# 3. GIS Batch Processing
+# 4. Response Schema
 
-The GIS processing layer performs sapling estimation calculations for all validated farms.
+File:
 
-Responsibilities include:
+```text
+backend/src/schemas/batch_estimation.py
+```
 
-- Area analysis
-- Vegetation calculations
-- Sapling estimation logic
-- Batch processing across multiple farms
+Response model:
 
+```python
+SaplingBatchEstimationResponse
+```
 
-The GIS processor performs calculations independently for each farm in the batch request.
+The response contains:
 
-Batch processing allows multiple farm estimations to be executed within a single request while ensuring failures for one farm do not block processing for remaining farms.
+- `status`
+- `farm_count`
+- `results`
 
-The GIS service returns a unified dataset containing sapling estimates for each farm.
+Each result item contains:
 
-Failures for individual farms do not block processing for the remaining farms in the batch.
-
----
-
-# 4. Unified Response Payload
-
-The backend aggregates all GIS calculation results into a single response payload.
+- `status`
+- `farm_id`
+- `pre_slope_count`
+- `aligned_count`
+- `optimal_angle`
+- `rotation_average`
+- `rotation_std_dev`
 
 Example response:
 
 ```json
 {
+  "status": "success",
+  "farm_count": 2,
   "results": [
     {
-      "farmId": "farm-101",
-      "recommendedSaplings": 1240,
-      "status": "SUCCESS"
+      "farm_id": 1,
+      "status": "success",
+      "pre_slope_count": 100,
+      "aligned_count": 80,
+      "optimal_angle": 10,
+      "rotation_average": 5.0,
+      "rotation_std_dev": 1.0
     }
   ]
 }
 ```
 
-Possible status values include:
+---
 
-- SUCCESS — estimation completed successfully
-- FAILURE — estimation failed for the specified farm
+# 5. Cache Behaviour
 
-The unified payload is returned to the requesting API client.
+The batch estimation service checks for cached estimation results before running sapling estimation processing.
+
+Cache keys are generated using:
+
+```python
+sapling:{farm.id}:{spacing_x}:{spacing_y}:{max_slope}
+```
+
+If cached data exists, the cached estimation result is returned.
+
+If cached data does not exist, the batch service runs:
+
+```python
+SaplingEstimationService().run_estimation()
+```
+
+Estimation results are written to cache when the returned status is not `"failed"`.
 
 ---
 
-# 5. Error Handling
+# 6. Test Coverage
 
-Possible error responses include:
+The implementation includes tests for:
 
-- 401 Unauthorized — missing or invalid authentication token
-- 403 Forbidden — unauthorized farm access
-- 500 Internal Server Error — processing failure during estimation
+- router request handling
+- batch estimation service execution
+- cache hit behaviour
+- cache miss behaviour
 
-Failures for individual farms do not stop processing for remaining farms in the batch.
+Test files:
+
+```text
+backend/tests/test_batch_router.py
+backend/tests/test_batch_service.py
+```
+
+The tests verify:
+
+- authenticated requests
+- batch estimation response structure
+- cache usage
+- service execution count
+- multi-farm batch estimation behaviour
 
 ---
 
-
-# End-to-End Sequence
+# End-to-End Processing Flow
 
 ```text
 Client sends POST request
         ↓
-Backend validates JWT token
+batch_estimation router receives request
         ↓
-Backend retrieves owned farms
+Role validation using require_role(Role.OFFICER)
         ↓
-Validated farm list sent to GIS batch processor
+SaplingBatchEstimationService.run_batch_estimation()
         ↓
-GIS calculates sapling estimates
+farm_service.list_farms_by_user()
         ↓
-Backend aggregates results
+Cache lookup for each farm
         ↓
-Unified response returned to client
+SaplingEstimationService.run_estimation()
+        ↓
+Batch results returned
 ```
-
----
-
-# Summary
-
-The bulk sapling workflow provides a secure and scalable way to calculate sapling estimates across all farms associated with an authenticated user.
-
-The workflow connects:
-
-- Secure backend API
-- Backend services
-- GIS batch processing
-- Unified response generation
