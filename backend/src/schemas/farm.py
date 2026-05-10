@@ -230,3 +230,9 @@ class FarmUpdate(BaseModel):
     )
     agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None
     external_id: Optional[int] = Field(default=None, title="Temporary identifier for CSV import")
+
+
+class FarmBoundaryResponse(BaseModel):
+    type: str
+    geometry: dict
+    properties: dict

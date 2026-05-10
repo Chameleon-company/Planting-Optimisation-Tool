@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import App from "../App";
 
+vi.mock("@/components/calculator/FarmMap", () => ({
+  default: () => null,
+}));
+
 vi.mock("../contexts/AuthContext", async () => {
   const actual = await vi.importActual<
     typeof import("../contexts/AuthContext")

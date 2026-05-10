@@ -24,12 +24,16 @@ describe("CalculatorSearch", () => {
 
     render(<CalculatorSearch onSearch={onSearch} isLoading={false} />);
 
-    await user.type(screen.getByRole("spinbutton"), "12");
+    await user.type(screen.getByLabelText(/farm id/i), "12");
     await user.click(
       screen.getByRole("button", { name: /generate planting plan/i })
     );
 
-    expect(onSearch).toHaveBeenCalledWith("12");
+    expect(onSearch).toHaveBeenCalledWith("12", {
+      spacingX: 3,
+      spacingY: 3,
+      maxSlope: 15,
+    });
   });
 
   it("disables button and shows loading text when isLoading is true", () => {
