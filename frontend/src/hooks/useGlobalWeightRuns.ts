@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import {
   GlobalWeightsRunSummary,
@@ -37,7 +37,7 @@ export function useGlobalWeightRuns() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRuns = async () => {
+  const fetchRuns = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     const token = getAccessToken();
@@ -65,11 +65,11 @@ export function useGlobalWeightRuns() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getAccessToken]);
 
   useEffect(() => {
     fetchRuns();
-  }, []);
+  }, [fetchRuns]);
 
   const uploadCsv = async (file: File) => {
     setIsLoading(true);
@@ -105,21 +105,22 @@ export function useGlobalWeightRuns() {
     }
   };
 
-  const fetchRunDetails = async (
-    runId: string
-  ): Promise<GlobalWeightItem[]> => {
-    const token = getAccessToken();
-    const response = await fetch(`${API_BASE}/global-weights/runs/${runId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!response.ok)
-      throw new Error(
-        await extractErrorMessage(response, "Failed to fetch run details")
-      );
+  const fetchRunDetails = useCallback(
+    async (runId: string): Promise<GlobalWeightItem[]> => {
+      const token = getAccessToken();
+      const response = await fetch(`${API_BASE}/global-weights/runs/${runId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok)
+        throw new Error(
+          await extractErrorMessage(response, "Failed to fetch run details")
+        );
 
-    const data = await response.json();
-    return data.weights || [];
-  };
+      const data = await response.json();
+      return data.weights || [];
+    },
+    [getAccessToken]
+  );
 
   const deleteRun = async (runId: string) => {
     setIsLoading(true);
