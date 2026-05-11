@@ -50,6 +50,31 @@ function AdminDashboard() {
             </div>
           </NavLink>
 
+          {/* Farm Management Card */}
+          <NavLink to="/farms" className="settings-card">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#14b8a6"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="settings-card-icon"
+              width="32"
+              height="32"
+            >
+              {/* Barn / Farm House */}
+              <path d="m2 9 10-5 10 5v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z" />
+              {/* Barn Doors */}
+              <path d="M10 22V12l2-2 2 2v10" />
+            </svg>
+            <div className="settings-card-text">
+              <h3>Farm Management</h3>
+              <p>Manage farm locations and field data.</p>
+            </div>
+          </NavLink>
+
           {/* Placeholder for User Management */}
           <NavLink to="/admin/users" className="settings-card">
             <svg
