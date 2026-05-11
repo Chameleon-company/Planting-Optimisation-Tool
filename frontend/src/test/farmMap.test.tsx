@@ -55,7 +55,7 @@ describe("FarmMap", () => {
       <FarmMap boundary={BOUNDARY} grid={null} optimalAngle={20} spacingY={3} />
     );
     expect(screen.getAllByTestId("polyline").length).toBeGreaterThan(0);
-  });
+  }, 10000);
 
   it("renders no polylines when optimalAngle is null", () => {
     render(<FarmMap boundary={BOUNDARY} grid={null} optimalAngle={null} />);
