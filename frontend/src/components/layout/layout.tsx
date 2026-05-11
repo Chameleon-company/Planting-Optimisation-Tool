@@ -75,6 +75,12 @@ export default function MainLayout() {
             {user ? (
               <div className="user-info">
                 <span>Welcome, {user.name}</span>
+                {/* Conditionally render the Admin button */}
+                {user.role === "admin" && (
+                  <NavLink to="/admin" className="login-btn">
+                    Admin
+                  </NavLink>
+                )}
                 <button onClick={handleLogout} className="logout-btn">
                   Logout
                 </button>

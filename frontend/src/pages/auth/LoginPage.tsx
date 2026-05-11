@@ -27,7 +27,7 @@ function LoginPage() {
   useEffect(() => {
     if (user) {
       if (user.role === "admin") {
-        navigate("/admin");
+        navigate("/");
       } else if (user.role === "supervisor") {
         navigate("/");
       } else {
@@ -150,12 +150,7 @@ function LoginPage() {
               <div className="login-message login-message-error">
                 {errorMessage}
               </div>
-            ) : (
-              <div className="login-message login-message-placeholder">
-                Sign in with your verified account to access the admin
-                workspace.
-              </div>
-            )}
+            ) : null}
 
             <button
               type="submit"

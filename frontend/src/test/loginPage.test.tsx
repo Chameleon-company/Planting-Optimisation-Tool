@@ -130,7 +130,7 @@ describe("LoginPage", () => {
   });
 
   // Tests the useEffect admin redirect
-  it("redirects to /admin automatically if user has admin role", () => {
+  it("redirects to / automatically if user has admin role", () => {
     mockAuthContext.useAuth.mockReturnValue({
       login: mockLogin,
       isLoading: false,
@@ -139,7 +139,7 @@ describe("LoginPage", () => {
 
     renderLoginPage();
 
-    expect(mockNavigate).toHaveBeenCalledWith("/admin");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
   // Tests the useEffect supervisor redirect
