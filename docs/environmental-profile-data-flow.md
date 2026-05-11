@@ -1,10 +1,10 @@
-# Environmental Profile Pipeline
+# Environmental Profile Data Flow
 
 ## Purpose
 
 This document explains how environmental attributes are derived for a farm - from raw boundary data through to the final profile response returned by the API.
 
-It covers the full data flow across four pipeline stages: local PostGIS queries, Google Earth Engine (GEE) extraction, ML-based imputation, and normalisation. Reading this document should give a developer enough context to understand, debug, or extend the environmental profiling system without needing to read across multiple modules.
+It covers the full data flow across four pipeline stages: local PostGIS queries, Google Earth Engine (GEE) extraction, imputation, and normalisation. Reading this document should give a developer enough context to understand, debug, or extend the environmental profiling system without needing to read across multiple files.
 
 This implementation is defined across:
 
@@ -25,7 +25,6 @@ This implementation is defined across:
 - [Imputation](#imputation)
 - [Output Schema](#output-schema)
 - [Example Output](#example-output)
-- [Common Pitfalls](#common-pitfalls)
 
 ---
 
@@ -37,7 +36,10 @@ A farm profile is built on demand when the `GET /profile/{farm_id}` endpoint is 
 Client Request
       ↓
 environmental_profile router
-      ↓
+ - Requires OFFICER role or higher (403 if not met)
+ - Checks if farm is accessible to the requesting user (404 if not found or not owned)
+ - Checks cache: if profile:{farm_id} exists → return cached JSON immediately
+      ↓ (cache miss only)
 EnvironmentalProfileService.run_environmental_profile()
       ↓
 Local PostGIS queries (soil pH, soil texture, riparian flag)
@@ -46,9 +48,11 @@ build_farm_profile() - GEE extraction
       ↓
 GEE failed? → Fallback to stored Farm DB values
       ↓
-impute_missing() - ML model fills missing fields
+impute_missing() - Fills missing fields
       ↓
 Normalisation and range validation
+      ↓
+Write to cache under key profile:{farm_id}
       ↓
 FarmProfileResponse returned
 ```
@@ -64,7 +68,7 @@ The `data_source` field in the response indicates which path was taken:
 
 ## Global Datasets (Google Earth Engine)
 
-The following attributes are extracted via GEE. All datasets were validated against 940 farm measurements collected by the Product Owner (2020–2024).
+The following attributes are extracted via GEE. All datasets were validated against 940 farm measurements collected by the Product Owner.
 
 - **Rainfall** - CHIRPS dataset at 5.5 km resolution. Validated at r=0.96, MAE=23mm.
 - **Temperature** - MODIS LST (MOD11A2) at 1 km resolution. Validated at r=0.87, MAE=1.5°C. A bias correction of −4.43°C is applied automatically to convert land surface temperature to air temperature.
@@ -129,7 +133,7 @@ The boundary geometry drives all downstream spatial queries. The centroid is use
 
 Three attributes are resolved locally before GEE is called:
 
-**Riparian flag** - a spatial intersection between the farm boundary polygon and the waterway dataset, executed via `get_riparian_flags()`.
+**Riparian flag** - a spatial intersection between the farm boundary polygon and a buffered waterway dataset, executed via `get_riparian_flags()`.
 
 **Soil pH** - a point query against the local soil pH raster using `get_soil_ph_for_point(db, lat, lon)`. Values outside the dataset's valid range (5.0–8.5) are rejected and treated as missing.
 
@@ -143,7 +147,7 @@ Three attributes are resolved locally before GEE is called:
 
 Internally it calls:
 
-- `get_rainfall()` - CHIRPS annual total for the default year (2024)
+- `get_rainfall()` - CHIRPS annual total for the default year 
 - `get_temperature()` - MODIS LST mean with −4.43°C bias correction applied
 - `get_elevation()` - SRTM mean elevation
 - `get_slope()` - SRTM-derived slope in degrees
@@ -177,11 +181,11 @@ After the profile is assembled from either GEE or fallback, out-of-range values 
 - Rainfall values outside `RAINFALL_MIN` / `RAINFALL_MAX` are set to `None`
 - Temperature values outside `TEMPERATURE_MIN` / `TEMPERATURE_MAX` are set to `None`
 
-The imputer then checks which target fields are `None`. If any are missing, `impute_missing()` is called to fill them using the ML model. The fields that can be imputed are `slope_degrees` (imputer key: `slope`), `soil_ph` (imputer key: `ph`), `rainfall_mm`, `temperature_celsius`, and `elevation_m`.
+The imputer then checks which target fields are `None`. If any are missing, `impute_missing()` is called to fill them. The fields that can be imputed are `slope_degrees` (imputer key: `slope`), `soil_ph` (imputer key: `ph`), `rainfall_mm`, `temperature_celsius`, and `elevation_m`.
 
 When a field is imputed, a corresponding flag is set on the profile (e.g. `ph_imputed: true`) and persisted to the `Farm` DB record.
 
-After assembling the profile (`hybrid` or `fallback`), any missing numeric fields are imputed. The only case where imputation is skipped is when the profile is completely empty, but in practice the fallback path always supplies the required base features.
+After assembling the profile (`hybrid` or `fallback`), any missing numeric fields are imputed. The only case where imputation is skipped is when the profile is completely empty, but in practice the fallback path should always supply the required base features.
 
 ---
 
@@ -205,7 +209,7 @@ The imputation package fills missing numeric fields using available profile feat
 Key behaviours:
 
 - Only runs if one or more target fields are `None` after GEE extraction or fallback
-- Sets `{field}_imputed: True` flags on both the profile dict and the persisted `Farm` DB record
+- Sets `{field}_imputed: True` flags on both the profile dict and the `Farm` DB record
 - Raises `ImputationError` (returned as HTTP 503) if imputation fails or produces unrealistic values 
 
 ---
@@ -241,6 +245,8 @@ Response fields:
 - `temperature_celsius_imputed` - Boolean; present only if imputed
 - `rainfall_mm_imputed` - Boolean; present only if imputed
 - `ph_imputed` - Boolean; present only if imputed
+
+The internal profile dictionary (produced by the service and GEE layer) uses `soil_ph` and `slope_degrees` as keys. The API response renames these; `soil_ph` becomes `ph` and `slope_degrees` becomes `slope`. If you are reading service logs or debugging the raw profile dict, expect the internal names. The API response uses the aliased names.
 
 ---
 
@@ -285,11 +291,14 @@ A fallback profile where GEE failed and rainfall was filled by imputation:
   "slope": 12.34,
   "soil_texture": "clay loam",
   "soil_texture_id": 8,
-  "area_ha":  2.450,
+  "area_ha": 2.450,
   "latitude": -8.612,
   "longitude": 126.643,
   "coastal": false,
   "riparian": false,
+  "nitrogen_fixing": false,
+  "shade_tolerant": false,
+  "bank_stabilising": false,
   "rainfall_mm_imputed": true
 }
 ```
