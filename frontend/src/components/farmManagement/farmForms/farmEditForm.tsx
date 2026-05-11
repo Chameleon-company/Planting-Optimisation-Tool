@@ -66,7 +66,7 @@ export default function FarmEditForm({
     if (match) {
       setForm(prev => ({ ...prev, soil_texture_id: String(match.id) }));
     }
-  }, [soilTextures]);
+  }, [soilTextures, farm.soil_texture.name]);
 
   // Sync agroforestry_type_ids into form once agroforestryTypes have loaded
   // useEffect(() => {
