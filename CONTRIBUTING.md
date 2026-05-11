@@ -4,7 +4,7 @@ This document will help you set up your environment and start contributing to th
 
 ---
 
-## Onboarding for New Contributors 
+## Onboarding for New Contributors
 
 New contributors should review the following before starting development:
 
