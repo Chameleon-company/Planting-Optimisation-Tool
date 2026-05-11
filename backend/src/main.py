@@ -17,8 +17,10 @@ from src.dependencies import limiter
 from src.routers import (
     ahp,
     auth,
+    batch_estimation,
     environmental_profile,
     farm,
+    global_weights,
     parameters,
     recommendation,
     reporting,
@@ -27,6 +29,8 @@ from src.routers import (
     species,
     user,
 )
+from src.services.epi_processing import EpiCSVError
+from src.services.global_weights import GlobalWeightsCSVError
 
 
 @asynccontextmanager
@@ -77,8 +81,10 @@ app.include_router(recommendation.router)
 app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
 app.include_router(sapling_estimation.router)
+app.include_router(batch_estimation.router)
 app.include_router(ahp.router)
 app.include_router(reporting.router)
+app.include_router(global_weights.router)
 
 
 @app.exception_handler(RequestValidationError)
@@ -103,6 +109,22 @@ async def response_validation_exception_handler(request: Request, exc: ResponseV
         for err in exc.errors()
     ]
     return JSONResponse(status_code=422, content={"detail": errors})
+
+
+@app.exception_handler(GlobalWeightsCSVError)
+async def global_weights_csv_exception_handler(request: Request, exc: GlobalWeightsCSVError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(EpiCSVError)
+async def epi_csv_exception_handler(request: Request, exc: EpiCSVError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
 
 
 _request_logger = logging.getLogger("api.requests")

@@ -3,10 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
 from src.dependencies import get_current_user, require_role
-from src.schemas.farm import FarmCreate, FarmRead, FarmUpdate
+from src.schemas.farm import FarmBoundaryResponse, FarmCreate, FarmRead, FarmUpdate
 from src.schemas.user import Role, UserRead
 from src.services import farm as farm_service
-from src.services.riparian import get_riparian_flags
 
 # The router instance
 router = APIRouter(prefix="/farms", tags=["Farms"])
@@ -28,15 +27,32 @@ async def create_farm(
     """Creates a new farm record with validated data.
     Requires ADMIN.
     """
-    # Compute riparian flag before writing to DB so the farm is created with the correct value in one transaction.
-    riparian_result = await get_riparian_flags(db, latitude=float(farm_data.latitude), longitude=float(farm_data.longitude))
-    farm_data.riparian = riparian_result["riparian"]
 
     return await farm_service.create_farm_record(db=db, farm_data=farm_data, user_id=current_user.id)
 
 
 # NOTE: When a farm boundary update endpoint is added, invalidate cached results for that farm:
 #   await cache.invalidate(f"profile:{farm_id}", f"sapling:{farm_id}", f"rec:{farm_id}")
+
+
+@router.get("/{farm_id}/boundary", response_model=FarmBoundaryResponse)
+async def get_farm_boundary(
+    farm_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(get_current_user),
+):
+    """
+    Returns the farm boundary as a GeoJSON Feature. Requires any authenticated role.
+
+    TODO: Officer-level ownership filtering is not applied here due to problems with the RBAC
+    implementation.
+    Officers are not directly associated with farms as owners in the current implementation.
+    Restrict to owned farms once the RBAC implementation is complete.
+    """
+    boundary = await farm_service.get_farm_boundary(db, farm_id)
+    if boundary is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Boundary not found for farm {farm_id}.")
+    return boundary
 
 
 @router.get("/{farm_id}", response_model=FarmRead)
@@ -114,16 +130,6 @@ async def update_farm(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user does not have adequate permissions.",
         )
-
-    latitude = farm_data.latitude if farm_data.latitude is not None else existing_farm.latitude
-    longitude = farm_data.longitude if farm_data.longitude is not None else existing_farm.longitude
-
-    riparian_result = await get_riparian_flags(
-        db,
-        latitude=float(latitude),
-        longitude=float(longitude),
-    )
-    farm_data.riparian = riparian_result["riparian"]
 
     updated_farm = await farm_service.update_farm_record(
         db=db,

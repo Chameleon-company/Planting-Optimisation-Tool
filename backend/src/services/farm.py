@@ -1,9 +1,15 @@
+from typing import Union
+
+from geoalchemy2.shape import to_shape
+from shapely.geometry import mapping
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.models import AgroforestryType, Farm
+from src.models import AgroforestryType, Farm, User
+from src.models.boundaries import FarmBoundary
 from src.schemas.farm import FarmCreate, FarmUpdate
+from src.schemas.user import Role
 
 
 async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: int):
@@ -63,17 +69,22 @@ async def get_farm_by_id(db: AsyncSession, farm_ids: list[int], user_id: int | N
     return list(result.scalars().all())
 
 
-async def list_farms_by_user(db: AsyncSession, user_id: int) -> list[Farm]:
+async def list_farms_by_user(db: AsyncSession, user_or_id: Union[User, int]) -> list[Farm]:
     """Retrieves all Farm records belonging to a specific user."""
-    stmt = (
-        select(Farm)
-        .options(
-            selectinload(Farm.soil_texture),
-            selectinload(Farm.agroforestry_type),
-            selectinload(Farm.farm_supervisor),
-        )
-        .where(Farm.user_id == user_id)
+    stmt = select(Farm).options(
+        selectinload(Farm.soil_texture),
+        selectinload(Farm.agroforestry_type),
+        selectinload(Farm.farm_supervisor),
     )
+
+    # Check if it's a User object with Admin privileges
+    if isinstance(user_or_id, User):
+        if user_or_id.role != Role.ADMIN.value:
+            # Only apply the .where() filter if they AREN'T an admin
+            stmt = stmt.where(Farm.user_id == user_or_id.id)
+
+    else:  # user_or_id is an int (user ID)
+        stmt = stmt.where(Farm.user_id == user_or_id)
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
@@ -121,6 +132,15 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
         .where(Farm.id == db_farm.id)
     )
     return result.scalar_one()
+
+
+async def get_farm_boundary(db: AsyncSession, farm_id: int) -> dict | None:
+    result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
+    boundary = result.scalar_one_or_none()
+    if boundary is None:
+        return None
+    shape = to_shape(boundary.boundary)
+    return {"type": "Feature", "geometry": mapping(shape), "properties": {"farm_id": farm_id}}
 
 
 async def delete_farm_record(db: AsyncSession, farm_id: int) -> bool:

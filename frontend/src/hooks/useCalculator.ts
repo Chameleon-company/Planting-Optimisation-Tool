@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getSaplingEstimation } from "@/utils/calculatorApi";
+import type { CalcParams, CalculatorResult } from "@/utils/calculatorApi";
 
-const API_BASE = import.meta.env.VITE_API_URL;
+export type { CalcParams, CalculatorResult };
 
-export interface CalculatorResult {
-  id: number;
-  pre_slope_count: number;
-  aligned_count: number;
-  optimal_angle: number;
-}
+export const DEFAULT_CALC_PARAMS: CalcParams = {
+  spacingX: 3.0,
+  spacingY: 3.0,
+  maxSlope: 15.0,
+};
 
-export function useCalculator(farmId: string) {
+export function useCalculator(farmId: string, params: CalcParams) {
   const { getAccessToken } = useAuth();
   const [result, setResult] = useState<CalculatorResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,31 +35,7 @@ export function useCalculator(farmId: string) {
       }
 
       try {
-        const response = await fetch(
-          `${API_BASE}/sapling_estimation/calculate`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              farm_id: Number(farmId),
-              spacing_x: 3.0,
-              spacing_y: 3.0,
-              max_slope: 15.0,
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          const data = await response.json();
-          setError(data.message || "Failed to fetch estimation");
-          setIsLoading(false);
-          return;
-        }
-
-        const data = await response.json();
+        const data = await getSaplingEstimation(Number(farmId), params, token);
         setResult(data);
         setHasSearched(true);
       } catch (err: unknown) {
@@ -73,7 +50,7 @@ export function useCalculator(farmId: string) {
     };
 
     fetchEstimation();
-  }, [farmId, getAccessToken]);
+  }, [farmId, params, getAccessToken]);
 
   return { result, isLoading, hasSearched, error };
 }

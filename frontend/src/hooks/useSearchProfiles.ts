@@ -1,16 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-
-export interface EnvironmentalProfile {
-  id: number;
-  elevation_m: number;
-  ph?: number | string;
-  slope?: number | string;
-  latitude: number | string;
-  longitude: number | string;
-  area_ha?: number | string;
-  coastal?: boolean;
-}
+import { Farm } from "./useUserProfiles";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -18,7 +8,7 @@ export function useSearchProfiles(query: string) {
   const { getAccessToken } = useAuth();
   const token = getAccessToken();
 
-  const [profile, setProfile] = useState<EnvironmentalProfile | null>(null);
+  const [profile, setProfile] = useState<Farm | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +24,7 @@ export function useSearchProfiles(query: string) {
       setError(null);
 
       try {
-        const res = await fetch(`${API_BASE}/profile/${query}`, {
+        const res = await fetch(`${API_BASE}/farms/${query}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",

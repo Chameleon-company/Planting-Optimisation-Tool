@@ -1,9 +1,7 @@
-import pytest
 from geoalchemy2.elements import WKTElement
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.routers.farm as farm_router
 from src.dependencies import create_access_token
 from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
@@ -29,7 +27,6 @@ VALID_FARM_PAYLOAD = {
 }
 
 
-@pytest.mark.asyncio
 async def test_read_farm_success_and_authorization_check(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -109,7 +106,6 @@ async def test_read_farm_success_and_authorization_check(
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_profile_owner_access(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -237,7 +233,6 @@ async def test_profile_blocks_non_owner(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_officer_cannot_create_farm_blocked(
     async_client: AsyncClient,
     test_officer_user: User,
@@ -250,7 +245,6 @@ async def test_officer_cannot_create_farm_blocked(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_create_farm_unauthenticated(
     async_client: AsyncClient,
     setup_soil_texture,
@@ -260,7 +254,6 @@ async def test_create_farm_unauthenticated(
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_supervisor_can_read_any_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -281,7 +274,6 @@ async def test_supervisor_can_read_any_farm(
     assert response.json()["id"] == farm.id
 
 
-@pytest.mark.asyncio
 async def test_admin_can_read_any_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -302,7 +294,6 @@ async def test_admin_can_read_any_farm(
     assert response.json()["id"] == farm.id
 
 
-@pytest.mark.asyncio
 async def test_read_farm_not_found(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -313,7 +304,6 @@ async def test_read_farm_not_found(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_officer_cannot_create_farm(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -324,7 +314,6 @@ async def test_officer_cannot_create_farm(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_supervisor_cannot_create_farm(
     async_client: AsyncClient,
     supervisor_auth_headers: dict,
@@ -335,7 +324,6 @@ async def test_supervisor_cannot_create_farm(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_admin_can_create_farm_success(
     async_client: AsyncClient,
     test_admin_user: User,
@@ -350,46 +338,6 @@ async def test_admin_can_create_farm_success(
     assert data["rainfall_mm"] == VALID_FARM_PAYLOAD["rainfall_mm"]
 
 
-@pytest.mark.asyncio
-async def test_admin_can_update_farm_lat_long_and_recompute_riparian(
-    async_client: AsyncClient,
-    async_session: AsyncSession,
-    test_admin_user: User,
-    admin_auth_headers: dict,
-    setup_soil_texture,
-    monkeypatch,
-):
-    async def fake_get_riparian_flags(db, latitude, longitude):
-        assert latitude == -8.6
-        assert longitude == 126.6
-        return {"riparian": True}
-
-    monkeypatch.setattr(farm_router, "get_riparian_flags", fake_get_riparian_flags)
-
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
-    async_session.add(farm)
-    await async_session.commit()
-    await async_session.refresh(farm)
-
-    update_payload = {
-        "latitude": -8.6,
-        "longitude": 126.6,
-    }
-
-    response = await async_client.put(
-        f"/farms/{farm.id}",
-        json=update_payload,
-        headers=admin_auth_headers,
-    )
-
-    assert response.status_code == 200
-    data = response.json()
-    assert float(data["latitude"]) == -8.6
-    assert float(data["longitude"]) == 126.6
-    assert data["riparian"] is True
-
-
-@pytest.mark.asyncio
 async def test_admin_can_update_farm_with_empty_agroforestry_ids(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -414,7 +362,6 @@ async def test_admin_can_update_farm_with_empty_agroforestry_ids(
     assert data["agroforestry_type"] == []
 
 
-@pytest.mark.asyncio
 async def test_admin_can_update_farm_partially(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -423,11 +370,6 @@ async def test_admin_can_update_farm_partially(
     setup_soil_texture,
     monkeypatch,
 ):
-    async def fake_get_riparian_flags(db, latitude, longitude):
-        return {"riparian": False}
-
-    monkeypatch.setattr(farm_router, "get_riparian_flags", fake_get_riparian_flags)
-
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
     async_session.add(farm)
     await async_session.commit()
@@ -452,7 +394,6 @@ async def test_admin_can_update_farm_partially(
     assert data["rainfall_mm"] == VALID_FARM_PAYLOAD["rainfall_mm"]
 
 
-@pytest.mark.asyncio
 async def test_supervisor_can_update_own_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -461,11 +402,6 @@ async def test_supervisor_can_update_own_farm(
     setup_soil_texture,
     monkeypatch,
 ):
-    async def fake_get_riparian_flags(db, latitude, longitude):
-        return {"riparian": False}
-
-    monkeypatch.setattr(farm_router, "get_riparian_flags", fake_get_riparian_flags)
-
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_supervisor_user.id)
     async_session.add(farm)
     await async_session.commit()
@@ -483,7 +419,6 @@ async def test_supervisor_can_update_own_farm(
     assert float(data["area_ha"]) == 9.0
 
 
-@pytest.mark.asyncio
 async def test_supervisor_cannot_update_other_users_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -492,11 +427,6 @@ async def test_supervisor_cannot_update_other_users_farm(
     setup_soil_texture,
     monkeypatch,
 ):
-    async def fake_get_riparian_flags(db, latitude, longitude):
-        return {"riparian": False}
-
-    monkeypatch.setattr(farm_router, "get_riparian_flags", fake_get_riparian_flags)
-
     farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
     async_session.add(farm)
     await async_session.commit()
@@ -511,7 +441,6 @@ async def test_supervisor_cannot_update_other_users_farm(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_officer_cannot_update_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -533,7 +462,6 @@ async def test_officer_cannot_update_farm(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_update_farm_not_found(
     async_client: AsyncClient,
     admin_auth_headers: dict,
@@ -548,7 +476,6 @@ async def test_update_farm_not_found(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_admin_can_delete_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -569,7 +496,6 @@ async def test_admin_can_delete_farm(
     assert check_response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_officer_cannot_delete_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -587,7 +513,6 @@ async def test_officer_cannot_delete_farm(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_supervisor_cannot_delete_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -608,7 +533,6 @@ async def test_supervisor_cannot_delete_farm(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_delete_farm_not_found(
     async_client: AsyncClient,
     admin_auth_headers: dict,
@@ -618,7 +542,6 @@ async def test_delete_farm_not_found(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_farm_rejects_negative_elevation(
     async_client: AsyncClient,
     admin_auth_headers: dict,
@@ -631,7 +554,6 @@ async def test_create_farm_rejects_negative_elevation(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
 async def test_create_farm_rejects_negative_area(
     async_client: AsyncClient,
     admin_auth_headers: dict,
@@ -644,7 +566,6 @@ async def test_create_farm_rejects_negative_area(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
 async def test_create_farm_rejects_invalid_latitude(
     async_client: AsyncClient,
     admin_auth_headers: dict,
@@ -657,7 +578,56 @@ async def test_create_farm_rejects_invalid_latitude(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
+async def test_get_boundary_returns_geojson(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    officer_auth_headers: dict,
+    setup_soil_texture,
+):
+    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    boundary = FarmBoundary(
+        id=farm.id,
+        external_id=farm.id,
+        boundary=WKTElement(
+            "MULTIPOLYGON (((126.67 -8.56, 126.68 -8.56, 126.68 -8.57, 126.67 -8.56)))",
+            srid=4326,
+        ),
+    )
+    async_session.add(boundary)
+    await async_session.commit()
+
+    response = await async_client.get(f"/farms/{farm.id}/boundary", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["type"] == "Feature"
+    assert data["geometry"]["type"] == "MultiPolygon"
+    assert data["properties"]["farm_id"] == farm.id
+
+
+async def test_get_boundary_not_found(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    officer_auth_headers: dict,
+):
+    response = await async_client.get("/farms/99999/boundary", headers=officer_auth_headers)
+
+    assert response.status_code == 404
+
+
+async def test_get_boundary_requires_auth(
+    async_client: AsyncClient,
+):
+    response = await async_client.get("/farms/99999/boundary")
+
+    assert response.status_code == 401
+
+
 async def test_update_farm_rejects_invalid_slope(
     async_client: AsyncClient,
     async_session: AsyncSession,

@@ -31,9 +31,56 @@ from src.services.authentication import (
     mark_token_used,
 )
 from src.services.email_service import send_email
-from src.utils.security import get_password_hash, validate_password
+from src.utils.security import get_password_hash, validate_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+async def send_verification_email_for_user(db: AsyncSession, user: User) -> None:
+    token = await create_auth_token(
+        db=db,
+        user_id=user.id,
+        token_type="email_verification",
+    )
+
+    verification_link = f"{settings.frontend_base_url}/verify-email?token={token}"
+
+    await send_email(
+        recipient=user.email,
+        subject="Verify your email",
+        body=(f"Please verify your email address by clicking this link:\n{verification_link}"),
+    )
+
+
+@router.post("/resend-verification")
+@limiter.limit("5/minute")
+async def resend_verification_email(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
+    result = await db.execute(select(User).where(User.email == payload.email.lower()))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found",
+        )
+
+    if user.is_verified:
+        return {"message": "Account is already verified"}
+
+    await invalidate_user_tokens(
+        db,
+        user_id=user.id,
+        token_type="email_verification",
+    )
+
+    await send_verification_email_for_user(db, user)
+    await db.commit()
+
+    return {"message": "Verification email sent"}
 
 
 @router.post("/token", response_model=Token)
@@ -71,16 +118,43 @@ async def login_for_access_token(
         }
     """
     try:
-        user = await authentication_service.authenticate_user(db, email=form_data.username, password=form_data.password)
+        user = await authentication_service.authenticate_user(
+            db,
+            email=form_data.username,
+            password=form_data.password,
+        )
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+        normalized_email = form_data.username.strip().lower()
+
+        result = await db.execute(select(User).where(User.email == normalized_email))
+        existing_user = result.scalar_one_or_none()
+
+        if existing_user and not existing_user.is_verified:
+            await invalidate_user_tokens(
+                db,
+                user_id=existing_user.id,
+                token_type="email_verification",
+            )
+            await send_verification_email_for_user(db, existing_user)
+            await db.commit()
+
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email not verified. A new verification email has been sent.",
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # Create JWT token with user ID and role in the payload
+
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -190,7 +264,7 @@ async def read_own_items(
         This endpoint is restricted to users with role OFFICER or higher.
         Users with lower privileges will receive a 403 Forbidden response.
     """
-    return await farm_service.list_farms_by_user(db, current_user.id)
+    return await farm_service.list_farms_by_user(db, current_user)
 
 
 @router.post("/verify-email")
@@ -232,12 +306,14 @@ async def verify_email(
 
 
 @router.post("/forgot-password")
+@limiter.limit("10/minute")
 async def forgot_password(
-    request: ForgotPasswordRequest,
+    request: Request,
+    payload: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db_session),
 ):
-    normalized_email = request.email.strip().lower()
+    normalized_email = payload.email.strip().lower()
     result = await db.execute(select(User).filter(User.email == normalized_email))
     user = result.scalar_one_or_none()
 
@@ -263,14 +339,38 @@ async def forgot_password(
     return {"message": "If an account with that email exists, a password reset email has been sent."}
 
 
-@router.post("/reset-password")
-async def reset_password(
-    request: ResetPasswordRequest,
+@router.get("/reset-password/validate")
+@limiter.limit("10/minute")
+async def validate_reset_password_token(
+    request: Request,
+    token: str,
     db: AsyncSession = Depends(get_db_session),
 ):
     token_obj = await get_valid_token(
         db,
-        token=request.token,
+        token=token,
+        token_type="password_reset",
+    )
+
+    if not token_obj:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token",
+        )
+
+    return {"message": "Reset token is valid"}
+
+
+@router.post("/reset-password")
+@limiter.limit("10/minute")
+async def reset_password(
+    request: Request,
+    payload: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
+    token_obj = await get_valid_token(
+        db,
+        token=payload.token,
         token_type="password_reset",
     )
 
@@ -289,8 +389,14 @@ async def reset_password(
             detail="User not found",
         )
 
-    validate_password(request.new_password)
-    user.hashed_password = get_password_hash(request.new_password)
+    validate_password(payload.new_password)
+    if verify_password(payload.new_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current password",
+        )
+
+    user.hashed_password = get_password_hash(payload.new_password)
 
     await mark_token_used(db, token_obj)
     await db.commit()

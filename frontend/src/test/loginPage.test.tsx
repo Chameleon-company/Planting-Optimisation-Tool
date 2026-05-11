@@ -40,6 +40,26 @@ function renderLoginPage() {
   );
 }
 
+function renderLoginPageWithState() {
+  return render(
+    <HelmetProvider>
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: "/login",
+            state: {
+              successMessage:
+                "Password reset successfully. You can now sign in.",
+            },
+          },
+        ]}
+      >
+        <LoginPage />
+      </MemoryRouter>
+    </HelmetProvider>
+  );
+}
+
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,6 +90,22 @@ describe("LoginPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders forgot password link that points to the forgot password page", () => {
+    renderLoginPage();
+
+    expect(
+      screen.getByRole("link", { name: /forgot password/i })
+    ).toHaveAttribute("href", "/forgot-password");
+  });
+
+  it("shows reset success message from navigation state", () => {
+    renderLoginPageWithState();
+
+    expect(
+      screen.getByText("Password reset successfully. You can now sign in.")
+    ).toBeInTheDocument();
+  });
+
   it("submits credentials correctly when sign in is clicked", async () => {
     mockLogin.mockResolvedValueOnce(undefined);
 
@@ -94,7 +130,7 @@ describe("LoginPage", () => {
   });
 
   // Tests the useEffect admin redirect
-  it("redirects to /admin automatically if user has admin role", () => {
+  it("redirects to / automatically if user has admin role", () => {
     mockAuthContext.useAuth.mockReturnValue({
       login: mockLogin,
       isLoading: false,
@@ -103,7 +139,7 @@ describe("LoginPage", () => {
 
     renderLoginPage();
 
-    expect(mockNavigate).toHaveBeenCalledWith("/admin");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
   // Tests the useEffect supervisor redirect
@@ -154,6 +190,32 @@ describe("LoginPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Invalid credentials")).toBeInTheDocument();
     });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("shows verification resend message when unverified login fails", async () => {
+    mockLogin.mockRejectedValueOnce(
+      new Error("Email not verified. A new verification email has been sent.")
+    );
+
+    renderLoginPage();
+
+    await userEvent.type(
+      screen.getByPlaceholderText(/enter your email/i),
+      "unverified@test.com"
+    );
+    await userEvent.type(
+      screen.getByPlaceholderText(/enter your password/i),
+      "Password123!"
+    );
+    await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    expect(
+      await screen.findByText(
+        "Your email is not verified. We sent a new verification link. Please check your email and try signing in again."
+      )
+    ).toBeInTheDocument();
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });

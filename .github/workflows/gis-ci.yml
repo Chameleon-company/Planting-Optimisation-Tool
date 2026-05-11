@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: POT GIS Testing 
+name: POT GIS Testing
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -22,6 +23,8 @@ jobs:
         
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -47,3 +50,43 @@ jobs:
     - name: Test with pytest
       run: |
         uv run pytest
+
+    - name: Fetch base branch and check for GIS changes
+      id: gis-changes
+      if: github.event_name == 'pull_request'
+      run: |
+        git fetch origin
+        CHANGED=$(git diff --name-only origin/master...HEAD -- '**/*.py' | wc -l)
+        echo "has_changes=$([ "$CHANGED" -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+    - name: Diff coverage report
+      id: diff-cover
+      if: github.event_name == 'pull_request' && steps.gis-changes.outputs.has_changes == 'true'
+      run: uv run diff-cover coverage.xml --compare-branch=origin/master --format markdown:diff-coverage.md
+
+    - name: Trim coverage report to summary only
+      if: github.event_name == 'pull_request' && steps.diff-cover.outcome == 'success'
+      run: |
+        python3 << 'EOF'
+        import re
+        with open('diff-coverage.md') as f:
+            content = f.read()
+        content = re.split(r'\n{2,}## gis/', content)[0].strip()
+        content = f"### GIS Diff Coverage\n\n{content}"
+        with open('diff-coverage.md', 'w') as f:
+            f.write(content)
+        EOF
+
+    - name: Save PR number
+      if: github.event_name == 'pull_request'
+      run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+
+    - name: Upload diff-coverage artifacts
+      if: github.event_name == 'pull_request' && steps.diff-cover.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: diff-coverage-gis
+        path: |
+          gis/diff-coverage.md
+          gis/pr_number.txt
+        retention-days: 1

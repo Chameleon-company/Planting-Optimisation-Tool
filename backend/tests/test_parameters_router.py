@@ -41,7 +41,6 @@ def make_parameter(species_id: int) -> Parameter:
 # --- GET /parameters ---
 
 
-@pytest.mark.asyncio
 async def test_list_parameters_admin(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -66,7 +65,6 @@ async def test_list_parameters_admin(
     assert any(p["feature"] == "rainfall" for p in data)
 
 
-@pytest.mark.asyncio
 async def test_list_parameters_officer_forbidden(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -76,7 +74,6 @@ async def test_list_parameters_officer_forbidden(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_list_parameters_supervisor_forbidden(
     async_client: AsyncClient,
     supervisor_auth_headers: dict,
@@ -86,7 +83,6 @@ async def test_list_parameters_supervisor_forbidden(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_list_parameters_unauthenticated(async_client: AsyncClient):
     """Test that unauthenticated request is rejected."""
     response = await async_client.get("/parameters")
@@ -96,7 +92,6 @@ async def test_list_parameters_unauthenticated(async_client: AsyncClient):
 # --- GET /parameters/species/{species_id} ---
 
 
-@pytest.mark.asyncio
 async def test_list_parameters_by_species(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -122,7 +117,6 @@ async def test_list_parameters_by_species(
     assert any(p["feature"] == "rainfall" for p in data)
 
 
-@pytest.mark.asyncio
 async def test_list_parameters_by_species_empty(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -144,7 +138,6 @@ async def test_list_parameters_by_species_empty(
 # --- GET /parameters/{parameter_id} ---
 
 
-@pytest.mark.asyncio
 async def test_get_parameter_by_id(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -175,7 +168,6 @@ async def test_get_parameter_by_id(
     assert data["trap_right_tol"] == pytest.approx(200.0)
 
 
-@pytest.mark.asyncio
 async def test_get_parameter_not_found(
     async_client: AsyncClient,
     test_admin_user: User,
@@ -190,7 +182,6 @@ async def test_get_parameter_not_found(
 # --- POST /parameters ---
 
 
-@pytest.mark.asyncio
 async def test_create_parameter(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -223,7 +214,6 @@ async def test_create_parameter(
     assert "id" in data
 
 
-@pytest.mark.asyncio
 async def test_create_parameter_officer_forbidden(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -247,7 +237,6 @@ async def test_create_parameter_officer_forbidden(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_create_parameter_invalid_species(
     async_client: AsyncClient,
     test_admin_user: User,
@@ -266,7 +255,6 @@ async def test_create_parameter_invalid_species(
     assert "not found" in response.json()["detail"]
 
 
-@pytest.mark.asyncio
 async def test_create_parameter_invalid_weight(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -290,7 +278,6 @@ async def test_create_parameter_invalid_weight(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
 async def test_create_parameter_weight_below_minimum(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -314,7 +301,6 @@ async def test_create_parameter_weight_below_minimum(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
 async def test_create_parameter_without_optional_fields(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -346,7 +332,6 @@ async def test_create_parameter_without_optional_fields(
 # --- PUT /parameters/{parameter_id} ---
 
 
-@pytest.mark.asyncio
 async def test_update_parameter(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -364,7 +349,7 @@ async def test_update_parameter(
     await async_session.flush()
     await async_session.refresh(param)
 
-    response = await async_client.put(
+    response = await async_client.patch(
         f"/parameters/{param.id}",
         json={"weight": 0.6, "trap_left_tol": 150.0},
         headers=admin_auth_headers,
@@ -378,7 +363,6 @@ async def test_update_parameter(
     assert data["feature"] == "rainfall"
 
 
-@pytest.mark.asyncio
 async def test_update_parameter_invalid_weight(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -396,7 +380,7 @@ async def test_update_parameter_invalid_weight(
     await async_session.flush()
     await async_session.refresh(param)
 
-    response = await async_client.put(
+    response = await async_client.patch(
         f"/parameters/{param.id}",
         json={"weight": 2.0},  # invalid
         headers=admin_auth_headers,
@@ -404,7 +388,6 @@ async def test_update_parameter_invalid_weight(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
 async def test_update_parameter_empty_body(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -422,7 +405,7 @@ async def test_update_parameter_empty_body(
     await async_session.flush()
     await async_session.refresh(param)
 
-    response = await async_client.put(
+    response = await async_client.patch(
         f"/parameters/{param.id}",
         json={},
         headers=admin_auth_headers,
@@ -434,7 +417,6 @@ async def test_update_parameter_empty_body(
     assert data["weight"] == pytest.approx(0.4)
 
 
-@pytest.mark.asyncio
 async def test_update_parameter_invalid_species(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -452,7 +434,7 @@ async def test_update_parameter_invalid_species(
     await async_session.flush()
     await async_session.refresh(param)
 
-    response = await async_client.put(
+    response = await async_client.patch(
         f"/parameters/{param.id}",
         json={"species_id": 999999},
         headers=admin_auth_headers,
@@ -461,14 +443,13 @@ async def test_update_parameter_invalid_species(
     assert "not found" in response.json()["detail"]
 
 
-@pytest.mark.asyncio
 async def test_update_parameter_not_found(
     async_client: AsyncClient,
     test_admin_user: User,
     admin_auth_headers: dict,
 ):
     """Test that 404 is returned when updating a non-existent parameter."""
-    response = await async_client.put(
+    response = await async_client.patch(
         "/parameters/999999",
         json={"weight": 0.5},
         headers=admin_auth_headers,
@@ -480,7 +461,6 @@ async def test_update_parameter_not_found(
 # --- DELETE /parameters/{parameter_id} ---
 
 
-@pytest.mark.asyncio
 async def test_delete_parameter(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -506,7 +486,6 @@ async def test_delete_parameter(
     assert get_response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_delete_parameter_not_found(
     async_client: AsyncClient,
     test_admin_user: User,
@@ -518,7 +497,6 @@ async def test_delete_parameter_not_found(
     assert response.json()["detail"] == "Parameter not found"
 
 
-@pytest.mark.asyncio
 async def test_delete_parameter_officer_forbidden(
     async_client: AsyncClient,
     async_session: AsyncSession,

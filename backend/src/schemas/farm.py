@@ -153,4 +153,10 @@ class FarmUpdate(BaseModel):
     bank_stabilising: Optional[bool] = None
     slope: Optional[Annotated[Decimal, Field(ge=SLOPE_MIN, le=SLOPE_MAX, decimal_places=2)]] = None
     agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None
-    external_id: Optional[int] = None
+    external_id: Optional[int] = Field(default=None, title="Temporary identifier for CSV import")
+
+
+class FarmBoundaryResponse(BaseModel):
+    type: str
+    geometry: dict
+    properties: dict

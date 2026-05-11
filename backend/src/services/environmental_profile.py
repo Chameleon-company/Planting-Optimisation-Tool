@@ -16,6 +16,7 @@ from src.schemas.constants import (
     TEMPERATURE_MAX,
     TEMPERATURE_MIN,
 )
+from src.services.riparian import get_riparian_flags
 from src.services.soil_ph import get_soil_ph_for_point
 from src.services.soil_texture_spatial import get_soil_texture_for_point
 
@@ -64,7 +65,12 @@ class EnvironmentalProfileService:
         centroid = target_poly.centroid
         lat, lon = centroid.y, centroid.x
 
-        riparian = farm_record.riparian if farm_record is not None else None
+        # Get riparian flag from PostGIS intersection query
+        riparian_result = await get_riparian_flags(
+            db,
+            shapely_geom,
+        )
+        riparian = riparian_result["riparian"]
 
         # Get local soil pH from PostGIS
         local_ph = await get_soil_ph_for_point(db, lat, lon)

@@ -1,11 +1,15 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 function LoginPage() {
   const { login, isLoading, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resetSuccessMessage =
+    (location.state as { successMessage?: string } | null)?.successMessage ??
+    "";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +27,7 @@ function LoginPage() {
   useEffect(() => {
     if (user) {
       if (user.role === "admin") {
-        navigate("/admin");
+        navigate("/");
       } else if (user.role === "supervisor") {
         navigate("/");
       } else {
@@ -52,7 +56,13 @@ function LoginPage() {
         error instanceof Error
           ? error.message
           : "Login failed. Please try again.";
-      setErrorMessage(message);
+
+      const displayMessage =
+        message ===
+        "Email not verified. A new verification email has been sent."
+          ? "Your email is not verified. We sent a new verification link. Please check your email and try signing in again."
+          : message;
+      setErrorMessage(displayMessage);
       console.error("Login failed:", error);
     }
   };
@@ -129,17 +139,24 @@ function LoginPage() {
                 <p className="login-field-error">{passwordError}</p>
               ) : null}
             </div>
+            <div className="login-form-meta">
+              <span />
+              <Link to="/forgot-password" className="login-link">
+                Forgot password?
+              </Link>
+            </div>
+
+            {resetSuccessMessage ? (
+              <div className="login-message login-message-success">
+                {resetSuccessMessage}
+              </div>
+            ) : null}
 
             {errorMessage ? (
               <div className="login-message login-message-error">
                 {errorMessage}
               </div>
-            ) : (
-              <div className="login-message login-message-placeholder">
-                Sign in with your verified account to access the admin
-                workspace.
-              </div>
-            )}
+            ) : null}
 
             <button
               type="submit"
@@ -150,7 +167,7 @@ function LoginPage() {
             </button>
 
             <p className="login-footer-text">
-              Don't have an account?{" "}
+              {"Don't have an account?"}{" "}
               <Link to="/register" className="login-link">
                 Register
               </Link>
