@@ -63,3 +63,17 @@ Smallholder farmers in Timor-Leste face low tree-survival rates due to poor envi
 - **QGIS**, **GDAL**, **Rasterio**, **GeoPandas**
 - Extraction of rainfall, soil, elevation, and temperature layers  
 - Spatial aggregation for farm-level profile generation
+
+## Onboarding for New Contributors
+
+New contributors should review the following before starting development:
+
+- CONTRIBUTING.md  
+- POT Processes, Procedures and Responsibilities document  
+- Frontend, Backend, GIS, and Data Science setup documentation  
+
+The repository includes multiple domains (frontend, backend, GIS, and data science). Understanding the overall architecture and folder structure early will make development easier and reduce integration issues.
+
+Communication and collaboration are key to successful delivery. Contributors are encouraged to actively ask questions, participate in discussions, and coordinate across teams when working on features or resolving issues.
+
+The project has ongoing frontend and system-wide enhancements. Contributors with React/Vite or full-stack experience are especially encouraged to contribute.
