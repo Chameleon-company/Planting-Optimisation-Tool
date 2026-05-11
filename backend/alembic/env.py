@@ -1,5 +1,4 @@
 # ruff: noqa: F401,F403
-import os
 import sys
 from logging.config import fileConfig
 from pathlib import Path
@@ -13,6 +12,7 @@ import src.models
 from alembic import context
 
 # Model discovery
+from src.config import settings
 from src.database import Base
 
 load_dotenv()
@@ -116,11 +116,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode using the asynchronous engine."""
-    # Get the URL from .env file
-    db_url = os.environ.get("DATABASE_URL")
-
-    if db_url is None:
-        raise Exception("DATABASE_URL env variable is not set, ensure it's in .env file")
+    db_url = settings.DATABASE_URL
 
     # Create the async Engine
     connectable = create_async_engine(
