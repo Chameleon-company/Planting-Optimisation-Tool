@@ -63,20 +63,14 @@ export default function FarmManageActions({
 
       {showDeleteConfirm && (
         <div className="delete-modal-overlay" onClick={handleCancelDelete}>
-          <div
-            className="delete-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="delete-modal" onClick={e => e.stopPropagation()}>
             <h3 className="delete-modal-title">Delete Farm</h3>
             <p className="delete-modal-message">
               Are you sure you want to delete this farm? This action cannot be
               undone.
             </p>
             <div className="delete-modal-actions">
-              <button
-                className="farm-action-btn"
-                onClick={handleCancelDelete}
-              >
+              <button className="farm-action-btn" onClick={handleCancelDelete}>
                 Cancel
               </button>
               <button
