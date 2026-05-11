@@ -23,8 +23,10 @@ This implementation is defined across:
 - [Data Source Priority](#data-source-priority)
 - [End-to-End Pipeline](#end-to-end-pipeline)
 - [Imputation](#imputation)
+- [Error Handling](#error-handling)
 - [Output Schema](#output-schema)
 - [Example Output](#example-output)
+- [Test Coverage](#test-coverage)
 
 ---
 
@@ -62,6 +64,33 @@ The `data_source` field in the response indicates which path was taken:
 - `"hybrid"` - GEE extraction succeeded. Local overrides may still apply for soil pH and texture.
 - `"fallback"` - GEE failed. Values were read from the stored Farm DB record instead.
 
+## Endpoint
+
+```http
+GET /profile/{farm_id}
+```
+
+**Path parameter:**
+- `farm_id` - integer ID of the farm to profile
+
+**Request body:** None. This endpoint takes no request body.
+
+**Required headers:**
+```http
+Authorization: Bearer <JWT>
+```
+
+## Authentication & Authorisation
+
+The endpoint requires a valid JWT. The authenticated user's identity is read from `current_user` via the `require_role` dependency.
+
+- **Admin** - Can profile any farm
+- **Supervisor** - Can profile any farm
+- **Officer** - Can profile own farms only
+
+Officers are filtered by `user_id` - a valid `farm_id` belonging to a different officer returns 404, not 403. The endpoint is limited to 10 requests per minute per user.
+
+
 ---
 
 # Data Sources
@@ -91,7 +120,7 @@ The following attributes are resolved from local spatial datasets before GEE is 
 Several attributes have multiple possible sources. The pipeline resolves them in priority order:
 
 **Soil pH:**
-Local PostGIS raster → GEE OpenLandMap (low confidence) → Farm DB record → Imputation
+Local PostGIS raster → GEE OpenLandMap (low confidence) → (Fallback) Farm DB record → Imputation
 
 **Soil texture:**
 Local PostGIS raster → Farm DB `soil_texture_id` → Imputation
@@ -214,6 +243,16 @@ Key behaviours:
 
 ---
 
+# Error Handling
+
+ - Missing or invalid JWT - 401 returned
+ - Insufficient role - 403 returned
+ - Farm not accessible to requesting user - 404 returned - `"Farm with ID {farm_id} not found."` 
+ - Farm boundary record missing - 404 returned - `"Farm boundary not found for farm_id: {farm_id}"` 
+ - Imputation model failure - 503 returned - `ImputationError` message
+
+GEE extraction failure does not produce an error response - the pipeline falls through to the fallback path automatically and returns a valid profile with `"data_source": "fallback"`.
+
 # Output Schema
 
 The response is validated and serialised by `FarmProfileResponse`. Fields that are `None` are excluded from the response (`response_model_exclude_none=True`), so imputation flags only appear in the output when they are `True`.
@@ -304,3 +343,23 @@ A fallback profile where GEE failed and rainfall was filled by imputation:
 ```
 
 ---
+
+# Test Coverage
+
+Test files:
+- `backend/tests/test_environmental_profile_router.py`
+- `backend/tests/test_environmental_profile_service.py`
+- `backend/tests/test_environmental_profile.py`
+
+The tests verify:
+
+- Cache miss - service is called and result returned on first request
+- Cache hit - service is not called on repeat request; cached response returned
+- Imputation not triggered when all fields are present
+- Imputation values and flags correctly set when fields are missing
+- Non-imputed fields have no imputation flag in the response
+- Imputation model unavailability raises `ImputationError` (HTTP 503)
+- `None` returned when `build_farm_profile()` returns `None`
+- Profile returns valid `soil_ph` from local raster or fallback
+- Profile handles invalid/missing pH (e.g. `ph=0.0`) without failing
+- Profile returns valid `soil_texture` from local raster or Farm DB fallback
