@@ -101,11 +101,12 @@ describe("FarmManageActions ", () => {
     mockUseAuth.mockReturnValue({ user: { name: "Admin", role: "admin" } });
     render(<FarmManageActions onDelete={onDelete} />);
     await user.click(screen.getByText(/delete/i));
-    expect(screen.getByText(/are you sure you want to delete this farm/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/are you sure you want to delete this farm/i)
+    ).toBeInTheDocument();
     await user.click(screen.getByText(/confirm delete/i));
     expect(onDelete).toHaveBeenCalledTimes(1);
-});
-
+  });
 });
 
 // FarmsTable interactions Tests
