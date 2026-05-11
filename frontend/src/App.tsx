@@ -24,7 +24,7 @@ import WeightingHub from "./pages/admin/settings/WeightingHub";
 import AhpPage from "./pages/admin/settings/AhpPage";
 import GlobalWeightsPage from "./pages/admin/settings/GlobalWeightsPage";
 import AdminSpeciesPage from "./pages/admin/AdminSpeciesPage";
-import FarmsManagmentPage from "./pages/farmManagementPage";
+import FarmsManagementPage from "./pages/farmManagementPage";
 import ScoringParametersPage from "./pages/admin/settings/ScoringParametersPage";
 import ExclusionRulesPage from "./pages/admin/settings/ExclusionRulesPage";
 import DependencyRulesPage from "./pages/admin/settings/DependencyRulesPage";
@@ -49,7 +49,7 @@ export default function App() {
                 path="/farms"
                 element={
                   <RequireRole allowedRoles={["admin", "supervisor"]}>
-                    <FarmsManagmentPage />
+                    <FarmsManagementPage />
                   </RequireRole>
                 }
               />
