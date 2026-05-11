@@ -190,7 +190,7 @@ async def read_own_items(
         This endpoint is restricted to users with role OFFICER or higher.
         Users with lower privileges will receive a 403 Forbidden response.
     """
-    return await farm_service.list_farms_by_user(db, current_user.id)
+    return await farm_service.list_farms_by_user(db, current_user)
 
 
 @router.post("/verify-email")
