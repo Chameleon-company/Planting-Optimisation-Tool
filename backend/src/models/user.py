@@ -48,7 +48,7 @@ class User(Base):
     Database Schema:
         - Table name: users
         - Indexes on: name, email, role (for fast lookups)
-        - Unique constraints on: name, email
+        - Unique constraints on: email
     """
 
     __tablename__ = "users"

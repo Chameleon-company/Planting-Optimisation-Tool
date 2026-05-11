@@ -1,4 +1,6 @@
-# Directory 
+# Data Science
+
+## Directory 
 ```
 .
 ├── config - configuration files for the libraries.
@@ -18,7 +20,7 @@
     └── test_imputation_integration.py - integration tests (real model).
 ```
 
-# Getting started
+## Getting Started
 
 Install `uv` for your chosen OS from:
 ```
@@ -30,12 +32,12 @@ You should see something like
 C:\...\Planting-Optimisation-Tool > uv --version
 > uv 0.8.14
 ```
-Then 
+Then run
 ```bash
 cd ..
 cd datascience
 ```
-Run `uv sync` to install all requirements from `pyproject.toml` for the datascience directory.
+Run `uv sync` to install all dependencies from `pyproject.toml` for the datascience directory.
 
 If there are additional python packages you require, run `uv add packagename` to add it to the project.
 
@@ -47,7 +49,7 @@ You can also choose to run `uv run ruff check --fix` to automatically fix any li
 
 
 
-# Configuration
+## Configuration
 The global configuration for the suitability scoring is contained (`config/recommend.yaml`). The soil texture compatibility map in that file has been generated with the script `src/scripts/generate_soil_texture_compatibility_yaml`. The compatibility scores are set by adjacency on the texture triangle:
 
 * exact = 1.0
@@ -66,7 +68,7 @@ Species-specific overrides (`species_params`) are built into the database and in
 
 For a full description of how to configure the suitability scoring library documentation (`docs/scoring_design.md`).
 
-# Usage as a library
+## Usage as a Library
 ```{python}
 # Load configuration and data
 from yourlib import (

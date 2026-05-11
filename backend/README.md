@@ -1,6 +1,6 @@
 # Backend
 
-## Getting started
+## Getting Started
 Most of the general information on getting started with the project is in [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 Fork and Clone the repository first, instructions [here](https://github.com/Chameleon-company/Planting-Optimisation-Tool/blob/master/CONTRIBUTING.md#1-fork-and-clone-the-repository)
@@ -19,7 +19,7 @@ Use uv to install `python` version for the project and fetch the project depende
 ```bash
 $ cd Planting-Optimisation-Tool/backend
 backend $ uv python install     # to install the python version defined in pyproject.toml
-backend $ uv sync               # to install the projects dependencies
+backend $ uv sync               # to install the project's dependencies
 ```
 
 Docker is needed to create the database container and must be running.
@@ -70,7 +70,7 @@ backend $ deactivate                    # Deactivates the virtual environment, n
 backend $ cd ../datascience             # Switch to the datascience project (for example)
 backend $ source .venv/bin/activate     # Activate the virtual environment of that uv project
 ```
-an `.env` file must be present including:
+An `.env` file must be present containing:
 - PostgreSQL user credentials
 - PostgreSQL database live and test database URLs, must include `+asyncpg` driver.
 
@@ -80,7 +80,7 @@ To successfully run the `generate_environmental_profile` feature from the `GIS` 
 
 #### Once this is complete, please proceed to [justfile](#justfile-commands) for initial data ingestion.
 
-## Folder structure:
+## Folder Structure:
 
 ```bash
 backend/
@@ -264,7 +264,7 @@ The following endpoints have role-based access control implemented:
 | `/farms/{farm_id}` | GET | OFFICER | Read farm by ID (ownership verified) |
 | `/species/` | POST | SUPERVISOR | Create new species |
 | `/environmental-profile/` | POST | OFFICER | Get environmental profile |
-| `/sapling-estimation/` | POST | OFFICER | Calculate sapling estimation |
+| `/sapling-estimation/calculate` | POST | OFFICER | Calculate sapling estimation |
 | `/recommendations/` | POST | OFFICER | Generate recommendations |
 | `/recommendations/{farm_id}` | GET | OFFICER | Get farm recommendations |
 | `/reports/farm/{farm_id}` | GET | OFFICER | Get report for a single farm (ownership verified) |
@@ -309,7 +309,12 @@ This section documents current system limitations, validation behaviour, and are
 
 ### Password Validation
 
-- Passwords must be at least 8 characters long.
+- Passwords must:
+  - be at least 8 characters long
+  - contain at least one uppercase letter
+  - contain at least one lowercase letter
+  - contain at least one number
+  - contain at least one special character
 - Shorter passwords are rejected during request validation.
 - The API returns **422 Unprocessable Entity** with a meaningful validation message.
 - Affected endpoints:
@@ -318,7 +323,6 @@ This section documents current system limitations, validation behaviour, and are
   - `PUT /users/{user_id}`
 
 **Future Improvements**
-- Enforce stronger password requirements (uppercase, lowercase, numeric, special characters).
 - Add password strength scoring and breach detection.
 
 ---
@@ -349,29 +353,10 @@ This section documents current system limitations, validation behaviour, and are
 
 ---
 
-### Duplicate Name Constraint
-
-- User names must be globally unique.
-- Two users cannot share the same name, even if they belong to different farms.
-  - Example:
-    - `"John Smith"` at Farm A → allowed
-    - `"John Smith"` at Farm B → rejected
-- Duplicate names are not pre-validated and result in a database integrity error.
-- Affected endpoints:
-  - `POST /auth/register`
-  - `POST /users/`
-  - `PUT /users/{user_id}`
-
-**Future Improvements**
-- Scope name uniqueness per farm or organisation.
-- Add user-friendly error handling for duplicate names.
-
----
-
 ### Case Sensitivity – Email and Name
 
-- Email and name fields are case-sensitive.
-  - `"admin@example.com"` ≠ `"Admin@example.com"`
+- Email addresses are normalized to lowercase during validation.
+- Name fields remain case-sensitive.
   - `"John Smith"` ≠ `"john smith"`
 - Duplicate users can exist if casing differs.
 - This can lead to login confusion and inconsistent identity handling.
@@ -387,21 +372,6 @@ This section documents current system limitations, validation behaviour, and are
 
 ---
 
-### Role Validation
-
-- Role values accept any string.
-- Users can be assigned invalid roles (e.g. `"oficer" or "adminn"`).
-- Users with invalid roles can authenticate successfully but are blocked from protected endpoints (403 Forbidden).
-- Affected endpoints:
-  - `POST /auth/register`
-  - `POST /users/`
-  - `PUT /users/{user_id}`
-
-**Future Improvements**
-- Enforce valid role enums at the API and database levels.
-
----
-
 ### Role-Based Access Control Limitation
 
 - Any authenticated user (including officers) can create new users with any role via `POST /users/`.
@@ -412,18 +382,6 @@ This section documents current system limitations, validation behaviour, and are
 
 **Future Improvements**
 - Restrict user creation based on role hierarchy or admin-only access.
-
----
-
-### User Self-Access Limitation
-
-- Officers cannot access `GET /users/{user_id}`, even for their own user ID.
-- Users must access their own profile via `GET /auth/users/me`.
-- Affected endpoint:
-  - `GET /users/{user_id}`
-
-**Future Improvements**
-- Allow self-access via `/users/{user_id}` or redirect to `/auth/users/me`.
 
 ---
 
@@ -477,7 +435,7 @@ It performs validation checks and tests to ensure they are no breaking changes b
 - Install project dependencies
 - Enable the PostGIS extension
 - Migrate the database (using `alembic_versions` migration files)
-- Seed reference data to CI database (Hardcoded `soil_textures`)
+- Seed reference data required for backend services and tests
 - Replicate database
 - Sync sequence values to test db
 - Lint and format (with [Ruff](https://docs.astral.sh/ruff/))

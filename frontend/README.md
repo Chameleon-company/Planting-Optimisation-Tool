@@ -4,9 +4,9 @@ This folder contains the frontend for the Planting Optimisation Tool.
 It is a multi-page Vite + TypeScript application that provides:
 
 - A **Home** page (Landing page)
-- A **Environmental Profile** page
+- An **Environmental Profile** page
 - A **Sapling Calculator** page
-- A **Agroforestry Recommendation** page
+- An **Agroforestry Recommendation** page
 - A **Species** page
 
 ---
@@ -54,7 +54,7 @@ npm install
 npm run dev
 ```
 
-## 1. Fork and Clone the repository
+## 1. Fork and Clone the Repository
 
 First fork the repo to create your own copy:
 https://github.com/Chameleon-company/Planting-Optimisation-Tool/fork
@@ -81,7 +81,7 @@ git checkout -b feature/<feature-name>  # e.g. feature/recommendation-tool
 
 Make your changes to what you're working on.
 
-## Before You Commit
+## 2. Before You Commit
 
 A few important points to keep in mind to make sure your contributions are safe, clean, and easy to review:
 
@@ -121,7 +121,7 @@ A few important points to keep in mind to make sure your contributions are safe,
 
 Following these guidelines ensures that contributions are safe, consistent, and easy to review.
 
-## 2. When you're ready to commit:
+## 3. When You're Ready to Commit:
 
 Stage your changes with
 
@@ -141,13 +141,13 @@ Then push your changes **locally** to your fork with
 git push origin feature/<branch-name>
 ```
 
-# **MOST IMPORTANT - BEFORE SUBMITTING PR**
+## 4. Important - Before Submitting a PR
 
 - Your code **MUST** have tests committed with it.
 - Your code **MUST** be documented, legible and following the guidelines.
 - Your code **MUST** be linked to an item in the project planner in MS Teams that is assigned to **YOU**.
 
-Failure to adhere to any of the the above will result in your PR **not being accepted**.
+Failure to adhere to any of the above will result in your PR **not being accepted**.
 
 Once you have confirmed:
 
@@ -157,7 +157,7 @@ Fill out the PR template and click Create Pull request. Then mark off your task 
 
 ---
 
-## 3. Front-end setup
+## 5. Frontend Setup
 
 The front-end is built with React. Make sure you have **Node.js (v24+)** and **npm** installed.
 
@@ -187,7 +187,7 @@ If you get errors or white screen after pulling new changes, run `npm install` a
 
 ### Testing
 
-The front end uses **Vitest** for testing
+The frontend uses **Vitest** for testing
 
 ```bash
 npm run test # runs tests
@@ -196,7 +196,7 @@ npm run test -- --coverage # runs tests with coverage
 
 Your code must include tests and pass existing tests before submitting a PR.
 
-The front end uses [ESlint](https://eslint.org/docs/latest/use/getting-started) for linting
+The frontend uses [ESLint](https://eslint.org/docs/latest/use/getting-started) for linting
 
 ```bash
 npm run lint:scripts # checks code

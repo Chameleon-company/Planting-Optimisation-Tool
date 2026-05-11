@@ -64,14 +64,14 @@ gis/
 │   └── output_schema.md          # schema for farm profile output
 │
 ├── notebook/
-│   ├── all_farm_environmental_factors.csv                  # Farm Envrionmental Factors Dataset based on GIS Environmental-Factor Extraction Logic (Output)
+│   ├── all_farm_environmental_factors.csv                  # Farm Environmental Factors Dataset based on GIS Environmental-Factor Extraction Logic (Output)
 │   ├── extract_environmental_factor_each_farm.ipynb        # Implementation using GIS Logic to build the Farm Environmental Factors
 │   ├── valid_check_environmental_factor_each_farm.ipynb    # Validation between the GIS Farm and PO Farm Environmental Dataset based on GIS Logic
 │   └── eda_gee.ipynb                                       # EDA: comparing data extracted directly from GEE and
 │                                                               data provided by PO.
 │
 ├── keys/
-│   └── <service-account>.json   # service account key (ignored by Git)
+│   └── <service-account>.json   # Service account key (ignored by Git)
 │
 ├── tests/
 │   └── test_gis.py              # Unit tests for all GIS functions
@@ -687,7 +687,7 @@ lat, lon = get_centroid_lat_lon(polygon)
 
 ### Farm Profile Functions
 
-#### **build_farm_profile(geometry, year=None, farm_id=None, **additional_fields)\*\*
+#### `build_farm_profile(geometry, year=None, farm_id=None, **additional_fields)`
 
 Builds a complete farm profile by extracting all environmental variables.
 

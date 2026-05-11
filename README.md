@@ -27,13 +27,14 @@ Smallholder farmers in Timor-Leste face low tree-survival rates due to poor envi
 - Automatic exclusion of species that cannot survive under the farm’s limiting conditions.  
 - Identification of key limiting factors for each species.
 
-### Environmental Profiling
-- Extraction of environmental variables from geospatial datasets (e.g., rainfall, elevation, soil).  
+### Environmental Profiling 
+- Extraction of environmental variables from geospatial datasets and hybrid GIS/GEE data sources (e.g., rainfall, elevation, slope, and soil). 
 - Integration with national datasets such as Seeds of Life.  
 - Farm-level environmental profiles for decision support.
 
 ### Sapling Estimation
 - Calculates recommended sapling count based on farm area, terrain, planting profile (e.g. 3m × 3m spacing).
+- Calculates recommended sapling counts using configurable planting spacing, terrain slope limits, and farm geometry.
 
 ### User-Facing Web Interface
 - Input forms for farm conditions.  
@@ -60,6 +61,6 @@ Smallholder farmers in Timor-Leste face low tree-survival rates due to poor envi
 - Exploratory and predictive modelling
 
 ### GIS / Remote Sensing
-- **QGIS**, **GDAL**, **Rasterio**, **GeoPandas**
-- Extraction of rainfall, soil, elevation, and temperature layers  
+- **QGIS**, **GDAL**, **Rasterio**, **GeoPandas**  
+- Extraction of rainfall, soil, elevation, slope, and temperature layers from raster and geospatial datasets
 - Spatial aggregation for farm-level profile generation
