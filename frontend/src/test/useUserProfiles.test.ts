@@ -23,10 +23,30 @@ const mockFarm = (id: number) => ({
   agroforestry_type: [{ Id: 1, name: "Silvopasture" }],
 });
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: "officer" | "supervisor" | "admin";
+  farms: string[];
+}
+
+// Declare the variable with the correct type
+let mockUser: User | null = {
+  id: 1,
+  name: "Test User",
+  email: "test@example.com",
+  role: "officer",
+  farms: [],
+};
+
 // Mock Functions
 const mockGetAccessToken = vi.fn();
 vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({ getAccessToken: mockGetAccessToken }),
+  useAuth: () => ({
+    user: mockUser,
+    getAccessToken: mockGetAccessToken,
+  }),
 }));
 
 // useUserProfiles Tests
@@ -88,18 +108,12 @@ describe("useUserProfiles Hook", () => {
     expect(result.current.error).toBe(null);
   });
 
-  it("refetches when token changes", async () => {
+  it("refetches when the user identity changes", async () => {
     // Stub fetch to return a successful empty array for both fetches
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => [],
     } as Response);
-
-    vi.stubGlobal("fetch", mockFetch);
-
-    // Start with the first token value
-    let token = "token-1";
-    mockGetAccessToken.mockImplementation(() => token);
 
     // Render the hook and capture the rerender function
     const { rerender } = renderHook(() => useUserProfiles());
@@ -109,8 +123,15 @@ describe("useUserProfiles Hook", () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
-    // Update to a new token and re-render
-    token = "token-2";
+    // Update to a new user and re-render
+    mockUser = {
+      id: 2,
+      name: "User Two",
+      email: "user2@example.com",
+      role: "supervisor",
+      farms: [],
+    };
+    mockGetAccessToken.mockReturnValue("token-2");
     rerender();
 
     // Confirm the hook responded to the token change with a second fetch

@@ -30,15 +30,13 @@ export interface Farm {
 }
 
 export function useUserProfiles() {
-  const { getAccessToken } = useAuth();
+  const { getAccessToken, user } = useAuth();
 
   const [allFarms, setAllFarms] = useState<Farm[]>([]);
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const PAGE_SIZE = 9;
-
-  const token = getAccessToken();
 
   const fetchFarms = useCallback(async () => {
     const token = getAccessToken();
@@ -75,11 +73,11 @@ export function useUserProfiles() {
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessToken, token]);
+  }, [getAccessToken]);
 
   useEffect(() => {
     fetchFarms();
-  }, [fetchFarms]);
+  }, [fetchFarms, user]);
 
   const farms = allFarms.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.ceil(allFarms.length / PAGE_SIZE);

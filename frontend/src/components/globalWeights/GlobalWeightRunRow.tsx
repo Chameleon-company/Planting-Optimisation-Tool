@@ -32,7 +32,7 @@ export default function GlobalWeightRunRow({
         .catch(console.error)
         .finally(() => setIsLoading(false));
     }
-  }, [isExpanded, run.run_id]);
+  }, [isExpanded, run.run_id, fetchDetails, items.length]);
 
   const interpretation =
     items.length > 0 ? interpretGlobalWeights(items) : null;
