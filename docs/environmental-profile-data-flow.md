@@ -27,6 +27,7 @@ This implementation is defined across:
 - [Output Schema](#output-schema)
 - [Example Output](#example-output)
 - [Test Coverage](#test-coverage)
+- [Limitations](#limitations)
 
 ---
 
@@ -97,13 +98,13 @@ Officers are filtered by `user_id` - a valid `farm_id` belonging to a different 
 
 ## Global Datasets (Google Earth Engine)
 
-The following attributes are extracted via GEE. All datasets were validated against 940 farm measurements collected by the Product Owner.
+The following attributes are extracted via GEE. All datasets were validated against 3201 farm measurements collected by the Product Owner.
 
-- **Rainfall** - CHIRPS dataset at 5.5 km resolution. Validated at r=0.96, MAE=23mm.
-- **Temperature** - MODIS LST (MOD11A2) at 1 km resolution. Validated at r=0.87, MAE=1.5°C. A bias correction of −4.43°C is applied automatically to convert land surface temperature to air temperature.
-- **Elevation** - SRTM DEM at 90 m resolution. Validated at r=0.98, MAE=11m. 
+- **Rainfall** - CHIRPS dataset at 5.5 km resolution. Validated at r=0.97, MAE=24mm.
+- **Temperature** - MODIS LST (MOD11A2) at 1 km resolution. Validated at r=0.88, MAE=3.82°C. A bias correction of −3.82°C is applied automatically to convert land surface temperature to air temperature.
+- **Elevation** - SRTM DEM at 90 m resolution. Validated at r=0.998, MAE=8m.
 - **Slope** - Derived from the SRTM DEM using `ee.Terrain.slope()` at 90 m resolution.
-- **Soil pH** - OpenLandMap at 250 m resolution. Validated at r=0.18, MAE=1.21. Low confidence.
+- **Soil pH** - OpenLandMap at 250 m resolution. Validated at r=0.19, MAE=1.27. Low confidence.
 
 ## Local Datasets (PostGIS)
 
@@ -363,3 +364,11 @@ The tests verify:
 - Profile returns valid `soil_ph` from local raster or fallback
 - Profile handles invalid/missing pH (e.g. `ph=0.0`) without failing
 - Profile returns valid `soil_texture` from local raster or Farm DB fallback
+
+# Limitations
+
+## Farm Must Exist Before Profile Can Be Generated
+
+The pipeline requires both a `Farm` record and a `FarmBoundary` record to exist in the database before it can run. This means the endpoint cannot be used to profile a candidate farm boundary before the farm has been saved.
+
+In the intended UI workflow - where a user draws a boundary, reviews the derived environmental profile, then confirms or adjusts values before saving - a default Farm record and boundary must be written to the database first before this endpoint can be called. The profile can not generated be from a boundary alone.
