@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -132,16 +132,18 @@ class SpeciesRead(SpeciesBase):
 
 class SpeciesUpdate(SpeciesBase):
     # Updating a species' attributes will inherit all fields from base, but optionally.
+    # Annotated is used to restate validators explicitly, as Pydantic v2 does not
+    # inherit Field constraints when a child class overrides a field with Optional.
     name: Optional[str] = None
     common_name: Optional[str] = None
-    rainfall_mm_min: Optional[int] = None
-    rainfall_mm_max: Optional[int] = None
-    temperature_celsius_min: Optional[int] = None
-    temperature_celsius_max: Optional[int] = None
-    elevation_m_min: Optional[int] = None
-    elevation_m_max: Optional[int] = None
-    ph_min: Optional[Decimal] = None
-    ph_max: Optional[Decimal] = None
+    rainfall_mm_min: Optional[Annotated[int, Field(ge=200, le=5000)]] = None
+    rainfall_mm_max: Optional[Annotated[int, Field(ge=200, le=5000)]] = None
+    temperature_celsius_min: Optional[Annotated[int, Field(ge=10, le=40)]] = None
+    temperature_celsius_max: Optional[Annotated[int, Field(ge=10, le=40)]] = None
+    elevation_m_min: Optional[Annotated[int, Field(ge=0, le=3000)]] = None
+    elevation_m_max: Optional[Annotated[int, Field(ge=0, le=3000)]] = None
+    ph_min: Optional[Annotated[Decimal, Field(ge=4.0, le=7.0)]] = None
+    ph_max: Optional[Annotated[Decimal, Field(ge=6.5, le=8.5)]] = None
     coastal: Optional[bool] = None
     riparian: Optional[bool] = None
     nitrogen_fixing: Optional[bool] = None

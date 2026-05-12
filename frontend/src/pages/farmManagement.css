@@ -45,6 +45,44 @@
   gap: 12px;
 }
 
+.delete-modal-overlay {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 1000;
+}
+
+.delete-modal {
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  padding: 24px;
+  width: 90%;
+}
+
+.delete-modal-title {
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.delete-modal-message {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
 /* ============ FARMS TABLE ============ */
 
 .farms-table-wrapper {
