@@ -1,32 +1,38 @@
-# Contributing to Planting Optimisation Tool
+# Contributing to the Planting Optimisation Tool
 
-This document will help you set up your environment and start contributing to the project.
+Thank you for your interest in contributing to the **Planting Optimisation Tool**.
+
+This guide explains how to set up your local environment, make changes, and submit a pull request.
 
 ---
 
-## Onboarding for New Contributors
+## Repository Overview
 
-New contributors should review the following before starting development:
+The repository contains multiple areas of the product:
 
-- CONTRIBUTING.md  
-- POT Processes, Procedures and Responsibilities document  
-- Frontend, Backend, GIS, and Data Science setup documentation  
+- Frontend
+- Backend
+- GIS
+- Data Science
 
-The repository includes multiple domains (frontend, backend, GIS, and data science). Understanding the overall architecture and folder structure early will make development easier and reduce integration issues.
+Before making changes, review the setup documentation for the area you plan to work on.
 
-Communication and collaboration are key to successful delivery. Contributors are encouraged to actively ask questions, participate in discussions, and coordinate across teams when working on features or resolving issues.
+Setup guides:
 
-The project has ongoing frontend and system-wide enhancements. Contributors with React/Vite or full-stack experience are especially encouraged to contribute.
+- Frontend - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/frontend#how-to-run-the-frontend
+- Backend - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/backend#getting-started
+- Data Science - https://github.com/Chameleon-company/Planting-Optimisation-Tool/blob/master/datascience/README.md
+- GIS - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/gis/docs
 
 ---
 
 
 ## 1. Fork and Clone the repository
 
-First fork the repo to create your own copy:
+Fork the repository to create your own copy:
 https://github.com/Chameleon-company/Planting-Optimisation-Tool/fork
 
-Then clone your fork to your local development environment
+Clone your fork to your local development environment:
 ```bash
 git clone https://github.com/<your-username>/Planting-Optimisation-Tool.git  # Replace <your-username> with your github username.
 cd Planting-Optimisation-Tool
@@ -91,17 +97,22 @@ Then commit your changes with
 ```bash
 git commit -m "Description of changes, what you are committing"
 ```
-Then push your changes **locally** to your fork with 
+Push your branch to your fork
 ```bash
 git push origin feature/<branch-name>
 ```
-# **MOST IMPORTANT - BEFORE SUBMITTING PR**
 
-- Your code **MUST** have tests committed with it.
-- Your code **MUST** be documented, legible and following the guidelines.
-- Your code **MUST** be linked to an item in the project planner in MS Teams that is assigned to **YOU**.
+## Before Submitting a Pull Request
 
-Failure to adhere to any of the the above will result in your PR **not being accepted**.
+Before opening a pull request, make sure:
+
+- Tests have been added or updated where appropriate.
+- Code is documented, readable, and follows the project guidelines.
+- Relevant documentation has been updated if the change affects setup, usage, configuration, or behaviour.
+- Linting and formatting have been run.
+- No secrets, credentials, or unnecessary files are included.
+
+Pull requests that do not meet these requirements may require changes before they can be merged.
 
 Once you have confirmed:
 
@@ -109,9 +120,4 @@ Open a Pull request - https://github.com/Chameleon-company/Planting-Optimisation
 
 Fill out the PR template and click Create Pull request.
 
-# Setups
 
-Frontend - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/frontend#how-to-run-the-frontend
-Backend - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/backend#getting-started
-Data Science - https://github.com/Chameleon-company/Planting-Optimisation-Tool/blob/master/datascience/README.md
-GIS - https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/gis/docs
