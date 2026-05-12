@@ -31,9 +31,9 @@ exports[`Layout Snapshot > matches snapshot 1`] = `
         <a
           class="nav-link "
           data-discover="true"
-          href="/profile"
+          href="/recommendation"
         >
-          Environmental Profile
+          Agroforestry Recommendation
         </a>
         <a
           class="nav-link "
@@ -45,9 +45,9 @@ exports[`Layout Snapshot > matches snapshot 1`] = `
         <a
           class="nav-link "
           data-discover="true"
-          href="/recommendation"
+          href="/profile"
         >
-          Agroforestry Recommendation
+          Environmental Profile
         </a>
         <a
           class="nav-link "
@@ -140,9 +140,9 @@ exports[`Layout Snapshot > matches snapshot 1`] = `
             <a
               class=""
               data-discover="true"
-              href="/profile"
+              href="/recommendation"
             >
-              Environmental Profile
+              Agroforestry Recommendation
             </a>
           </li>
           <li>
@@ -158,9 +158,9 @@ exports[`Layout Snapshot > matches snapshot 1`] = `
             <a
               class=""
               data-discover="true"
-              href="/recommendation"
+              href="/profile"
             >
-              Agroforestry Recommendation
+              Environmental Profile
             </a>
           </li>
           <li>

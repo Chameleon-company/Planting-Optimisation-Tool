@@ -31,7 +31,7 @@ export default function RecommendationSearch({
         />
       </div>
       <button
-        className="rec-primary-btn"
+        className="btn-primary"
         onClick={handleSearch}
         disabled={isLoading || !searchInput.trim()}
       >

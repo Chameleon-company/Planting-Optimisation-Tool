@@ -26,20 +26,17 @@ export default function FarmManageActions({
   return (
     <div className="farm-actions">
       {canDelete && (
-        <button
-          className="farm-action-btn farm-action-btn-danger"
-          onClick={onDelete}
-        >
+        <button className="btn-danger" onClick={onDelete}>
           🗑️ Delete
         </button>
       )}
       {canEdit && (
-        <button className="farm-action-btn" onClick={onEdit}>
+        <button className="btn-primary" onClick={onEdit}>
           ✏️ Edit
         </button>
       )}
       {canAdd && (
-        <button className="farm-action-btn" onClick={onAdd}>
+        <button className="btn-primary" onClick={onAdd}>
           ➕ Register
         </button>
       )}

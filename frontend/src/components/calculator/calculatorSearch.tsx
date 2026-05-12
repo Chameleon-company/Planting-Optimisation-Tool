@@ -86,7 +86,7 @@ export default function CalculatorSearch({
       </div>
 
       <button
-        className="calc-primary-btn"
+        className="btn-primary"
         onClick={handleSearch}
         disabled={isLoading || !farmId.trim() || spacingX <= 0 || spacingY <= 0}
       >

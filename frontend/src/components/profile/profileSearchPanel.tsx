@@ -43,13 +43,13 @@ export default function FarmSearchPanel({
       )}
 
       {isSearching && !isLoading && profile && (
-        <div>
+        <div className="farm-search-result">
           <FarmCard isSearched={true} farm={profile} />
 
           <div className="farm-bottom-row">
             {canEdit && (
               <button
-                className="farm-action-btn"
+                className="btn-primary"
                 onClick={() => navigate("/farms")}
               >
                 Manage

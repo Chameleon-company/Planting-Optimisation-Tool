@@ -6,6 +6,7 @@ import RecommendationHeader from "@/components/recommendations/recommendationHea
 import RecommendationSearch from "@/components/recommendations/recommendationSearch";
 import RecommendationTable from "@/components/recommendations/recommendationTable";
 import ExcludedTable from "@/components/recommendations/excludedTable";
+import { Download } from "lucide-react";
 
 export default function RecommendationPage() {
   const [farmId, setFarmId] = useState("");
@@ -31,6 +32,7 @@ export default function RecommendationPage() {
         {hasSearched && recs.length > 0 && (
           <div className="rec-download-container">
             <button onClick={downloadPdf} className="rec-download-report-btn">
+              <Download size={20} />
               Download PDF Report
             </button>
           </div>
@@ -52,7 +54,9 @@ export default function RecommendationPage() {
             display: "flex",
             flexWrap: "wrap",
             gap: "20px",
+            padding: "0 40px",
             width: "100%",
+            boxSizing: "border-box",
           }}
         >
           <RecommendationTable

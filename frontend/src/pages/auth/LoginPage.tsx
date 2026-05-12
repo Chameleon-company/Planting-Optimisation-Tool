@@ -160,7 +160,7 @@ function LoginPage() {
 
             <button
               type="submit"
-              className="login-submit-btn"
+              className="btn-primary login-submit-btn"
               disabled={isLoading || isDisabled}
             >
               {isLoading ? "Signing in..." : "Sign in"}

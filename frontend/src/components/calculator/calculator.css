@@ -17,6 +17,8 @@
 /* Page Container */
 .calc-view-container {
   animation: fadeIn 0.4s ease-out;
+  background-color: var(--muted);
+  flex: 1;
 }
 
 /* Search Controls */
@@ -47,7 +49,7 @@
 }
 
 .calc-label {
-  color: var(--muted);
+  color: var(--text);
   font-size: 0.95rem;
   font-weight: bold;
 }
@@ -60,36 +62,13 @@
   width: 160px;
 }
 
-/* Primary button */
-
-.calc-primary-btn {
-  background-color: var(--primary);
-  border: 0;
-  border-radius: 8px;
-  color: var(--bg);
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 14px 35px;
-  transition: background-color 0.2s ease;
-}
-
-.calc-primary-btn:hover:not(:disabled) {
-  background-color: var(--brand-800);
-}
-
-.calc-primary-btn:disabled {
-  background-color: var(--muted);
-  cursor: not-allowed;
-}
-
 /* Error Message */
 
 .calc-error-message {
-  background-color: #fee2e2;
-  border: 1px solid #ef4444;
+  background-color: color-mix(in srgb, var(--danger) 12%, var(--bg));
+  border: 1px solid var(--danger);
   border-radius: 0.5rem;
-  color: #b91c1c;
+  color: var(--danger-dark);
   margin: 1rem 0;
   padding: 1rem;
   width: 100%;
@@ -152,7 +131,7 @@
 }
 
 .calc-result-label {
-  color: var(--muted);
+  color: var(--text);
   font-weight: 500;
 }
 

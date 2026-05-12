@@ -14,7 +14,7 @@ export default function FarmPageNav({
       <div className="farm-page-nav">
         {/* Create buttons for setting current page to next or before current page */}
         <button
-          className="farm-page-nav-btn"
+          className="btn-primary"
           disabled={page === 0}
           onClick={() => setPage(page - 1)}
         >
@@ -24,7 +24,7 @@ export default function FarmPageNav({
           Page {page + 1} of {totalPages}
         </span>
         <button
-          className="farm-page-nav-btn"
+          className="btn-primary"
           disabled={page >= totalPages - 1}
           onClick={() => setPage(page + 1)}
         >

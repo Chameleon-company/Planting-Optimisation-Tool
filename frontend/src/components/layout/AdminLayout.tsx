@@ -23,7 +23,7 @@ export default function AdminLayout() {
           />
           <div>
             <h2>Management Panel</h2>
-            <p>Admin and Manager workspace</p>
+            <p>Admin workspace</p>
           </div>
         </div>
 
@@ -56,7 +56,9 @@ export default function AdminLayout() {
         <header className="admin-header">
           <div className="admin-header-left">
             <h1>Admin Dashboard</h1>
-            <span className="admin-breadcrumb">Admin / Dashboard</span>
+            <span className="admin-breadcrumb">
+              Manage species, farms, users and scoring settings
+            </span>
           </div>
 
           <div className="admin-header-right">
