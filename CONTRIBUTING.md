@@ -100,4 +100,4 @@ For detailed setup instructions and environment-specific commands, refer to each
 - [Frontend](https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/frontend#how-to-run-the-frontend)
 - [Backend](https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/backend#getting-started)
 - [Data Science](https://github.com/Chameleon-company/Planting-Optimisation-Tool/blob/master/datascience/README.md)
-- [GIS](https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/gis/docs)
+- [GIS](https://github.com/Chameleon-company/Planting-Optimisation-Tool/blob/master/gis/README.md)
