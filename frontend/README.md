@@ -15,7 +15,7 @@ It is a multi-page Vite + TypeScript application that provides:
 
 - **Build tool:** Vite 7
 - **Language:** TypeScript
-- **Framework:** React 18+
+- **Framework:** React 19
 - **Styling:** CSS (global styles in `src/style.css`)
 - **Testing / tooling:**
   - Vitest + React Testing Library
@@ -44,24 +44,6 @@ Source structure:
 
 ---
 
-## How to Run the Frontend
-
-From the project root:
-
-```bash
-cd Planting-Optimisation-Tool/frontend
-npm install
-npm run dev
-```
-
----
-
-## Contributing
-
-For repository contribution workflow, branching, commit guidelines, PR requirements, and general development practices, refer to the root [CONTRIBUTING.md](../CONTRIBUTING.md).
-
----
-
 ## Frontend Setup
 
 The front-end is built with React. Make sure you have **Node.js (v24+)** and **npm** installed.
@@ -82,13 +64,26 @@ cd frontend
 npm install # to install dependencies
 ```
 
-then to start the development server
+---
+
+## How to Run the Frontend
+
+From the project root:
 
 ```bash
+cd Planting-Optimisation-Tool/frontend
 npm run dev
 ```
 
 If you get errors or white screen after pulling new changes, run `npm install` again to update dependencies.
+
+---
+
+## Contributing
+
+For repository contribution workflow, branching, commit guidelines, PR requirements, and general development practices, refer to the root [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+---
 
 ### Testing
 
@@ -99,7 +94,9 @@ npm run test # runs tests
 npm run test -- --coverage # runs tests with coverage
 ```
 
-Your code must include tests and pass existing tests before submitting a PR.
+Your changes should include appropriate tests for the affected module and all existing tests must pass before submitting a PR.
+
+Testing standards and coverage expectations are documented in the project Test Strategy document.
 
 The frontend uses [ESLint](https://eslint.org/docs/latest/use/getting-started) for linting
 
@@ -145,9 +142,12 @@ This enables easy keyword searching and displays the relevant species informatio
 
 ## Configuration
 
-1.  Copy `.env.example` to a new file named `.env`.
-    ```bash
-    cp .env.example .env
-    ```
-2.  Fill in the `VITE_SPACE_ID` and `VITE_ACCESS_TOKEN` values in the `.env` file
-    _(Please ask the project lead or check the secure handover notes for these credentials)_.
+1. Create a `.env` file in the `frontend/` directory.
+
+2. Add the required environment variables to the `.env` file:
+
+```env
+VITE_SPACE_ID=
+VITE_ACCESS_TOKEN=
+```
+Please check the secure handover notes for these credentials

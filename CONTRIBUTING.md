@@ -32,14 +32,23 @@ A few important points to keep in mind to make sure your contributions are safe,
 
 1. **Never commit secrets or credentials** – do not include API keys, passwords, or `.env` files in your commits. Use environment variables or secret management instead.  
 
-2. **Run linting and formatting** – make sure your code follows the project’s style guidelines before committing:  
-   ```bash
-   npm run lint:scripts    # frontend scripts
-   npm run lint:styles     # frontend styles
-   npm run format           # frontend
-   uv run ruff check --fix       # backend / Data Science / GIS
-   uv run ruff format            # backend / Data Science / GIS
-   ```  
+2. **Run linting and formatting** – make sure your code follows the project’s style guidelines before committing:
+
+Frontend:
+```bash
+npm run lint:scripts    # frontend scripts
+npm run lint:styles     # frontend styles
+npm run format          # frontend formatting
+```
+
+Frontend pre-commit hooks (Husky + lint-staged) automatically run validation and linting checks before commit.
+
+Backend / Data Science / GIS:
+```bash
+uv run pre-commit run --all-files
+```
+
+Pre-commit hooks are configured to automatically run linting and formatting checks on staged files before commit.
 
 3. **Write clear commit messages** – short but descriptive messages make reviewing and tracking changes easier.  
 
@@ -81,9 +90,9 @@ git push origin feature/<branch-name>
 ```
 ## 4. Important - Before Submitting a PR
 
-- Your code **MUST** have tests committed with it.
-- Your code **MUST** be documented, legible and following the guidelines.
-- Your code **MUST** be linked to an item in the project planner in MS Teams that is assigned to **YOU**.
+- Your code **MUST** include new or updated test cases where applicable, and all existing tests must continue to pass before submitting a PR.
+- Your Code **SHOULD** follow the repository formatting, linting, and contribution guidelines documented in this repository.
+- Your code **MUST** be linked to an assigned GitHub issue, user story, or task before submitting a PR.
 
 Failure to adhere to any of the above will result in your PR **not being accepted**.
 
@@ -94,8 +103,6 @@ Open a Pull request - https://github.com/Chameleon-company/Planting-Optimisation
 Fill out the PR template and click Create Pull request.
 
 ## 5. Setup Guides
-
-For detailed setup instructions and environment-specific commands, refer to each subproject README.
 
 - [Frontend](https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/frontend#how-to-run-the-frontend)
 - [Backend](https://github.com/Chameleon-company/Planting-Optimisation-Tool/tree/master/backend#getting-started)

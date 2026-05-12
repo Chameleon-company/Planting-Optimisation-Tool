@@ -37,11 +37,11 @@ Smallholder farmers in Timor-Leste face low tree-survival rates due to poor envi
 - Calculates recommended sapling counts using configurable planting spacing, terrain slope limits, and farm geometry.
 
 ### User-Facing Web Interface
-- Input forms for farm conditions.  
-- Dashboards showing suitable, cautionary, and excluded species.  
-- Visual indicators highlighting limiting environmental factors.  
-- PDF report generation with species images and charts.  
-- Mobile-friendly layout for field use.
+
+- Input forms for farm conditions and environmental parameters.
+- Species recommendation and environmental profile pages.
+- Interactive frontend built with React and Vite.
+- Visualization of environmental profile and sapling estimation outputs.
 
 ## Technology Stack
 
@@ -52,15 +52,23 @@ Smallholder farmers in Timor-Leste face low tree-survival rates due to poor envi
 
 ### Frontend
 - **React** (Vite)
-- Responsive UI, dashboards, forms, PDF report generation
 
 ### Data Science / ML
 - **NumPy**, **Pandas**, **scikit-learn**
-- Suitability scoring models  
-- Farm archetypes and plant functional types  
-- Exploratory and predictive modelling
 
 ### GIS / Remote Sensing
 - **Rasterio**, **GeoPandas** 
+
+## Key Features
+
+### User-Facing Web Interface
+- Responsive UI, dashboards, forms, PDF report generation
+
+### Data Science / ML Features
+- Suitability scoring models
+- Farm archetypes and plant functional types
+- Exploratory and predictive modelling
+
+### GIS / Remote Sensing
 - Extraction of rainfall, soil, elevation, slope, and temperature layers from raster and geospatial datasets
 - Spatial aggregation for farm-level profile generation

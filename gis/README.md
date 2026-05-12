@@ -60,8 +60,7 @@ gis/
 │   └── output_schema.md         # Schema for farm profile output              
 │
 ├── notebook/
-│   ├── eda_gee.ipynb            # Exploratory analysis of GEE environmental data
-│   └── eda_gee.pdf              # PDF export of the exploratory analysis notebook
+│   └── eda_gee.ipynb            # Exploratory analysis of GEE environmental data 
 │
 ├── sapling_estimation/
 │   ├── data/
@@ -72,8 +71,6 @@ gis/
 │   │   │   └── flowchart.png    # Sapling estimation workflow diagram
 │   │   ├── feature_summary.md   # Feature overview and summary
 │   │   └── output_schema.md     # Sapling estimation output schema
-│   │
-│   ├── __init__.py
 │   ├── estimate.py              # Sapling estimation logic
 │   ├── planting_points.py       # Planting point generation
 │   ├── rotation.py              # Rotation and geometry alignment logic
@@ -91,7 +88,6 @@ gis/
 ├── .gitignore
 ├── .python-version
 ├── README.md
-├── __init__.py
 ├── pyproject.toml
 └── uv.lock
 
@@ -161,16 +157,16 @@ GEE_KEY_PATH=/path/to/gis/keys/service-account-key.json
 
 #### **init_gee()**
 
-Initializes Google Earth Engine using the service account and key path from config/settings.py.
+Initializes Google Earth Engine using configuration values loaded from `config/settings.py`.
 
-**Parameters:** None (reads from environment variables)
+**Parameters:** None (uses GEE configuration loaded from `config/settings.py`)
 
 **Returns:** `bool` - True if initialization successful
 
 **Raises:**
 
-- `ValueError` - If GEE_SERVICE_ACCOUNT or GEE_KEY_PATH not set
-- `ee.EEException` - If authentication fails
+- `RuntimeError` - If required GEE environment variables are missing
+- `ee.EEException` - If Earth Engine authentication fails
 
 **Example:**
 
@@ -185,6 +181,7 @@ if success:
 **Notes:**
 
 - Validates required environment variables before initialization
+- Supports authentication using either GEE_KEY_JSON or GEE_KEY_PATH
 - Must be called before any GEE operations
 - Only needs to be called once per session
 
@@ -221,13 +218,17 @@ point = parse_point(-8.569, 126.676)
 
 #### **parse_multipoint(coords)**
 
-Takes a list of (lat, lon) tuples and returns an ee.Geometry.MultiPoint.
+Takes a list of `(lat, lon)` tuples and returns an `ee.Geometry.MultiPoint`.
 
 **Parameters:**
 
-- `coords` (list): List of (lat, lon) tuples
+- `coords` (list[tuple[float, float]]): List of `(lat, lon)` coordinate tuples
 
 **Returns:** `ee.Geometry.MultiPoint`
+
+**Raises:**
+
+- `ValueError` - If `coords` is empty or not a list of coordinate tuples
 
 **Example:**
 
@@ -328,10 +329,10 @@ Returns the annual rainfall (mm) for a given geometry and specified year.
 
 **Parameters:**
 
-- `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
+- `geometry` (tuple | list | ee.Geometry): Supported geometry input
 - `year` (int, optional): Specific year for data extraction. If None, defaults to 2024.
 
-**Returns:** `float` - Annual rainfall in millimeters for the specified year
+**Returns:** `int` - Annual rainfall in millimeters for the specified year
 
 **Example:**
 
@@ -340,17 +341,17 @@ from gis.core.extract_data import get_rainfall
 
 # Get rainfall for specific year
 rainfall_2024 = get_rainfall((-8.569, 126.676), year=2024)
-# Returns: 1850.5 mm
+# Returns: 1850 mm
 
 rainfall_2015 = get_rainfall((-8.569, 126.676), year=2015)
-# Returns: 1672.3 mm
+# Returns: 1672 mm
 
 rainfall_1990 = get_rainfall((-8.569, 126.676), year=1990)
-# Returns: 1805.1 mm
+# Returns: 1805 mm
 
 # Default (uses 2024 if year not specified)
 rainfall_default = get_rainfall((-8.569, 126.676))
-# Returns: 1850.5 mm (year=2024)
+# Returns: 1850 mm (year=2024)
 ```
 
 **Notes:**
@@ -392,7 +393,7 @@ Returns the mean annual land surface temperature (°C) for a given geometry and 
 
 **Parameters:**
 
-- `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
+- `geometry` (tuple | list | ee.Geometry): Supported geometry input
 - `year` (int, optional): Specific year for data extraction. If None, defaults to 2024.
 
 **Returns:** `float` - Mean annual land surface temperature in Celsius for the specified year
@@ -455,7 +456,7 @@ Returns the soil pH value for a given geometry.
 
 **Parameters:**
 
-- `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
+- `geometry` (tuple|list|ee.Geometry): Supported geometry input
 - `year` (int, optional): Not used (static dataset)
 
 **Returns:** `float` - Soil pH value (0-14 scale) or `None` if no data
@@ -505,10 +506,10 @@ Returns the elevation (m) for a given geometry.
 
 **Parameters:**
 
-- `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
+- `geometry` (tuple|list|ee.Geometry): Supported geometry input
 - `year` (int, optional): Not used (static dataset)
 
-**Returns:** `float` - Elevation in meters above sea level
+**Returns:** `int` - Elevation in meters above sea level
 
 **Example:**
 
@@ -536,10 +537,10 @@ Returns the slope (degrees) for a given geometry.
 
 **Parameters:**
 
-- `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
+- `geometry` (tuple|list|ee.Geometry): Supported geometry input
 - `year` (int, optional): Not used (static dataset)
 
-**Returns:** `float` - Slope in degrees (0-90)
+**Returns:** `float` - Mean slope in degrees, rounded to 3 decimal places
 
 **Example:**
 
@@ -561,18 +562,14 @@ slope = get_slope((-8.569, 126.676))
 
 #### **get_texture(geometry, year=None)**
 
-Returns soil texture for a given geometry.
-
-**Data Source:** Currently using OpenLandMap pH as placeholder to demonstrate GEE extraction capability
-
-**Status:** Demonstration only - awaiting Product Owner soil texture dataset
+Returns raw soil texture values for a given geometry.
 
 **Parameters:**
 
 - `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
 - `year` (int, optional): Not used
 
-**Returns:** `str|float` - Texture class name (when configured) or numeric value (current demonstration)
+**Returns:** `str|float|None` - Raw texture value from the configured dataset
 
 **Example:**
 
@@ -580,17 +577,15 @@ Returns soil texture for a given geometry.
 from gis.core.extract_data import get_texture
 
 texture = get_texture((-8.569, 126.676))
-# Currently returns: 6.2 (pH value as demonstration)
-# Will return: "loam" (when proper texture dataset configured)
+# Will return: "loam" 
 ```
 
 **Notes:**
 
-- **Current implementation**: Demonstrates GEE extraction using pH data as proxy
-- **Production use**: Requires Product Owner soil texture dataset configuration
-- Expected texture classes: USDA classification (sand, loam, clay, etc.)
-- To activate: Replace asset_id in settings.py with actual texture dataset path
-- Framework ready - just needs proper dataset reference
+- Supports both raster and vector texture datasets
+- Dataset configuration is loaded from `config/settings.py`
+- Used internally by `get_texture_id()` to map texture classes to USDA texture IDs
+- Returns raw dataset values before normalization/mapping
 
 **Configuration Required:**
 
@@ -667,9 +662,8 @@ area = get_area_ha(polygon)
 
 **Notes:**
 
-- Uses geodesic calculation (accounts for Earth's curvature)
-- Transforms to UTM Zone 51S (EPSG:32751) for accurate area calculation
-- For points: returns 0.0
+- Uses Earth Engine geodesic area calculation
+- Returns area in hectares rounded to 3 decimal places
 
 ---
 
@@ -696,44 +690,14 @@ lat, lon = get_centroid_lat_lon(polygon)
 **Notes:**
 
 - For points: returns the point itself
-- For polygons: returns geometric center
+- Returns centroid coordinates rounded to 3 decimal places
 - Used for distance calculations and mapping
-
----
-
-#### **get_dist_to_coast(geometry)**
-
-Returns distance from geometry centroid to Timor-Leste coastal boundary.
-
-**Data Source:** GADM administrative boundaries (gadm41_TLS_3.json)
-
-**Parameters:**
-
-- `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
-
-**Returns:** `float` - Distance to coast in kilometers
-
-**Example:**
-
-```python
-from gis.core.extract_data import get_dist_to_coast
-
-dist = get_dist_to_coast((-8.569, 126.676))
-# Returns: 15.2 km
-```
-
-**Notes:**
-
-- Measures from centroid to nearest point on boundary
-- Uses geodesic distance calculation
-- Coastal farms (< 5km): important for climate classification
-- Based on GADM Level 3 administrative boundaries
 
 ---
 
 ### Farm Profile Functions
 
-#### `build_farm_profile(geometry, year=None, farm_id=None, **additional_fields)`
+#### `build_farm_profile(geometry, year=None, farm_id=None, riparian=None, **additional_fields)`
 
 Builds a complete farm profile by extracting all environmental variables.
 
@@ -742,6 +706,7 @@ Builds a complete farm profile by extracting all environmental variables.
 - `geometry` (tuple|list|ee.Geometry): Farm location/boundary
 - `year` (int, optional): Year for temporal data (default: 2024)
 - `farm_id` (int, optional): Unique farm identifier
+- `riparian` (bool, optional): Riparian flag computed externally by the backend service layer
 - `**additional_fields`: Custom fields (e.g., farmer_name, crop_type)
 
 **Returns:** `dict` - Complete farm profile
@@ -758,11 +723,12 @@ Builds a complete farm profile by extracting all environmental variables.
     "slope_degrees": 12.3,
     "soil_ph": 6.2,
     "soil_texture_id": 4,
+    "soil_texture": "loam",
     "area_ha": 2.5,
     "latitude": -8.569,
     "longitude": 126.676,
     "coastal": False,
-    "dist_to_coast_km": 15.2,
+    "riparian": False,
     "updated_at": "2024-01-15T10:30:00",
     "status": "success"
 }
@@ -795,7 +761,7 @@ print(f"Elevation: {profile['elevation_m']} m")
 
 ---
 
-#### **update_farm_profile(existing_profile, geometry, fields=None, year=None)**
+#### **uupdate_farm_profile(existing_profile, geometry, fields=None, year=None, **additional_fields)**
 
 Updates specific fields in an existing farm profile.
 
@@ -805,6 +771,7 @@ Updates specific fields in an existing farm profile.
 - `geometry` (tuple|list|ee.Geometry): Farm geometry
 - `fields` (list, optional): List of fields to update (None = all fields)
 - `year` (int, optional): Year for temporal data
+- `**additional_fields`: Optional override values for local soil pH or soil texture
 
 **Returns:** `dict` - Updated profile
 
@@ -829,7 +796,7 @@ print(f"Rainfall changed: {profile_2024['rainfall_mm']} → {updated['rainfall_m
 - Temporal: rainfall_mm, temperature_celsius
 - Spatial: elevation_m, slope_degrees, area_ha, latitude, longitude
 - Soil: soil_ph, soil_texture_id
-- Derived: coastal, dist_to_coast_km
+- Derived: coastal
 
 ---
 
@@ -846,7 +813,7 @@ Creates profiles for multiple farms in parallel.
 - `max_workers` (int): Number of parallel workers (default: 5)
 - `progress_callback` (callable, optional): Progress tracking function(current, total)
 
-**Returns:** `pandas.DataFrame` - All farm profiles
+**Returns:** `pandas.DataFrame` - DataFrame containing all generated farm profiles
 
 **Example:**
 
@@ -943,54 +910,6 @@ Bulk update complete!
   Total time: 0.6s
   Success: 3/3 (100.0%)
 ```
-
----
-
-### Utility Functions
-
-#### **build_farm_table()**
-
-One-time script to process farm boundaries and create a standardized farm table.
-
-**Data Source:** farm_boundaries.gpkg
-
-**Operations:**
-
-1. Loads farm geometries from GeoPackage
-2. Converts 3D polygons to 2D
-3. Computes centroids
-4. Calculates area in hectares
-5. Generates WKT (Well-Known Text) geometry
-6. Handles multi-parcel farms (merges parcels)
-7. Outputs clean CSV
-
-**Output:** `gis/docs/farm_table.csv`
-
-**Example:**
-
-```python
-from gis.scripts.build_farm_table import build_farm_table
-
-build_farm_table()
-# Creates: gis/docs/farm_table.csv
-```
-
-**Output Columns:**
-
-- farm_id: Unique identifier
-- farm_name: Farm name
-- centroid_lat: Centroid latitude
-- centroid_lon: Centroid longitude
-- area_ha: Farm area in hectares
-- geometry_wkt: WKT polygon string
-- num_parcels: Number of parcels (for multi-parcel farms)
-
-**Notes:**
-
-- Handles invalid geometries automatically
-- Merges multi-parcel farms using unary_union
-- Filters out farms with area < 0.01 ha
-- Preserves all original attributes
 
 ---
 

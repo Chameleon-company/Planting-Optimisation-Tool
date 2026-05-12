@@ -3,9 +3,13 @@
 ## Introduction
 This document outlines the estimation algorithm used to estimate the maximum number of saplings that can be planted on a farm, while considering terrain features such as slope and rotation.
 
-The feature begins with a farm boundary/polygon for the input farm that is passed by the API, it matches the polygon with the Digital Elevation Model (DEM) raster, which is converted into a slope raster to identify terrain steepness. A square grid of planting points is generated using the configurable spacing values (`spacing_x`, `spacing_y`) to define the planting areas (Planting area dimensions are determined by the configured spacing values); the polygon is then rotated by potential angles to determine the orientation that maximizes sapling count. Finally, a configurable slope threshold (`max_slope`) is applied to remove planting points on the terrain that is too steep, and the estimator/main algorithm outputs the final aligned planting count, optimal rotation angle, and rotation statistics for the input farm, which are passed back to the API.
+The sapling estimation feature accepts `farm_id`, `spacing_x`, `spacing_y`, and `max_slope` as inputs. The system retrieves the farm boundary from the database and matches it against the Digital Elevation Model (DEM) raster to generate slope data for terrain analysis.
 
-The algorithm scales with the number of planting points. Larger farms produce more points, which increases computation time for grid generation, rotation mechanism, and slope sampling.
+A planting grid is generated using the configured spacing values (`spacing_x`, `spacing_y`) to define planting area dimensions. The grid is then rotated through angles between 0–90 degrees to identify the orientation that produces the maximum planting count.
+
+A configurable slope threshold (`max_slope`) is applied to remove planting points located on terrain that exceeds the allowed slope. The algorithm returns the optimised planting count, optimal rotation angle, and rotation statistics for the input farm.
+
+The computational cost increases with the number of generated planting points and terrain sampling operations. Factors such as planting density, farm boundary complexity, and rotation analysis can affect processing time.
 
 ## Inputs and Outputs
 
