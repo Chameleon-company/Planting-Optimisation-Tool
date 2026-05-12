@@ -95,12 +95,16 @@ describe("FarmManageActions ", () => {
     expect(onEdit).toHaveBeenCalledTimes(1);
   });
 
-  it("fires the onDelete callback when Delete is clicked", async () => {
+  it("fires the onDelete callback when Delete is confirmed in the modal", async () => {
     const user = userEvent.setup();
     const onDelete = vi.fn();
     mockUseAuth.mockReturnValue({ user: { name: "Admin", role: "admin" } });
     render(<FarmManageActions onDelete={onDelete} />);
     await user.click(screen.getByText(/delete/i));
+    expect(
+      screen.getByText(/are you sure you want to delete this farm/i)
+    ).toBeInTheDocument();
+    await user.click(screen.getByText(/confirm delete/i));
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 });
