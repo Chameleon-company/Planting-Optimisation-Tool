@@ -17,7 +17,7 @@ export default function SpeciesPage() {
   const { species, isLoading, error } = useSpecies(query);
 
   return (
-    <div>
+    <div className="species-page">
       <Helmet>
         <title>Species | Planting Optimisation Tool</title>
       </Helmet>

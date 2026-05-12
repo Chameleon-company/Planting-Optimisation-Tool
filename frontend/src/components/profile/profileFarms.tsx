@@ -46,7 +46,7 @@ export default function FarmList({
           <div className="farm-bottom-row">
             {canEdit && (
               <button
-                className="farm-action-btn"
+                className="btn-primary"
                 onClick={() => navigate("/farms")}
               >
                 Manage
@@ -71,10 +71,7 @@ export default function FarmList({
         <FarmPageNav page={page} totalPages={totalPages} setPage={setPage} />
 
         {canEdit && (
-          <button
-            className="farm-action-btn"
-            onClick={() => navigate("/farms")}
-          >
+          <button className="btn-primary" onClick={() => navigate("/farms")}>
             Manage
           </button>
         )}

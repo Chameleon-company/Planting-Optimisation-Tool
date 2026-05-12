@@ -55,11 +55,11 @@ export default function AhpResultsTable({
       </table>
 
       {is_consistent ? (
-        <button className="ahp-primary-btn" onClick={onReset}>
+        <button className="btn-primary" onClick={onReset}>
           Profile Another Species
         </button>
       ) : (
-        <button className="ahp-primary-btn" onClick={onRetry}>
+        <button className="btn-primary" onClick={onRetry}>
           Profile Again
         </button>
       )}

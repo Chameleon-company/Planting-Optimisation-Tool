@@ -40,7 +40,7 @@ export default function RecommendationRow({
         </td>
         <td className="rec-td">
           <button
-            className="rec-details-btn"
+            className="btn-outline"
             onClick={onToggle}
             aria-expanded={isExpanded}
           >

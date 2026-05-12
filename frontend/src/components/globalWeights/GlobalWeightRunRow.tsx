@@ -63,11 +63,11 @@ export default function GlobalWeightRunRow({
         <td className="rec-td">{run.source || "System"}</td>
         <td className="rec-td">
           <div style={{ display: "flex", gap: "8px" }}>
-            <button className="rec-details-btn" onClick={onToggle}>
+            <button className="btn-outline" onClick={onToggle}>
               {isExpanded ? "Hide Details" : "View Weights"}
             </button>
             <button
-              className="rec-details-btn"
+              className="btn-outline"
               style={{ borderColor: "#dc3545", color: "#dc3545" }} // Red styling for destructive action
               onClick={() => {
                 if (

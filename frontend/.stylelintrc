@@ -27,6 +27,7 @@
     "no-descending-specificity": null,
     "max-nesting-depth": 2,
     "selector-max-id": 1,
-    "order/properties-alphabetical-order": true
+    "order/properties-alphabetical-order": true,
+    "@stylistic/function-parentheses-space-inside": null
   }
 }

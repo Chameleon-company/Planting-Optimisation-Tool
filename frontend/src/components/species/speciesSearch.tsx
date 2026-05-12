@@ -21,7 +21,7 @@ export default function SpeciesSearch({
   };
 
   return (
-    <section className="species-container">
+    <section>
       <div className="species-search">
         <label className="search-label">Search species</label>
         <div className="search-row">
@@ -37,7 +37,7 @@ export default function SpeciesSearch({
             onChange={e => setSearchInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleSearch()}
           />
-          <button className="search-btn" onClick={handleSearch}>
+          <button className="btn-primary search-btn" onClick={handleSearch}>
             <span className="search-icon">🔍</span>
             <span>{isLoading ? "..." : "Search"}</span>
           </button>

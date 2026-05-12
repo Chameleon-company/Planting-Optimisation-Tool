@@ -6,19 +6,8 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
     <section
       class="heroSection"
     >
-      <video
-        autoplay=""
-        class="heroVideo"
-        loop=""
-        playsinline=""
-      >
-        <source
-          src="assets/videos/herobg.mp4"
-          type="video/mp4"
-        />
-      </video>
       <div
-        class="videoOverlay"
+        class="heroTriangle"
       />
       <div
         class="heroTagline"
@@ -28,17 +17,332 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
         </h1>
       </div>
       <div
+        class="heroCarouselWrapper"
+      >
+        <div
+          class="heroCarousel"
+        >
+          <img
+            alt=""
+            class="heroCarouselImg heroCarouselImg--active"
+            src="/assets/images/carousel/62cceb7eb84c2660c2035957_DSC_1408(small).webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/62d5f7515f7e3f98385095e3_DSC_1025 (small) 4.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/1.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/2.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/3.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/4.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/5.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/6.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/7.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/8.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/9.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/10.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/11.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/12.webp"
+          />
+          <img
+            alt=""
+            class="heroCarouselImg "
+            src="/assets/images/carousel/13.webp"
+          />
+          <div
+            class="heroCarouselDots"
+          >
+            <button
+              aria-label="Go to image 1"
+              class="heroCarouselDot heroCarouselDot--active"
+            />
+            <button
+              aria-label="Go to image 2"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 3"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 4"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 5"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 6"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 7"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 8"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 9"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 10"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 11"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 12"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 13"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 14"
+              class="heroCarouselDot "
+            />
+            <button
+              aria-label="Go to image 15"
+              class="heroCarouselDot "
+            />
+          </div>
+        </div>
+      </div>
+      <svg
+        aria-hidden="true"
+        class="hero-treeline"
+        preserveAspectRatio="xMidYMax slice"
+        style="overflow: visible;"
+        viewBox="0 0 1440 300"
+      >
+        <g
+          transform="translate(60, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 0s;"
+          >
+            <image
+              height="185"
+              href="/assets/images/trees/tree1.svg"
+              width="130"
+              x="-65"
+              y="-185"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(175, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 1.4s;"
+          >
+            <image
+              height="165"
+              href="/assets/images/trees/tree2.svg"
+              width="120"
+              x="-60"
+              y="-165"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(290, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 0.7s;"
+          >
+            <image
+              height="210"
+              href="/assets/images/trees/tree3.svg"
+              width="150"
+              x="-75"
+              y="-210"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(415, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 2.1s;"
+          >
+            <image
+              height="190"
+              href="/assets/images/trees/tree4.svg"
+              width="135"
+              x="-67.5"
+              y="-190"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(530, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 0.3s;"
+          >
+            <image
+              height="225"
+              href="/assets/images/trees/tree1.svg"
+              width="160"
+              x="-80"
+              y="-225"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(650, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 1.8s;"
+          >
+            <image
+              height="160"
+              href="/assets/images/trees/tree2.svg"
+              width="115"
+              x="-57.5"
+              y="-160"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(760, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 0.9s;"
+          >
+            <image
+              height="200"
+              href="/assets/images/trees/tree3.svg"
+              width="145"
+              x="-72.5"
+              y="-200"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(875, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 1.5s;"
+          >
+            <image
+              height="180"
+              href="/assets/images/trees/tree4.svg"
+              width="130"
+              x="-65"
+              y="-180"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(985, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 0.1s;"
+          >
+            <image
+              height="215"
+              href="/assets/images/trees/tree1.svg"
+              width="155"
+              x="-77.5"
+              y="-215"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(1095, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 2.3s;"
+          >
+            <image
+              height="170"
+              href="/assets/images/trees/tree2.svg"
+              width="125"
+              x="-62.5"
+              y="-170"
+            />
+          </g>
+        </g>
+      </svg>
+      <div
         class="heroCTA"
       >
         <p
           class="heroSubtitle"
         >
-          Generate your environmental profile!
+          Find the best suited species for your farm!
         </p>
         <button
           class="exploreButton"
         >
-          Generate
+          Find
         </button>
       </div>
     </section>
@@ -52,15 +356,41 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
           class="aboutLogoContainer"
         >
           <img
-            alt="xpandFoundation Logo"
+            alt="Planting Optimisation Tool Logo"
             class="aboutLogo"
             src="/assets/images/logo2.svg"
           />
           <span
             class="aboutLogoText"
           >
-            A tool developed under xpandFoundation
+            A tool developed in partnership with xPand Foundation and the Rai Matak project.
           </span>
+        </div>
+        <div
+          class="aboutPartners"
+        >
+          <a
+            href="https://xpand.net.au/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <img
+              alt="xPand Foundation"
+              class="aboutPartnerLogo"
+              src="/assets/images/xPand_logo.png"
+            />
+          </a>
+          <a
+            href="https://www.raimatak.org/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <img
+              alt="Rai Matak"
+              class="aboutPartnerLogo"
+              src="/assets/images/rai-matak.svg"
+            />
+          </a>
         </div>
       </div>
       <div
@@ -87,7 +417,7 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
         <a
           class="featureCard"
           data-discover="true"
-          href="/profile"
+          href="/recommendation"
         >
           <div
             class="defaultContent"
@@ -95,34 +425,90 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
             <div
               class="iconWrapper"
             >
-              <span
+              <div
                 class="featureIcon"
               >
-                📍
-              </span>
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-trees"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z"
+                  />
+                  <path
+                    d="M7 16v6"
+                  />
+                  <path
+                    d="M13 19v3"
+                  />
+                  <path
+                    d="M12 19h8.3a1 1 0 0 0 .7-1.7L18 14h.3a1 1 0 0 0 .7-1.7L16 9h.2a1 1 0 0 0 .8-1.7L13 3l-1.4 1.5"
+                  />
+                </svg>
+              </div>
             </div>
             <h3
               class="featureTitle"
             >
-              Generate environmental profile
+              Agroforestry Recommendations
             </h3>
             <p
               class="featureText"
             >
-              Provide your farm's boundaries to automatically load environmental data.
+              Determine which species are best suited for your farms conditions and needs.
             </p>
           </div>
           <div
             class="hoverContent"
           >
             <div
-              class="hoverOverlay"
-            />
-            <span
-              class="centerButton"
+              class="iconWrapper iconWrapper--large"
             >
-              Explore Now
-            </span>
+              <div
+                class="featureIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-trees"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z"
+                  />
+                  <path
+                    d="M7 16v6"
+                  />
+                  <path
+                    d="M13 19v3"
+                  />
+                  <path
+                    d="M12 19h8.3a1 1 0 0 0 .7-1.7L18 14h.3a1 1 0 0 0 .7-1.7L16 9h.2a1 1 0 0 0 .8-1.7L13 3l-1.4 1.5"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3
+              class="featureTitleLarge"
+            >
+              Agroforestry Recommendations
+            </h3>
           </div>
         </a>
         <a
@@ -136,34 +522,243 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
             <div
               class="iconWrapper"
             >
-              <span
+              <div
                 class="featureIcon"
               >
-                🔢
-              </span>
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-calculator"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    height="20"
+                    rx="2"
+                    width="16"
+                    x="4"
+                    y="2"
+                  />
+                  <line
+                    x1="8"
+                    x2="16"
+                    y1="6"
+                    y2="6"
+                  />
+                  <line
+                    x1="16"
+                    x2="16"
+                    y1="14"
+                    y2="18"
+                  />
+                  <path
+                    d="M16 10h.01"
+                  />
+                  <path
+                    d="M12 10h.01"
+                  />
+                  <path
+                    d="M8 10h.01"
+                  />
+                  <path
+                    d="M12 14h.01"
+                  />
+                  <path
+                    d="M8 14h.01"
+                  />
+                  <path
+                    d="M12 18h.01"
+                  />
+                  <path
+                    d="M8 18h.01"
+                  />
+                </svg>
+              </div>
             </div>
             <h3
               class="featureTitle"
             >
-              Bulk Sapling Calculator
+              Sapling Estimation Calculator
             </h3>
             <p
               class="featureText"
             >
-              Calculate exactly how many saplings you need for your farm based on land size and optimal spacing.
+              Maximise the potential of your land by optimising how many saplings can be planted.
             </p>
           </div>
           <div
             class="hoverContent"
           >
             <div
-              class="hoverOverlay"
-            />
-            <span
-              class="centerButton"
+              class="iconWrapper iconWrapper--large"
             >
-              Explore Now
-            </span>
+              <div
+                class="featureIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-calculator"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    height="20"
+                    rx="2"
+                    width="16"
+                    x="4"
+                    y="2"
+                  />
+                  <line
+                    x1="8"
+                    x2="16"
+                    y1="6"
+                    y2="6"
+                  />
+                  <line
+                    x1="16"
+                    x2="16"
+                    y1="14"
+                    y2="18"
+                  />
+                  <path
+                    d="M16 10h.01"
+                  />
+                  <path
+                    d="M12 10h.01"
+                  />
+                  <path
+                    d="M8 10h.01"
+                  />
+                  <path
+                    d="M12 14h.01"
+                  />
+                  <path
+                    d="M8 14h.01"
+                  />
+                  <path
+                    d="M12 18h.01"
+                  />
+                  <path
+                    d="M8 18h.01"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3
+              class="featureTitleLarge"
+            >
+              Sapling Estimation Calculator
+            </h3>
+          </div>
+        </a>
+        <a
+          class="featureCard"
+          data-discover="true"
+          href="/profile"
+        >
+          <div
+            class="defaultContent"
+          >
+            <div
+              class="iconWrapper"
+            >
+              <div
+                class="featureIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-satellite-dish"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 10a7.31 7.31 0 0 0 10 10Z"
+                  />
+                  <path
+                    d="m9 15 3-3"
+                  />
+                  <path
+                    d="M17 13a6 6 0 0 0-6-6"
+                  />
+                  <path
+                    d="M21 13A10 10 0 0 0 11 3"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3
+              class="featureTitle"
+            >
+              Generate Environmental Profile
+            </h3>
+            <p
+              class="featureText"
+            >
+              Generate a comprehensive environmental profile report of your farms conditions.
+            </p>
+          </div>
+          <div
+            class="hoverContent"
+          >
+            <div
+              class="iconWrapper iconWrapper--large"
+            >
+              <div
+                class="featureIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-satellite-dish"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 10a7.31 7.31 0 0 0 10 10Z"
+                  />
+                  <path
+                    d="m9 15 3-3"
+                  />
+                  <path
+                    d="M17 13a6 6 0 0 0-6-6"
+                  />
+                  <path
+                    d="M21 13A10 10 0 0 0 11 3"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3
+              class="featureTitleLarge"
+            >
+              Generate Environmental Profile
+            </h3>
           </div>
         </a>
         <a
@@ -177,11 +772,33 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
             <div
               class="iconWrapper"
             >
-              <span
+              <div
                 class="featureIcon"
               >
-                🌳
-              </span>
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-book-open-check"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 21V7"
+                  />
+                  <path
+                    d="m16 12 2 2 4-4"
+                  />
+                  <path
+                    d="M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3"
+                  />
+                </svg>
+              </div>
             </div>
             <h3
               class="featureTitle"
@@ -191,20 +808,48 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
             <p
               class="featureText"
             >
-              Access detailed information about 20 species approved by Gold Standard to understand their ecological limits.
+              Access detailed information on 20 approved species by Gold Standard to understand their ecological limits.
             </p>
           </div>
           <div
             class="hoverContent"
           >
             <div
-              class="hoverOverlay"
-            />
-            <span
-              class="centerButton"
+              class="iconWrapper iconWrapper--large"
             >
-              Explore Now
-            </span>
+              <div
+                class="featureIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-book-open-check"
+                  fill="none"
+                  height="32"
+                  stroke="#fff"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 21V7"
+                  />
+                  <path
+                    d="m16 12 2 2 4-4"
+                  />
+                  <path
+                    d="M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3
+              class="featureTitleLarge"
+            >
+              Species Information
+            </h3>
           </div>
         </a>
       </div>

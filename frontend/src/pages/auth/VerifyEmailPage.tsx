@@ -47,7 +47,7 @@ function VerifyEmailPage() {
               </p>
               <Link
                 to="/login"
-                className="login-submit-btn register-success-link"
+                className="btn-primary login-submit-btn register-success-link"
               >
                 Back to sign in
               </Link>
@@ -66,7 +66,7 @@ function VerifyEmailPage() {
               </p>
               <Link
                 to="/login"
-                className="login-submit-btn register-success-link"
+                className="btn-primary login-submit-btn register-success-link"
               >
                 Sign in
               </Link>
@@ -80,7 +80,7 @@ function VerifyEmailPage() {
               <p className="register-success-body">{errorMessage}</p>
               <Link
                 to="/login"
-                className="login-submit-btn register-success-link"
+                className="btn-primary login-submit-btn register-success-link"
               >
                 Back to sign in
               </Link>

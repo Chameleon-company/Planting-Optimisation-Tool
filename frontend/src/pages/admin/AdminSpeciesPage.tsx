@@ -246,7 +246,7 @@ function AdminSpeciesPage() {
 
           <button
             type="button"
-            className="admin-primary-btn"
+            className="btn-primary"
             onClick={openCreateModal}
           >
             Add Species
@@ -614,11 +614,7 @@ function AdminSpeciesPage() {
                   Cancel
                 </button>
 
-                <button
-                  type="submit"
-                  className="admin-primary-btn"
-                  disabled={saving}
-                >
+                <button type="submit" className="btn-primary" disabled={saving}>
                   {saving ? "Saving..." : "Save Species"}
                 </button>
               </div>
