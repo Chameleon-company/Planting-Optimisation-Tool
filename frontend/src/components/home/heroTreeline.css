@@ -1,0 +1,31 @@
+.hero-treeline {
+  bottom: 0;
+  height: 300px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 3;
+}
+
+.hero-tree {
+  animation: treeSway 6s ease-in-out infinite;
+  filter: brightness(0) invert(1);
+  opacity: 0.35;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+
+@keyframes treeSway {
+  0% {
+    transform: rotate(-1.5deg);
+  }
+
+  50% {
+    transform: rotate(1.5deg);
+  }
+
+  100% {
+    transform: rotate(-1.5deg);
+  }
+}

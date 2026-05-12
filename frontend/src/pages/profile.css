@@ -1,27 +1,11 @@
 /* ============ PROFILE  ============ */
 
-.farm-profile-header {
-  background: var(--gradient);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 48px 7%;
-}
-
-.farm-profile-title {
-  color: #fff;
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  margin: 0;
-}
-
-.farm-profile-subtitle {
-  color: #c8ffd9;
-  font-size: 1.1rem;
-  margin: 0;
+.profile-page {
+  background-color: var(--muted);
 }
 
 .farm-list {
+  background-color: var(--muted);
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -35,7 +19,7 @@
 }
 
 .farm-card {
-  background: #fff;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
@@ -51,6 +35,10 @@
   width: calc(100% - 14%);
 }
 
+.farm-search-result {
+  background-color: var(--muted);
+}
+
 .farm-card-header {
   align-items: center;
   display: flex;
@@ -58,15 +46,15 @@
 }
 
 .farm-card-id {
-  color: var(--primary);
+  color: var(--forest-green);
   font-size: 1.1rem;
   font-weight: 700;
 }
 
 .farm-card-area {
-  background: var(--brand-50);
+  background: var(--tint-light);
   border-radius: 20px;
-  color: var(--brand-800);
+  color: var(--black-forest);
   font-size: 0.85rem;
   font-weight: 600;
   padding: 4px 12px;
@@ -119,20 +107,21 @@
 }
 
 .farm-tag-agroforestry {
-  background: var(--brand-100);
-  color: var(--brand-900);
+  background: var(--tint-light);
+  color: var(--black-forest);
 }
 
 .farm-tag-trait {
-  background: #e8f5e9;
-  border: 1px solid var(--brand-200);
-  color: var(--brand-800);
+  background: var(--tint-light);
+  border: 1px solid var(--tint-light);
+  color: var(--black-forest);
 }
 
 /* ============ PROFILE PAGE NAVIGATION ============ */
 
 .farm-bottom-row {
   align-items: center;
+  background-color: var(--muted);
   display: flex;
   justify-content: space-between;
   padding: 8px 7% 40px;
@@ -144,33 +133,6 @@
   gap: 12px;
   justify-content: left;
   padding: 0;
-}
-
-.farm-page-nav-btn {
-  background: var(--gradient);
-  border: 0;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 10px 24px;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease,
-    box-shadow 0.2s ease;
-}
-
-.farm-page-nav-btn:hover:not(:disabled) {
-  background: var(--gradient-dark);
-  box-shadow: 0 8px 20px rgba(14, 122, 67, 0.18);
-  transform: translateY(-1px);
-}
-
-.farm-page-nav-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-  transform: none;
 }
 
 .farm-page-nav-info {
@@ -189,46 +151,11 @@
   padding: 0;
 }
 
-.farm-action-btn {
-  align-items: center;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--primary);
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 0.88rem;
-  font-weight: 600;
-  gap: 6px;
-  padding: 8px 16px;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
-}
-
-.farm-action-btn:hover {
-  background: var(--brand-50);
-  border-color: var(--brand-300);
-  box-shadow: 0 4px 12px rgba(14, 122, 67, 0.1);
-  transform: translateY(-1px);
-}
-
-.farm-action-btn-danger {
-  color: #c0392b;
-}
-
-.farm-action-btn-danger:hover {
-  background: #fdecea;
-  border-color: #f5c2c0;
-  box-shadow: 0 4px 12px rgba(192, 59, 44, 0.1);
-}
-
 /* ============ PROFILE SEARCH ============ */
 
 .profile-search {
   align-items: center;
+  background-color: var(--muted);
   display: flex;
   gap: 12px;
   justify-content: flex-start;
@@ -248,36 +175,9 @@
 }
 
 .profile-search .search-input:focus {
-  border-color: var(--brand-500);
+  border-color: var(--forest-green);
   box-shadow: 0 0 0 3px rgba(31, 212, 111, 0.15);
   outline: 0;
-}
-
-.profile-search .search-btn {
-  background: var(--gradient);
-  border: 0;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 10px 22px;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease,
-    box-shadow 0.2s ease;
-}
-
-.profile-search .search-btn:hover:not(:disabled) {
-  background: var(--gradient-dark);
-  box-shadow: 0 8px 20px rgba(14, 122, 67, 0.18);
-  transform: translateY(-1px);
-}
-
-.profile-search .search-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-  transform: none;
 }
 
 .profile-search span {

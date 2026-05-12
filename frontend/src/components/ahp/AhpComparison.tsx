@@ -140,10 +140,10 @@ export default function AhpComparison({
           marginTop: "30px",
         }}
       >
-        <button className="ahp-secondary-btn" onClick={onCancel}>
+        <button className="btn-secondary" onClick={onCancel}>
           Cancel
         </button>
-        <button className="ahp-primary-btn" onClick={handleNext}>
+        <button className="btn-primary" onClick={handleNext}>
           Next Comparison ➔
         </button>
       </div>

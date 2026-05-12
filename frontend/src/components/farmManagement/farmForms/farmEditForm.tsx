@@ -179,7 +179,7 @@ export default function FarmEditForm({
       <div className="register-farm-actions">
         <button
           type="button"
-          className="register-farm-btn register-farm-btn-secondary"
+          className="btn-secondary"
           onClick={onCancel}
           disabled={isSubmitting}
         >
@@ -187,7 +187,7 @@ export default function FarmEditForm({
         </button>
         <button
           type="submit"
-          className="register-farm-btn register-farm-btn-primary"
+          className="btn-primary"
           disabled={isSubmitting || soilTexturesLoading}
           // disabled={isSubmitting || soilTexturesLoading || agroforestryTypesLoading}
         >

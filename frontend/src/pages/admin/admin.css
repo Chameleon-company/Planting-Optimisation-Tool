@@ -2,13 +2,13 @@
 /* Core shell layout styles for admin/manager management pages */
 
 .admin-layout {
-  background: #f5f7fb;
+  background: var(--surface);
   display: flex;
   min-height: 100vh;
 }
 
 .admin-sidebar {
-  background: #102a43;
+  background: var(--black-forest);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -49,7 +49,7 @@
 
 .admin-nav-link {
   border-radius: 10px;
-  color: #fff;
+  color: var(--tint-light);
   display: block;
   padding: 12px 14px;
   text-decoration: none;
@@ -71,43 +71,45 @@
 .admin-header {
   align-items: center;
   background: #fff;
-  border-bottom: 1px solid #d9e2ec;
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   padding: 24px 32px;
 }
 
 .admin-header h1 {
-  color: #102a43;
+  color: var(--black-forest);
   font-size: 1.8rem;
   margin: 0;
 }
 
 .admin-header p {
-  color: #486581;
+  color: var(--black-forest);
   margin: 6px 0 0;
 }
 
 .admin-content {
+  background: var(--pale-mint);
+  flex: 1;
   padding: 32px;
 }
 
 /* Reusable content card for admin placeholder pages */
 .admin-page-card {
-  background: #fff;
+  background: var(--bg);
   border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 14px var(--black-forest);
   margin-bottom: 2rem;
   padding: 24px;
 }
 
 .admin-page-card h2 {
-  color: #102a43;
+  color: var(--black-forest);
   margin-top: 0;
 }
 
 .admin-page-card p {
-  color: #486581;
+  color: var(--black-forest);
   line-height: 1.6;
 }
 
@@ -121,13 +123,13 @@
 }
 
 .admin-breadcrumb {
-  color: #666;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
 .admin-header-right {
   align-items: center;
-  color: #333;
+  color: var(--text);
   display: flex;
   font-size: 0.9rem;
   font-weight: 500;
@@ -136,7 +138,7 @@
 
 /* Admin logout button */
 .admin-logout-btn {
-  background: #102a43;
+  background: var(--forest-green);
   border: 0;
   border-radius: 8px;
   color: #fff;
@@ -148,7 +150,7 @@
 }
 
 .admin-logout-btn:hover {
-  background: #0b1f33;
+  background: var(--black-forest);
 }
 
 /* =========================
@@ -165,7 +167,7 @@
 .settings-card {
   align-items: flex-start;
   background-color: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 8px;
   color: inherit;
   cursor: pointer;
@@ -195,12 +197,12 @@
 }
 
 .settings-card-text h3 {
-  color: #1e293b;
+  color: var(--text);
   margin: 0 0 6px;
 }
 
 .settings-card-text p {
-  color: #475569;
+  color: var(--twilight-indigo);
   font-size: 0.95rem;
   line-height: 1.5;
   margin: 0;
@@ -215,19 +217,19 @@
 }
 
 .admin-back-link {
-  color: #4f46e5;
+  color: var(--forest-green);
   font-weight: 500;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .admin-back-link:hover {
-  color: #3730a3;
+  color: var(--forest-green);
 }
 
 .admin-content-card {
   background-color: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-top: 24px;
@@ -235,12 +237,12 @@
 }
 
 .admin-content-card h3 {
-  color: #1e293b;
+  color: var(--text);
   margin-top: 0;
 }
 
 .admin-content-list {
-  color: #334155;
+  color: var(--text);
   line-height: 1.8;
   margin-top: 16px;
   padding-left: 24px;
@@ -258,15 +260,15 @@
 }
 
 .ahp-view-title {
-  color: #333;
+  color: var(--text);
   font-size: 1.8rem;
   margin-bottom: 20px;
 }
 
 .ahp-controls {
   align-items: flex-end;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   display: flex;
   gap: 15px;
@@ -281,14 +283,14 @@
 }
 
 .ahp-label {
-  color: #495057;
+  color: var(--muted);
   font-size: 0.9rem;
   font-weight: 600;
 }
 
 .ahp-select {
   background-color: #fff;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 1rem;
   min-width: 250px;
@@ -297,7 +299,7 @@
 
 .ahp-results-card {
   background-color: #fff;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-top: 20px;
@@ -306,44 +308,6 @@
 }
 
 /* --- Buttons --- */
-.ahp-primary-btn {
-  background-color: #2c3e50;
-  border: 0;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-top: 20px;
-  padding: 12px 24px;
-  transition: background-color 0.2s;
-}
-
-.ahp-primary-btn:hover:not(:disabled) {
-  background-color: #1a252f;
-}
-
-.ahp-primary-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.ahp-secondary-btn {
-  background-color: transparent;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  color: #6c757d;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 12px 24px;
-  transition: all 0.2s;
-}
-
-.ahp-secondary-btn:hover {
-  background-color: #f8f9fa;
-  color: #495057;
-}
 
 /* --- Comparison Specifics --- */
 .ahp-comparison-box {
@@ -356,19 +320,19 @@
 }
 
 .ahp-factor-left {
-  color: #2c3e50;
+  color: var(--black-forest);
   flex: 1;
   text-align: right;
 }
 
 .ahp-vs {
-  color: #95a5a6;
+  color: var(--muted);
   font-size: 1rem;
   margin: 0 20px;
 }
 
 .ahp-factor-right {
-  color: #27ae60;
+  color: var(--forest-green);
   flex: 1;
   text-align: left;
 }
@@ -383,7 +347,7 @@
 
 .ahp-scale-btn {
   background: #fff;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border);
   border-radius: 50%;
   cursor: pointer;
   font-weight: bold;
@@ -394,8 +358,8 @@
 
 .ahp-scale-btn:hover,
 .ahp-scale-btn.active {
-  background-color: #3498db;
-  border-color: #3498db;
+  background-color: var(--forest-green);
+  border-color: var(--forest-green);
   color: #fff;
 }
 
@@ -422,16 +386,16 @@
 }
 
 .ahp-icon-label {
-  color: #6c757d;
+  color: var(--muted);
   font-size: 0.85rem;
   font-weight: 600;
 }
 
 /* --- Results Specifics --- */
 .ahp-badge-pass {
-  background: #d4edda;
+  background: var(--tint-light);
   border-radius: 6px;
-  color: #155724;
+  color: var(--black-forest);
   display: inline-block;
   font-weight: bold;
   margin-bottom: 20px;
@@ -439,9 +403,9 @@
 }
 
 .ahp-badge-fail {
-  background: #f8d7da;
+  background: color-mix(in srgb, var(--danger) 18%, var(--bg));
   border-radius: 6px;
-  color: #721c24;
+  color: var(--danger-dark);
   display: inline-block;
   font-weight: bold;
   margin-bottom: 20px;
@@ -455,15 +419,15 @@
 }
 
 .ahp-th {
-  border-bottom: 2px solid #dee2e6;
-  color: #495057;
+  border-bottom: 2px solid var(--border);
+  color: var(--muted);
   font-weight: 600;
   padding: 12px;
   text-align: left;
 }
 
 .ahp-tr {
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--border);
 }
 
 .ahp-td {
@@ -479,7 +443,7 @@
 }
 
 .ahp-progress-bar-bg {
-  background-color: #e9ecef;
+  background-color: var(--border);
   border-radius: 5px;
   flex-grow: 1;
   height: 10px;
@@ -487,17 +451,17 @@
 }
 
 .ahp-progress-bar-fill {
-  background-color: #3498db;
+  background-color: var(--forest-green);
   border-radius: 5px;
   height: 100%;
   transition: width 0.4s ease-out;
 }
 
 .ahp-error-message {
-  background-color: #fee2e2;
-  border: 1px solid #ef4444;
+  background-color: color-mix(in srgb, var(--danger) 12%, var(--bg));
+  border: 1px solid var(--danger);
   border-radius: 0.5rem;
-  color: #b91c1c;
+  color: var(--danger-dark);
   margin: 1rem 0;
   padding: 1rem;
   width: 100%;

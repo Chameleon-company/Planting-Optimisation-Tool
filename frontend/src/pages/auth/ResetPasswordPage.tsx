@@ -126,7 +126,7 @@ function ResetPasswordPage() {
               </p>
               <Link
                 to="/forgot-password"
-                className="login-submit-btn register-success-link"
+                className="btn-primary login-submit-btn register-success-link"
               >
                 Request new reset link
               </Link>
@@ -138,7 +138,7 @@ function ResetPasswordPage() {
               <p className="register-success-body">{successMessage}</p>
               <Link
                 to="/login"
-                className="login-submit-btn register-success-link"
+                className="btn-primary login-submit-btn register-success-link"
               >
                 Back to sign in
               </Link>
@@ -227,7 +227,7 @@ function ResetPasswordPage() {
 
               <button
                 type="submit"
-                className="login-submit-btn"
+                className="btn-primary login-submit-btn"
                 disabled={isDisabled}
               >
                 {isLoading ? "Resetting password..." : "Reset password"}

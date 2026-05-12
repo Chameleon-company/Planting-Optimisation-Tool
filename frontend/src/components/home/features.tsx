@@ -1,23 +1,29 @@
+import { Trees, Calculator, SatelliteDish, BookOpenCheck } from "lucide-react";
 import FeatureCard from "./featurecards";
 
-// Set features as constant, icon, title, text and link to be displayed in HomePage
 const features = [
   {
-    icon: "📍",
-    title: "Generate environmental profile",
-    text: "Provide your farm's boundaries to automatically load environmental data.",
-    href: "/profile",
+    icon: <Trees size={32} color="#fff" />,
+    title: "Agroforestry Recommendations",
+    text: "Determine which species are best suited for your farms conditions and needs.",
+    href: "/recommendation",
   },
   {
-    icon: "🔢",
-    title: "Bulk Sapling Calculator",
-    text: "Calculate exactly how many saplings you need for your farm based on land size and optimal spacing.",
+    icon: <Calculator size={32} color="#fff" />,
+    title: "Sapling Estimation Calculator",
+    text: "Maximise the potential of your land by optimising how many saplings can be planted.",
     href: "/calculator",
   },
   {
-    icon: "🌳",
+    icon: <SatelliteDish size={32} color="#fff" />,
+    title: "Generate Environmental Profile",
+    text: "Generate a comprehensive environmental profile report of your farms conditions.",
+    href: "/profile",
+  },
+  {
+    icon: <BookOpenCheck size={32} color="#fff" />,
     title: "Species Information",
-    text: "Access detailed information about 20 species approved by Gold Standard to understand their ecological limits.",
+    text: "Access detailed information on 20 approved species by Gold Standard to understand their ecological limits.",
     href: "/species",
   },
 ];

@@ -38,7 +38,7 @@ function ProfilePage() {
   const isSearching = query.trim().length > 0;
 
   return (
-    <div>
+    <div className="profile-page">
       <Helmet>
         <title>Environmental Profile | Planting Optimisation Tool</title>
       </Helmet>

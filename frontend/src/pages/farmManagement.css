@@ -1,13 +1,13 @@
 /* ============ FARMS PAGE LAYOUT ============ */
 
 .farms-page {
-  background: #f8fafc;
+  background: var(--surface);
   min-height: 100vh;
 }
 
 .farms-page-header {
   align-items: center;
-  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
+  background: var(--ash-grey);
   display: flex;
   justify-content: space-between;
   padding: 32px 7%;
@@ -45,36 +45,6 @@
   gap: 12px;
 }
 
-.farm-action-btn {
-  align-items: center;
-  background: #fff;
-  border: 0;
-  border-radius: 8px;
-  color: #0e7a43;
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 0.9rem;
-  font-weight: 600;
-  gap: 8px;
-  padding: 10px 20px;
-  transition: all 0.2s ease;
-}
-
-.farm-action-btn:hover {
-  background: #e8f5e9;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-.farm-action-btn-danger {
-  color: #c0392b;
-}
-
-.farm-action-btn-danger:hover {
-  background: #fdecea;
-  box-shadow: 0 4px 12px rgba(192, 59, 44, 0.15);
-}
-
 /* ============ FARMS TABLE ============ */
 
 .farms-table-wrapper {
@@ -93,7 +63,11 @@
 }
 
 .farms-table thead {
-  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
+  background: linear-gradient(
+    135deg,
+    var(--forest-green) 0%,
+    var(--black-forest) 100%
+  );
 }
 
 .farms-table-th {
@@ -105,7 +79,7 @@
 }
 
 .farms-table td {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
   padding: 14px 20px;
 }
 
@@ -114,7 +88,7 @@
 }
 
 .farms-table tbody tr:hover {
-  background: #f0fdf4;
+  background: var(--tint-light);
 }
 
 .farms-table-row {
@@ -122,11 +96,11 @@
 }
 
 .farms-table-row-selected {
-  background: #dcfce7;
+  background: var(--tint-light);
 }
 
 .farms-table-row-selected:hover {
-  background: #dcfce7;
+  background: var(--tint-light);
 }
 
 /* Farm name cell with checkbox */
@@ -142,7 +116,7 @@
 
 .farms-table-selector {
   align-items: center;
-  border: 2px solid #cbd5e1;
+  border: 2px solid var(--border);
   border-radius: 4px;
   cursor: pointer;
   display: inline-flex;
@@ -153,8 +127,8 @@
 }
 
 .farms-table-selector-active {
-  background: #0e7a43;
-  border-color: #0e7a43;
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
   position: relative;
 }
 
@@ -166,7 +140,7 @@
 }
 
 .farms-table-selector:hover {
-  border-color: #0e7a43;
+  border-color: var(--forest-green);
   transform: scale(1.05);
 }
 
@@ -176,7 +150,7 @@
 
 /* Table cell styling */
 .farms-table-td-coords {
-  color: #64748b;
+  color: var(--muted);
   font-family: monospace;
   font-size: 0.85rem;
 }
@@ -192,13 +166,13 @@
 }
 
 .farm-status-active {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--tint-light);
+  color: var(--black-forest);
 }
 
 .farm-status-inactive {
-  background: #fee2e2;
-  color: #991b1b;
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg));
+  color: var(--danger-dark);
 }
 
 /* ============ TABLE EMPTY STATES ============ */
@@ -209,13 +183,13 @@
 }
 
 .farms-table-empty-text {
-  color: #1e293b;
+  color: var(--text);
   font-size: 1.1rem;
   margin-bottom: 8px;
 }
 
 .farms-table-empty-subtext {
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
@@ -249,7 +223,7 @@
 .farms-table-footer {
   align-items: center;
   background: #fff;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
   padding: 20px 24px;
@@ -296,7 +270,11 @@
 
 .farms-modal-header {
   align-items: center;
-  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
+  background: linear-gradient(
+    135deg,
+    var(--forest-green) 0%,
+    var(--black-forest) 100%
+  );
   border-radius: 16px 16px 0 0;
   display: flex;
   justify-content: space-between;
@@ -356,17 +334,17 @@
 }
 
 .register-farm-label {
-  color: #1e293b;
+  color: var(--text);
   font-size: 0.85rem;
   font-weight: 600;
 }
 
 .register-farm-required {
-  color: #e53e3e;
+  color: var(--danger);
 }
 
 .register-farm-input {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.9rem;
   padding: 10px 12px;
@@ -374,17 +352,17 @@
 }
 
 .register-farm-input:focus {
-  border-color: #0e7a43;
+  border-color: var(--forest-green);
   box-shadow: 0 0 0 3px rgba(14, 122, 67, 0.1);
   outline: none;
 }
 
 .register-farm-input-error {
-  border-color: #e53e3e;
+  border-color: var(--danger);
 }
 
 .register-farm-error {
-  color: #e53e3e;
+  color: var(--danger);
   font-size: 0.75rem;
 }
 
@@ -396,8 +374,8 @@
 }
 
 .register-farm-toggle {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 24px;
   cursor: pointer;
   font-size: 0.85rem;
@@ -406,13 +384,13 @@
 }
 
 .register-farm-toggle:hover {
-  background: #e2e8f0;
+  background: var(--border);
   transform: translateY(-1px);
 }
 
 .register-farm-toggle-active {
-  background: #0e7a43;
-  border-color: #0e7a43;
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
   color: #fff;
 }
 
@@ -424,46 +402,16 @@
   margin-top: 8px;
 }
 
-.register-farm-btn {
-  border: 0;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 10px 24px;
-  transition: all 0.2s ease;
-}
-
-.register-farm-btn-primary {
-  background: linear-gradient(135deg, #0e7a43 0%, #0a5c32 100%);
-  color: #fff;
-}
-
-.register-farm-btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(14, 122, 67, 0.3);
-  transform: translateY(-1px);
-}
-
-.register-farm-btn-secondary {
-  background: #f1f5f9;
-  color: #1e293b;
-}
-
-.register-farm-btn-secondary:hover:not(:disabled) {
-  background: #e2e8f0;
-  transform: translateY(-1px);
-}
-
 .register-farm-btn:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .register-farm-submit-error {
-  background: #fee2e2;
-  border-left: 4px solid #e53e3e;
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg));
+  border-left: 4px solid var(--danger);
   border-radius: 8px;
-  color: #991b1b;
+  color: var(--danger-dark);
   font-size: 0.85rem;
   padding: 12px;
 }
@@ -471,10 +419,10 @@
 /* ============ ERROR STATE ============ */
 
 .farms-page-error {
-  background: #fee2e2;
-  border-left: 4px solid #e53e3e;
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg));
+  border-left: 4px solid var(--danger);
   border-radius: 8px;
-  color: #991b1b;
+  color: var(--danger-dark);
   margin: 20px 7%;
   padding: 12px 20px;
 }
@@ -521,11 +469,6 @@
 }
 
 @media (max-width: 480px) {
-  .farm-action-btn {
-    font-size: 0.8rem;
-    padding: 8px 14px;
-  }
-
   .farms-table-th,
   .farms-table td {
     font-size: 0.8rem;
@@ -545,15 +488,15 @@
 }
 
 .farms-modal::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--surface);
   border-radius: 4px;
 }
 
 .farms-modal::-webkit-scrollbar-thumb {
-  background: #0e7a43;
+  background: var(--forest-green);
   border-radius: 4px;
 }
 
 .farms-modal::-webkit-scrollbar-thumb:hover {
-  background: #0a5c32;
+  background: var(--black-forest);
 }

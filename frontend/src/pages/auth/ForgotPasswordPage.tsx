@@ -77,7 +77,7 @@ function ForgotPasswordPage() {
 
             <button
               type="submit"
-              className="login-submit-btn"
+              className="btn-primary login-submit-btn"
               disabled={isDisabled}
             >
               {isLoading ? "Sending reset link..." : "Send reset link"}
