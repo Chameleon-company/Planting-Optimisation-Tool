@@ -135,8 +135,8 @@ export default function AhpPage() {
         <button
           className={
             selectedSpeciesId !== null && !isComparing && !results
-              ? "ahp-primary-btn"
-              : "ahp-primary-btn ahp-disabled-btn"
+              ? "btn-primary"
+              : "btn-primary ahp-disabled-btn"
           }
           onClick={startComparison}
           disabled={

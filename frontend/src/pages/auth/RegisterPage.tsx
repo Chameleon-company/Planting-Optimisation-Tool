@@ -73,7 +73,7 @@ function RegisterPage() {
               </p>
               <Link
                 to="/login"
-                className="login-submit-btn register-success-link"
+                className="btn-primary login-submit-btn register-success-link"
               >
                 Sign in
               </Link>
@@ -224,7 +224,7 @@ function RegisterPage() {
 
                 <button
                   type="submit"
-                  className="login-submit-btn"
+                  className="btn-primary login-submit-btn"
                   disabled={isLoading || isDisabled}
                 >
                   {isLoading ? "Registering..." : "Create account"}

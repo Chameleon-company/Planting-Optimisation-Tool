@@ -22,7 +22,7 @@ export default function FarmSearchInput({
       />
 
       {value && (
-        <button onClick={onClear} className="farm-page-nav-btn">
+        <button onClick={onClear} className="btn-primary">
           Clear
         </button>
       )}

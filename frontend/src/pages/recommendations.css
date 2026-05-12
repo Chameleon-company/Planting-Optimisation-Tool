@@ -50,9 +50,9 @@
 /* Action Buttons (Navigation) */
 .rec-action-btn {
   background: #fff;
-  border: 2px solid #007bff;
+  border: 2px solid var(--btn-primary);
   border-radius: 10px;
-  color: #007bff;
+  color: var(--btn-primary);
   cursor: pointer;
   font-weight: 600;
   min-width: 220px;
@@ -61,12 +61,12 @@
 }
 
 .rec-action-btn:hover {
-  background: #f8f9fa;
+  background: var(--surface);
   transform: translateY(-2px);
 }
 
 .rec-action-btn.active {
-  background: #007bff;
+  background: var(--btn-primary);
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
   color: #fff;
   transform: none;
@@ -74,10 +74,13 @@
 
 .rec-view-container {
   animation: fadeIn 0.4s ease-out;
+  background-color: var(--muted);
+  flex: 1;
+  padding-bottom: 60px;
 }
 
 .rec-view-title {
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid var(--border);
   font-size: 1.75rem;
   margin-bottom: 30px;
   padding-bottom: 12px;
@@ -86,8 +89,8 @@
 /* Form Controls */
 .rec-controls {
   align-items: flex-end;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   display: flex;
   gap: 24px;
@@ -102,49 +105,27 @@
 }
 
 .rec-label {
-  color: #444;
+  color: var(--black-forest);
   font-size: 0.95rem;
   font-weight: bold;
 }
 
 .rec-input {
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 1rem;
   padding: 14px;
   width: 160px;
 }
 
-/* Primary Button */
-.rec-primary-btn {
-  background-color: #28a745;
-  border: 0;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 14px 28px;
-  transition: background-color 0.2s;
-}
-
-.rec-primary-btn:hover:not(:disabled) {
-  background-color: #218838;
-}
-
-.rec-primary-btn:disabled {
-  background-color: #adb5bd;
-  cursor: not-allowed;
-}
-
 /* Results Display */
 .rec-results-card {
-  background-color: #fff;
-  border: 1px solid #dee2e6;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
   margin-top: 50px;
-  padding: 35px;
+  padding: 20px;
 }
 
 .rec-table {
@@ -154,27 +135,27 @@
 }
 
 .rec-th {
-  border-bottom: 2px solid #eee;
-  color: #555;
+  border-bottom: 2px solid var(--border);
+  color: var(--text);
   font-size: 0.95rem;
   padding: 16px;
   text-align: left;
 }
 
 .rec-td {
-  border-bottom: 1px solid #f8f9fa;
+  border-bottom: 1px solid var(--surface);
   padding: 16px;
 }
 
 .rec-primary-name {
-  color: #1a1a1a;
+  color: var(--text);
   font-size: 1.1rem;
   font-weight: bold;
   margin-bottom: 2px;
 }
 
 .rec-secondary-name {
-  color: #666;
+  color: var(--muted);
   font-size: 0.9rem;
   font-style: italic;
 }
@@ -192,10 +173,11 @@
 }
 
 .rec-progress-bar-bg {
-  background: #eee;
+  background: var(--border);
   border-radius: 5px;
   flex: 1;
   height: 10px;
+  min-width: 80px;
   overflow: hidden;
 }
 
@@ -204,23 +186,8 @@
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.rec-details-btn {
-  background: none;
-  border: 1px solid #007bff;
-  border-radius: 6px;
-  color: #007bff;
-  cursor: pointer;
-  font-weight: 500;
-  padding: 6px 12px;
-  transition: all 0.2s;
-}
-
-.rec-details-btn:hover {
-  background: #f8f9fa;
-}
-
 .rec-expanded-row {
-  background: #fafafa;
+  background: var(--surface);
 }
 
 /* Reason Dropdowns */
@@ -230,7 +197,7 @@
 }
 
 .rec-reason-header {
-  color: #888;
+  color: var(--muted);
   font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -239,6 +206,7 @@
 }
 
 .rec-reason-wrapper {
+  background-color: var(--surface);
   display: flex;
   justify-content: center;
 }
@@ -256,31 +224,31 @@
 }
 
 .rec-reason-item {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }
 
 /* States & Layouts */
 .rec-error-text {
-  background: #fee;
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg));
   border-radius: 8px;
-  color: #d32f2f;
+  color: var(--danger);
   margin-top: 25px;
   padding: 12px;
   text-align: center;
 }
 
 .rec-welcome {
-  border: 2px dashed #e0e0e0;
+  border: 2px dashed var(--border);
   border-radius: 24px;
-  color: #999;
+  color: var(--muted);
   padding: 100px 40px;
   text-align: center;
 }
 
 .rec-loading-full {
   align-items: center;
-  color: #007bff;
+  color: var(--btn-primary);
   display: flex;
   font-size: 1.2rem;
   height: 100vh;
@@ -295,8 +263,8 @@
 }
 
 .rec-data-item {
-  background: #fcfcfc;
-  border: 1px solid #f0f0f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   padding: 15px;
@@ -304,8 +272,8 @@
 
 .rec-placeholder-box {
   align-items: center;
-  background-color: #fafafa;
-  border: 2px dashed #dee2e6;
+  background-color: var(--surface);
+  border: 2px dashed var(--border);
   border-radius: 20px;
   display: flex;
   height: 350px;
@@ -319,22 +287,22 @@
 }
 
 .rec-wip-title {
-  color: #856404;
+  color: var(--muted);
   font-size: 1.8rem;
   margin-bottom: 15px;
 }
 
 .rec-wip-text {
-  color: #777;
+  color: var(--muted);
   font-size: 1.05rem;
   line-height: 1.6;
 }
 
 .rec-error-message {
-  background-color: #fee2e2;
-  border: 1px solid #ef4444;
+  background-color: color-mix(in srgb, var(--danger) 12%, var(--bg));
+  border: 1px solid var(--danger);
   border-radius: 0.5rem;
-  color: #b91c1c;
+  color: var(--danger-dark);
   margin: 1rem 0;
   padding: 1rem;
   width: 100%;
@@ -354,26 +322,30 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
+  padding: 10px 40px 0 0;
   width: 100%;
 }
 
 /* Styling for the download button itself */
 .rec-download-report-btn {
-  background-color: #28a745;
+  align-items: center;
+  background-color: var(--btn-primary);
   border: 0;
   border-radius: 8px;
   color: #fff;
   cursor: pointer;
+  display: flex;
   font-size: 1.25rem;
   font-weight: bold;
-  padding: 10px 20px;
+  gap: 8px;
+  padding: 15px;
   transition:
     background-color 0.2s,
     transform 0.1s;
 }
 
 .rec-download-report-btn:hover {
-  background-color: #218838;
+  background-color: var(--btn-primary-hover);
 }
 
 .rec-download-report-btn:active {

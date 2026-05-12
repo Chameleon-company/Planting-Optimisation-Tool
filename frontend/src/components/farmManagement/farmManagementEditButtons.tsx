@@ -42,20 +42,17 @@ export default function FarmManageActions({
     <>
       <div className="farm-actions">
         {canDelete && (
-          <button
-            className="farm-action-btn farm-action-btn-danger"
-            onClick={handleDeleteClick}
-          >
+          <button className="btn-danger" onClick={handleDeleteClick}>
             🗑️ Delete
           </button>
         )}
         {canEdit && (
-          <button className="farm-action-btn" onClick={onEdit}>
+          <button className="btn-primary" onClick={onEdit}>
             ✏️ Edit
           </button>
         )}
         {canAdd && (
-          <button className="farm-action-btn" onClick={onAdd}>
+          <button className="btn-primary" onClick={onAdd}>
             ➕ Register
           </button>
         )}
@@ -70,13 +67,10 @@ export default function FarmManageActions({
               undone.
             </p>
             <div className="delete-modal-actions">
-              <button className="farm-action-btn" onClick={handleCancelDelete}>
+              <button className="btn-primary" onClick={handleCancelDelete}>
                 Cancel
               </button>
-              <button
-                className="farm-action-btn farm-action-btn-danger"
-                onClick={handleConfirmDelete}
-              >
+              <button className="btn-danger" onClick={handleConfirmDelete}>
                 🗑️ Confirm Delete
               </button>
             </div>

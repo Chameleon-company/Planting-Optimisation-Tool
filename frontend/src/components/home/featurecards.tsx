@@ -1,8 +1,8 @@
+import { type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-// Create interface to set types for FeatureCardProps
 interface FeatureCardProps {
-  icon: string;
+  icon: ReactNode;
   title: string;
   text: string;
   href: string;
@@ -19,14 +19,16 @@ export default function FeatureCard({
     <Link to={href} className="featureCard">
       <div className="defaultContent">
         <div className="iconWrapper">
-          <span className="featureIcon">{icon}</span>
+          <div className="featureIcon">{icon}</div>
         </div>
         <h3 className="featureTitle">{title}</h3>
         <p className="featureText">{text}</p>
       </div>
       <div className="hoverContent">
-        <div className="hoverOverlay"></div>
-        <span className="centerButton">Explore Now</span>
+        <div className="iconWrapper iconWrapper--large">
+          <div className="featureIcon">{icon}</div>
+        </div>
+        <h3 className="featureTitleLarge">{title}</h3>
       </div>
     </Link>
   );

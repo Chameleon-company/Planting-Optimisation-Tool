@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -136,98 +136,22 @@ class FarmRead(FarmBase):
 
 
 class FarmUpdate(BaseModel):
-    rainfall_mm: Optional[int] = Field(
-        default=None,
-        title="Annual rainfall in millimetres",
-        description="Annual rainfall in millimetres",
-        ge=RAINFALL_MIN,
-        le=RAINFALL_MAX,
-    )
-    temperature_celsius: Optional[int] = Field(
-        default=None,
-        title="Annual average temperature",
-        description="Average temperature in Celsius",
-        ge=TEMPERATURE_MIN,
-        le=TEMPERATURE_MAX,
-    )
-    elevation_m: Optional[int] = Field(
-        default=None,
-        title="Elevation above sea level",
-        description="Elevation in metres",
-        ge=ELEVATION_MIN,
-        le=ELEVATION_MAX,
-    )
-    ph: Optional[Decimal] = Field(
-        default=None,
-        title="Soil acidity/alkalinity",
-        description="pH value",
-        ge=SOIL_PH_MIN,
-        le=SOIL_PH_MAX,
-        max_digits=2,
-        decimal_places=1,
-    )
-    soil_texture_id: Optional[SoilTextureID] = Field(
-        default=None,
-        title="Soil texture ID",
-        description="Soil texture ID number",
-    )
-    area_ha: Optional[Decimal] = Field(
-        default=None,
-        title="Farm area",
-        description="Total size of the farm in hectares",
-        ge=AREA_MIN,
-        le=AREA_MAX,
-        decimal_places=3,
-    )
-    latitude: Optional[Decimal] = Field(
-        default=None,
-        title="Latitude",
-        description="Geographic latitude",
-        ge=LATITUDE_MIN,
-        le=LATITUDE_MAX,
-        decimal_places=5,
-    )
-    longitude: Optional[Decimal] = Field(
-        default=None,
-        title="Longitude",
-        description="Geographic longitude",
-        ge=LONGITUDE_MIN,
-        le=LONGITUDE_MAX,
-        decimal_places=5,
-    )
-    coastal: Optional[bool] = Field(
-        default=None,
-        title="Coastal",
-        description="Is a coastal environment",
-    )
-    riparian: Optional[bool] = Field(
-        default=None,
-        title="Riparian",
-        description="Is a riparian environment",
-    )
-    nitrogen_fixing: Optional[bool] = Field(
-        default=None,
-        title="Nitrogen fixing",
-        description="Needs Nitrogen-fixing species",
-    )
-    shade_tolerant: Optional[bool] = Field(
-        default=None,
-        title="Shade Tolerant",
-        description="Needs shade tolerant species",
-    )
-    bank_stabilising: Optional[bool] = Field(
-        default=None,
-        title="Bank Stabilising",
-        description="Needs erosion control species",
-    )
-    slope: Optional[Decimal] = Field(
-        default=None,
-        title="Slope",
-        description="Indicates how steep the farm terrain is, based on elevation gradients.",
-        ge=SLOPE_MIN,
-        le=SLOPE_MAX,
-        decimal_places=2,
-    )
+    # Annotated is used to restate validators explicitly, as Pydantic v2 does not
+    # enforce Field constraints on Optional fields without it.
+    rainfall_mm: Optional[Annotated[int, Field(ge=RAINFALL_MIN, le=RAINFALL_MAX)]] = None
+    temperature_celsius: Optional[Annotated[int, Field(ge=TEMPERATURE_MIN, le=TEMPERATURE_MAX)]] = None
+    elevation_m: Optional[Annotated[int, Field(ge=ELEVATION_MIN, le=ELEVATION_MAX)]] = None
+    ph: Optional[Annotated[Decimal, Field(ge=SOIL_PH_MIN, le=SOIL_PH_MAX, max_digits=2, decimal_places=1)]] = None
+    soil_texture_id: Optional[SoilTextureID] = None
+    area_ha: Optional[Annotated[Decimal, Field(ge=AREA_MIN, le=AREA_MAX, decimal_places=3)]] = None
+    latitude: Optional[Annotated[Decimal, Field(ge=LATITUDE_MIN, le=LATITUDE_MAX, decimal_places=5)]] = None
+    longitude: Optional[Annotated[Decimal, Field(ge=LONGITUDE_MIN, le=LONGITUDE_MAX, decimal_places=5)]] = None
+    coastal: Optional[bool] = None
+    riparian: Optional[bool] = None
+    nitrogen_fixing: Optional[bool] = None
+    shade_tolerant: Optional[bool] = None
+    bank_stabilising: Optional[bool] = None
+    slope: Optional[Annotated[Decimal, Field(ge=SLOPE_MIN, le=SLOPE_MAX, decimal_places=2)]] = None
     agroforestry_type_ids: Optional[List[AgroforestryTypeID]] = None
     external_id: Optional[int] = Field(default=None, title="Temporary identifier for CSV import")
 

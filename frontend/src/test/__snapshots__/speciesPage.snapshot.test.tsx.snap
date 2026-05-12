@@ -2,28 +2,22 @@
 
 exports[`SpeciesPage Snapshot > matches snapshot after data loads 1`] = `
 <div>
-  <div>
-    <section
-      class="species-container"
-    >
+  <div
+    class="species-page"
+  >
+    <section>
       <div
-        class="hero"
+        class="page-header"
       >
-        <div
-          class="hero species-hero"
-        >
-          <h1>
-            Species Information
-          </h1>
-          <p>
-            Understanding Your Species
-          </p>
-        </div>
+        <h1>
+          Species Information
+        </h1>
+        <p>
+          Understanding Your Species
+        </p>
       </div>
     </section>
-    <section
-      class="species-container"
-    >
+    <section>
       <div
         class="species-search"
       >
@@ -42,7 +36,7 @@ exports[`SpeciesPage Snapshot > matches snapshot after data loads 1`] = `
             value=""
           />
           <button
-            class="search-btn"
+            class="btn-primary search-btn"
           >
             <span
               class="search-icon"

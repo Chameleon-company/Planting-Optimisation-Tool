@@ -127,7 +127,7 @@ export default function GlobalWeightsPage() {
             />
             <label
               htmlFor="epi-csv-upload"
-              className="ahp-primary-btn"
+              className="btn-primary"
               style={{
                 margin: 0,
                 textAlign: "center",
@@ -169,7 +169,7 @@ export default function GlobalWeightsPage() {
           />
           <label
             htmlFor="csv-upload"
-            className="ahp-primary-btn"
+            className="btn-primary"
             style={{ textAlign: "center", display: "inline-block" }}
           >
             {isLoading ? "Processing..." : "Select & Upload CSV"}

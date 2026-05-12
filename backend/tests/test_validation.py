@@ -95,6 +95,88 @@ async def test_farm_create_constraints(
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "field, invalid_value",
+    [
+        ("rainfall_mm_min", 150),
+        ("rainfall_mm_max", 6000),
+        ("temperature_celsius_min", 5),
+        ("temperature_celsius_max", 45),
+        ("elevation_m_max", 3500),
+        ("ph_min", 3.5),
+        ("ph_max", 9.0),
+    ],
+)
+@pytest.mark.asyncio
+async def test_species_update_constraints(async_client: AsyncClient, test_admin_user, admin_auth_headers, field, invalid_value):
+    """Verifies Pydantic Field constraints are enforced on SpeciesUpdate Optional fields."""
+    create_payload = {
+        "name": "Test Species",
+        "common_name": "Testy",
+        "rainfall_mm_min": 1000,
+        "rainfall_mm_max": 2000,
+        "temperature_celsius_min": 20,
+        "temperature_celsius_max": 25,
+        "elevation_m_min": 100,
+        "elevation_m_max": 500,
+        "ph_min": 5.5,
+        "ph_max": 7.5,
+        "coastal": False,
+        "riparian": False,
+        "nitrogen_fixing": False,
+        "shade_tolerant": False,
+        "bank_stabilising": False,
+    }
+
+    create_response = await async_client.post("/species", json=create_payload, headers=admin_auth_headers)
+    assert create_response.status_code == 201
+    species_id = create_response.json()["id"]
+
+    response = await async_client.put(f"/species/{species_id}", json={field: invalid_value}, headers=admin_auth_headers)
+
+    assert response.status_code == 422
+    assert field in response.text
+
+
+@pytest.mark.parametrize(
+    "field, invalid_value",
+    [
+        ("rainfall_mm", 400),
+        ("ph", 9.5),
+        ("area_ha", 150),
+        ("latitude", 100),
+        ("slope", -5),
+    ],
+)
+@pytest.mark.asyncio
+async def test_farm_update_constraints(async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture, field, invalid_value):
+    """Verifies Pydantic Field constraints are enforced on FarmUpdate Optional fields."""
+    create_payload = {
+        "rainfall_mm": 1500,
+        "temperature_celsius": 22,
+        "elevation_m": 500,
+        "ph": 6.5,
+        "soil_texture_id": 1,
+        "area_ha": 50.0,
+        "latitude": -8.5,
+        "longitude": 126.5,
+        "coastal": False,
+        "riparian": False,
+        "nitrogen_fixing": False,
+        "shade_tolerant": False,
+        "bank_stabilising": False,
+        "slope": 10.5,
+    }
+
+    create_response = await async_client.post("/farms", json=create_payload, headers=admin_auth_headers)
+    assert create_response.status_code == 201
+    farm_id = create_response.json()["id"]
+
+    response = await async_client.put(f"/farms/{farm_id}", json={field: invalid_value}, headers=admin_auth_headers)
+
+    assert response.status_code == 422
+
+
 @pytest.mark.asyncio
 async def test_species_with_soil_textures(async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture):
     """Tests that a species can be created with multiple soil texture associations."""

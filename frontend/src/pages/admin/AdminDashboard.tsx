@@ -10,10 +10,7 @@ function AdminDashboard() {
       {/* Management Section */}
       <section className="admin-page-card">
         <h2>Management Operations</h2>
-        <p>
-          This is the core dashboard shell for admin and manager management
-          pages.
-        </p>
+        <p>This is the core dashboard shell for admin management pages.</p>
         <div className="settings-grid">
           {/* Species Management Card */}
           <NavLink to="/admin/species" className="settings-card">
