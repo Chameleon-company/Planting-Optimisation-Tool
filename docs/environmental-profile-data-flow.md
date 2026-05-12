@@ -371,4 +371,4 @@ The tests verify:
 
 The pipeline requires both a `Farm` record and a `FarmBoundary` record to exist in the database before it can run. This means the endpoint cannot be used to profile a candidate farm boundary before the farm has been saved.
 
-In the intended UI workflow - where a user draws a boundary, reviews the derived environmental profile, then confirms or adjusts values before saving - a default Farm record and boundary must be written to the database first before this endpoint can be called. The profile can not generated be from a boundary alone.
+In the intended UI workflow where a user draws a boundary, reviews the derived environmental profile, then confirms or adjusts values before saving a default Farm record and boundary must be written to the database first before this endpoint can be called. The profile can not generated be from a boundary alone.
