@@ -61,6 +61,6 @@ Smallholder farmers in Timor-Leste face low tree-survival rates due to poor envi
 - Exploratory and predictive modelling
 
 ### GIS / Remote Sensing
-- **QGIS**, **GDAL**, **Rasterio**, **GeoPandas**  
+- **Rasterio**, **GeoPandas** 
 - Extraction of rainfall, soil, elevation, slope, and temperature layers from raster and geospatial datasets
 - Spatial aggregation for farm-level profile generation

@@ -80,33 +80,63 @@ To successfully run the `generate_environmental_profile` feature from the `GIS` 
 
 #### Once this is complete, please proceed to [justfile](#justfile-commands) for initial data ingestion.
 
-## Folder Structure:
+## Folder Structure
 
 ```bash
 backend/
-├── alembic/                # Database migration scripts and history
-│   └── versions/           # Migration files
-├── init-db/                # Initial SQL scripts for container setup
-├── src/                    # Main application source code
-│   ├── domains/            # Domain data contracts for integration layer with sub-projects
-│   ├── keys/               # Service account credentials
-│   ├── models/             # SQLAlchemy database models
-│   ├── routers/            # FastAPI route definitions (API endpoints)
-│   ├── schemas/            # Pydantic models for data validation
-│   ├── scripts/            # Scripts for initial database ingestion
-│   │   └── data/           # Seeding data for scripts
-│   └── services/           # Service layer connectivity
-├── locust/                 # Locust load-test scripts
-└── tests/                  # Pytest suite for automated testing
-    └── test_environmental_profile_service.py  # Imputation service integration tests
-├── ERD.md                  # Entity-Relationship Diagram of current database
-├── README.md               # This file
-├── SCHEMA.md               # Current database schema
-├── alembic.ini             # Alembic configuration file
-├── docker-compose.yaml     # Configuration file for the database container
-├── justfile                # Command runner for common project tasks/shortcuts
-├── pyproject.toml          # Project metadata and dependencies list
-└── uv.lock                 # Lockfile for python dependencies
+├── alembic/                    # Alembic migration configuration and history
+│   ├── versions/               # Database migration files
+│   ├── README                  # Alembic default documentation
+│   ├── env.py                  # Alembic environment configuration
+│   └── script.py.mako          # Alembic migration template
+│
+├── docs/                       # Backend documentation
+│
+├── init-db/                    # Database initialisation SQL scripts
+│   └── 01-remove-extensions.sql
+│
+├── locust/                     # Load testing scripts
+│   ├── locustfile.py
+│   └── seed_users.py
+│
+├── src/                        # Main FastAPI application source
+│   ├── domains/                # Domain contracts and integration models
+│   ├── models/                 # SQLAlchemy ORM database models
+│   ├── routers/                # FastAPI route definitions
+│   ├── schemas/                # Pydantic request/response schemas
+│   ├── scripts/                # Utility and ingestion scripts
+│   ├── services/               # Business logic and service layer
+│   ├── utils/                  # Shared utility helpers
+│   ├── __init__.py
+│   ├── cache.py                # Redis caching utilities
+│   ├── config.py               # Application configuration
+│   ├── database.py             # Database connection setup
+│   ├── dependencies.py         # Shared FastAPI dependencies
+│   ├── generate_erd.py         # ERD generation script
+│   ├── generate_schema.py      # Schema documentation generator
+│   └── main.py                 # FastAPI application entry point
+│
+├── tests/                      # Automated pytest suite
+│   ├── models/                 # Model tests
+│   ├── routes/                 # API route tests
+│   ├── schemas/                # Schema validation tests
+│   ├── services/               # Service layer tests
+│   ├── conftest.py             # Shared pytest fixtures
+│   └── test_*.py               # Integration and feature tests
+│
+├── .env.example                # Example environment variables
+├── .gitignore
+├── .python-version
+├── Dockerfile                  # Backend container configuration
+├── ERD.md                      # Entity Relationship Diagram
+├── README.md                   # Backend documentation
+├── SCHEMA.md                   # Generated database schema documentation
+├── alembic.ini                 # Alembic configuration
+├── docker-compose.yml          # Local development services
+├── justfile                    # Task runner commands
+├── package-lock.json
+├── pyproject.toml              # Python dependencies and project config
+└── uv.lock                     # Dependency lock file
 ```
 
 
@@ -263,7 +293,7 @@ The following endpoints have role-based access control implemented:
 | `/farms/` | POST | OFFICER | Create new farm |
 | `/farms/{farm_id}` | GET | OFFICER | Read farm by ID (ownership verified) |
 | `/species/` | POST | SUPERVISOR | Create new species |
-| `/environmental-profile/` | POST | OFFICER | Get environmental profile |
+| `/profile/{farm_id}` | GET | OFFICER | Get environmental profile |
 | `/sapling-estimation/calculate` | POST | OFFICER | Calculate sapling estimation |
 | `/recommendations/` | POST | OFFICER | Generate recommendations |
 | `/recommendations/{farm_id}` | GET | OFFICER | Get farm recommendations |
@@ -367,7 +397,6 @@ This section documents current system limitations, validation behaviour, and are
   - `PUT /users/{user_id}`
 
 **Future Improvements**
-- Normalize email addresses to lowercase.
 - Normalize names to a standard format before storage and lookup.
 
 ---
