@@ -17,9 +17,13 @@ describe("HomePage", () => {
 
     // Check key UI text exists
     expect(
-      screen.getByText(/Generate environmental profile/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Bulk Sapling Calculator/i)).toBeInTheDocument();
-    expect(screen.getByText(/Species Information/i)).toBeInTheDocument();
+      screen.getAllByText(/Agroforestry Recommendations/i).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Sapling Estimation Calculator/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Species Information/i).length).toBeGreaterThan(
+      0
+    );
   });
 });

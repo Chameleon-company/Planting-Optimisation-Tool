@@ -39,12 +39,12 @@ export default function MainLayout() {
               Home
             </NavLink>
             <NavLink
-              to="/profile"
+              to="/recommendation"
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
             >
-              Environmental Profile
+              Agroforestry Recommendation
             </NavLink>
             <NavLink
               to="/calculator"
@@ -55,12 +55,12 @@ export default function MainLayout() {
               Sapling Calculator
             </NavLink>
             <NavLink
-              to="/recommendation"
+              to="/profile"
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
             >
-              Agroforestry Recommendation
+              Environmental Profile
             </NavLink>
             <NavLink
               to="/species"
@@ -77,8 +77,8 @@ export default function MainLayout() {
                 <span>Welcome, {user.name}</span>
                 {/* Conditionally render the Admin button */}
                 {user.role === "admin" && (
-                  <NavLink to="/admin" className="login-btn">
-                    Admin
+                  <NavLink to="/admin" className="admin-panel-btn">
+                    Admin Panel
                   </NavLink>
                 )}
                 <button onClick={handleLogout} className="logout-btn">
@@ -127,15 +127,15 @@ export default function MainLayout() {
                 <NavLink to="/">Home</NavLink>
               </li>
               <li>
-                <NavLink to="/profile">Environmental Profile</NavLink>
+                <NavLink to="/recommendation">
+                  Agroforestry Recommendation
+                </NavLink>
               </li>
               <li>
                 <NavLink to="/calculator">Sapling Calculator</NavLink>
               </li>
               <li>
-                <NavLink to="/recommendation">
-                  Agroforestry Recommendation
-                </NavLink>
+                <NavLink to="/profile">Environmental Profile</NavLink>
               </li>
               <li>
                 <NavLink to="/species">Species</NavLink>

@@ -81,11 +81,11 @@ describe("FeatureCard", () => {
       </MemoryRouter>
     );
 
-    // Expect all content to be present
-    expect(screen.getByText("📍")).toBeInTheDocument();
+    // Expect all content to be present (icon and title appear twice: default + hover)
+    expect(screen.getAllByText("📍").length).toBeGreaterThan(0);
     expect(
-      screen.getByText("Generate environmental profile")
-    ).toBeInTheDocument();
+      screen.getAllByText("Generate environmental profile").length
+    ).toBeGreaterThan(0);
     expect(
       screen.getByText("Provide your farm's boundaries.")
     ).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe("FeatureCard", () => {
     expect(link).toHaveAttribute("href", "/profile");
   });
 
-  it("renders the 'Explore Now' hover button", () => {
+  it("renders the title in both default and hover content", () => {
     // Render FeatureCard inside MemoryRouter as it uses Link
     render(
       <MemoryRouter>
@@ -122,13 +122,14 @@ describe("FeatureCard", () => {
       </MemoryRouter>
     );
 
-    // Expect explore button to be present
-    expect(screen.getByText("Explore Now")).toBeInTheDocument();
+    // Title appears in both defaultContent (featureTitle) and hoverContent (featureTitleLarge)
+    const titles = screen.getAllByText("Generate environmental profile");
+    expect(titles.length).toBe(2);
   });
 });
 
 describe("FeaturesSection", () => {
-  it("renders all three feature cards", () => {
+  it("renders all four feature cards", () => {
     // Render FeaturesSection inside MemoryRouter as cards use Link
     render(
       <MemoryRouter>
@@ -136,12 +137,19 @@ describe("FeaturesSection", () => {
       </MemoryRouter>
     );
 
-    // Expect all three feature titles to be present
+    // Each title appears twice (defaultContent + hoverContent), so use getAllByText
     expect(
-      screen.getByText("Generate environmental profile")
-    ).toBeInTheDocument();
-    expect(screen.getByText("Bulk Sapling Calculator")).toBeInTheDocument();
-    expect(screen.getByText("Species Information")).toBeInTheDocument();
+      screen.getAllByText("Agroforestry Recommendations").length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Sapling Estimation Calculator").length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Generate Environmental Profile").length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Species Information").length).toBeGreaterThan(
+      0
+    );
   });
 
   it("renders three links with correct hrefs", () => {
@@ -160,7 +168,7 @@ describe("FeaturesSection", () => {
     expect(hrefs).toContain("/species");
   });
 
-  it("renders three 'Explore Now' buttons", () => {
+  it("renders four feature card links", () => {
     // Render FeaturesSection inside MemoryRouter as cards use Link
     render(
       <MemoryRouter>
@@ -168,9 +176,9 @@ describe("FeaturesSection", () => {
       </MemoryRouter>
     );
 
-    // Expect three explore buttons, one per card
-    const exploreButtons = screen.getAllByText("Explore Now");
-    expect(exploreButtons.length).toBe(3);
+    // Expect four links, one per feature card
+    const links = screen.getAllByRole("link");
+    expect(links.length).toBe(4);
   });
 });
 
@@ -180,7 +188,6 @@ describe("Landing", () => {
     render(
       <MemoryRouter>
         <Landing
-          video="assets/videos/herobg.mp4"
           tagline="Planting Optimisation Tool"
           subtitle="Generate your environmental profile!"
           exploreButton="Generate"
@@ -200,7 +207,6 @@ describe("Landing", () => {
     render(
       <MemoryRouter>
         <Landing
-          video="assets/videos/herobg.mp4"
           tagline="Planting Optimisation Tool"
           subtitle="Generate your environmental profile!"
           exploreButton="Generate"
@@ -214,10 +220,10 @@ describe("Landing", () => {
     ).toBeInTheDocument();
   });
 
-  it("navigates to /profile when explore button is clicked", async () => {
+  it("navigates to /recommendation when explore button is clicked", async () => {
     const user = userEvent.setup();
 
-    // Render Landing inside MemoryRouter with profile route defined
+    // Render Landing inside MemoryRouter with recommendation route defined
     render(
       <MemoryRouter initialEntries={["/"]}>
         <Routes>
@@ -225,40 +231,23 @@ describe("Landing", () => {
             path="/"
             element={
               <Landing
-                video="assets/videos/herobg.mp4"
                 tagline="Planting Optimisation Tool"
                 subtitle="Generate your environmental profile!"
                 exploreButton="Generate"
               />
             }
           />
-          <Route path="/profile" element={<div>Profile Page</div>} />
+          <Route
+            path="/recommendation"
+            element={<div>Recommendation Page</div>}
+          />
         </Routes>
       </MemoryRouter>
     );
 
-    // Click explore button and expect navigation to profile
+    // Click explore button and expect navigation to recommendation
     await user.click(screen.getByRole("button", { name: "Generate" }));
-    expect(screen.getByText("Profile Page")).toBeInTheDocument();
-  });
-
-  it("renders video element with correct source", () => {
-    // Render Landing inside MemoryRouter as it uses useNavigate
-    render(
-      <MemoryRouter>
-        <Landing
-          video="assets/videos/herobg.mp4"
-          tagline="Planting Optimisation Tool"
-          subtitle="Generate your environmental profile!"
-          exploreButton="Generate"
-        />
-      </MemoryRouter>
-    );
-
-    // Expect video source to have correct src and type
-    const source = document.querySelector("source");
-    expect(source).toHaveAttribute("src", "assets/videos/herobg.mp4");
-    expect(source).toHaveAttribute("type", "video/mp4");
+    expect(screen.getByText("Recommendation Page")).toBeInTheDocument();
   });
 });
 

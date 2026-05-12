@@ -13,19 +13,30 @@ function HomePage() {
 
       {/* Landing component, hand values to component and display */}
       <Landing
-        video="assets/videos/herobg.mp4"
         tagline="Planting Optimisation Tool"
-        subtitle="Generate your environmental profile!"
-        exploreButton="Generate"
+        subtitle="Find the best suited species for your farm!"
+        exploreButton="Find"
       />
 
       {/* AboutSection component, hand values to component and display */}
       <AboutSection
         logoSrc="/assets/images/logo2.svg"
-        logoAlt="xpandFoundation Logo"
-        tagline="A tool developed under xpandFoundation"
+        logoAlt="Planting Optimisation Tool Logo"
+        tagline="A tool developed in partnership with xPand Foundation and the Rai Matak project."
         title="About Us"
         description="We help farmers in Timor-Leste generate their environmental profile to discover the best tree species for their land."
+        partners={[
+          {
+            src: "/assets/images/xPand_logo.png",
+            alt: "xPand Foundation",
+            href: "https://xpand.net.au/",
+          },
+          {
+            src: "/assets/images/rai-matak.svg",
+            alt: "Rai Matak",
+            href: "https://www.raimatak.org/",
+          },
+        ]}
       />
 
       {/* Features component, values stored in component */}
