@@ -9,7 +9,7 @@ The module integrates three primary data sources:
 1. **Global datasets** via Google Earth Engine (GEE) - providing satellite-derived climate and terrain data with validated accuracy
 2. **Local datasets** by the Product Owner (PO) - including ground-truth measurements, farm boundaries, and field surveys specific to Timor-Leste
 
-All datasets have been rigorously validated against 940 farm measurements collected by the Product Owner between 2020-2024. This validation period was chosen because it represents recent, high-quality ground truth data, but the system can extract historical data from GEE datasets dating back to their respective start dates (e.g., CHIRPS: 1981-present, MODIS: 2000-present).
+All datasets have been rigorously validated against 3,201 farm measurements collected by the Product Owner between 2020-2024. This validation period was chosen because it represents recent, high-quality ground truth data, but the system can extract historical data from GEE datasets dating back to their respective start dates (e.g., CHIRPS: 1981-present, MODIS: 2000-present).
 
 ### Key Capabilities
 
@@ -34,11 +34,13 @@ All datasets have been rigorously validated against 940 farm measurements collec
 
 All datasets have undergone comprehensive validation against Product Owner field measurements (2020-2024 period):
 
-- **Excellent correlation** (r > 0.95): Rainfall, Elevation, Farm Area
-- **Good correlation** (r > 0.85): Temperature (with bias correction applied)
+- **Excellent correlation** (r > 0.95): CHIRPS rainfall, SRTM elevation, and geometry-derived farm area
+- **Good correlation** (r > 0.85): Temperature (with bias correction recommended)
 - **Poor correlation** (r < 0.20): Soil pH (flagged for local calibration)
 
-The module automatically applies validated bias corrections and includes data quality warnings for unreliable variables. Note that while validation was performed on 2020-2024 data, the extraction functions work for any year within each dataset's temporal coverage.
+The module includes recommendations for bias correction where systematic offsets were identified during validation. Note that while validation was performed on 2020-2024 data, the extraction functions work for any year within each dataset's temporal coverage.
+
+Validation experiments showed that polygon aggregation provided only marginal improvements over centroid extraction while significantly increasing computational cost. Therefore, centroid extraction is recommended for operational deployment.
 
 ## Project Structure
 
@@ -99,7 +101,7 @@ gis/
 
 - **Individual Operations**: Extract data for single farm locations
 - **Bulk Operations**: Process hundreds of farms in parallel
-- **Dataset Validation**: All datasets validated against 940 ground truth measurements
+- **Dataset Validation**: All datasets validated against 3,201 farm measurements
 - **Flexible Input**: Accepts points, polygons, or coordinate lists
 - **Error Handling**: Graceful handling of missing data and invalid inputs
 - **Temporal Data**: Supports year-specific queries for rainfall and temperature
@@ -108,24 +110,24 @@ gis/
 
 ### Google Earth Engine Datasets (Global - Used for API )
 
-| Dataset     | Variable    | Resolution | Temporal Coverage | Validation (2020-2024) | Status                 |
-| ----------- | ----------- | ---------- | ----------------- | ---------------------- | ---------------------- |
-| CHIRPS      | Rainfall    | 5.5 km     | 1981-present      | r=0.96, MAE=23mm       | Excellent              |
-| SRTM DEM    | Elevation   | 90 m       | Static (2000)     | r=0.98, MAE=11m        | Excellent              |
-| MODIS LST   | Temperature | 1 km       | 2000-present      | r=0.87, MAE=1.5°C      | Good (bias corrected)  |
-| OpenLandMap | Soil pH     | 250 m      | Static (~2020)    | r=0.18, MAE=1.21       | Poor (not recommended) |
+| Dataset     | Variable    | Resolution | Temporal Coverage | Validation (2020-2024) | Status                         |
+| ----------- | ----------- | ---------- | ----------------- | ---------------------- | ------------------------------ |
+| CHIRPS      | Rainfall    | 5.5 km     | 1981-present      | r=0.969, MAE=24.3mm    | Excellent                      |
+| SRTM DEM    | Elevation   | 90 m       | Static (2000)     | r=0.998, MAE=7.97m     | Excellent                      |
+| MODIS LST   | Temperature | 1 km       | 2000-present      | r=0.880, MAE=3.82°C    | Good (bias correction needed)  |
+| OpenLandMap | Soil pH     | 250 m      | Static (~2020)    | r=0.188, MAE=1.27      | Poor (not recommended)         |
 
 ### Product Owner (PO) Datasets (Timor-Leste)
 
 Local datasets collected and maintained by the Product Owner (field measurements and surveys):
 
-| Dataset         | Variable               | Source                                           | Coverage          |
-| --------------- | ---------------------- | ------------------------------------------------ | ----------------- |
-| Farm Boundaries | Geometry               | farm_boundaries.gpkg                             | 940 farms         |
-| Rainfall        | 5-year avg (2020-2024) | CHIRPS_5yr_Avg_Annual_Rainfall_2020_2024_30m     | Timor-Leste       |
-| Temperature     | 5-year avg (2020-2024) | MOD11A2_5yr_Avg_Annual_temperature_2020_2024_30m | Timor-Leste       |
-| Soil pH         | Point measurements     | PO soil surveys                                  | 911 field samples |
-| Soil Texture    | Texture classes        | QGIS Soil Texture                                | Selected regions  |
+| Dataset         | Variable               | Source                                           | Coverage           |
+| --------------- | ---------------------- | ------------------------------------------------ | ------------------ |
+| Farm Boundaries | Geometry               | farm_boundaries_sampled.gpkg                     | 3,201 farms        |
+| Rainfall        | 5-year avg (2020-2024) | CHIRPS_5yr_Avg_Annual_Rainfall_2020_2024_30m     | Timor-Leste        |
+| Temperature     | 5-year avg (2020-2024) | MOD11A2_5yr_Avg_Annual_temperature_2020_2024_30m | Timor-Leste        |
+| Soil pH         | Point measurements     | PO soil surveys                                  | 3,154 valid samples|
+| Soil Texture    | Texture classes        | QGIS Soil Texture                                | Selected regions   |
 
 **Note**: PO datasets represent ground-truth measurements used to validate the global GEE datasets.
 
@@ -322,7 +324,7 @@ Returns the annual rainfall (mm) for a given geometry and specified year.
 
 **Temporal Coverage:** 1981 to present (updated regularly)
 
-**Validation:** r=0.96, MAE=23mm - Validated against Product Owner field station measurements from 2020-2024 period (Excellent correlation)
+**Validation:** r=0.969, MAE=24.3mm - Validated against Product Owner field station measurements from 2020-2024 period (Excellent correlation)
 
 **Parameters:**
 
@@ -357,7 +359,7 @@ rainfall_default = get_rainfall((-8.569, 126.676))
 - Resolution: 5.5 km
 - Temporal range: **1981 to present** (not limited to 2020-2024)
 - Validation performed on 2020-2024 data, but extraction works for any year
-- Most reliable dataset (r=0.96 validation against PO ground truth)
+- Most reliable dataset (r=0.969 validation against PO ground truth)
 - Automatically aggregates daily values to annual totals
 - Data updated regularly by UCSB Climate Hazards Center
 
@@ -386,14 +388,14 @@ Returns the mean annual land surface temperature (°C) for a given geometry and 
 
 **Temporal Coverage:** 2000 to present (updated regularly)
 
-**Validation:** r=0.87, MAE=1.5°C - Validated against Product Owner weather station measurements from 2020-2024 period with automatic bias correction applied (Good correlation)
+**Validation:** r=0.880, MAE=3.82°C before bias correction - Validated against Product Owner weather station measurements from 2020-2024 period. Validation identified a consistent warm bias relative to PO air temperature measurements.
 
 **Parameters:**
 
 - `geometry` (tuple|list|ee.Geometry): Point or polygon coordinates
 - `year` (int, optional): Specific year for data extraction. If None, defaults to 2024.
 
-**Returns:** `float` - Mean annual temperature in Celsius (bias-corrected) for the specified year
+**Returns:** `float` - Mean annual land surface temperature in Celsius for the specified year
 
 **Example:**
 
@@ -402,7 +404,7 @@ from gis.core.extract_data import get_temperature
 
 # Get temperature for specific year
 temp_2024 = get_temperature((-8.569, 126.676), year=2024)
-# Returns: 24.3°C (automatically bias-corrected)
+# Returns: 24.3°C 
 
 temp_2010 = get_temperature((-8.569, 126.676), year=2010)
 # Returns: 23.8°C
@@ -418,9 +420,8 @@ temp_default = get_temperature((-8.569, 126.676))
 **Notes:**
 
 - Measures land surface temperature (LST), not air temperature
-- **Automatic bias correction**: -4.43°C adjustment applied to match PO air temperature measurements
+- Suggested bias correction: T_air ≈ T_MODIS − 3.82°C
 - This correction accounts for daytime solar heating of land surface vs. air temperature
-- After correction: Excellent agreement with ground truth (MAE=1.5°C)
 - Resolution: 1 km
 - Temporal range: **2000 to present** (not limited to 2020-2024)
 - Validation performed on 2020-2024 data, but extraction works for any year since 2000
@@ -450,7 +451,7 @@ Returns the soil pH value for a given geometry.
 
 **Data Source:** OpenLandMap Soil pH (0-5cm depth)
 
-**Validation:** r=0.18, MAE=1.21 pH units - Validated against Product Owner soil survey data (Poor correlation - NOT RECOMMENDED)
+**Validation:** r=0.188, MAE=1.27 pH units - Validated against Product Owner soil survey data (Poor correlation - NOT RECOMMENDED)
 
 **Parameters:**
 
@@ -471,14 +472,14 @@ ph = get_ph((-8.569, 126.676))
 **WARNING - Low Data Quality:**
 
 - Very low correlation (r=0.18) with Product Owner field measurements
-- Shows severe value compression (predicts 5.5-6.5 vs actual range 5.0-8.0)
+- Shows severe value compression (predicts approximately 5.0–6.5 while PO measurements span 5.6–8.5)
 - Systematic underestimation in alkaline soils (errors of -2 to -3 pH units above pH 7)
 - Root cause: Sparse training data in tropical Southeast Asia
 - **NOT RECOMMENDED** for operational use in Timor-Leste
 
 **Recommendation:**
 
-- Use Product Owner field measurements directly (911 samples available)
+- Use Product Owner field measurements directly (3,154 samples available)
 - Develop local calibration model using PO data with predictors:
   - Elevation (r=0.98 - strongest proxy)
   - Rainfall patterns
@@ -500,7 +501,7 @@ Returns the elevation (m) for a given geometry.
 
 **Data Source:** SRTM (Shuttle Radar Topography Mission) DEM 90m
 
-**Validation:** r=0.98, MAE=11m (Excellent)
+**Validation:** r=0.998, MAE=7.97m (Excellent)
 
 **Parameters:**
 
@@ -520,7 +521,7 @@ elevation = get_elevation((-8.569, 126.676))
 
 **Notes:**
 
-- Very high accuracy (r=0.98)
+- Very high accuracy (r=0.998)
 - Resolution: 90 m
 - Static dataset (no temporal variation)
 - Used for coastal flag calculation
