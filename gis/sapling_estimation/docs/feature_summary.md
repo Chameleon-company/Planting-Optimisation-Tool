@@ -3,9 +3,13 @@
 ## Introduction
 This document outlines the estimation algorithm used to estimate the maximum number of saplings that can be planted on a farm, while considering terrain features such as slope and rotation.
 
-The feature begins with a farm boundary/polygon for the input farm that is passed by the API, it matches the polygon with the Digital Elevation Model (DEM) raster, which is converted into a slope raster to identify terrain steepness. A square grid of planting points is generated using the default 3m spacing to define the planting areas (Each planting area would be a 3x3m square); the polygon is then rotated by potential angles to determine the orientation that maximizes sapling count. Finally, a slope rule of 15 degrees is applied to remove planting points on the terrain that is too steep, and the estimator/main algorithm outputs the final sapling count and optimal rotation angle of the input farm, which is passed back to the API.
+The sapling estimation feature accepts `farm_id`, `spacing_x`, `spacing_y`, and `max_slope` as inputs. The system retrieves the farm boundary from the database and matches it against the Digital Elevation Model (DEM) raster to generate slope data for terrain analysis.
 
-The algorithm scales with the number of planting points. Larger farms produce more points, which increases computation time for grid generation, rotation mechanism, and slope sampling.
+A planting grid is generated using the configured spacing values (`spacing_x`, `spacing_y`) to define planting area dimensions. The grid is then rotated through angles between 0–90 degrees to identify the orientation that produces the maximum planting count.
+
+A configurable slope threshold (`max_slope`) is applied to remove planting points located on terrain that exceeds the allowed slope. The algorithm returns the optimised planting count, optimal rotation angle, and rotation statistics for the input farm.
+
+The computational cost increases with the number of generated planting points and terrain sampling operations. Factors such as planting density, farm boundary complexity, and rotation analysis can affect processing time.
 
 ## Inputs and Outputs
 
@@ -16,12 +20,27 @@ Provides farm elevation data, used for computing slope.
 #### Farm Boundary Polygon (Shapely file passed by API)
 Defines the input farm's boundaries/polygons, used for generating planting points.
 
-### Outputs
-#### Optimal Rotation Angle
-Defines the orientation of the planting points grid that maximizes sapling count.
+#### Spacing and Slope Parameters
+- `spacing_x` – Horizontal spacing between saplings
+- `spacing_y` – Vertical spacing between saplings
+- `max_slope` – Maximum allowed terrain slope for planting
 
-#### Final Sapling Count
-An estimate of the maximum number of saplings that can be planted on the farm, after applying slope rules and grid rotation.
+### Outputs
+
+#### Pre-Slope Count
+Number of planting points before slope filtering.
+
+#### Final Aligned Count
+Final planting point count after applying slope filtering.
+
+#### Optimal Rotation Angle
+Rotation angle that maximizes planting capacity.
+
+#### Rotation Statistics
+- Rotation average
+- Rotation standard deviation
+
+Used to analyse planting density consistency across tested rotations.
 
 #### Planting Points Grid (final_grid.shp)
 Defines the planting areas of the farm, adjusted after applying slope rules.
@@ -48,7 +67,7 @@ Output: Initial planting grid
 
 Logic:
 * Accepts farm polygon.
-* Generates a regular grid by applying spacing rules (3m) and farm polygon bounds.
+* Generates a regular grid by applying user-defined spacing rules (`spacing_x`, `spacing_y`) and farm polygon bounds.
 * Creates points within the farm polygon boundary.
 
 ### rotation.py
@@ -60,8 +79,8 @@ Logic:
 * Accepts initial planting grid.
 * Generates a base grid covering the farm polygon.
 * Tests rotation angles from 0 to 90 degrees by rotating the polygon around the farm centroid.
-* For each tested angle, count the number of rotated points that fall within the farms.
-* Select the angle with the highest planting point count.
+* For each tested angle, counts the number of rotated points that fall within the farm polygon.
+* Selects the angle with the highest planting point count.
 * Applies the optimal angle to the base grid to produce the final rotated grid.
 * Contains a test function to validate that rotation does not reduce planting points.
 
@@ -74,25 +93,21 @@ Logic:
 * Accepts slope array rotated planting grid.
 * Converts planting point coordinates into raster row/column indices.
 * Samples slope values from the slope raster.
-* Removes points with slope values above the maximum threshold (15 degrees).
+* Removes points with slope values above the user-provided `max_slope` threshold.
 
 ### estimate.py
 Purpose: Orchestrator module that calls all core modules to produce the final planting plan.
 
-Output: Final sapling count, Optimal rotation angle, Final planting grid
+Output: Pre-slope count, final aligned count, optimal rotation angle, rotation statistics, and final planting grid
 
 Logic:
-* Accepts farm polygon and spacing from API.
+* Accepts farm polygon, spacing parameters (`spacing_x`, `spacing_y`), and slope threshold (`max_slope`) from the API.
 * Load DEM.tif file to pass to the first function.
 * Executes all functions in slope_raster.py, planting_points.py, rotation.py and slope_rules.py in order.
 * Contains a debug feature for inspecting final planting grid.
-* Returns a dictionary containing sapling count and optimal angle.
+* Returns estimation metrics including pre_slope_count, aligned_count, optimal_angle, rotation_average, rotation_std_dev.
 
 ## Feature Flowchart
-The Back-end API calls the sapling_estimation function in the estimate.py module, and passes the farm polygon and spacing rule. The estimate.py module then calls the functions in all modules in order, by first passing DEM.tif data and farm polygon into slope_raster.py. Through the function calling process, it will receive the optimal rotation angle from rotation.py, and the final sapling count from slope_rules.py through the output. Finally, the estimate.py module passes both outputs as a dictionary back to the API.
+The Back-end API calls the sapling_estimation function in the estimate.py module, and passes the farm polygon, spacing parameters, and slope threshold. The estimate.py module then calls the functions in all modules in order, by first passing DEM.tif data and farm polygon into slope_raster.py. Through the function calling process, the module receives the optimal rotation angle from `rotation.py` and the final aligned planting count from `slope_rules.py`. Finally, the `estimate.py` module returns the estimation metrics as a dictionary back to the API.
 
 ![Sapling Estimation Flowchart](images/flowchart.png)
-
-## Additional Information
-* The 15 degrees threshold for the slope rule has been choosen just for demonstration and is not based on any evidence.
-* The slope rule is hardcoded and cannot be changed via input.
