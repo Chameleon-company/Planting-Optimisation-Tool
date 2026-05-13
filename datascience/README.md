@@ -11,7 +11,6 @@
 │   ├── exclusion_rules - exclusion rules library code.
 │   ├── imputation - ML imputation service (imputation_service.py, __init__.py).
 │   ├── models/imputation/ - trained model artefacts (*.joblib).
-│   ├── models/growth/ - trained growth model artefacts (*.joblib, *.json).
 │   ├── scripts/growth_cleaning.py - TreeO2 data cleaning and growth rate computation.
 │   ├── scripts - miscellaneous scripts.
 │   └── suitability_scoring - suitability scoring library code.
@@ -62,7 +61,6 @@ Fills missing environmental variables (`elevation_m`, `slope`, `temperature_cels
 
 Predicts annualised trunk circumference growth rate (cm/year) per tree species from historical TreeO2 measurement data. Used to rank species by expected growth trajectory at planting time.
 
-- **To retrain:** run `notebooks/growth_model_training.ipynb`. Artefacts saved to `src/models/growth/`.
 
 
 # Configuration
