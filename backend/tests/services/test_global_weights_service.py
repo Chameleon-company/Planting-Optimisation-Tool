@@ -8,7 +8,6 @@ from src.models.global_weights import GlobalWeights, GlobalWeightsRun
 from src.services.global_weights import GlobalWeightsCSVError, get_latest_global_weights, import_global_weights_from_csv, parse_global_weights_csv
 
 
-@pytest.mark.asyncio
 async def test_delete_global_weight_run_cascades(async_session):
     """Test that deleting a global weight run also deletes its associated weights."""
     run = GlobalWeightsRun(
@@ -40,7 +39,6 @@ async def test_delete_global_weight_run_cascades(async_session):
     assert remaining == []
 
 
-@pytest.mark.asyncio
 async def test_delete_global_weight_run_not_found(
     async_client,
     admin_auth_headers,
@@ -77,7 +75,6 @@ temperature_celsius,0.20,0.10,0.30,,
     assert rows[0].mean_weight == pytest.approx(0.11)
 
 
-@pytest.mark.asyncio
 async def test_import_global_weights_from_csv(async_session):
     """Test importing global weights from a CSV file."""
     csv_data = """feature,mean_weight,ci_lower,ci_upper,bootstraps,bootstrap_early_stopped
@@ -203,7 +200,6 @@ rainfall_mm,0.30,0.15,0.45,,
         parse_global_weights_csv(io.StringIO(csv_data))
 
 
-@pytest.mark.asyncio
 async def test_get_latest_global_weights(async_session):
     """Test retrieving the latest global weights."""
     run = GlobalWeightsRun(
@@ -247,7 +243,6 @@ async def test_get_latest_global_weights(async_session):
     }
 
 
-@pytest.mark.asyncio
 async def test_get_latest_global_weights_no_run(async_session):
     """
     Test that get_latest_global_weights returns None
@@ -264,7 +259,6 @@ async def test_get_latest_global_weights_no_run(async_session):
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_parse_global_weights_csv_empty_file():
     """Test that an empty CSV file raises a clear error."""
     csv_data = ""
@@ -276,7 +270,6 @@ async def test_parse_global_weights_csv_empty_file():
         parse_global_weights_csv(io.StringIO(csv_data))
 
 
-@pytest.mark.asyncio
 async def test_parse_global_weights_csv_wrong_headers():
     """Test that missing required headers raises an error."""
     csv_data = """feature,mean_weight
@@ -291,7 +284,6 @@ ph,0.11
         parse_global_weights_csv(io.StringIO(csv_data))
 
 
-@pytest.mark.asyncio
 async def test_parse_global_weights_csv_unknown_feature():
     """Test that unknown features not defined in config are rejected."""
     csv_data = """feature,mean_weight,ci_lower,ci_upper,bootstraps,bootstrap_early_stopped
@@ -311,7 +303,6 @@ temperature_celsius,0.20,0.10,0.30,,
         parse_global_weights_csv(io.StringIO(csv_data))
 
 
-@pytest.mark.asyncio
 async def test_parse_global_weights_csv_invalid_bootstrap_early_stopped_value():
     """Test that invalid bootstrap_early_stopped values are rejected."""
     csv_data = """feature,mean_weight,ci_lower,ci_upper,bootstraps,bootstrap_early_stopped

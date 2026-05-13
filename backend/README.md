@@ -1,6 +1,6 @@
 # Backend
 
-## Getting started
+## Getting Started
 Most of the general information on getting started with the project is in [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 Fork and Clone the repository first, instructions [here](https://github.com/Chameleon-company/Planting-Optimisation-Tool/blob/master/CONTRIBUTING.md#1-fork-and-clone-the-repository)
@@ -19,7 +19,7 @@ Use uv to install `python` version for the project and fetch the project depende
 ```bash
 $ cd Planting-Optimisation-Tool/backend
 backend $ uv python install     # to install the python version defined in pyproject.toml
-backend $ uv sync               # to install the projects dependencies
+backend $ uv sync               # to install the project's dependencies
 ```
 
 Docker is needed to create the database container and must be running.
@@ -70,7 +70,7 @@ backend $ deactivate                    # Deactivates the virtual environment, n
 backend $ cd ../datascience             # Switch to the datascience project (for example)
 backend $ source .venv/bin/activate     # Activate the virtual environment of that uv project
 ```
-an `.env` file must be present including:
+An `.env` file must be present containing:
 - PostgreSQL user credentials
 - PostgreSQL database live and test database URLs, must include `+asyncpg` driver.
 
@@ -80,52 +80,79 @@ To successfully run the `generate_environmental_profile` feature from the `GIS` 
 
 #### Once this is complete, please proceed to [justfile](#justfile-commands) for initial data ingestion.
 
-## Folder structure:
+## Folder Structure
 
 ```bash
 backend/
-├── alembic/                # Database migration scripts and history
-│   └── versions/           # Migration files
-├── init-db/                # Initial SQL scripts for container setup
-├── src/                    # Main application source code
-│   ├── domains/            # Domain data contracts for integration layer with sub-projects
-│   ├── keys/               # Service account credentials
-│   ├── models/             # SQLAlchemy database models
-│   ├── routers/            # FastAPI route definitions (API endpoints)
-│   ├── schemas/            # Pydantic models for data validation
-│   ├── scripts/            # Scripts for initial database ingestion
-│   │   └── data/           # Seeding data for scripts
-│   └── services/           # Service layer connectivity
-├── locust/                 # Locust load-test scripts
-└── tests/                  # Pytest suite for automated testing
-    └── test_environmental_profile_service.py  # Imputation service integration tests
-├── ERD.md                  # Entity-Relationship Diagram of current database
-├── README.md               # This file
-├── SCHEMA.md               # Current database schema
-├── alembic.ini             # Alembic configuration file
-├── docker-compose.yaml     # Configuration file for the database container
-├── justfile                # Command runner for common project tasks/shortcuts
-├── pyproject.toml          # Project metadata and dependencies list
-└── uv.lock                 # Lockfile for python dependencies
+├── alembic/                    # Alembic migration configuration and history
+│   ├── versions/               # Database migration files
+│   ├── README                  # Alembic default documentation
+│   ├── env.py                  # Alembic environment configuration
+│   └── script.py.mako          # Alembic migration template
+│
+├── docs/                       # Backend documentation
+│
+├── init-db/                    # Database initialisation SQL scripts
+│   └── 01-remove-extensions.sql
+│
+├── locust/                     # Load testing utilities
+│
+├── src/                        # Python src-layout application package
+│   ├── domains/                # Domain contracts and integration models
+│   ├── models/                 # SQLAlchemy ORM database models
+│   ├── routers/                # FastAPI route endpoints
+│   ├── schemas/                # Pydantic request/response schemas
+│   ├── scripts/                # Utility and ingestion scripts
+│   ├── services/               # Business logic and service layer
+│   ├── utils/                  # Shared utility helpers
+│   ├── cache.py                # Redis caching utilities
+│   ├── config.py               # Application configuration
+│   ├── database.py             # Database connection setup
+│   ├── dependencies.py         # Shared FastAPI dependencies
+│   ├── generate_erd.py         # ERD generation script
+│   ├── generate_schema.py      # Schema documentation generator
+│   └── main.py                 # FastAPI application entry point
+│
+├── tests/                      # Automated pytest suite
+│   ├── models/                 # Model tests
+│   ├── routes/                 # API route tests
+│   ├── schemas/                # Schema validation tests
+│   ├── services/               # Service layer tests
+│   ├── conftest.py             # Shared pytest fixtures
+│   └── test_*.py               # Integration and feature tests
+│
+├── .env.example                # Example environment variables
+├── .gitignore
+├── .python-version
+├── Dockerfile                  # Backend container configuration
+├── ERD.md                      # Entity Relationship Diagram
+├── README.md                   # Backend documentation
+├── SCHEMA.md                   # Generated database schema documentation
+├── alembic.ini                 # Alembic configuration
+├── docker-compose.yml          # Docker service configuration
+├── justfile                    # Task runner commands
+├── package-lock.json
+├── pyproject.toml              # Python dependencies and project config
+└── uv.lock                     # Dependency lock file
 ```
 
 
 ## Infrastructure
 
 ### Database
-The database is a [containerized PostGIS](https://postgis.net/documentation/getting_started/install_docker/) image - defined in `docker-compose.yaml`.
+The database is a [containerized PostGIS](https://postgis.net/documentation/getting_started/install_docker/) image - defined in `docker-compose.yml`.
 
 The database tables are mapped by [SQLAlchemy](https://www.sqlalchemy.org/) and the models of the tables along with their relationships are defined in `src/models/`.
-The database is fully asynchronous for non-blocking I/O and supported by the API, however the service-layer logic being imported (from other teams) is mostly synchronous.
+The backend uses asynchronous SQLAlchemy sessions and FastAPI endpoints for non-blocking database operations, while some imported GIS and data-processing workflows remain synchronous due to computational processing requirements.
 
 Some of the non-required PostGIS extensions bundled with the image are removed by `init-db/01-remove-extensions.sql` on initial creation.
 
-The database migrations are handled by alembic and frequently used commands are defined in the [justfile](justfile).
+Database migration workflows and Alembic usage guidelines are documented in [`docs/database-migration-workflow.md`](docs/database-migration-workflow.md).
 
 Revisions are stored in alembic/versions and are timestamped with a revision message, defined in `alembic.ini`, and the PostGIS-owned tables have been excluded in `alembic/env.py` so that alembic doesn't try to alter them and break the database.
 
 Validation of data going in and out of the database is managed by [pydantic](https://docs.pydantic.dev/latest/), the object contracts defined in `src/schemas/` ensure that the data types, range, and suitable exposure to the end-user are always as expected.
-Spatial Validation: Farm boundary files in `src/models/boundaries/` are validated such that incoming GeoJSON-like structures are well-formed before they hit the GeoAlchemy2 layer.
+Spatial Data Handling: Farm boundary geometries are represented using GeoAlchemy2 spatial models with PostGIS `MULTIPOLYGON` support.
 
 ### API
 The API has been built with [FastAPI](https://fastapi.tiangolo.com/) with the endpoints defined in `src/routers/`.
@@ -218,7 +245,7 @@ To register a new user, send a POST request to `/auth/register`:
 - `email`: Valid email address (required, must be unique)
 - `name`: User's full name (required)
 - `password`: Password with minimum 8 characters (required)
-- `role`: One of `officer`, `supervisor`, or `admin` (optional, defaults to `officer`)
+- `role`: User role (defaults to `officer` if not provided)
 
 Response returns the created user (without password):
 
@@ -257,14 +284,14 @@ The following endpoints have role-based access control implemented:
 | Endpoint | Method | Required Role | Description |
 | :--- | :--- | :--- | :--- |
 | `/users/` | GET | SUPERVISOR | List all users |
-| `/users/{user_id}` | GET | SUPERVISOR | Get user by ID |
+| `/users/{user_id}` | GET | SUPERVISOR | Authenticated user (ownership/admin enforced) |
 | `/users/{user_id}` | PUT | ADMIN | Update user information |
 | `/users/{user_id}` | DELETE | ADMIN | Delete user account |
 | `/farms/` | POST | OFFICER | Create new farm |
 | `/farms/{farm_id}` | GET | OFFICER | Read farm by ID (ownership verified) |
 | `/species/` | POST | SUPERVISOR | Create new species |
-| `/environmental-profile/` | POST | OFFICER | Get environmental profile |
-| `/sapling-estimation/` | POST | OFFICER | Calculate sapling estimation |
+| `/profile/{farm_id}` | GET | OFFICER | Get environmental profile |
+| `/sapling-estimation/calculate` | POST | OFFICER | Calculate sapling estimation |
 | `/recommendations/` | POST | OFFICER | Generate recommendations |
 | `/recommendations/{farm_id}` | GET | OFFICER | Get farm recommendations |
 | `/reports/farm/{farm_id}` | GET | OFFICER | Get report for a single farm (ownership verified) |
@@ -301,25 +328,22 @@ Notes:
 - [src/models/audit_log.py](src/models/audit_log.py): Audit log model for security events
 - [src/routers/auth.py](src/routers/auth.py): Login and authentication endpoints
 
-## Limitations & Future Improvements
-
-This section documents current system limitations, validation behaviour, and areas identified for future improvement. These points reflect **observed behaviour** in the existing implementation.
-
 ---
 
 ### Password Validation
 
-- Passwords must be at least 8 characters long.
+- Passwords must:
+  - be at least 8 characters long
+  - contain at least one uppercase letter
+  - contain at least one lowercase letter
+  - contain at least one number
+  - contain at least one special character
 - Shorter passwords are rejected during request validation.
 - The API returns **422 Unprocessable Entity** with a meaningful validation message.
 - Affected endpoints:
   - `POST /auth/register`
   - `POST /users/`
   - `PUT /users/{user_id}`
-
-**Future Improvements**
-- Enforce stronger password requirements (uppercase, lowercase, numeric, special characters).
-- Add password strength scoring and breach detection.
 
 ---
 
@@ -330,11 +354,6 @@ This section documents current system limitations, validation behaviour, and are
 - Structural validation only:
   - No domain or MX record verification
   - Disposable or temporary email providers are allowed
-
-**Future Improvements**
-- Domain verification
-- Email confirmation workflow
-- Blocking disposable email providers
 
 ---
 
@@ -349,93 +368,10 @@ This section documents current system limitations, validation behaviour, and are
 
 ---
 
-### Duplicate Name Constraint
-
-- User names must be globally unique.
-- Two users cannot share the same name, even if they belong to different farms.
-  - Example:
-    - `"John Smith"` at Farm A → allowed
-    - `"John Smith"` at Farm B → rejected
-- Duplicate names are not pre-validated and result in a database integrity error.
-- Affected endpoints:
-  - `POST /auth/register`
-  - `POST /users/`
-  - `PUT /users/{user_id}`
-
-**Future Improvements**
-- Scope name uniqueness per farm or organisation.
-- Add user-friendly error handling for duplicate names.
-
----
-
-### Case Sensitivity – Email and Name
-
-- Email and name fields are case-sensitive.
-  - `"admin@example.com"` ≠ `"Admin@example.com"`
-  - `"John Smith"` ≠ `"john smith"`
-- Duplicate users can exist if casing differs.
-- This can lead to login confusion and inconsistent identity handling.
-- Affected endpoints:
-  - `POST /auth/register`
-  - `POST /users/`
-  - `POST /auth/token`
-  - `PUT /users/{user_id}`
-
-**Future Improvements**
-- Normalize email addresses to lowercase.
-- Normalize names to a standard format before storage and lookup.
-
----
-
-### Role Validation
-
-- Role values accept any string.
-- Users can be assigned invalid roles (e.g. `"oficer" or "adminn"`).
-- Users with invalid roles can authenticate successfully but are blocked from protected endpoints (403 Forbidden).
-- Affected endpoints:
-  - `POST /auth/register`
-  - `POST /users/`
-  - `PUT /users/{user_id}`
-
-**Future Improvements**
-- Enforce valid role enums at the API and database levels.
-
----
-
-### Role-Based Access Control Limitation
-
-- Any authenticated user (including officers) can create new users with any role via `POST /users/`.
-- Officers can create admin-level accounts despite role restrictions elsewhere.
-- This allows role hierarchy to be bypassed.
-- Affected endpoint:
-  - `POST /users/`
-
-**Future Improvements**
-- Restrict user creation based on role hierarchy or admin-only access.
-
----
-
-### User Self-Access Limitation
-
-- Officers cannot access `GET /users/{user_id}`, even for their own user ID.
-- Users must access their own profile via `GET /auth/users/me`.
-- Affected endpoint:
-  - `GET /users/{user_id}`
-
-**Future Improvements**
-- Allow self-access via `/users/{user_id}` or redirect to `/auth/users/me`.
-
----
-
-### Auth Items Endpoint
-
-- `GET /auth/users/me/items` returns the list of farms owned by the currently authenticated user.
-
-
 ### Testing
 The [pytest](https://docs.pytest.org/en/stable/) v2 framework handles all of the backend test suite, current tests are in `tests/` and are mainly focused on database operations and integrity checks.
 
-Directly running `backend $ uv run pytest` will <u>**not**</u> work, because the `just test` target replicates the current live database to a standalone test database and then performs the tests on the test database to ensure data integrity of the live database.
+Directly running `backend $ uv run pytest` will <u>**not**</u> work, because the `just test` target prepares the migrated local development database and replicates it into a dedicated test database before running the test suite.
 
 **Authentication Test Coverage:**
 
@@ -464,20 +400,20 @@ In the cloud:
 ```bash
 just render-seed-users
 just render-load-test
-# open http://localhost:8089 - recommended: 5 users, ramp-up 1/s while on free tier, it's slow.
+# open http://localhost:8089 - recommended: 5 users, ramp-up 1/s
 ```
 
 ### CI (Continuous integration testing)
 `Planting-Optimisation-Tool/.github/workflows/backend-ci.yml` is the GitHub actions workflow file that runs on a new pull request.
 
-It performs validation checks and tests to ensure they are no breaking changes being introduced to the repository, the steps are:
+It performs validation checks and tests to ensure there are no breaking changes being introduced to the repository, the steps are:
 - Create the database in the virtual CI runner environment
 - Install uv
 - Install python
 - Install project dependencies
 - Enable the PostGIS extension
 - Migrate the database (using `alembic_versions` migration files)
-- Seed reference data to CI database (Hardcoded `soil_textures`)
+- Seed reference data required for backend services and tests
 - Replicate database
 - Sync sequence values to test db
 - Lint and format (with [Ruff](https://docs.astral.sh/ruff/))
@@ -485,9 +421,7 @@ It performs validation checks and tests to ensure they are no breaking changes b
 
 ## Style Guide
 
-Linting and Formatting is handled by [Ruff](https://docs.astral.sh/ruff/) with options defined in `pyproject.toml`.
-
-Absolute imports are highly-recommended for readability and maintainability, but code needs to be refactored to enforce.
+Refer to the project processes documentation for coding standards, linting, formatting, and development workflow conventions.
 
 ## Just
 

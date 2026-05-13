@@ -47,31 +47,6 @@
   padding: 10px;
 }
 
-/* Action Buttons (Navigation) */
-.rec-action-btn {
-  background: #fff;
-  border: 2px solid var(--btn-primary);
-  border-radius: 10px;
-  color: var(--btn-primary);
-  cursor: pointer;
-  font-weight: 600;
-  min-width: 220px;
-  padding: 14px 28px;
-  transition: all 0.2s ease-in-out;
-}
-
-.rec-action-btn:hover {
-  background: var(--surface);
-  transform: translateY(-2px);
-}
-
-.rec-action-btn.active {
-  background: var(--btn-primary);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
-  color: #fff;
-  transform: none;
-}
-
 .rec-view-container {
   animation: fadeIn 0.4s ease-out;
   background-color: var(--muted);
@@ -123,7 +98,8 @@
   background-color: var(--bg);
   border: 1px solid var(--border);
   border-radius: 20px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 12px
+    color-mix(in srgb, var(--charcoal-blue) 04%, transparent);
   margin-top: 50px;
   padding: 20px;
 }
@@ -197,7 +173,7 @@
 }
 
 .rec-reason-header {
-  color: var(--muted);
+  color: var(--charcoal-blue);
   font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -266,7 +242,8 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 4px
+    color-mix(in srgb, var(--charcoal-blue) 02%, transparent);
   padding: 15px;
 }
 
@@ -332,7 +309,8 @@
   background-color: var(--btn-primary);
   border: 0;
   border-radius: 8px;
-  color: #fff;
+  box-shadow: 2px 5px 3px 2px var(--charcoal-blue);
+  color: var(--bg);
   cursor: pointer;
   display: flex;
   font-size: 1.25rem;

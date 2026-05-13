@@ -28,7 +28,7 @@ exports[`Snapshot Tests > matches snapshot for SpeciesGrid with data 1`] = `
           class="article-actions"
         >
           <button
-            class="btn-outline"
+            class="btn-secondary"
           >
             View Details
           </button>

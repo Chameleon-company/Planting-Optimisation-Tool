@@ -156,7 +156,7 @@ def generate_pdf(report: FarmReportContract) -> bytes:
     pdf.set_auto_page_break(auto=True, margin=15)
 
     if LOGO_PATH_SVG.exists():
-        pdf.image(str(LOGO_PATH_SVG), x=160, y=8, w=40)
+        pdf.image(str(LOGO_PATH_SVG), x=160, y=8, w=30)
 
     pdf.set_font("Helvetica", style="B", size=16)
     pdf.cell(0, 10, "Planting Optimisation Tool - Farm Report", new_x=XPos.LMARGIN, new_y=YPos.NEXT)

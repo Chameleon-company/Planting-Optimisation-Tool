@@ -13,7 +13,6 @@ def ahp_service():
     return AhpService()
 
 
-@pytest.mark.asyncio
 @patch("src.services.ahp_service.get_recommend_config")
 async def test_ahp_service_upsert(mock_get_config, ahp_service, async_session):
     """
@@ -69,7 +68,6 @@ async def test_ahp_service_upsert(mock_get_config, ahp_service, async_session):
     assert round(param_dict["temperature_celsius"].weight, 2) == 0.25
 
 
-@pytest.mark.asyncio
 @patch("src.services.ahp_service.get_recommend_config")
 async def test_ahp_service_missing_features(mock_get_config, ahp_service, async_session):
     """
@@ -82,7 +80,6 @@ async def test_ahp_service_missing_features(mock_get_config, ahp_service, async_
         await ahp_service.calculate_and_save_ahp_weights(async_session, matrix=[[1.0]], species_id=1)
 
 
-@pytest.mark.asyncio
 @patch("src.services.ahp_service.get_recommend_config")
 async def test_ahp_service_invalid_matrix_dimensions(mock_get_config, ahp_service, async_session):
     """
@@ -97,7 +94,6 @@ async def test_ahp_service_invalid_matrix_dimensions(mock_get_config, ahp_servic
         await ahp_service.calculate_and_save_ahp_weights(async_session, invalid_matrix, species_id=1)
 
 
-@pytest.mark.asyncio
 @patch("src.services.ahp_service.get_recommend_config")
 async def test_ahp_service_inconsistent_matrix_returns_correct_payload(mock_get_config, ahp_service, async_session):
     """

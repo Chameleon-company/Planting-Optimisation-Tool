@@ -20,7 +20,7 @@ export default function SpeciesCard({ item, onClick }: SpeciesCardProps) {
       <div className="article-body">
         <h3 className="article-title">{name}</h3>
         <div className="article-actions">
-          <button className="btn-outline" onClick={onClick}>
+          <button className="btn-secondary" onClick={onClick}>
             View Details
           </button>
         </div>

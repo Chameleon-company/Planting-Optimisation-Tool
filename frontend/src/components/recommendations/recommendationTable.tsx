@@ -51,7 +51,7 @@ export default function RecommendationTable({
 
         {data.length > 0 && (
           <button
-            className="btn-outline"
+            className="btn-secondary"
             style={{ width: "auto", padding: "4px 12px" }}
             onClick={toggleAll}
           >

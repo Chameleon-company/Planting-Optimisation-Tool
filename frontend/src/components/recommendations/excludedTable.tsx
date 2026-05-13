@@ -41,7 +41,7 @@ export default function ExcludedTable({ data }: ExcludedTableProps) {
         <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Excluded Species</h3>
         {data.length > 0 && (
           <button
-            className="btn-outline"
+            className="btn-secondary"
             style={{ width: "auto", padding: "4px 12px" }}
             onClick={toggleAll}
           >

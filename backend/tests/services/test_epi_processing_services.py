@@ -29,7 +29,6 @@ def test_validate_epi_dataframe_invalid_rows():
     assert "Row 1" in str(exc_info.value)
 
 
-@pytest.mark.asyncio
 @patch("src.services.epi_processing.get_species_by_ids", new_callable=AsyncMock)
 @patch("src.services.epi_processing.get_farm_by_id", new_callable=AsyncMock)
 @patch("src.services.epi_processing.get_raw_scores", new_callable=AsyncMock)
@@ -55,7 +54,6 @@ async def test_process_epi_csv_success(mock_get_raw_scores, mock_get_farm, mock_
     mock_get_raw_scores.assert_called_once_with(db=mock_db, farm_id_list=[1], cfg=ANY, target_species_ids=[10])
 
 
-@pytest.mark.asyncio
 @patch("src.services.epi_processing.get_species_by_ids", new_callable=AsyncMock)
 @patch("src.services.epi_processing.get_farm_by_id", new_callable=AsyncMock)
 async def test_process_epi_csv_database_validation_failure(mock_get_farm, mock_get_species):
@@ -84,7 +82,6 @@ async def test_process_epi_csv_database_validation_failure(mock_get_farm, mock_g
     mock_get_species.assert_called_once_with(mock_db, [105])
 
 
-@pytest.mark.asyncio
 async def test_process_epi_csv_invalid_csv_raises_error():
     # Unterminated quote causes pandas ParserError
     bad_csv = b'farm_id,species_id,farm_mean_epi\n1,2,"0.85'

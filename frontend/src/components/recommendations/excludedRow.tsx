@@ -22,7 +22,7 @@ export default function ExcludedRow({
         </td>
         <td className="rec-td">
           <button
-            className="btn-outline"
+            className="btn-secondary"
             onClick={onToggle}
             aria-expanded={isExpanded}
           >

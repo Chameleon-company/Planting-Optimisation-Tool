@@ -652,8 +652,8 @@ async def test_resend_verification_email_user_not_found(
         json={"email": "missing@test.com"},
     )
 
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Account not found"
+    assert response.status_code == 200
+    assert "verification link" in response.json()["message"]
 
 
 async def test_resend_verification_email_already_verified(
@@ -682,8 +682,8 @@ async def test_resend_verification_email_already_verified(
         json={"email": "verified@test.com"},
     )
 
-    assert resend_response.status_code == 200
-    assert resend_response.json()["message"] == "Account is already verified"
+    assert resend_response.status_code == 400
+    assert resend_response.json()["detail"] == "Account is already verified"
 
 
 async def test_resend_verification_email_success(

@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 
@@ -8,7 +7,6 @@ from src.models.parameters import Parameter
 from src.models.species import Species
 
 
-@pytest.mark.asyncio
 @patch("src.services.ahp_service.get_recommend_config")
 async def test_calculate_and_save_endpoint(mock_get_config, async_client: AsyncClient, async_session, admin_auth_headers):
     """
@@ -62,7 +60,6 @@ async def test_calculate_and_save_endpoint(mock_get_config, async_client: AsyncC
     assert len(params) == 2
 
 
-@pytest.mark.asyncio
 async def test_calculate_and_save_unauthorised(async_client: AsyncClient):
     """
     Ensures the endpoint cannot be accessed without proper authentication.
@@ -74,7 +71,6 @@ async def test_calculate_and_save_unauthorised(async_client: AsyncClient):
     assert response.status_code in (401, 403)
 
 
-@pytest.mark.asyncio
 @patch("src.services.ahp_service.get_recommend_config")
 async def test_calculate_and_save_wrong_matrix_size(mock_get_config, async_client: AsyncClient, admin_auth_headers):
     """
@@ -96,7 +92,6 @@ async def test_calculate_and_save_wrong_matrix_size(mock_get_config, async_clien
     assert "Matrix size 3 does not match 2 features" in response.json()["detail"]
 
 
-@pytest.mark.asyncio
 @patch("src.services.ahp_service.get_recommend_config")
 async def test_calculate_and_save_inconsistent_matrix(mock_get_config, async_client: AsyncClient, async_session, admin_auth_headers):
     """

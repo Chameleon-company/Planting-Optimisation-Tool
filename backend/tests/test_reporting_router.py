@@ -1,4 +1,3 @@
-import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,7 +47,6 @@ def make_species(name: str, common_name: str) -> Species:
     )
 
 
-@pytest.mark.asyncio
 async def test_get_farm_report_success(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -95,7 +93,6 @@ async def test_get_farm_report_success(
     assert data["exclusions"] == []
 
 
-@pytest.mark.asyncio
 async def test_get_farm_report_not_found(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -105,7 +102,6 @@ async def test_get_farm_report_not_found(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_farm_report_excludes_excluded_species(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -145,14 +141,12 @@ async def test_get_farm_report_excludes_excluded_species(
     assert data["exclusions"][0]["key_reasons"] == ["excluded: rainfall below minimum"]
 
 
-@pytest.mark.asyncio
 async def test_get_farm_report_unauthenticated(async_client: AsyncClient):
     """Returns 401 when no auth token is provided."""
     response = await async_client.get("/reports/farm/1")
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_get_all_farms_report_supervisor(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -177,7 +171,6 @@ async def test_get_all_farms_report_supervisor(
     assert farm2.id in farm_ids
 
 
-@pytest.mark.asyncio
 async def test_get_all_farms_report_officer_forbidden(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -187,7 +180,6 @@ async def test_get_all_farms_report_officer_forbidden(
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_docx_success(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -209,7 +201,6 @@ async def test_export_farm_report_docx_success(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_pdf_success(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -231,7 +222,6 @@ async def test_export_farm_report_pdf_success(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_docx_not_found(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -241,7 +231,6 @@ async def test_export_farm_report_docx_not_found(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_pdf_not_found(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -251,7 +240,6 @@ async def test_export_farm_report_pdf_not_found(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_docx_officer_forbidden_other_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -269,7 +257,6 @@ async def test_export_farm_report_docx_officer_forbidden_other_farm(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_pdf_officer_forbidden_other_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -287,7 +274,6 @@ async def test_export_farm_report_pdf_officer_forbidden_other_farm(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_unauthenticated(async_client: AsyncClient):
     """Returns 401 when no auth token is provided for export endpoints."""
     response_docx = await async_client.get("/reports/farm/1/export/docx")
@@ -296,7 +282,6 @@ async def test_export_farm_report_unauthenticated(async_client: AsyncClient):
     assert response_pdf.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_get_all_farms_report_admin_sees_all(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -322,7 +307,6 @@ async def test_get_all_farms_report_admin_sees_all(
     assert farm_supervisor.id in farm_ids
 
 
-@pytest.mark.asyncio
 async def test_export_all_farms_report_docx_supervisor(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -344,7 +328,6 @@ async def test_export_all_farms_report_docx_supervisor(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_export_all_farms_report_pdf_supervisor(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -366,7 +349,6 @@ async def test_export_all_farms_report_pdf_supervisor(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_export_all_farms_report_officer_forbidden(
     async_client: AsyncClient,
     officer_auth_headers: dict,
@@ -378,7 +360,6 @@ async def test_export_all_farms_report_officer_forbidden(
     assert response_pdf.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_export_all_farms_report_unauthenticated(async_client: AsyncClient):
     """Returns 401 when no auth token is provided for all-farms export endpoints."""
     response_docx = await async_client.get("/reports/farms/export/docx")
@@ -387,7 +368,6 @@ async def test_export_all_farms_report_unauthenticated(async_client: AsyncClient
     assert response_pdf.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_docx_with_recommendations(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -422,7 +402,6 @@ async def test_export_farm_report_docx_with_recommendations(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_export_farm_report_pdf_with_recommendations(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -457,7 +436,6 @@ async def test_export_farm_report_pdf_with_recommendations(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_export_all_farms_report_docx_with_recommendations(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -492,7 +470,6 @@ async def test_export_all_farms_report_docx_with_recommendations(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_export_all_farms_report_pdf_with_recommendations(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -527,7 +504,6 @@ async def test_export_all_farms_report_pdf_with_recommendations(
     assert len(response.content) > 0
 
 
-@pytest.mark.asyncio
 async def test_get_farm_report_officer_forbidden_other_farm(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -545,7 +521,6 @@ async def test_get_farm_report_officer_forbidden_other_farm(
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_farm_report_supervisor_access(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -566,7 +541,6 @@ async def test_get_farm_report_supervisor_access(
     assert data["farm"]["id"] == farm.id
 
 
-@pytest.mark.asyncio
 async def test_export_all_farms_report_admin(
     async_client: AsyncClient,
     admin_auth_headers: dict,

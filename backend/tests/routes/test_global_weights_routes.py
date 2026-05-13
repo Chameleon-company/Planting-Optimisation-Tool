@@ -1,12 +1,10 @@
 from uuid import uuid4
 
-import pytest
 from sqlalchemy import select
 
 from src.models.global_weights import GlobalWeights, GlobalWeightsRun
 
 
-@pytest.mark.asyncio
 async def test_delete_global_weight_run(
     async_client,
     async_session,
@@ -49,7 +47,6 @@ async def test_delete_global_weight_run(
     assert remaining == []
 
 
-@pytest.mark.asyncio
 async def test_get_global_weight_run_detail(
     async_client,
     async_session,
@@ -96,7 +93,6 @@ async def test_get_global_weight_run_detail(
     assert payload["weights"][0]["feature"] == "ph"
 
 
-@pytest.mark.asyncio
 async def test_get_global_weight_run_not_found(
     async_client,
     admin_auth_headers,
@@ -113,7 +109,6 @@ async def test_get_global_weight_run_not_found(
     assert response.json() == {"detail": "Global weight run not found"}
 
 
-@pytest.mark.asyncio
 async def test_import_global_weights_csv(
     async_client,
     admin_auth_headers,
@@ -142,7 +137,6 @@ temperature_celsius,0.20,0.10,0.30,,
     assert "run_id" in body
 
 
-@pytest.mark.asyncio
 async def test_list_global_weight_runs(
     async_client,
     async_session,
@@ -180,7 +174,6 @@ async def test_list_global_weight_runs(
     assert target_run["source"] == "test source"
 
 
-@pytest.mark.asyncio
 async def test_global_weights_csv_invalid_file_extension(
     async_client,
     admin_auth_headers,
@@ -202,21 +195,18 @@ async def test_global_weights_csv_invalid_file_extension(
 
 
 # RBAC Tests for /global-weights/runs
-@pytest.mark.asyncio
 async def test_list_global_weights_unauthenticated(async_client):
     """Test that unauthenticated request to list global weights is rejected."""
     response = await async_client.get("/global-weights/runs")
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_list_global_weight_runs_officer_forbidden(async_client, officer_auth_headers):
     """Test that officer cannot list global weight runs."""
     response = await async_client.get("/global-weights/runs", headers=officer_auth_headers)
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_list_global_weight_runs_supervisor_forbidden(async_client, supervisor_auth_headers):
     """Test that supervisor cannot list global weight runs."""
     response = await async_client.get("/global-weights/runs", headers=supervisor_auth_headers)
@@ -224,21 +214,18 @@ async def test_list_global_weight_runs_supervisor_forbidden(async_client, superv
 
 
 # RBAC Tests for /global-weights/runs/{run_id}
-@pytest.mark.asyncio
 async def test_get_global_weight_run_unauthenticated(async_client):
     """Test that unauthenticated request to get global weight run is rejected."""
     response = await async_client.get(f"/global-weights/runs/{uuid4()}")
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_get_global_weight_run_officer_forbidden(async_client, officer_auth_headers):
     """Test that officer cannot get global weight run details."""
     response = await async_client.get(f"/global-weights/runs/{uuid4()}", headers=officer_auth_headers)
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_get_global_weight_run_supervisor_forbidden(async_client, supervisor_auth_headers):
     """Test that supervisor cannot get global weight run details."""
     response = await async_client.get(f"/global-weights/runs/{uuid4()}", headers=supervisor_auth_headers)
@@ -246,21 +233,18 @@ async def test_get_global_weight_run_supervisor_forbidden(async_client, supervis
 
 
 # RBAC Tests for /global-weights/import
-@pytest.mark.asyncio
 async def test_import_global_weights_unauthenticated(async_client):
     """Test that unauthenticated request to import is rejected."""
     response = await async_client.post("/global-weights/import")
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_import_global_weights_officer_forbidden(async_client, officer_auth_headers):
     """Test that officer cannot import global weights."""
     response = await async_client.post("/global-weights/import", headers=officer_auth_headers)
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_import_global_weights_supervisor_forbidden(async_client, supervisor_auth_headers):
     """Test that supervisor cannot import global weights."""
     response = await async_client.post("/global-weights/import", headers=supervisor_auth_headers)
@@ -268,14 +252,12 @@ async def test_import_global_weights_supervisor_forbidden(async_client, supervis
 
 
 # RBAC Tests for /global-weights/runs/{run_id}
-@pytest.mark.asyncio
 async def test_delete_global_weights_unauthenticated(async_client):
     """Test that unauthenticated request to delete is rejected."""
     response = await async_client.delete("/global-weights/runs/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_delete_global_weight_run_officer_forbidden(async_client, officer_auth_headers):
     """Test that officer cannot delete a global weight run."""
     # Using a random UUID since it should fail on auth before checking existence
@@ -286,7 +268,6 @@ async def test_delete_global_weight_run_officer_forbidden(async_client, officer_
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_delete_global_weight_run_supervisor_forbidden(async_client, supervisor_auth_headers):
     """Test that supervisor cannot delete a global weight run."""
     # Using a random UUID since it should fail on auth before checking existence

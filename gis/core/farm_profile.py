@@ -160,7 +160,7 @@ def update_farm_profile(existing_profile: Dict[str, Any], geometry, fields: Opti
         "elevation_m": lambda: get_elevation(geometry, year=year),
         "slope_degrees": lambda: get_slope(geometry, year=year),
         "area_ha": lambda: get_area_ha(geometry),
-        "soil_texture_id": lambda: (None if additional_fields.get("soil_texture") is not None else get_texture_id(geometry)),
+        "soil_texture_id": lambda: None if additional_fields.get("soil_texture") is not None else get_texture_id(geometry),
         "soil_texture": lambda: additional_fields.get("soil_texture"),
     }
 

@@ -107,7 +107,8 @@
   background-color: var(--bg);
   border: 1px solid var(--border);
   border-radius: 20px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 12px
+    color-mix(in srgb, var(--charcoal-blue) 04%, transparent);
   padding: 0 1.5rem 1.5rem;
 }
 
@@ -146,7 +147,8 @@
   background-color: var(--bg);
   border: 1px solid var(--border);
   border-radius: 20px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 12px
+    color-mix(in srgb, var(--charcoal-blue) 04%, transparent);
   overflow: hidden;
   padding: 0 1.5rem 1.5rem;
 }

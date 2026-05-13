@@ -22,7 +22,6 @@ def test_validate_password_requires_special_character():
         ("elevation_m_max", 3500),
     ],
 )
-@pytest.mark.asyncio
 async def test_species_create_constraints(async_client: AsyncClient, test_admin_user, admin_auth_headers, field, invalid_value):
     """Verifies Pydantic Field constraints for Species creation."""
     payload = {
@@ -62,7 +61,6 @@ async def test_species_create_constraints(async_client: AsyncClient, test_admin_
         ("slope", -5),
     ],
 )
-@pytest.mark.asyncio
 async def test_farm_create_constraints(
     async_client: AsyncClient,
     test_admin_user,
@@ -107,7 +105,6 @@ async def test_farm_create_constraints(
         ("ph_max", 9.0),
     ],
 )
-@pytest.mark.asyncio
 async def test_species_update_constraints(async_client: AsyncClient, test_admin_user, admin_auth_headers, field, invalid_value):
     """Verifies Pydantic Field constraints are enforced on SpeciesUpdate Optional fields."""
     create_payload = {
@@ -148,7 +145,6 @@ async def test_species_update_constraints(async_client: AsyncClient, test_admin_
         ("slope", -5),
     ],
 )
-@pytest.mark.asyncio
 async def test_farm_update_constraints(async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture, field, invalid_value):
     """Verifies Pydantic Field constraints are enforced on FarmUpdate Optional fields."""
     create_payload = {
@@ -177,7 +173,6 @@ async def test_farm_update_constraints(async_client: AsyncClient, test_admin_use
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
 async def test_species_with_soil_textures(async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture):
     """Tests that a species can be created with multiple soil texture associations."""
     payload = {

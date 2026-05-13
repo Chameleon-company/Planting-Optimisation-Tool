@@ -104,7 +104,7 @@ export const renderReason = (reason: string) => {
       >
         <span>{formatFactor(factor)}</span>
         {result && (
-          <span style={{ color: "#888", fontWeight: "400" }}>
+          <span style={{ color: "var(--charcoal-blue)", fontWeight: "400" }}>
             {" "}
             &nbsp;&nbsp;—&nbsp;&nbsp; {result}
           </span>

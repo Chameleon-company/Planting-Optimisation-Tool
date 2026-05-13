@@ -80,7 +80,6 @@ async def setup_farms(async_session, test_officer_user):
 
 
 # Cache Miss Test
-@pytest.mark.asyncio
 async def test_cache_miss(
     async_session,
     setup_farms,
@@ -113,7 +112,6 @@ async def test_cache_miss(
 
 
 # Cache Hit Test
-@pytest.mark.asyncio
 async def test_cache_hit(
     async_session,
     setup_farms,

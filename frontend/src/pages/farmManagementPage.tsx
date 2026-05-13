@@ -102,16 +102,22 @@ export default function FarmsManagementPage() {
         <title>Farm Management | Planting Optimisation Tool</title>
       </Helmet>
 
-      {/* Header Container */}
-      <div className="farms-page-header">
+      <div className="page-header" style={{ position: "relative" }}>
         <FarmsHeader isLoading={farmsLoading} totalFarms={totalFarms} />
-
-        {/* Component to call mutations */}
-        <FarmManageActions
-          onAdd={() => setIsRegisterModalOpen(true)}
-          onEdit={handleEditClick}
-          onDelete={handleDelete}
-        />
+        <div
+          style={{
+            position: "absolute",
+            right: "7%",
+            top: "50%",
+            transform: "translateY(-50%)",
+          }}
+        >
+          <FarmManageActions
+            onAdd={() => setIsRegisterModalOpen(true)}
+            onEdit={handleEditClick}
+            onDelete={handleDelete}
+          />
+        </div>
       </div>
 
       {error && <p className="farms-table-empty">{error}</p>}

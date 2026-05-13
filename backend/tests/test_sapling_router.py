@@ -71,7 +71,6 @@ async def setup_farm(async_session, test_officer_user):  # sapling_estimation ro
 
 
 # Cache Miss Test
-@pytest.mark.asyncio
 async def test_cache_miss(
     async_client,
     setup_farm,
@@ -102,7 +101,6 @@ async def test_cache_miss(
 
 
 # Cache Hit Test
-@pytest.mark.asyncio
 async def test_cache_hit(
     async_client,
     setup_farm,

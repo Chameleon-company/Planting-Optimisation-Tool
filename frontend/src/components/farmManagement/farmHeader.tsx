@@ -10,11 +10,11 @@ export default function FarmsHeader({
   totalFarms,
 }: FarmManagmentHeaderProps) {
   return (
-    <div className="farms-page-heading">
-      <h1 className="farms-page-title">Farm Management</h1>
-      <span className="farms-total-badge">
+    <div>
+      <h1>Farm Management</h1>
+      <p>
         {isLoading ? "-" : `${totalFarms} farm${totalFarms !== 1 ? "s" : ""}`}
-      </span>
+      </p>
     </div>
   );
 }

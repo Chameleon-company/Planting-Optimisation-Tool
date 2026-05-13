@@ -175,62 +175,66 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
         >
           <g
             class="hero-tree"
-            style="animation-delay: 0s;"
+            style="animation-delay: 0s; animation-duration: 7s;"
           >
             <image
-              height="185"
+              height="220"
               href="/assets/images/trees/tree1.svg"
-              width="130"
-              x="-65"
-              y="-185"
+              preserveAspectRatio="xMidYMax meet"
+              width="180"
+              x="-90"
+              y="-220"
             />
           </g>
         </g>
         <g
-          transform="translate(175, 300)"
+          transform="translate(160, 300)"
         >
           <g
             class="hero-tree"
-            style="animation-delay: 1.4s;"
+            style="animation-delay: 1.4s; animation-duration: 5.5s;"
           >
             <image
-              height="165"
+              height="160"
               href="/assets/images/trees/tree2.svg"
-              width="120"
-              x="-60"
-              y="-165"
+              preserveAspectRatio="xMidYMax meet"
+              width="90"
+              x="-45"
+              y="-160"
             />
           </g>
         </g>
         <g
-          transform="translate(290, 300)"
+          transform="translate(270, 300)"
         >
           <g
             class="hero-tree"
-            style="animation-delay: 0.7s;"
+            style="animation-delay: 0.7s; animation-duration: 8.2s;"
           >
             <image
-              height="210"
+              height="130"
               href="/assets/images/trees/tree3.svg"
-              width="150"
-              x="-75"
-              y="-210"
+              preserveAspectRatio="xMidYMax meet"
+              width="200"
+              x="-100"
+              y="-130"
             />
           </g>
         </g>
         <g
-          transform="translate(415, 300)"
+          transform="translate(410, 300)"
         >
           <g
             class="hero-tree"
-            style="animation-delay: 2.1s;"
+            style="animation-delay: 2.1s; animation-duration: 6.3s;"
           >
             <image
-              height="190"
+              height="240"
               href="/assets/images/trees/tree4.svg"
-              width="135"
-              x="-67.5"
-              y="-190"
+              preserveAspectRatio="xMidYMax meet"
+              width="180"
+              x="-90"
+              y="-240"
             />
           </g>
         </g>
@@ -239,30 +243,32 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
         >
           <g
             class="hero-tree"
-            style="animation-delay: 0.3s;"
+            style="animation-delay: 0.3s; animation-duration: 9.1s;"
           >
             <image
-              height="225"
+              height="120"
               href="/assets/images/trees/tree1.svg"
+              preserveAspectRatio="xMidYMax meet"
               width="160"
               x="-80"
-              y="-225"
+              y="-120"
             />
           </g>
         </g>
         <g
-          transform="translate(650, 300)"
+          transform="translate(630, 300)"
         >
           <g
             class="hero-tree"
-            style="animation-delay: 1.8s;"
+            style="animation-delay: 1.8s; animation-duration: 5.8s;"
           >
             <image
-              height="160"
-              href="/assets/images/trees/tree2.svg"
-              width="115"
-              x="-57.5"
-              y="-160"
+              height="190"
+              href="/assets/images/trees/tree3.svg"
+              preserveAspectRatio="xMidYMax meet"
+              width="170"
+              x="-85"
+              y="-190"
             />
           </g>
         </g>
@@ -271,62 +277,117 @@ exports[`HomePage Snapshot > matches snapshot 1`] = `
         >
           <g
             class="hero-tree"
-            style="animation-delay: 0.9s;"
+            style="animation-delay: 0.9s; animation-duration: 7.6s;"
+          >
+            <image
+              height="170"
+              href="/assets/images/trees/tree2.svg"
+              preserveAspectRatio="xMidYMax meet"
+              width="130"
+              x="-65"
+              y="-170"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(855, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 1.5s; animation-duration: 6.8s;"
           >
             <image
               height="200"
-              href="/assets/images/trees/tree3.svg"
-              width="145"
-              x="-72.5"
+              href="/assets/images/trees/tree4.svg"
+              preserveAspectRatio="xMidYMax meet"
+              width="80"
+              x="-40"
               y="-200"
             />
           </g>
         </g>
         <g
-          transform="translate(875, 300)"
+          transform="translate(950, 300)"
         >
           <g
             class="hero-tree"
-            style="animation-delay: 1.5s;"
+            style="animation-delay: 0.1s; animation-duration: 8.5s;"
           >
             <image
-              height="180"
-              href="/assets/images/trees/tree4.svg"
+              height="250"
+              href="/assets/images/trees/tree1.svg"
+              preserveAspectRatio="xMidYMax meet"
+              width="250"
+              x="-125"
+              y="-250"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(1065, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 2.3s; animation-duration: 5.2s;"
+          >
+            <image
+              height="130"
+              href="/assets/images/trees/tree2.svg"
+              preserveAspectRatio="xMidYMax meet"
               width="130"
               x="-65"
-              y="-180"
+              y="-130"
             />
           </g>
         </g>
         <g
-          transform="translate(985, 300)"
+          transform="translate(1170, 300)"
         >
           <g
             class="hero-tree"
-            style="animation-delay: 0.1s;"
+            style="animation-delay: 0s; animation-duration: 7s;"
           >
             <image
-              height="215"
-              href="/assets/images/trees/tree1.svg"
-              width="155"
-              x="-77.5"
-              y="-215"
+              height="120"
+              href="/assets/images/trees/tree3.svg"
+              preserveAspectRatio="xMidYMax meet"
+              width="120"
+              x="-60"
+              y="-120"
             />
           </g>
         </g>
         <g
-          transform="translate(1095, 300)"
+          transform="translate(1270, 300)"
         >
           <g
             class="hero-tree"
-            style="animation-delay: 2.3s;"
+            style="animation-delay: 1.4s; animation-duration: 5.5s;"
           >
             <image
-              height="170"
+              height="110"
               href="/assets/images/trees/tree2.svg"
-              width="125"
-              x="-62.5"
-              y="-170"
+              preserveAspectRatio="xMidYMax meet"
+              width="95"
+              x="-47.5"
+              y="-110"
+            />
+          </g>
+        </g>
+        <g
+          transform="translate(1360, 300)"
+        >
+          <g
+            class="hero-tree"
+            style="animation-delay: 0.7s; animation-duration: 8.2s;"
+          >
+            <image
+              height="160"
+              href="/assets/images/trees/tree1.svg"
+              preserveAspectRatio="xMidYMax meet"
+              width="160"
+              x="-80"
+              y="-160"
             />
           </g>
         </g>

@@ -9,23 +9,40 @@
 }
 
 .hero-tree {
-  animation: treeSway 6s ease-in-out infinite;
+  animation:
+    treeGrowIn 2s ease-out forwards,
+    treeBounce ease-in-out 2s infinite;
   filter: brightness(0) invert(1);
   opacity: 0.35;
   transform-box: fill-box;
   transform-origin: bottom center;
 }
 
-@keyframes treeSway {
+@keyframes treeGrowIn {
   0% {
-    transform: rotate(-1.5deg);
-  }
-
-  50% {
-    transform: rotate(1.5deg);
+    transform: scaleY(0);
   }
 
   100% {
-    transform: rotate(-1.5deg);
+    transform: scaleY(1);
+  }
+}
+
+@keyframes treeBounce {
+  0%,
+  100% {
+    transform: scaleY(1) rotate(0deg);
+  }
+
+  20% {
+    transform: scaleY(0.96) rotate(2deg);
+  }
+
+  40% {
+    transform: scaleY(1.03) rotate(-1deg);
+  }
+
+  60% {
+    transform: scaleY(0.98) rotate(1.5deg);
   }
 }

@@ -1,4 +1,3 @@
-import pytest
 from geoalchemy2 import WKTElement
 from sqlalchemy import text
 
@@ -7,7 +6,6 @@ from src.models.farm import Farm
 from src.services.sapling_estimation import SaplingEstimationService
 
 
-@pytest.mark.asyncio
 async def test_run_estimation_basic(async_session, setup_soil_texture):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
 

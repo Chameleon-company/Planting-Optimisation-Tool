@@ -1,4 +1,3 @@
-import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 
@@ -9,7 +8,6 @@ from src.schemas.user import Role
 from src.utils.security import get_password_hash
 
 
-@pytest.mark.asyncio
 async def test_farm_and_boundary_link(async_client: AsyncClient, async_session, setup_soil_texture):
     """Verify that a farm and boundary link correctly via shared PK and External ID."""
     # Create a test user with SUPERVISOR role and auth headers

@@ -1,11 +1,8 @@
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from src.services.epi_processing import EpiCSVError
 
 
-@pytest.mark.asyncio
 @patch("src.routers.global_weights.process_epi_csv", new_callable=AsyncMock)
 async def test_upload_epi_csv_success(
     mock_process_csv,
@@ -27,7 +24,6 @@ async def test_upload_epi_csv_success(
     assert response.content == mock_process_csv.return_value
 
 
-@pytest.mark.asyncio
 @patch("src.routers.global_weights.process_epi_csv", new_callable=AsyncMock)
 async def test_upload_epi_csv_validation_failure(mock_process_csv, async_client, admin_auth_headers):
     """Test that the custom exception handler catches EpiCSVError and returns 400."""
@@ -47,7 +43,6 @@ async def test_upload_epi_csv_validation_failure(mock_process_csv, async_client,
     assert "Invalid EPI CSV data" in response_data["detail"]
 
 
-@pytest.mark.asyncio
 async def test_score_epi_csv_invalid_file_extension(
     async_client,
     admin_auth_headers,
@@ -69,14 +64,12 @@ async def test_score_epi_csv_invalid_file_extension(
 
 
 # RBAC Tests for /global-weights/epi-add-scores
-@pytest.mark.asyncio
 async def test_upload_epi_csv_unauthenticated(async_client):
     """Test that unauthenticated request to EPI upload is rejected (401)."""
     response = await async_client.post("/global-weights/epi-add-scores")
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_upload_epi_csv_officer_forbidden(async_client, officer_auth_headers):
     """Test that an officer cannot access EPI upload (403)."""
     # We don't need a real file because the 403 should trigger before file processing
@@ -84,7 +77,6 @@ async def test_upload_epi_csv_officer_forbidden(async_client, officer_auth_heade
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_upload_epi_csv_supervisor_forbidden(async_client, supervisor_auth_headers):
     """Test that a supervisor cannot access EPI upload (403)."""
     # We don't need a real file because the 403 should trigger before file processing

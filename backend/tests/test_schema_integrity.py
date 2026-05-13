@@ -1,4 +1,3 @@
-import pytest
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,7 +6,6 @@ from src.models.soil_texture import SoilTexture
 from src.models.user import User
 
 
-@pytest.mark.asyncio
 async def test_foreign_key_cascade_delete(async_session: AsyncSession):
     """Verifies that deleting a SoilTexture record automatically cascades
     and deletes dependent Farm records.

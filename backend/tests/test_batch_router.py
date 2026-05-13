@@ -1,9 +1,6 @@
 from unittest.mock import AsyncMock, patch
 
-import pytest
 
-
-@pytest.mark.asyncio
 async def test_service_request(async_client, officer_auth_headers):
     payload = {
         "spacing_x": 10,
@@ -35,7 +32,6 @@ async def test_service_request(async_client, officer_auth_headers):
     assert mock_run_batch_estimation.await_count == 1
 
 
-@pytest.mark.asyncio
 async def test_service_return(async_client, officer_auth_headers):
     payload = {
         "spacing_x": 10,

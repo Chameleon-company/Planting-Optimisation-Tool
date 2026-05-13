@@ -1,4 +1,3 @@
-import pytest
 from geoalchemy2 import WKTElement
 
 from src.models.boundaries import FarmBoundary
@@ -6,7 +5,6 @@ from src.models.farm import Farm
 from src.services.environmental_profile import EnvironmentalProfileService
 
 
-@pytest.mark.asyncio
 async def test_environmental_profile_returns_ph(async_session):
     # Create farm (with valid pH)
     farm = Farm(
@@ -52,7 +50,6 @@ async def test_environmental_profile_returns_ph(async_session):
 
 
 # fallback case
-@pytest.mark.asyncio
 async def test_environmental_profile_fallback_when_no_ph(async_session):
     # Create farm with "missing" pH (simulate invalid value)
     farm = Farm(
@@ -99,7 +96,6 @@ async def test_environmental_profile_fallback_when_no_ph(async_session):
     assert profile["soil_ph"] is not None
 
 
-@pytest.mark.asyncio
 async def test_environmental_profile_returns_texture(async_session):
     farm = Farm(
         rainfall_mm=1000,

@@ -28,7 +28,6 @@ def mock_cfg():
     }
 
 
-@pytest.mark.asyncio
 @patch("src.services.raw_scoring.calculate_suitability")
 @patch("src.services.raw_scoring.SuitabilityFarm.from_db_model")
 @patch("src.services.raw_scoring.get_farm_by_id", new_callable=AsyncMock)
@@ -85,7 +84,6 @@ async def test_get_raw_scores_with_target_species(
     assert result == [{"farm_id": 1, "ph": 0.8, "soil_texture": 0.6}, {"farm_id": 2, "ph": 0.9, "soil_texture": 0.7}]
 
 
-@pytest.mark.asyncio
 @patch("src.services.raw_scoring.calculate_suitability")
 @patch("src.services.raw_scoring.SuitabilityFarm.from_db_model")
 @patch("src.services.raw_scoring.get_farm_by_id", new_callable=AsyncMock)
@@ -123,7 +121,6 @@ async def test_get_raw_scores_without_target_species(
     assert result == [{"farm_id": 1, "ph": 0.5, "soil_texture": 0.6}]
 
 
-@pytest.mark.asyncio
 @patch("src.services.raw_scoring.get_farm_by_id", new_callable=AsyncMock)
 @patch("src.services.raw_scoring.build_rules_dict")
 @patch("src.services.raw_scoring.get_species_by_ids", new_callable=AsyncMock)

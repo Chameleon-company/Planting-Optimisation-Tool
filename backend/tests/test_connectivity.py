@@ -8,14 +8,12 @@ from src.config import Settings
 settings = Settings()
 
 
-@pytest.mark.asyncio
 async def test_database_url_is_set():
     """Verify that the DATABASE_URL environment variable is set"""
     assert settings.DATABASE_URL.startswith("postgresql+asyncpg://")
     assert "POT_db" in settings.DATABASE_URL
 
 
-@pytest.mark.asyncio
 async def test_database_connection_success(db_engine: AsyncEngine):
     """Test if a connection can be made to the running DB container."""
     # The engine is provided by the session-scoped fixture in conftest.py

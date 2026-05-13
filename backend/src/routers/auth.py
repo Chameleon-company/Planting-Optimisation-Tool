@@ -48,7 +48,8 @@ async def send_verification_email_for_user(db: AsyncSession, user: User) -> None
     await send_email(
         recipient=user.email,
         subject="Verify your email",
-        body=(f"Please verify your email address by clicking this link:\n{verification_link}"),
+        body=f"Please verify your email address by clicking this link:\n{verification_link}",
+        html_body=f'<p>Please verify your email address:</p><p><a href="{verification_link}">{verification_link}</a></p>',
     )
 
 
@@ -63,13 +64,13 @@ async def resend_verification_email(
     user = result.scalar_one_or_none()
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found",
-        )
+        return {"message": "If an unverified account exists for that email, a verification link has been sent"}
 
     if user.is_verified:
-        return {"message": "Account is already verified"}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Account is already verified",
+        )
 
     await invalidate_user_tokens(
         db,
@@ -334,6 +335,7 @@ async def forgot_password(
             subject="Reset your password",
             recipient=user.email,
             body=f"Click this link to reset your password:\n{reset_link}",
+            html_body=f'<p>Click this link to reset your password:</p><p><a href="{reset_link}">{reset_link}</a></p>',
         )
 
     return {"message": "If an account with that email exists, a password reset email has been sent."}

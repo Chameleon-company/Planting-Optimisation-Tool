@@ -47,7 +47,6 @@ def _make_db():
     return db, poly
 
 
-@pytest.mark.asyncio
 @patch("src.services.environmental_profile.to_shape")
 @patch("src.services.environmental_profile.build_farm_profile")
 @patch("src.services.environmental_profile.impute_missing")
@@ -62,7 +61,6 @@ async def test_imputation_not_called_when_complete(mock_impute, mock_build, mock
     assert "elevation_m_imputed" not in profile
 
 
-@pytest.mark.asyncio
 @patch("src.services.environmental_profile.to_shape")
 @patch("src.services.environmental_profile.build_farm_profile")
 @patch("src.services.environmental_profile.impute_missing")
@@ -79,7 +77,6 @@ async def test_imputed_values_and_flags_set(mock_impute, mock_build, mock_to_sha
     assert profile["ph_imputed"] is True
 
 
-@pytest.mark.asyncio
 @patch("src.services.environmental_profile.to_shape")
 @patch("src.services.environmental_profile.build_farm_profile")
 @patch("src.services.environmental_profile.impute_missing")
@@ -95,7 +92,6 @@ async def test_non_imputed_fields_have_no_flag(mock_impute, mock_build, mock_to_
     assert "rainfall_mm_imputed" not in profile
 
 
-@pytest.mark.asyncio
 @patch("src.services.environmental_profile.to_shape")
 @patch("src.services.environmental_profile.build_farm_profile")
 @patch("src.services.environmental_profile.impute_missing", side_effect=RuntimeError("model not found"))
@@ -108,7 +104,6 @@ async def test_model_unavailable_raises_imputation_error(mock_impute, mock_build
         await EnvironmentalProfileService.run_environmental_profile(db, farm_id=1)
 
 
-@pytest.mark.asyncio
 @patch("src.services.environmental_profile.to_shape")
 @patch("src.services.environmental_profile.build_farm_profile")
 @patch("src.services.environmental_profile.impute_missing")

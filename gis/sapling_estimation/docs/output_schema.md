@@ -1,17 +1,28 @@
 # Output schema for Sapling Estimation Feature
-This document outlines the output schema from the feature/estimate.py.
+This document outlines the response schema returned by the sapling estimation feature.
 
-## Minimal Output Schema
+## Response Fields
 
-*  Planting plan *(dict, required)* - Final planting plan.
-    *  `sapling_count` *(int, required)* - Final sapling count.
-    *  `optimal_angle` *(int, required)* - Optimal rotation angle.
+| Field | Type | Description |
+|---|---|---|
+| `status` | string | Response status |
+| `id` | integer/null | Optional estimation identifier |
+| `pre_slope_count` | integer | Planting point count before slope filtering |
+| `aligned_count` | integer | Final planting point count after slope filtering |
+| `optimal_angle` | integer | Rotation angle that maximizes planting capacity |
+| `rotation_average` | float | Average planting count across tested rotations |
+| `rotation_std_dev` | float | Standard deviation of rotation counts |
 
-### JSON example
+### JSON Example
 
 ```json
 {
-  "sapling_count": 250,
-  "optimal_angle": 45
+  "status": "success",
+  "id": 1,
+  "pre_slope_count": 320,
+  "aligned_count": 250,
+  "optimal_angle": 45,
+  "rotation_average": 298.4,
+  "rotation_std_dev": 12.7
 }
 ```

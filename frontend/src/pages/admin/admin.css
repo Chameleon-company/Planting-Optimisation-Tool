@@ -58,7 +58,7 @@
 
 .admin-nav-link:hover,
 .admin-nav-link.active {
-  background: rgba(255, 255, 255, 0.16);
+  background: color-mix(in srgb, var(--surface) 16%, transparent);
 }
 
 /* Right-side content area of the dashboard shell */
@@ -181,7 +181,8 @@
 
 /* Added hover state for better UI feedback */
 .settings-card:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px
+    color-mix(in srgb, var(--charcoal-blue) 08%, transparent);
   transform: translateY(-2px);
 }
 
@@ -231,7 +232,8 @@
   background-color: #fff;
   border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px
+    color-mix(in srgb, var(--charcoal-blue) 05%, transparent);
   margin-top: 24px;
   padding: 24px;
 }
@@ -301,7 +303,7 @@
   background-color: #fff;
   border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px color-mix(in srgb, var(--charcoal-blue) 1%, transparent);
   margin-top: 20px;
   padding: 30px;
   text-align: center;
