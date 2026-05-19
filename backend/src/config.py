@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = Field(default="localhost")
     POSTGRES_PORT: str = Field(default="5432")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     smtp_from_email: str = "test@example.com"
     brevo_api_key: str = ""
     TESTING: bool = False

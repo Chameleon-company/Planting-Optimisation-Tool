@@ -29,7 +29,7 @@ export function useAhpSpecies() {
       setError(null);
 
       if (!token) {
-        setError("Your session has expired. Please log in again.");
+        setError("Please log in to continue.");
         setIsLoading(false);
         return;
       }
@@ -80,7 +80,7 @@ export function useAhpFactors() {
       setError(null);
 
       if (!token) {
-        setError("Your session has expired. Please log in again.");
+        setError("Please log in to continue.");
         setIsLoading(false);
         return;
       }
@@ -129,7 +129,7 @@ export function useAhpCalculation() {
     setError(null);
 
     if (!token) {
-      setError("Your session has expired. Please log in again.");
+      setError("Please log in to continue.");
       setIsCalculating(false);
       return;
     }

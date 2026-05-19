@@ -28,7 +28,7 @@ export function useFarmMap(farmId: number | null): FarmMapData {
 
       const token = getAccessToken();
       if (!token) {
-        setError("Your session has expired. Please log in again.");
+        setError("Please log in to continue.");
         setIsLoading(false);
         return;
       }

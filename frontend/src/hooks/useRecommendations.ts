@@ -40,7 +40,7 @@ export function useRecommendations(farmId: string) {
       const token = getAccessToken();
 
       if (!token) {
-        setError("Your session has expired. Please log in again.");
+        setError("Please log in to continue.");
         setIsLoading(false);
         return;
       }
@@ -85,7 +85,7 @@ export function useRecommendations(farmId: string) {
 
     const token = getAccessToken();
     if (!token) {
-      setError("Session expired. Please log in to download.");
+      setError("Please log in to continue.");
       return;
     }
 

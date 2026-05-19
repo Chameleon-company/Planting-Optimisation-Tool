@@ -94,8 +94,6 @@ describe("useFarmMap", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(global.fetch).not.toHaveBeenCalled();
-    expect(result.current.error).toBe(
-      "Your session has expired. Please log in again."
-    );
+    expect(result.current.error).toBe("Please log in to continue.");
   });
 });

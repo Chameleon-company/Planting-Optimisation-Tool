@@ -100,44 +100,37 @@ async def test_cache_miss(
     assert data["pre_slope_count"] >= data["aligned_count"]
 
 
-# Cache Hit Test
-async def test_cache_hit(
+# Cache Hit Test - /grid caches after first DB fetch; second call should not hit DB
+async def test_grid_cache_hit(
     async_client,
+    async_session,
     setup_farm,
     officer_auth_headers,
 ):
     farm = setup_farm
 
-    payload = {
-        "farm_id": farm.id,
-        "spacing_x": 10,
-        "spacing_y": 10,
-        "max_slope": 15,
-    }
-
-    # First request creates cache by populating redis
-    request = await async_client.post(
-        "/sapling_estimation/calculate",
-        json=payload,
-        headers=officer_auth_headers,
+    estimate = PlantingEstimate(
+        farm_id=farm.id,
+        slope=5.0,
+        geometry=WKTElement("POINT (125.001 -9.001)", srid=4326),
     )
-    assert request.status_code == 200  # First request should return 200
-    cache = request.json()
+    async_session.add(estimate)
+    await async_session.commit()
 
-    # Second request should access and return cached result
-    with patch(  # Patch run_estimation function so it cannot recompute
-        "src.services.sapling_estimation.SaplingEstimationService.run_estimation",
-        side_effect=Exception("Cache hit error: Second request should access cache and not call service"),
+    # First request populates the grid cache from DB
+    response1 = await async_client.get(f"/sapling_estimation/{farm.id}/grid", headers=officer_auth_headers)
+    assert response1.status_code == 200
+    first_result = response1.json()
+
+    # Second request should be served from cache - patch DB access to confirm
+    with patch(
+        "src.services.sapling_estimation.get_planting_grid",
+        side_effect=Exception("Cache hit error: Second /grid request should be served from cache, not DB"),
     ):
-        request2 = await async_client.post(
-            "/sapling_estimation/calculate",
-            json=payload,
-            headers=officer_auth_headers,
-        )
+        response2 = await async_client.get(f"/sapling_estimation/{farm.id}/grid", headers=officer_auth_headers)
 
-    # The second request succeeds if results come from cache/Redis
-    assert request2.status_code == 200  # Second request should return 200
-    assert request2.json() == cache  # Second request should return the same result as cache
+    assert response2.status_code == 200
+    assert response2.json() == first_result
 
 
 async def test_get_planting_grid_returns_geojson(
