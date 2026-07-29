@@ -185,3 +185,31 @@
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+/* ============ PROFILE LOADING AND EMPTY STATES ============ */
+
+.profile-status-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 32px 7%;
+  padding: 32px;
+  text-align: center;
+}
+
+.profile-status-title {
+  color: var(--forest-green);
+  font-size: 1.15rem;
+  margin: 0 0 10px;
+}
+
+.profile-status-message {
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 620px;
+}
+
+.profile-status-pending {
+  border-style: dashed;
+}
