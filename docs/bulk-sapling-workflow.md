@@ -63,7 +63,7 @@ The endpoint uses the following dependencies:
 Rate limiting is applied using:
 
 ```python
-@limiter.limit("10/minute", key_func=get_user_id)
+@limiter.limit("20/minute", key_func=get_user_id)
 ```
 
 The authenticated user ID is passed into the batch estimation service using:

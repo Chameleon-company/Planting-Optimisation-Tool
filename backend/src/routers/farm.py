@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src import cache
 from src.database import get_db_session
 from src.dependencies import get_current_user, require_role
 from src.schemas.farm import FarmBoundaryResponse, FarmCreate, FarmRead, FarmUpdate
@@ -137,6 +138,7 @@ async def update_farm(
         farm_data=farm_data,
     )
 
+    await cache.invalidate(f"rec:{farm_id}")
     return updated_farm
 
 

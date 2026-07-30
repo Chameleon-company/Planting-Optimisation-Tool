@@ -19,7 +19,7 @@ router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
     response_model=SaplingEstimationResponse,
     response_model_exclude_none=True,
 )
-@limiter.limit("10/minute", key_func=get_user_id)
+@limiter.limit("20/minute", key_func=get_user_id)
 async def get_sapling_estimation(
     request: Request,
     data: SaplingEstimationRequest,
@@ -55,18 +55,13 @@ async def get_sapling_estimation(
     if not farms:
         raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id} not found.")
 
-    cache_key = f"sapling:{farm_id}:{spacing_x}:{spacing_y}:{max_slope}"
-    cached = await cache.get(cache_key)
-    if cached:
-        return SaplingEstimationResponse(**json.loads(cached))
-
     service = sapling_estimation_service.SaplingEstimationService()
     estimation_data = await service.run_estimation(db, farm_id, spacing_x=spacing_x, spacing_y=spacing_y, max_slope=max_slope)
 
     if not estimation_data:
         raise HTTPException(status_code=404, detail=f"Farm boundary not found for farm_id: {farm_id}")
 
-    await cache.set(cache_key, json.dumps(estimation_data))
+    await cache.invalidate(f"grid:{farm_id}")
     return estimation_data
 
 
@@ -86,7 +81,14 @@ async def get_planting_grid(
     Officers are not directly associated with farms as owners in the current implementation.
     Restrict to owned farms once the RBAC implementation is complete.
     """
+    grid_cache_key = f"grid:{farm_id}"
+    cached = await cache.get(grid_cache_key)
+    if cached:
+        return PlantingGridResponse(**json.loads(cached))
+
     grid = await sapling_estimation_service.get_planting_grid(db, farm_id)
     if not grid["features"]:
         raise HTTPException(status_code=404, detail=f"No planting estimates found for farm {farm_id}.")
+
+    await cache.set(grid_cache_key, json.dumps(grid))
     return grid

@@ -86,6 +86,12 @@ async def get_current_user(
         if user_id is None:
             raise credentials_exception
         token_data = TokenData(id=user_id)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Your session has expired. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     except jwt.PyJWTError:
         raise credentials_exception
 

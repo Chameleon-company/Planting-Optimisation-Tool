@@ -7,11 +7,13 @@
 ├── data - example data files only used by CLI application. 
 ├── exclusion_rules - documentation for the exclusion rules library.
 ├── notebooks/imputation_model_training.ipynb - trains and evaluates the ML imputation pipeline.
+├── notebooks/growth_model_training.ipynb - trains and evaluates the tree growth rate model.
 ├── src
 │   ├── app - CLI application for recommendation system. Does not use database.
 │   ├── exclusion_rules - exclusion rules library code.
 │   ├── imputation - ML imputation service (imputation_service.py, __init__.py).
 │   ├── models/imputation/ - trained model artefacts (*.joblib).
+│   ├── scripts/growth_cleaning.py - TreeO2 data cleaning and growth rate computation.
 │   ├── scripts - miscellaneous scripts.
 │   └── suitability_scoring - suitability scoring library code.
 ├── suitability_scoring - documentation and Jupyter notebooks for the suitability scoring library.
@@ -46,6 +48,20 @@ This project uses Ruff linter and formatter (https://docs.astral.sh/ruff/tutoria
 To run, from the base directory of your team, enter `uv run ruff check` and it will test your code for issues. 
 
 You can also choose to run `uv run ruff check --fix` to automatically fix any linting issues.
+
+
+# Models
+
+## Imputation Model
+
+Fills missing environmental variables (`elevation_m`, `slope`, `temperature_celsius`, `rainfall_mm`, `ph`) in a farm profile using a trained `IterativeImputer` + `RandomForestRegressor` pipeline. Used as a graceful fallback when field data is unavailable.
+
+- **Service:** `src/imputation/imputation_service.py` — exposes `impute_missing(profile)`.
+- **To retrain:** run `notebooks/imputation_model_training.ipynb`. Artefacts saved to `src/models/imputation/`.
+
+## Growth Model
+
+Predicts annualised trunk circumference growth rate (cm/year) per tree species from historical TreeO2 measurement data. Used to rank species by expected growth trajectory at planting time.
 
 
 
