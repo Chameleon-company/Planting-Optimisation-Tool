@@ -97,8 +97,7 @@ async def test_regenerate_profile_admin_success(
             new_callable=AsyncMock,
         ) as mock_cache_set,
         patch(
-            "src.services.environmental_profile."
-            "EnvironmentalProfileService.run_environmental_profile",
+            "src.services.environmental_profile.EnvironmentalProfileService.run_environmental_profile",
             new_callable=AsyncMock,
             return_value=_FAKE_PROFILE,
         ) as mock_run,
@@ -146,8 +145,7 @@ async def test_regenerate_profile_supervisor_own_farm_success(
             new_callable=AsyncMock,
         ),
         patch(
-            "src.services.environmental_profile."
-            "EnvironmentalProfileService.run_environmental_profile",
+            "src.services.environmental_profile.EnvironmentalProfileService.run_environmental_profile",
             new_callable=AsyncMock,
             return_value=_FAKE_PROFILE,
         ) as mock_run,
@@ -170,6 +168,7 @@ async def test_regenerate_profile_supervisor_own_farm_success(
             farm.id,
         )
 
+
 async def test_regenerate_profile_supervisor_other_farm_forbidden(
     async_client: AsyncClient,
     async_session: AsyncSession,
@@ -183,8 +182,7 @@ async def test_regenerate_profile_supervisor_other_farm_forbidden(
     await async_session.refresh(farm)
 
     with patch(
-        "src.services.environmental_profile."
-        "EnvironmentalProfileService.run_environmental_profile",
+        "src.services.environmental_profile.EnvironmentalProfileService.run_environmental_profile",
         new_callable=AsyncMock,
     ) as mock_run:
         response = await async_client.post(
@@ -193,11 +191,10 @@ async def test_regenerate_profile_supervisor_other_farm_forbidden(
         )
 
         assert response.status_code == 403
-        assert response.json()["detail"] == (
-            "The user does not have adequate permissions."
-        )
+        assert response.json()["detail"] == ("The user does not have adequate permissions.")
 
         mock_run.assert_not_awaited()
+
 
 async def test_regenerate_profile_officer_forbidden(
     async_client: AsyncClient,
@@ -212,8 +209,7 @@ async def test_regenerate_profile_officer_forbidden(
     await async_session.refresh(farm)
 
     with patch(
-        "src.services.environmental_profile."
-        "EnvironmentalProfileService.run_environmental_profile",
+        "src.services.environmental_profile.EnvironmentalProfileService.run_environmental_profile",
         new_callable=AsyncMock,
     ) as mock_run:
         response = await async_client.post(

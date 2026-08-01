@@ -63,6 +63,7 @@ async def get_farm_profile(
     await cache.set(cache_key, json.dumps(profile_data))
     return profile_data
 
+
 @router.post(
     "/{farm_id}/regenerate",
     response_model=FarmProfileResponse,
@@ -91,10 +92,7 @@ async def regenerate_farm_profile(
 
     farm = farms[0]
 
-    if (
-        current_user.role == Role.SUPERVISOR
-        and farm.user_id != current_user.id
-    ):
+    if current_user.role == Role.SUPERVISOR and farm.user_id != current_user.id:
         raise HTTPException(
             status_code=403,
             detail="The user does not have adequate permissions.",
@@ -107,9 +105,7 @@ async def regenerate_farm_profile(
         f"rec:{farm_id}",
     )
 
-    service = (
-        environmental_profile_service.EnvironmentalProfileService()
-    )
+    service = environmental_profile_service.EnvironmentalProfileService()
 
     try:
         profile_data = await service.run_environmental_profile(

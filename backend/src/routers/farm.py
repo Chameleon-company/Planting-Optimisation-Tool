@@ -139,10 +139,10 @@ async def update_farm(
     )
 
     await cache.invalidate(
-    f"profile:{farm_id}",
-    f"sapling:{farm_id}",
-    f"rec:{farm_id}",
-)
+        f"profile:{farm_id}",
+        f"sapling:{farm_id}",
+        f"rec:{farm_id}",
+    )
     return updated_farm
 
 
