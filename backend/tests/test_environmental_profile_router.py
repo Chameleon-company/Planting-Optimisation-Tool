@@ -73,3 +73,153 @@ async def test_cache_hit(
         assert r2.status_code == 200
         mock_run.assert_called_once()
         assert r2.json() == r1.json()
+
+
+async def test_regenerate_profile_admin_success(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+):
+    farm = Farm(user_id=test_admin_user.id, **_FARM_DATA)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    with (
+        patch(
+            "src.routers.environmental_profile.cache.invalidate",
+            new_callable=AsyncMock,
+        ) as mock_invalidate,
+        patch(
+            "src.routers.environmental_profile.cache.set",
+            new_callable=AsyncMock,
+        ) as mock_cache_set,
+        patch(
+            "src.services.environmental_profile."
+            "EnvironmentalProfileService.run_environmental_profile",
+            new_callable=AsyncMock,
+            return_value=_FAKE_PROFILE,
+        ) as mock_run,
+    ):
+        response = await async_client.post(
+            f"/profile/{farm.id}/regenerate",
+            headers=admin_auth_headers,
+        )
+
+        assert response.status_code == 200
+
+        mock_invalidate.assert_awaited_once_with(
+            f"profile:{farm.id}",
+            f"sapling:{farm.id}",
+            f"rec:{farm.id}",
+        )
+
+        mock_run.assert_awaited_once_with(
+            async_session,
+            farm.id,
+        )
+
+        mock_cache_set.assert_awaited_once()
+
+
+async def test_regenerate_profile_supervisor_own_farm_success(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    test_supervisor_user: User,
+    supervisor_auth_headers: dict,
+):
+    farm = Farm(user_id=test_supervisor_user.id, **_FARM_DATA)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    with (
+        patch(
+            "src.routers.environmental_profile.cache.invalidate",
+            new_callable=AsyncMock,
+        ) as mock_invalidate,
+        patch(
+            "src.routers.environmental_profile.cache.set",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "src.services.environmental_profile."
+            "EnvironmentalProfileService.run_environmental_profile",
+            new_callable=AsyncMock,
+            return_value=_FAKE_PROFILE,
+        ) as mock_run,
+    ):
+        response = await async_client.post(
+            f"/profile/{farm.id}/regenerate",
+            headers=supervisor_auth_headers,
+        )
+
+        assert response.status_code == 200
+
+        mock_invalidate.assert_awaited_once_with(
+            f"profile:{farm.id}",
+            f"sapling:{farm.id}",
+            f"rec:{farm.id}",
+        )
+
+        mock_run.assert_awaited_once_with(
+            async_session,
+            farm.id,
+        )
+
+async def test_regenerate_profile_supervisor_other_farm_forbidden(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    test_officer_user: User,
+    supervisor_auth_headers: dict,
+):
+    farm = Farm(user_id=test_officer_user.id, **_FARM_DATA)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    with patch(
+        "src.services.environmental_profile."
+        "EnvironmentalProfileService.run_environmental_profile",
+        new_callable=AsyncMock,
+    ) as mock_run:
+        response = await async_client.post(
+            f"/profile/{farm.id}/regenerate",
+            headers=supervisor_auth_headers,
+        )
+
+        assert response.status_code == 403
+        assert response.json()["detail"] == (
+            "The user does not have adequate permissions."
+        )
+
+        mock_run.assert_not_awaited()
+
+async def test_regenerate_profile_officer_forbidden(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    test_officer_user: User,
+    officer_auth_headers: dict,
+):
+    farm = Farm(user_id=test_officer_user.id, **_FARM_DATA)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    with patch(
+        "src.services.environmental_profile."
+        "EnvironmentalProfileService.run_environmental_profile",
+        new_callable=AsyncMock,
+    ) as mock_run:
+        response = await async_client.post(
+            f"/profile/{farm.id}/regenerate",
+            headers=officer_auth_headers,
+        )
+
+        assert response.status_code == 403
+        mock_run.assert_not_awaited()
