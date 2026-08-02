@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.farm import Farm
 from src.models.user import User
+from src.services.environmental_profile import ImputationError
 
 _FARM_DATA = {
     "rainfall_mm": 1500,
@@ -219,3 +220,110 @@ async def test_regenerate_profile_officer_forbidden(
 
         assert response.status_code == 403
         mock_run.assert_not_awaited()
+
+
+async def test_regenerate_profile_missing_farm_returns_404(
+    async_client: AsyncClient,
+    admin_auth_headers: dict,
+):
+    response = await async_client.post(
+        "/profile/999999/regenerate",
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        "Farm with ID 999999 not found."
+    )
+
+
+async def test_regenerate_profile_imputation_error_returns_503(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    test_supervisor_user: User,
+    supervisor_auth_headers: dict,
+):
+    farm = Farm(
+        user_id=test_supervisor_user.id,
+        **_FARM_DATA,
+    )
+
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    with (
+        patch(
+            "src.routers.environmental_profile.cache.invalidate",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "src.routers.environmental_profile.cache.set",
+            new_callable=AsyncMock,
+        ) as mock_cache_set,
+        patch(
+            "src.services.environmental_profile."
+            "EnvironmentalProfileService.run_environmental_profile",
+            new_callable=AsyncMock,
+            side_effect=ImputationError(
+                "Environmental profile generation failed."
+            ),
+        ),
+    ):
+        response = await async_client.post(
+            f"/profile/{farm.id}/regenerate",
+            headers=supervisor_auth_headers,
+        )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == (
+        "Environmental profile generation failed."
+    )
+
+    mock_cache_set.assert_not_awaited()
+
+
+async def test_regenerate_profile_empty_result_returns_404(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    test_officer_user: User,
+    admin_auth_headers: dict,
+):
+    farm = Farm(
+        user_id=test_officer_user.id,
+        **_FARM_DATA,
+    )
+
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    with (
+        patch(
+            "src.routers.environmental_profile.cache.invalidate",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "src.routers.environmental_profile.cache.set",
+            new_callable=AsyncMock,
+        ) as mock_cache_set,
+        patch(
+            "src.services.environmental_profile."
+            "EnvironmentalProfileService.run_environmental_profile",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+    ):
+        response = await async_client.post(
+            f"/profile/{farm.id}/regenerate",
+            headers=admin_auth_headers,
+        )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        f"Farm boundary not found for farm_id: {farm.id}"
+    )
+
+    mock_cache_set.assert_not_awaited()
