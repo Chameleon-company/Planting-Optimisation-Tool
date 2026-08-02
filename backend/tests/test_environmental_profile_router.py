@@ -232,9 +232,7 @@ async def test_regenerate_profile_missing_farm_returns_404(
     )
 
     assert response.status_code == 404
-    assert response.json()["detail"] == (
-        "Farm with ID 999999 not found."
-    )
+    assert response.json()["detail"] == ("Farm with ID 999999 not found.")
 
 
 async def test_regenerate_profile_imputation_error_returns_503(
@@ -263,12 +261,9 @@ async def test_regenerate_profile_imputation_error_returns_503(
             new_callable=AsyncMock,
         ) as mock_cache_set,
         patch(
-            "src.services.environmental_profile."
-            "EnvironmentalProfileService.run_environmental_profile",
+            "src.services.environmental_profile.EnvironmentalProfileService.run_environmental_profile",
             new_callable=AsyncMock,
-            side_effect=ImputationError(
-                "Environmental profile generation failed."
-            ),
+            side_effect=ImputationError("Environmental profile generation failed."),
         ),
     ):
         response = await async_client.post(
@@ -277,9 +272,7 @@ async def test_regenerate_profile_imputation_error_returns_503(
         )
 
     assert response.status_code == 503
-    assert response.json()["detail"] == (
-        "Environmental profile generation failed."
-    )
+    assert response.json()["detail"] == ("Environmental profile generation failed.")
 
     mock_cache_set.assert_not_awaited()
 
@@ -310,8 +303,7 @@ async def test_regenerate_profile_empty_result_returns_404(
             new_callable=AsyncMock,
         ) as mock_cache_set,
         patch(
-            "src.services.environmental_profile."
-            "EnvironmentalProfileService.run_environmental_profile",
+            "src.services.environmental_profile.EnvironmentalProfileService.run_environmental_profile",
             new_callable=AsyncMock,
             return_value=None,
         ),
@@ -322,8 +314,6 @@ async def test_regenerate_profile_empty_result_returns_404(
         )
 
     assert response.status_code == 404
-    assert response.json()["detail"] == (
-        f"Farm boundary not found for farm_id: {farm.id}"
-    )
+    assert response.json()["detail"] == (f"Farm boundary not found for farm_id: {farm.id}")
 
     mock_cache_set.assert_not_awaited()
