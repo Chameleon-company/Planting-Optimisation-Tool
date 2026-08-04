@@ -400,6 +400,30 @@ describe("FarmSearchPanel", () => {
     expect(screen.getByText("Farm #42")).toBeInTheDocument();
   });
 
+  it("shows a pending message when the farm exists but environmental data is incomplete", () => {
+    const incompleteProfile = {
+      ...mockFarm(42),
+      rainfall_mm: null,
+      temperature_celsius: null,
+      elevation_m: null,
+      ph: null,
+      slope: null,
+      soil_texture: null,
+    } as unknown as Farm;
+
+    renderWithRouter(
+      <FarmSearchPanel {...baseProps} query="42" profile={incompleteProfile} />
+    );
+
+    expect(
+      screen.getByText(/environmental profile not ready/i)
+    ).toBeInTheDocument();
+
+    expect(screen.getByText(/this farm is registered/i)).toBeInTheDocument();
+
+    expect(screen.queryByText("Farm #42")).not.toBeInTheDocument();
+  });
+
   it("shows 'no profile found' when query is active but no result and user is logged in", () => {
     renderWithRouter(
       <FarmSearchPanel {...baseProps} query="999" profile={null} error={null} />
