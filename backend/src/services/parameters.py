@@ -7,7 +7,7 @@ from src.schemas.parameters import ParameterCreate, ParameterUpdate
 
 
 async def get_all_parameters(db: AsyncSession) -> list[Parameter]:
-    result = await db.execute(select(Parameter).order_by(Parameter.species_id, Parameter.id))
+    result = await db.execute(select(Parameter).join(Species, Parameter.species_id == Species.id).order_by(Species.name, Parameter.id))
     return list(result.scalars().all())
 
 
