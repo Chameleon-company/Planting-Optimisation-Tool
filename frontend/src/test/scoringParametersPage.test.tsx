@@ -24,9 +24,12 @@ vi.mock("../utils/speciesApi", () => ({
   getAllSpecies: vi.fn(),
 }));
 
-vi.mock("../contexts/AuthContext", () => ({
-  useAuth: () => ({ getAccessToken: () => "test-token" }),
-}));
+vi.mock("../contexts/AuthContext", () => {
+  const getAccessToken = () => "test-token";
+  return {
+    useAuth: () => ({ getAccessToken }),
+  };
+});
 
 const mockSpecies = [
   {
@@ -374,5 +377,108 @@ describe("ScoringParametersPage", () => {
     expect(
       screen.queryByLabelText(/trap right tolerance/i)
     ).not.toBeInTheDocument();
+  });
+
+  it("shows error when delete fails", async () => {
+    vi.mocked(deleteParameter).mockRejectedValue(new Error("Delete failed"));
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const user = userEvent.setup();
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
+    });
+
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
+    await user.click(deleteButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Delete failed")).toBeInTheDocument();
+    });
+  });
+
+  it("shows validation error when no species is selected", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /add parameter/i }));
+
+    await user.selectOptions(
+      screen.getByLabelText(/^feature$/i),
+      "elevation_m"
+    );
+    await user.selectOptions(
+      screen.getByLabelText(/score method/i),
+      "num_range"
+    );
+
+    await user.click(screen.getByRole("button", { name: /save parameter/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Please select a species."
+      );
+    });
+  });
+
+  it("clears tolerance values to null when inputs are cleared", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /add parameter/i }));
+    await user.selectOptions(
+      screen.getByLabelText(/score method/i),
+      "trapezoid"
+    );
+
+    const trapLeft = screen.getByLabelText(/trap left tolerance/i);
+    const trapRight = screen.getByLabelText(/trap right tolerance/i);
+
+    await user.type(trapLeft, "100");
+    await user.type(trapRight, "200");
+
+    expect(trapLeft).toHaveValue(100);
+    expect(trapRight).toHaveValue(200);
+
+    await user.clear(trapLeft);
+    await user.clear(trapRight);
+
+    expect(trapLeft).toHaveValue(null);
+    expect(trapRight).toHaveValue(null);
+  });
+
+  it("displays dash for null weight in the table", async () => {
+    vi.mocked(getAllParameters).mockResolvedValue([
+      { ...mockParameters[0], weight: null },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("—")).toBeInTheDocument();
+  });
+
+  it("shows fallback name when species is not found", async () => {
+    vi.mocked(getAllParameters).mockResolvedValue([
+      { ...mockParameters[0], species_id: 999 },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("Species 999")).toBeInTheDocument();
+    });
   });
 });
