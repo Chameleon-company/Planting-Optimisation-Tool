@@ -51,11 +51,7 @@ _SPECIES_IN_RANGE = {
 
 async def _load_farm_with_relationships(db: AsyncSession, farm_id: int) -> Farm:
     """Load a farm with the relationships required by SuitabilityFarm.from_db_model."""
-    result = await db.execute(
-        select(Farm)
-        .options(selectinload(Farm.soil_texture), selectinload(Farm.agroforestry_type))
-        .where(Farm.id == farm_id)
-    )
+    result = await db.execute(select(Farm).options(selectinload(Farm.soil_texture), selectinload(Farm.agroforestry_type)).where(Farm.id == farm_id))
     return result.scalar_one()
 
 
@@ -89,9 +85,7 @@ async def test_pipeline_returns_one_result_per_farm(
     all_species = await get_all_species_for_engine(async_session)
     cfg = get_recommend_config()
 
-    results = await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], all_species, cfg
-    )
+    results = await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], all_species, cfg)
 
     assert len(results) == 1
 
@@ -110,9 +104,7 @@ async def test_pipeline_result_contains_required_keys(
     all_species = await get_all_species_for_engine(async_session)
     cfg = get_recommend_config()
 
-    results = await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], all_species, cfg
-    )
+    results = await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], all_species, cfg)
 
     result = results[0]
     assert result["farm_id"] == farm.id
@@ -135,9 +127,7 @@ async def test_pipeline_recommendation_fields_and_types(
     all_species = await get_all_species_for_engine(async_session)
     cfg = get_recommend_config()
 
-    results = await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], all_species, cfg
-    )
+    results = await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], all_species, cfg)
 
     recommendations = results[0]["recommendations"]
     assert len(recommendations) > 0
@@ -167,9 +157,7 @@ async def test_pipeline_farm_id_matches_input(
     all_species = await get_all_species_for_engine(async_session)
     cfg = get_recommend_config()
 
-    results = await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], all_species, cfg
-    )
+    results = await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], all_species, cfg)
 
     assert results[0]["farm_id"] == farm.id
 
@@ -190,9 +178,7 @@ async def test_pipeline_with_no_species_returns_empty_recommendations(
     farm_with_rels = await _load_farm_with_relationships(async_session, farm.id)
     cfg = get_recommend_config()
 
-    results = await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], [], cfg
-    )
+    results = await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], [], cfg)
 
     assert results[0]["recommendations"] == []
     assert results[0]["excluded_species"] == []
@@ -212,13 +198,9 @@ async def test_pipeline_persists_recommendations_to_database(
     all_species = await get_all_species_for_engine(async_session)
     cfg = get_recommend_config()
 
-    await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], all_species, cfg
-    )
+    await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], all_species, cfg)
 
-    saved = await async_session.execute(
-        select(Recommendation).where(Recommendation.farm_id == farm.id)
-    )
+    saved = await async_session.execute(select(Recommendation).where(Recommendation.farm_id == farm.id))
     records = saved.scalars().all()
     assert len(records) > 0
 
@@ -237,18 +219,12 @@ async def test_pipeline_replaces_existing_recommendations_on_rerun(
     cfg = get_recommend_config()
 
     farm_with_rels = await _load_farm_with_relationships(async_session, farm.id)
-    await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], all_species, cfg
-    )
+    await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], all_species, cfg)
 
     farm_with_rels = await _load_farm_with_relationships(async_session, farm.id)
-    await recommendation_service.run_recommendation_pipeline(
-        async_session, [farm_with_rels], all_species, cfg
-    )
+    await recommendation_service.run_recommendation_pipeline(async_session, [farm_with_rels], all_species, cfg)
 
-    saved = await async_session.execute(
-        select(Recommendation).where(Recommendation.farm_id == farm.id)
-    )
+    saved = await async_session.execute(select(Recommendation).where(Recommendation.farm_id == farm.id))
     records = saved.scalars().all()
     species_ids = [r.species_id for r in records]
     assert len(species_ids) == len(set(species_ids)), "No duplicate recommendations per farm after rerun"
@@ -272,9 +248,7 @@ async def test_pipeline_batch_returns_result_per_farm(
     all_species = await get_all_species_for_engine(async_session)
     cfg = get_recommend_config()
 
-    results = await recommendation_service.run_recommendation_pipeline(
-        async_session, farms, all_species, cfg
-    )
+    results = await recommendation_service.run_recommendation_pipeline(async_session, farms, all_species, cfg)
 
     assert len(results) == 2
     result_farm_ids = {r["farm_id"] for r in results}
