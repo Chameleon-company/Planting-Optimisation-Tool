@@ -4,7 +4,6 @@ import pytest
 from geoalchemy2 import WKTElement
 from sqlalchemy import text
 
-from src import cache
 from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
 from src.models.planting_estimates import PlantingEstimate
@@ -165,7 +164,7 @@ async def test_calculate_multiple_farms(
     test_officer_user,
     officer_auth_headers,
 ):
-    farm_a = setup_farm  # first farm + DEM come from the fixture
+    farm_a = setup_farm  # first farm + DEM
     farm_b = await _add_owned_farm(
         async_session,
         test_officer_user.id,
