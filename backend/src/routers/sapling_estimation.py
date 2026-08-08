@@ -11,7 +11,7 @@ from src.schemas.user import Role, UserRead
 from src.services import farm as farm_service
 from src.services import sapling_estimation as sapling_estimation_service
 
-router = APIRouter(prefix="/sapling-estimation", tags=["Sapling Calculator"])
+router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
 
 
 @router.post(
