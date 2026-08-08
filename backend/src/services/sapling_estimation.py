@@ -18,7 +18,7 @@ class SaplingEstimationService:
         spacing_y: float,
         max_slope: float,
     ) -> dict:
-    
+
         if not farm_ids:
             return {"status": "success", "farm_count": 0, "results": []}
 
@@ -53,7 +53,7 @@ class SaplingEstimationService:
             "farm_count": len(farm_ids),
             "results": results,
         }
-    
+
     @staticmethod
     async def _estimate_single_farm(
         db: AsyncSession,

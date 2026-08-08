@@ -126,9 +126,7 @@ async def test_run_estimation_multiple_farms(async_session):
     )
 
     service = SaplingEstimationService()
-    result = await service.run_estimation(
-        async_session, farm_ids=[farm_a.id, farm_b.id], spacing_x=10, spacing_y=10, max_slope=15
-    )
+    result = await service.run_estimation(async_session, farm_ids=[farm_a.id, farm_b.id], spacing_x=10, spacing_y=10, max_slope=15)
 
     assert result["status"] == "success"
     assert result["farm_count"] == 2
@@ -154,9 +152,7 @@ async def test_run_estimation_partial_missing(async_session):
     missing_id = farm.id + 999999  # id that does not exist
 
     service = SaplingEstimationService()
-    result = await service.run_estimation(
-        async_session, farm_ids=[farm.id, missing_id], spacing_x=10, spacing_y=10, max_slope=15
-    )
+    result = await service.run_estimation(async_session, farm_ids=[farm.id, missing_id], spacing_x=10, spacing_y=10, max_slope=15)
 
     assert result["status"] == "success"  # envelope should succeed, per-farm status has the failures
     assert result["farm_count"] == 2
@@ -168,5 +164,3 @@ async def test_run_estimation_partial_missing(async_session):
 
     assert by_id[missing_id]["status"] == "failed"
     assert by_id[missing_id]["message"] == "Farm not found"
-    
-    

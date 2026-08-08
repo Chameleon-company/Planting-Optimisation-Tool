@@ -17,11 +17,11 @@ class SaplingEstimationRequest(BaseModel):
 
 class SaplingEstimationItem(BaseModel):  # Estimation result for a single farm
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-    
+
     status: str = "success"
     farm_id: int
     message: Optional[str] = None
-    
+
     pre_slope_count: Optional[int] = None
     aligned_count: Optional[int] = None
     baseline_tree_count: Optional[int] = None
@@ -32,6 +32,7 @@ class SaplingEstimationItem(BaseModel):  # Estimation result for a single farm
     # added rotational
     rotation_average: Optional[float] = None
     rotation_std_dev: Optional[float] = None
+
 
 class SaplingEstimationResponse(BaseModel):
     status: str = "success"

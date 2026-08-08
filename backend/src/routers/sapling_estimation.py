@@ -68,10 +68,10 @@ async def get_sapling_estimation(
         spacing_y=data.spacing_y,
         max_slope=data.max_slope,
     )
-    
+
     for farm_id in data.farm_ids:
         await cache.invalidate(f"grid:{farm_id}")
-    
+
     return estimation_data
 
 

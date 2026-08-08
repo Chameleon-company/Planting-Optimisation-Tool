@@ -16,9 +16,11 @@ from src.database import AsyncSessionLocal, engine
 # Path to the waterways GeoPackage file
 WATERWAYS_PATH = Path("src/scripts/data/hotosm_tls_waterways_lines_gpkg.gpkg")
 
+
 def clean(value):
     """Convert NaN to None so it binds as NULL instead of 'nan'."""
     return None if pd.isna(value) else value
+
 
 async def ingest_waterways():
     """Read the waterways GeoPackage and insert all features into the DB."""

@@ -215,7 +215,7 @@ async def test_calculate_partial_not_found(
         headers=officer_auth_headers,
     )
 
-    assert request.status_code == 404 
+    assert request.status_code == 404
     assert str(missing_id) in request.json()["detail"]
 
 
@@ -272,6 +272,7 @@ async def test_calculate_rejects_unowned_farm(
     # Ownership filter treats another user's farm as not-found, 404
     assert request.status_code == 404
     assert str(other_farm.id) in request.json()["detail"]
+
 
 # Cache Hit Test - /grid caches after first DB fetch; second call should not hit DB
 async def test_grid_cache_hit(
