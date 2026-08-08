@@ -6,7 +6,6 @@ from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
 from src.services.sapling_estimation import SaplingEstimationService
 
-
 DEM_INSERT = text(
     """
     INSERT INTO dem_table (rast)
