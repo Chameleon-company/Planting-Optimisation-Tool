@@ -102,4 +102,3 @@ async def get_planting_grid(
 
     await cache.set(grid_cache_key, json.dumps(grid))
     return grid
-
