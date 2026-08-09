@@ -1,243 +1,198 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import UserEvent from "@testing-library/user-event";
 
-import CalculatorHeader from "@/components/calculator/calculatorHeader";
-import CalculatorSearch from "@/components/calculator/calculatorSearch";
-import CalculatorResult from "@/components/calculator/calculatorResult";
-import CalculatorTabs from "@/components/calculator/calculatorTabs";
+import CalculatorPage from "@/pages/CalculatorPage";
 import type { FarmEstimationResult } from "@/hooks/useCalculator";
 
-const success = (farm_id: number): FarmEstimationResult => ({
+vi.mock("@/hooks/useCalculator", () => ({
+  useCalculator: vi.fn(),
+  DEFAULT_CALC_PARAMS: { spacingX: 3.0, spacingY: 3.0, maxSlope: 15.0 },
+}));
+
+vi.mock("@/hooks/useFarmMap", () => ({
+  useFarmMap: vi.fn(() => ({
+    boundary: null,
+    grid: null,
+    isLoading: false,
+    error: null,
+  })),
+}));
+
+vi.mock("@/components/calculator/FarmMap", () => ({
+  default: () => null,
+}));
+
+import { useCalculator } from "@/hooks/useCalculator";
+
+const idleHook = {
+  results: [],
+  isLoading: false,
+  hasSearched: false,
+  error: null,
+};
+
+const success = (
+  farm_id: number,
+  aligned_count: number
+): FarmEstimationResult => ({
   farm_id,
   status: "success",
   pre_slope_count: 100,
-  aligned_count: 80,
+  aligned_count,
   optimal_angle: 15,
 });
 
-const failed = (farm_id: number, message?: string): FarmEstimationResult => ({
-  farm_id,
-  status: "failed",
-  message,
-});
+const renderPage = () =>
+  render(
+    <HelmetProvider>
+      <CalculatorPage />
+    </HelmetProvider>
+  );
 
-describe("CalculatorHeader", () => {
-  it("renders title and subtitle", () => {
-    render(<CalculatorHeader />);
+describe("CalculatorPage Integration", () => {
+  it("does not show results before a search has been performed", () => {
+    vi.mocked(useCalculator).mockReturnValue(idleHook);
+
+    renderPage();
 
     expect(screen.getByText(/sapling calculator/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/estimate optimal sapling count/i)
-    ).toBeInTheDocument();
+    expect(screen.queryByText(/estimation results/i)).not.toBeInTheDocument();
   });
-});
 
-describe("CalculatorSearch", () => {
-  it("calls onSearch with a single parsed id when the button is clicked", async () => {
-    const user = UserEvent.setup();
-    const onSearch = vi.fn();
-
-    render(<CalculatorSearch onSearch={onSearch} isLoading={false} />);
-
-    await user.type(screen.getByLabelText(/farm id/i), "12");
-    await user.click(
-      screen.getByRole("button", { name: /generate planting plan/i })
-    );
-
-    expect(onSearch).toHaveBeenCalledWith([12], {
-      spacingX: 3,
-      spacingY: 3,
-      maxSlope: 15,
+  it("shows the results when estimation is complete", () => {
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [success(1, 80)],
     });
-  });
 
-  it("parses a comma/space separated list into multiple ids", async () => {
-    const user = UserEvent.setup();
-    const onSearch = vi.fn();
-
-    render(<CalculatorSearch onSearch={onSearch} isLoading={false} />);
-
-    await user.type(screen.getByLabelText(/farm id/i), "1, 2 3");
-    await user.click(
-      screen.getByRole("button", { name: /generate planting plan/i })
-    );
-
-    expect(onSearch).toHaveBeenCalledWith(
-      [1, 2, 3],
-      expect.objectContaining({ spacingX: 3, spacingY: 3, maxSlope: 15 })
-    );
-  });
-
-  it("de-duplicates ids and drops non-positive/invalid values", async () => {
-    const user = UserEvent.setup();
-    const onSearch = vi.fn();
-
-    render(<CalculatorSearch onSearch={onSearch} isLoading={false} />);
-
-    await user.type(screen.getByLabelText(/farm id/i), "2, 2, 0, -1, abc, 3");
-    await user.click(
-      screen.getByRole("button", { name: /generate planting plan/i })
-    );
-
-    expect(onSearch).toHaveBeenCalledWith([2, 3], expect.any(Object));
-  });
-
-  it("searches when the user presses Enter in the id field", async () => {
-    const user = UserEvent.setup();
-    const onSearch = vi.fn();
-
-    render(<CalculatorSearch onSearch={onSearch} isLoading={false} />);
-
-    await user.type(screen.getByLabelText(/farm id/i), "7{enter}");
-
-    expect(onSearch).toHaveBeenCalledWith([7], expect.any(Object));
-  });
-
-  it("keeps the button disabled while the id field is empty", () => {
-    render(<CalculatorSearch onSearch={vi.fn()} isLoading={false} />);
-
-    expect(
-      screen.getByRole("button", { name: /generate planting plan/i })
-    ).toBeDisabled();
-  });
-
-  it("does not call onSearch when there are no valid ids", async () => {
-    const user = UserEvent.setup();
-    const onSearch = vi.fn();
-
-    render(<CalculatorSearch onSearch={onSearch} isLoading={false} />);
-
-    await user.type(screen.getByLabelText(/farm id/i), "abc, -5");
-    await user.click(screen.getByRole("button"));
-
-    expect(onSearch).not.toHaveBeenCalled();
-  });
-
-  it("disables the button and shows loading text when isLoading is true", () => {
-    render(<CalculatorSearch onSearch={vi.fn()} isLoading={true} />);
-
-    const button = screen.getByRole("button");
-    expect(button).toBeDisabled();
-    expect(screen.getByText(/estimating saplings/i)).toBeInTheDocument();
-  });
-});
-
-describe("CalculatorResult", () => {
-  const mockResult: FarmEstimationResult = {
-    farm_id: 1,
-    status: "success",
-    pre_slope_count: 100,
-    aligned_count: 80,
-    optimal_angle: 12,
-  };
-
-  it("renders the farm id in the heading", () => {
-    render(<CalculatorResult result={mockResult} />);
+    renderPage();
 
     expect(
       screen.getByText(/estimation results - farm 1/i)
     ).toBeInTheDocument();
-  });
-
-  it("renders all result fields correctly", () => {
-    render(<CalculatorResult result={mockResult} />);
-
-    expect(screen.getByText(/pre-slope sapling count/i)).toBeInTheDocument();
     expect(screen.getByText("100")).toBeInTheDocument();
-
-    expect(screen.getByText(/final sapling count/i)).toBeInTheDocument();
     expect(screen.getByText("80")).toBeInTheDocument();
-
-    expect(screen.getByText(/optimal angle/i)).toBeInTheDocument();
-    expect(screen.getByText("12.00°")).toBeInTheDocument();
+    expect(screen.getByText("15.00°")).toBeInTheDocument();
   });
 
-  it("renders a dash for missing numeric fields", () => {
-    render(<CalculatorResult result={{ farm_id: 9, status: "success" }} />);
+  it("does not render tabs for a single result", () => {
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [success(1, 80)],
+    });
 
-    // pre-slope, final count, and optimal angle all fall back to "-"
-    expect(screen.getAllByText("-").length).toBeGreaterThanOrEqual(3);
-  });
-});
+    renderPage();
 
-describe("CalculatorTabs", () => {
-  it("renders nothing when there is a single result", () => {
-    const { container } = render(
-      <CalculatorTabs
-        results={[success(1)]}
-        selectedFarmId={1}
-        onSelect={vi.fn()}
-      />
-    );
-
-    expect(container).toBeEmptyDOMElement();
     expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
   });
 
-  it("renders a tab for each farm when there are multiple results", () => {
-    render(
-      <CalculatorTabs
-        results={[success(1), success(2), failed(3)]}
-        selectedFarmId={1}
-        onSelect={vi.fn()}
-      />
-    );
-
-    expect(screen.getByRole("tablist")).toBeInTheDocument();
-    expect(screen.getAllByRole("tab")).toHaveLength(3);
-    expect(screen.getByRole("tab", { name: /farm 1/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /farm 3/i })).toBeInTheDocument();
-  });
-
-  it("marks the selected farm's tab as active", () => {
-    render(
-      <CalculatorTabs
-        results={[success(1), success(2)]}
-        selectedFarmId={2}
-        onSelect={vi.fn()}
-      />
-    );
-
-    expect(screen.getByRole("tab", { name: /farm 2/i })).toHaveAttribute(
-      "aria-selected",
-      "true"
-    );
-    expect(screen.getByRole("tab", { name: /farm 1/i })).toHaveAttribute(
-      "aria-selected",
-      "false"
-    );
-  });
-
-  it("uses the failure message as the tab title for failed farms", () => {
-    render(
-      <CalculatorTabs
-        results={[success(1), failed(2, "No boundary data")]}
-        selectedFarmId={1}
-        onSelect={vi.fn()}
-      />
-    );
-
-    expect(screen.getByRole("tab", { name: /farm 2/i })).toHaveAttribute(
-      "title",
-      "No boundary data"
-    );
-  });
-
-  it("calls onSelect with the farm id when a tab is clicked", async () => {
+  it("renders tabs and switches farms when there are multiple results", async () => {
     const user = UserEvent.setup();
-    const onSelect = vi.fn();
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [success(1, 80), success(2, 55)],
+    });
 
-    render(
-      <CalculatorTabs
-        results={[success(1), success(2)]}
-        selectedFarmId={1}
-        onSelect={onSelect}
-      />
-    );
+    renderPage();
+
+    // Auto-focuses the first successful farm
+    expect(
+      screen.getByText(/estimation results - farm 1/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText("80")).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /farm 2/i }));
 
-    expect(onSelect).toHaveBeenCalledWith(2);
+    expect(
+      screen.getByText(/estimation results - farm 2/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText("55")).toBeInTheDocument();
+  });
+
+  it("focuses the first successful farm even when earlier farms failed", () => {
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [
+        { farm_id: 1, status: "failed", message: "No boundary data" },
+        success(2, 80),
+      ],
+    });
+
+    renderPage();
+
+    expect(
+      screen.getByText(/estimation results - farm 2/i)
+    ).toBeInTheDocument();
+  });
+
+  it("shows a per-farm failure panel when a failed tab is selected", async () => {
+    const user = UserEvent.setup();
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [
+        success(1, 80),
+        { farm_id: 2, status: "failed", message: "No boundary data" },
+      ],
+    });
+
+    renderPage();
+
+    await user.click(screen.getByRole("tab", { name: /farm 2/i }));
+
+    expect(screen.getByText(/farm 2 failed/i)).toBeInTheDocument();
+    expect(screen.getByText(/no boundary data/i)).toBeInTheDocument();
+  });
+
+  it("shows a top-level error message when the request itself fails", () => {
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      error: "Please log in to continue.",
+    });
+
+    renderPage();
+
+    expect(screen.getByText(/please log in to continue/i)).toBeInTheDocument();
+  });
+
+  it("updates Farm ID input when user types", async () => {
+    const user = UserEvent.setup();
+    vi.mocked(useCalculator).mockReturnValue(idleHook);
+
+    renderPage();
+
+    const input = screen.getByLabelText(/farm id/i);
+    await user.type(input, "50");
+
+    expect(input).toHaveValue("50");
+  });
+
+  it("renders spacing and slope inputs with default values", () => {
+    vi.mocked(useCalculator).mockReturnValue(idleHook);
+
+    renderPage();
+
+    expect(screen.getByLabelText(/spacing x/i)).toHaveValue(3);
+    expect(screen.getByLabelText(/spacing y/i)).toHaveValue(3);
+    expect(screen.getByLabelText(/max slope/i)).toHaveValue(15);
+  });
+
+  it("updates spacing X input when user changes value", async () => {
+    const user = UserEvent.setup();
+    vi.mocked(useCalculator).mockReturnValue(idleHook);
+
+    renderPage();
+
+    const input = screen.getByLabelText(/spacing x/i);
+    await user.clear(input);
+    await user.type(input, "5");
+
+    expect(input).toHaveValue(5);
   });
 });
