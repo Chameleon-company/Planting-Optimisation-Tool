@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSaplingEstimation } from "@/utils/calculatorApi";
-import type { CalcParams, CalculatorResult } from "@/utils/calculatorApi";
+import type { CalcParams, FarmEstimationResult } from "@/utils/calculatorApi";
 
-export type { CalcParams, CalculatorResult };
+export type { CalcParams, FarmEstimationResult };
 
 export const DEFAULT_CALC_PARAMS: CalcParams = {
   spacingX: 3.0,
@@ -11,21 +11,21 @@ export const DEFAULT_CALC_PARAMS: CalcParams = {
   maxSlope: 15.0,
 };
 
-export function useCalculator(farmId: string, params: CalcParams) {
+export function useCalculator(farmIds: number[], params: CalcParams) {
   const { getAccessToken } = useAuth();
-  const [result, setResult] = useState<CalculatorResult | null>(null);
+  const [results, setResults] = useState<FarmEstimationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!farmId) return;
+    if (!farmIds.length) return;
 
     const fetchEstimation = async () => {
       setIsLoading(true);
       setError(null);
       setHasSearched(false);
-      setResult(null);
+      setResults([]);
 
       const token = getAccessToken();
       if (!token) {
@@ -35,8 +35,8 @@ export function useCalculator(farmId: string, params: CalcParams) {
       }
 
       try {
-        const data = await getSaplingEstimation(Number(farmId), params, token);
-        setResult(data);
+        const data = await getSaplingEstimation(farmIds, params, token);
+        setResults(data.results);
         setHasSearched(true);
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -50,7 +50,7 @@ export function useCalculator(farmId: string, params: CalcParams) {
     };
 
     fetchEstimation();
-  }, [farmId, params, getAccessToken]);
+  }, [farmIds, params, getAccessToken]);
 
-  return { result, isLoading, hasSearched, error };
+  return { results, isLoading, hasSearched, error };
 }
