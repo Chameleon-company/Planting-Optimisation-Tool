@@ -36,7 +36,9 @@ async def get_sapling_estimation(
 
     Returns:
     - pre_slope_count
-    - aligned_count
+    - aligned_count: total suitable planting capacity before baseline trees
+    - baseline_tree_count: established trees already on the farm
+    - additional_sapling_count: remaining capacity after baseline trees
     - optimal_angle (if applicable)
 
     Requires OFFICER role or higher.

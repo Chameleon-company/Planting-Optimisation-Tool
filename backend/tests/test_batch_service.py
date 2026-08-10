@@ -41,7 +41,7 @@ async def setup_farms(async_session, test_officer_user):
     await async_session.flush()
 
     farms = []
-    for _ in range(5):
+    for baseline_tree_count in [0, 3, 10, 100, 1_000_000]:
         farm = Farm(
             rainfall_mm=1000,
             temperature_celsius=25,
@@ -49,6 +49,7 @@ async def setup_farms(async_session, test_officer_user):
             ph=6.5,
             soil_texture_id=1,
             area_ha=10,
+            baseline_tree_count=baseline_tree_count,
             latitude=0,
             longitude=0,
             coastal=False,
@@ -85,18 +86,30 @@ async def test_cache_miss(
     setup_farms,
     test_officer_user,
 ):
-    mock_result = {
-        "status": "success",
-        "pre_slope_count": 100,
-        "aligned_count": 80,
-        "optimal_angle": 10,
-        "rotation_average": 5.0,
-        "rotation_std_dev": 1.0,
-    }
+    farms = setup_farms
+    farms_by_id = {farm.id: farm for farm in farms}
+
+    async def mock_estimation(**kwargs):
+        baseline_tree_count = farms_by_id[kwargs["farm_id"]].baseline_tree_count
+        aligned_count = 80
+
+        return {
+            "status": "success",
+            "pre_slope_count": 100,
+            "aligned_count": aligned_count,
+            "baseline_tree_count": baseline_tree_count,
+            "additional_sapling_count": max(
+                aligned_count - baseline_tree_count,
+                0,
+            ),
+            "optimal_angle": 10,
+            "rotation_average": 5.0,
+            "rotation_std_dev": 1.0,
+        }
 
     with patch(
         "src.services.sapling_estimation.SaplingEstimationService.run_estimation",
-        new=AsyncMock(return_value=mock_result),
+        new=AsyncMock(side_effect=mock_estimation),
     ) as mock_run_estimation:
         result = await SaplingBatchEstimationService().run_batch_estimation(
             db=async_session,
@@ -109,6 +122,11 @@ async def test_cache_miss(
     assert result["farm_count"] == 5
     assert len(result["results"]) == 5
     assert mock_run_estimation.await_count == 5
+    expected_baselines = [farm.baseline_tree_count for farm in farms]
+
+    assert [item["baseline_tree_count"] for item in result["results"]] == expected_baselines
+
+    assert [item["additional_sapling_count"] for item in result["results"]] == [max(80 - baseline_tree_count, 0) for baseline_tree_count in expected_baselines]
 
 
 # Cache Hit Test
@@ -118,23 +136,57 @@ async def test_cache_hit(
     test_officer_user,
 ):
     farms = setup_farms
-
-    mock_cache = {
-        "status": "success",
-        "pre_slope_count": 100,
-        "aligned_count": 80,
-        "optimal_angle": 10,
-        "rotation_average": 5.0,
-        "rotation_std_dev": 1.0,
-    }
+    aligned_count = 80
 
     for farm in farms:
-        cache_key = f"sapling:{farm.id}:10:10:15"
+        mock_cache = {
+            "status": "success",
+            "pre_slope_count": 100,
+            "aligned_count": aligned_count,
+            "baseline_tree_count": farm.baseline_tree_count,
+            "additional_sapling_count": max(
+                aligned_count - farm.baseline_tree_count,
+                0,
+            ),
+            "optimal_angle": 10,
+            "rotation_average": 5.0,
+            "rotation_std_dev": 1.0,
+        }
+
+        cache_key = f"sapling:{farm.id}:{farm.baseline_tree_count}:10:10:15"
         await cache.set(cache_key, json.dumps(mock_cache))
 
     with patch(
         "src.services.sapling_estimation.SaplingEstimationService.run_estimation",
-        new=AsyncMock(side_effect=Exception("Cache hit error: Request should access cache and not call service")),
+        new=AsyncMock(side_effect=Exception("The estimation service should not run on a cache hit")),
+    ) as mock_run_estimation:
+        result = await SaplingBatchEstimationService().run_batch_estimation(
+            db=async_session,
+            user_id=test_officer_user.id,
+            spacing_x=10,
+            spacing_y=10,
+            max_slope=15,
+        )
+
+    expected_baselines = [farm.baseline_tree_count for farm in farms]
+
+    assert result["farm_count"] == 5
+    assert len(result["results"]) == 5
+
+    assert [item["baseline_tree_count"] for item in result["results"]] == expected_baselines
+
+    assert [item["additional_sapling_count"] for item in result["results"]] == [max(aligned_count - baseline_tree_count, 0) for baseline_tree_count in expected_baselines]
+
+    mock_run_estimation.assert_not_awaited()
+
+
+async def test_no_farms(
+    async_session,
+    test_officer_user,
+):
+    with patch(
+        "src.services.batch_estimation.farm_service.list_farms_by_user",
+        new=AsyncMock(return_value=[]),
     ):
         result = await SaplingBatchEstimationService().run_batch_estimation(
             db=async_session,
@@ -144,6 +196,8 @@ async def test_cache_hit(
             max_slope=15,
         )
 
-    assert result["farm_count"] == 5  #
-    assert result["results"][0]["aligned_count"] == 80
-    assert result["results"][1]["aligned_count"] == 80
+    assert result == {
+        "status": "success",
+        "farm_count": 0,
+        "results": [],
+    }

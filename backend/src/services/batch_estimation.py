@@ -25,7 +25,7 @@ class SaplingBatchEstimationService:
 
         # Loop through each farm and access cache for each farm, if cache is not found, run estimation for that farm
         for farm in farms:
-            cache_key = f"sapling:{farm.id}:{spacing_x}:{spacing_y}:{max_slope}"
+            cache_key = f"sapling:{farm.id}:{farm.baseline_tree_count}:{spacing_x}:{spacing_y}:{max_slope}"
             cached = await cache.get(cache_key)
 
             if cached:
@@ -48,6 +48,8 @@ class SaplingBatchEstimationService:
                     "farm_id": farm.id,
                     "pre_slope_count": data.get("pre_slope_count"),
                     "aligned_count": data.get("aligned_count"),
+                    "baseline_tree_count": data.get("baseline_tree_count"),
+                    "additional_sapling_count": data.get("additional_sapling_count"),
                     "optimal_angle": data.get("optimal_angle"),
                     "rotation_average": data.get("rotation_average"),
                     "rotation_std_dev": data.get("rotation_std_dev"),

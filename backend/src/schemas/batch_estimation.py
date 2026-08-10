@@ -17,6 +17,8 @@ class SaplingBatchEstimationItem(BaseModel):  # Estimation result for a single f
 
     pre_slope_count: Optional[int] = None
     aligned_count: Optional[int] = None
+    baseline_tree_count: Optional[int] = None
+    additional_sapling_count: Optional[int] = None
     optimal_angle: Optional[int] = None
     rotation_average: Optional[float] = None
     rotation_std_dev: Optional[float] = None
