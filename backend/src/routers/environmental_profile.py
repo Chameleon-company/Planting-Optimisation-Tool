@@ -62,3 +62,71 @@ async def get_farm_profile(
 
     await cache.set(cache_key, json.dumps(profile_data))
     return profile_data
+
+
+@router.post(
+    "/{farm_id}/regenerate",
+    response_model=FarmProfileResponse,
+    response_model_exclude_none=True,
+)
+@limiter.limit("10/minute", key_func=get_user_id)
+async def regenerate_farm_profile(
+    request: Request,
+    farm_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(require_role(Role.SUPERVISOR)),
+):
+    """Regenerates the environmental profile for a farm.
+
+    ADMIN: can regenerate any farm profile.
+    SUPERVISOR: can regenerate only profiles for their own farms.
+    OFFICER: cannot regenerate profiles.
+    """
+    farms = await farm_service.get_farm_by_id(db, [farm_id])
+
+    if not farms:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Farm with ID {farm_id} not found.",
+        )
+
+    farm = farms[0]
+
+    if current_user.role == Role.SUPERVISOR and farm.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="The user does not have adequate permissions.",
+        )
+
+    # Remove the old profile and downstream cached results.
+    await cache.invalidate(
+        f"profile:{farm_id}",
+        f"sapling:{farm_id}",
+        f"rec:{farm_id}",
+    )
+
+    service = environmental_profile_service.EnvironmentalProfileService()
+
+    try:
+        profile_data = await service.run_environmental_profile(
+            db,
+            farm_id,
+        )
+    except ImputationError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=str(exc),
+        ) from exc
+
+    if not profile_data:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Farm boundary not found for farm_id: {farm_id}",
+        )
+
+    await cache.set(
+        f"profile:{farm_id}",
+        json.dumps(profile_data),
+    )
+
+    return profile_data

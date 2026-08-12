@@ -213,3 +213,48 @@
 .profile-status-pending {
   border-style: dashed;
 }
+
+/* ============ PROFILE EDIT AND REGENERATE ACTIONS ============ */
+
+.profile-action-row {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 0 7% 32px;
+}
+
+.profile-action-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.profile-action-message {
+  border-radius: 8px;
+  margin: 20px 7% 0;
+  padding: 12px 18px;
+  text-align: center;
+}
+
+.profile-action-success {
+  background: var(--tint-light);
+  border: 1px solid var(--forest-green);
+  color: var(--black-forest);
+}
+
+.profile-action-error {
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg));
+  border: 1px solid var(--danger);
+  color: var(--danger-dark);
+}
+
+@media (max-width: 480px) {
+  .profile-action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profile-action-row button {
+    width: 100%;
+  }
+}
