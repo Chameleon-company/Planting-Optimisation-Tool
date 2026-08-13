@@ -1,3 +1,4 @@
+import pytest
 from geoalchemy2 import WKTElement
 from sqlalchemy import text
 
@@ -6,7 +7,12 @@ from src.models.farm import Farm
 from src.services.sapling_estimation import SaplingEstimationService
 
 
-async def test_run_estimation_basic(async_session, setup_soil_texture):
+@pytest.mark.parametrize("baseline_tree_count", [0, 3, 1_000_000])
+async def test_run_estimation_basic(
+    async_session,
+    setup_soil_texture,
+    baseline_tree_count,
+):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
 
     await async_session.execute(
@@ -39,6 +45,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
         ph=6.5,
         soil_texture_id=1,
         area_ha=10,
+        baseline_tree_count=baseline_tree_count,
         latitude=0,
         longitude=0,
         coastal=False,
@@ -69,6 +76,13 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     assert result.get("status") != "failed", f"Service failed: {result}"
     assert "aligned_count" in result
     assert result["aligned_count"] > 0
+    assert result["baseline_tree_count"] == baseline_tree_count
+    assert result["additional_sapling_count"] == max(
+        result["aligned_count"] - baseline_tree_count,
+        0,
+    )
+    assert result["additional_sapling_count"] >= 0
+    assert result["additional_sapling_count"] <= result["aligned_count"]
 
     assert "pre_slope_count" in result
     assert result["pre_slope_count"] >= result["aligned_count"]
@@ -91,3 +105,18 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     )
 
     assert rows.scalar_one() == result["aligned_count"]
+
+
+async def test_run_estimation_farm_not_found(async_session):
+    result = await SaplingEstimationService().run_estimation(
+        db=async_session,
+        farm_id=999999,
+        spacing_x=10,
+        spacing_y=10,
+        max_slope=15,
+    )
+
+    assert result == {
+        "status": "failed",
+        "message": "Farm not found",
+    }

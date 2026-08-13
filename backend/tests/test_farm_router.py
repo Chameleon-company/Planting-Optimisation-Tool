@@ -319,7 +319,11 @@ async def test_supervisor_cannot_create_farm(
     supervisor_auth_headers: dict,
     setup_soil_texture,
 ):
-    response = await async_client.post("/farms", json=VALID_FARM_PAYLOAD, headers=supervisor_auth_headers)
+    response = await async_client.post(
+        "/farms",
+        json=VALID_FARM_PAYLOAD,
+        headers=supervisor_auth_headers,
+    )
 
     assert response.status_code == 403
 
@@ -330,12 +334,22 @@ async def test_admin_can_create_farm_success(
     admin_auth_headers: dict,
     setup_soil_texture,
 ):
-    response = await async_client.post("/farms", json=VALID_FARM_PAYLOAD, headers=admin_auth_headers)
+    payload = {
+        **VALID_FARM_PAYLOAD,
+        "baseline_tree_count": 12,
+    }
+
+    response = await async_client.post(
+        "/farms",
+        json=payload,
+        headers=admin_auth_headers,
+    )
 
     assert response.status_code == 201
     data = response.json()
     assert data["user_id"] == test_admin_user.id
     assert data["rainfall_mm"] == VALID_FARM_PAYLOAD["rainfall_mm"]
+    assert data["baseline_tree_count"] == 12
 
 
 async def test_admin_can_update_farm_with_empty_agroforestry_ids(
@@ -378,6 +392,7 @@ async def test_admin_can_update_farm_partially(
     update_payload = {
         "area_ha": 8.5,
         "slope": 12.0,
+        "baseline_tree_count": 4,
     }
 
     response = await async_client.put(
@@ -388,10 +403,12 @@ async def test_admin_can_update_farm_partially(
 
     assert response.status_code == 200
     data = response.json()
+
     assert data["id"] == farm.id
     assert float(data["area_ha"]) == 8.5
     assert float(data["slope"]) == 12.0
     assert data["rainfall_mm"] == VALID_FARM_PAYLOAD["rainfall_mm"]
+    assert data["baseline_tree_count"] == 4
 
 
 async def test_supervisor_can_update_own_farm(
