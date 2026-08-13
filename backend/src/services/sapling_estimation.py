@@ -10,14 +10,58 @@ from src.models.planting_estimates import PlantingEstimate
 
 
 class SaplingEstimationService:
-    @staticmethod
     async def run_estimation(
+        self,
+        db: AsyncSession,
+        farm_ids: list[int],
+        spacing_x: float,
+        spacing_y: float,
+        max_slope: float,
+    ) -> dict:
+    
+        if not farm_ids:
+            return {"status": "success", "farm_count": 0, "results": []}
+
+        results = []
+
+        for farm_id in farm_ids:
+            data = await self._estimate_single_farm(
+                db=db,
+                farm_id=farm_id,
+                spacing_x=spacing_x,
+                spacing_y=spacing_y,
+                max_slope=max_slope,
+            )
+
+            results.append(
+                {
+                    "status": data.get("status", "success"),
+                    "farm_id": farm_id,
+                    "message": data.get("message"),
+                    "pre_slope_count": data.get("pre_slope_count"),
+                    "aligned_count": data.get("aligned_count"),
+                    "baseline_tree_count": data.get("baseline_tree_count"),        # add
+                    "additional_sapling_count": data.get("additional_sapling_count"),  # add
+                    "optimal_angle": data.get("optimal_angle"),
+                    "rotation_average": data.get("rotation_average"),
+                    "rotation_std_dev": data.get("rotation_std_dev"),
+                }
+            )
+
+        return {
+            "status": "success",
+            "farm_count": len(farm_ids),
+            "results": results,
+        }
+    
+    @staticmethod
+    async def _estimate_single_farm(
         db: AsyncSession,
         farm_id: int,
         spacing_x: float,
         spacing_y: float,
         max_slope: float,
-    ):
+    ) -> dict:
         try:
             farm_result = await db.execute(select(Farm).where(Farm.id == farm_id))
             farm = farm_result.scalar_one_or_none()

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PlantingGridResponse(BaseModel):
@@ -9,17 +9,19 @@ class PlantingGridResponse(BaseModel):
 
 
 class SaplingEstimationRequest(BaseModel):
-    farm_id: int
+    farm_ids: list[int] = Field(min_length=1)
     spacing_x: float
     spacing_y: float
     max_slope: float
 
 
-class SaplingEstimationResponse(BaseModel):
+class SaplingEstimationItem(BaseModel):  # Estimation result for a single farm
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    
     status: str = "success"
-    id: Optional[int] = None
-
+    farm_id: int
+    message: Optional[str] = None
+    
     pre_slope_count: Optional[int] = None
     aligned_count: Optional[int] = None
     baseline_tree_count: Optional[int] = None
@@ -30,3 +32,8 @@ class SaplingEstimationResponse(BaseModel):
     # added rotational
     rotation_average: Optional[float] = None
     rotation_std_dev: Optional[float] = None
+
+class SaplingEstimationResponse(BaseModel):
+    status: str = "success"
+    farm_count: int
+    results: list[SaplingEstimationItem]
