@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src import cache
@@ -22,6 +22,7 @@ router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
 @limiter.limit("10/minute", key_func=get_user_id)
 async def get_sapling_estimation(
     request: Request,
+    response: Response,
     data: SaplingEstimationRequest,
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.OFFICER)),
@@ -54,11 +55,13 @@ async def get_sapling_estimation(
     farms = await farm_service.get_farm_by_id(db, data.farm_ids, user_id=user_id_filter)
     found_ids = {farm.id for farm in farms}
     missing = [farm_id for farm_id in data.farm_ids if farm_id not in found_ids]
-    if missing:
+    if not found_ids:
         raise HTTPException(
             status_code=404,
             detail=f"Farm(s) not found or not owned: {', '.join(map(str, missing))}",
         )
+    if missing:
+        response.status_code = status.HTTP_207_MULTI_STATUS 
 
     service = sapling_estimation_service.SaplingEstimationService()
     estimation_data = await service.run_estimation(

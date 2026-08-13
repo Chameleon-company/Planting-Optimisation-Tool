@@ -164,3 +164,29 @@ async def test_run_estimation_partial_missing(async_session):
 
     assert by_id[missing_id]["status"] == "failed"
     assert by_id[missing_id]["message"] == "Farm not found"
+    
+# Batch: results should be the same whether in a batch or just one at a time
+async def test_run_estimation_single_batch_same_results(async_session):
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm_a = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125.0005 -9.0005, 125.0005 -9.0015, 125.0015 -9.0015, 125.0015 -9.0005, 125.0005 -9.0005)))",
+    )
+    farm_b = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125.0025 -9.0005, 125.0025 -9.0025, 125.0045 -9.0025, 125.0045 -9.0005, 125.0025 -9.0005)))",
+    )
+
+    service = SaplingEstimationService()
+    result_batch = await service.run_estimation(async_session, farm_ids=[farm_a.id, farm_b.id], spacing_x=3, spacing_y=3, max_slope=10)
+    result_single = await service._estimate_single_farm(async_session, farm_b.id, spacing_x=3, spacing_y=3, max_slope=10)
+    
+    assert result_single.get("status") != "failed"
+
+    # create key value pair where the key is the id and the value is the details
+    batch_by_id = {item["farm_id"]: item for item in result_batch["results"]}
+    assert batch_by_id[farm_b.id]["aligned_count"] == result_single["aligned_count"]
+    assert batch_by_id[farm_a.id]["aligned_count"] != result_single["aligned_count"]

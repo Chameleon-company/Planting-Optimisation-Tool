@@ -215,9 +215,14 @@ async def test_calculate_partial_not_found(
         headers=officer_auth_headers,
     )
 
-    assert request.status_code == 404
-    assert str(missing_id) in request.json()["detail"]
+    assert request.status_code == 207
+    body = request.json()
+    assert body["farm_count"] == 2
 
+    # make key value pair where the key is the id and value is the results
+    by_id = {response["farm_id"]: response for response in body["results"]}
+    assert by_id[missing_id]["status"] == "failed"
+    assert by_id[farm.id]["status"] != "failed"
 
 # Validation: farm_ids must contain at least one id
 async def test_calculate_empty_farm_ids(
