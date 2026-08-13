@@ -61,7 +61,8 @@ async def _add_farm(async_session, boundary_wkt, baseline_tree_count=0):  # farm
     return farm
 
 
-async def test_run_estimation_basic(async_session):
+@pytest.mark.parametrize("baseline_tree_count", [0, 3, 1_000_000])
+async def test_run_estimation_basic(async_session, baseline_tree_count):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
     await async_session.execute(DEM_INSERT)
     await async_session.flush()
@@ -69,6 +70,7 @@ async def test_run_estimation_basic(async_session):
     farm = await _add_farm(
         async_session,
         "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))",
+        baseline_tree_count=baseline_tree_count,
     )
 
     service = SaplingEstimationService()
@@ -108,8 +110,7 @@ async def test_run_estimation_basic(async_session):
     )
 
     assert rows.scalar_one() == result["aligned_count"]
-
-
+    
 # Batch: several farms estimated in one call
 async def test_run_estimation_multiple_farms(async_session):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
