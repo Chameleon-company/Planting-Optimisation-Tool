@@ -40,7 +40,7 @@ class SaplingEstimationService:
                     "message": data.get("message"),
                     "pre_slope_count": data.get("pre_slope_count"),
                     "aligned_count": data.get("aligned_count"),
-                    "baseline_tree_count": data.get("baseline_tree_count"),        # add
+                    "baseline_tree_count": data.get("baseline_tree_count"),  # add
                     "additional_sapling_count": data.get("additional_sapling_count"),  # add
                     "optimal_angle": data.get("optimal_angle"),
                     "rotation_average": data.get("rotation_average"),

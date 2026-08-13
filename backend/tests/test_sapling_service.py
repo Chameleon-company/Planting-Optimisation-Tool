@@ -109,7 +109,8 @@ async def test_run_estimation_basic(async_session, baseline_tree_count):
     )
 
     assert rows.scalar_one() == result["aligned_count"]
-    
+
+
 # Batch: several farms estimated in one call
 async def test_run_estimation_multiple_farms(async_session):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))

@@ -44,7 +44,7 @@ async def get_sapling_estimation(
       - baseline_tree_count: established trees already on the farm
       - additional_sapling_count: remaining capacity after baseline trees
         optimal_angle, rotation_average, rotation_std_dev
-      
+
     Requires OFFICER role or higher.
     """
     if current_user.role == Role.OFFICER:
