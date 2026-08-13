@@ -8,12 +8,18 @@ import sys
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 from sqlalchemy import text
 
 from src.database import AsyncSessionLocal, engine
 
 # Path to the waterways GeoPackage file
 WATERWAYS_PATH = Path("src/scripts/data/hotosm_tls_waterways_lines_gpkg.gpkg")
+
+
+def clean(value):
+    """Convert NaN to None so it binds as NULL instead of 'nan'."""
+    return None if pd.isna(value) else value
 
 
 async def ingest_waterways():
@@ -60,8 +66,8 @@ async def ingest_waterways():
                     VALUES (:name, :waterway, ST_GeomFromEWKT(:geometry))
                 """),
                 {
-                    "name": row.get("name") or None,
-                    "waterway": row.get("waterway") or None,
+                    "name": clean(row.get("name")),
+                    "waterway": clean(row.get("waterway")),
                     "geometry": ewkt,
                 },
             )
