@@ -92,7 +92,7 @@ async def setup_farm(async_session, test_officer_user):  # sapling_estimation ro
         ph=6.5,
         soil_texture_id=1,
         area_ha=10,
-        baseline_tree_count=0,  # add this line
+        baseline_tree_count=0, 
         latitude=0,
         longitude=0,
         coastal=False,
