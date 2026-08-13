@@ -224,6 +224,7 @@ async def test_calculate_partial_not_found(
     assert by_id[missing_id]["status"] == "failed"
     assert by_id[farm.id]["status"] != "failed"
 
+
 # Validation: farm_ids must contain at least one id
 async def test_calculate_empty_farm_ids(
     async_client,

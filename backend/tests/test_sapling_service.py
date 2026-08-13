@@ -164,7 +164,8 @@ async def test_run_estimation_partial_missing(async_session):
 
     assert by_id[missing_id]["status"] == "failed"
     assert by_id[missing_id]["message"] == "Farm not found"
-    
+
+
 # Batch: results should be the same whether in a batch or just one at a time
 async def test_run_estimation_single_batch_same_results(async_session):
     await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
@@ -183,7 +184,7 @@ async def test_run_estimation_single_batch_same_results(async_session):
     service = SaplingEstimationService()
     result_batch = await service.run_estimation(async_session, farm_ids=[farm_a.id, farm_b.id], spacing_x=3, spacing_y=3, max_slope=10)
     result_single = await service._estimate_single_farm(async_session, farm_b.id, spacing_x=3, spacing_y=3, max_slope=10)
-    
+
     assert result_single.get("status") != "failed"
 
     # create key value pair where the key is the id and the value is the details

@@ -61,7 +61,7 @@ async def get_sapling_estimation(
             detail=f"Farm(s) not found or not owned: {', '.join(map(str, missing))}",
         )
     if missing:
-        response.status_code = status.HTTP_207_MULTI_STATUS 
+        response.status_code = status.HTTP_207_MULTI_STATUS
 
     service = sapling_estimation_service.SaplingEstimationService()
     estimation_data = await service.run_estimation(
