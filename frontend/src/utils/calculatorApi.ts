@@ -12,6 +12,8 @@ export interface FarmEstimationResult {
   message?: string | null;
   pre_slope_count?: number | null;
   aligned_count?: number | null;
+  baseline_tree_count?: number | null;
+  additional_sapling_count?: number | null;
   optimal_angle?: number | null;
   rotation_average?: number | null;
   rotation_std_dev?: number | null;

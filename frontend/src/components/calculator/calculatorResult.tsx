@@ -28,10 +28,15 @@ export default function CalculatorResult({ result }: Props) {
       </div>
 
       <div className="calc-result-item">
-        <span className="calc-result-label">Final Sapling Count</span>
+        <span className="calc-result-label">Total Sapling Count</span>
         <span className="calc-result-value">
           {formatCount(result.aligned_count)}
         </span>
+      </div>
+
+      <div className="calc-result-item">
+        <span className="calc-result-label">Saplings Available to Plant</span>
+        <span className="calc-result-value">{formatCount(result.additional_sapling_count)}</span>
       </div>
 
       <div className="calc-result-item">
