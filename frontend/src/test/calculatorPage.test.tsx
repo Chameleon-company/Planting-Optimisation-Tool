@@ -41,6 +41,7 @@ const success = (
   status: "success",
   pre_slope_count: 100,
   aligned_count,
+  additional_sapling_count: aligned_count - 20,
   optimal_angle: 15,
 });
 
@@ -75,6 +76,7 @@ describe("CalculatorPage Integration", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("100")).toBeInTheDocument();
     expect(screen.getByText("80")).toBeInTheDocument();
+    expect(screen.getByText("60")).toBeInTheDocument();
     expect(screen.getByText("15.00°")).toBeInTheDocument();
   });
 
@@ -112,6 +114,7 @@ describe("CalculatorPage Integration", () => {
       screen.getByText(/estimation results - farm 2/i)
     ).toBeInTheDocument();
     expect(screen.getByText("55")).toBeInTheDocument();
+    expect(screen.getByText("35")).toBeInTheDocument();
   });
 
   it("focuses the first successful farm even when earlier farms failed", () => {

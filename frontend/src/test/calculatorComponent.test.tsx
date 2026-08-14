@@ -13,6 +13,7 @@ const success = (farm_id: number): FarmEstimationResult => ({
   status: "success",
   pre_slope_count: 100,
   aligned_count: 80,
+  additional_sapling_count: 60,
   optimal_angle: 15,
 });
 
@@ -129,6 +130,7 @@ describe("CalculatorResult", () => {
     status: "success",
     pre_slope_count: 100,
     aligned_count: 80,
+    additional_sapling_count: 50,
     optimal_angle: 12,
   };
 
@@ -146,8 +148,13 @@ describe("CalculatorResult", () => {
     expect(screen.getByText(/pre-slope sapling count/i)).toBeInTheDocument();
     expect(screen.getByText("100")).toBeInTheDocument();
 
-    expect(screen.getByText(/final sapling count/i)).toBeInTheDocument();
+    expect(screen.getByText(/total sapling count/i)).toBeInTheDocument();
     expect(screen.getByText("80")).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/saplings available to plant/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText("50")).toBeInTheDocument();
 
     expect(screen.getByText(/optimal angle/i)).toBeInTheDocument();
     expect(screen.getByText("12.00°")).toBeInTheDocument();
@@ -156,8 +163,7 @@ describe("CalculatorResult", () => {
   it("renders a dash for missing numeric fields", () => {
     render(<CalculatorResult result={{ farm_id: 9, status: "success" }} />);
 
-    // pre-slope, final count, and optimal angle all fall back to "-"
-    expect(screen.getAllByText("-").length).toBeGreaterThanOrEqual(3);
+    expect(screen.getAllByText("-").length).toBeGreaterThanOrEqual(4);
   });
 });
 

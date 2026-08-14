@@ -18,6 +18,8 @@ const mockResponse: SaplingEstimationResponse = {
       status: "success",
       pre_slope_count: 100,
       aligned_count: 80,
+      baseline_tree_count: 20,
+      additional_sapling_count: 60,
       optimal_angle: 20,
     },
     {
