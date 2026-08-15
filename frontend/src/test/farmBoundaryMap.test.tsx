@@ -1,0 +1,79 @@
+// @vitest-environment jsdom
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import type { GeoJsonObject } from "geojson";
+
+vi.mock("leaflet/dist/leaflet.css", () => ({}));
+
+vi.mock("react-leaflet", () => ({
+  MapContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="map-container">{children}</div>
+  ),
+  TileLayer: () => null,
+  GeoJSON: () => <div data-testid="geojson" />,
+}));
+
+vi.mock("leaflet", () => ({
+  default: {
+    geoJSON: vi.fn(() => ({
+      getBounds: () => ({
+        getNorth: () => -8.0,
+        getSouth: () => -9.0,
+        getEast: () => 127.0,
+        getWest: () => 126.0,
+      }),
+    })),
+  },
+}));
+
+import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
+
+const BOUNDARY = { type: "FeatureCollection", features: [] } as GeoJsonObject;
+
+describe("FarmBoundaryMap", () => {
+  it("renders nothing when boundary is null and not loading", () => {
+    render(<FarmBoundaryMap boundary={null} isLoading={false} error={null} />);
+    expect(screen.queryByTestId("map-container")).not.toBeInTheDocument();
+  });
+
+  it("shows loading message while fetching", () => {
+    render(<FarmBoundaryMap boundary={null} isLoading={true} error={null} />);
+    expect(screen.getByText("Loading map...")).toBeInTheDocument();
+    expect(screen.queryByTestId("map-container")).not.toBeInTheDocument();
+  });
+
+  it("shows error message when fetch fails", () => {
+    render(
+      <FarmBoundaryMap
+        boundary={null}
+        isLoading={false}
+        error="Failed to load farm boundary."
+      />
+    );
+    expect(
+      screen.getByText("Failed to load farm boundary.")
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("map-container")).not.toBeInTheDocument();
+  });
+
+  it("renders the map container when a valid boundary is provided", () => {
+    render(
+      <FarmBoundaryMap boundary={BOUNDARY} isLoading={false} error={null} />
+    );
+    expect(screen.getByTestId("map-container")).toBeInTheDocument();
+  });
+
+  it("renders the boundary GeoJSON layer", () => {
+    render(
+      <FarmBoundaryMap boundary={BOUNDARY} isLoading={false} error={null} />
+    );
+    expect(screen.getByTestId("geojson")).toBeInTheDocument();
+  });
+
+  it("renders the Farm Boundary heading", () => {
+    render(
+      <FarmBoundaryMap boundary={BOUNDARY} isLoading={false} error={null} />
+    );
+    expect(screen.getByText("Farm Boundary")).toBeInTheDocument();
+  });
+});
