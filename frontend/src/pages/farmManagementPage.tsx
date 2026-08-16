@@ -13,8 +13,6 @@ import RegisterFarmModal from "@/components/farmManagement/farmRegisterModal";
 import EditFarmModal from "@/components/farmManagement/farmsEditModal";
 import FarmManageActions from "@/components/farmManagement/farmManagementEditButtons";
 import FarmsHeader from "@/components/farmManagement/farmHeader";
-import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
-import { useFarmBoundary } from "@/hooks/useFarmBoundary";
 import "./farmManagement.css";
 
 export default function FarmsManagementPage() {
@@ -98,12 +96,6 @@ export default function FarmsManagementPage() {
   const error = farmsError ?? mutationError;
   const isLoading = farmsLoading || mutationLoading;
 
-  const {
-    boundary,
-    isLoading: mapLoading,
-    error: mapError,
-  } = useFarmBoundary(selectedFarmId);
-
   return (
     <div className="farms-page">
       <Helmet>
@@ -141,16 +133,6 @@ export default function FarmsManagementPage() {
         selectedFarmId={selectedFarmId}
         onSelectFarm={setSelectedFarmId}
       />
-
-      {selectedFarmId && (
-        <div className="farm-map-wrapper">
-          <FarmBoundaryMap
-            boundary={boundary}
-            isLoading={mapLoading}
-            error={mapError}
-          />
-        </div>
-      )}
 
       {/* Container for if Register new farm button is clicked */}
       {isRegisterModalOpen && (
