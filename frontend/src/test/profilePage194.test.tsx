@@ -5,6 +5,33 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("leaflet/dist/leaflet.css", () => ({}));
+
+vi.mock("react-leaflet", () => ({
+  MapContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="map-container">{children}</div>
+  ),
+  TileLayer: () => null,
+  GeoJSON: () => <div data-testid="geojson" />,
+}));
+
+vi.mock("leaflet", () => ({
+  default: {
+    geoJSON: vi.fn(() => ({
+      getBounds: () => ({
+        getNorth: () => -8.0,
+        getSouth: () => -9.0,
+        getEast: () => 127.0,
+        getWest: () => 126.0,
+      }),
+    })),
+  },
+}));
+
+vi.mock("@/hooks/useFarmBoundary", () => ({
+  useFarmBoundary: () => ({ boundary: null, isLoading: false, error: null }),
+}));
+
 import type { Farm } from "@/hooks/useUserProfiles";
 import type { FarmUpdatePayload } from "@/hooks/useFarms";
 
