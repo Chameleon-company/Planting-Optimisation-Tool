@@ -69,6 +69,12 @@ class FarmBase(BaseModel):
         le=AREA_MAX,
         decimal_places=3,
     )
+    baseline_tree_count: int = Field(
+        default=0,
+        title="Baseline tree count",
+        description="Number of established trees already present on the farm",
+        ge=0,
+    )
     latitude: Decimal = Field(
         title="Latitude",
         description="Geographic latitude",
@@ -144,6 +150,7 @@ class FarmUpdate(BaseModel):
     ph: Optional[Annotated[Decimal, Field(ge=SOIL_PH_MIN, le=SOIL_PH_MAX, max_digits=2, decimal_places=1)]] = None
     soil_texture_id: Optional[SoilTextureID] = None
     area_ha: Optional[Annotated[Decimal, Field(ge=AREA_MIN, le=AREA_MAX, decimal_places=3)]] = None
+    baseline_tree_count: Optional[Annotated[int, Field(ge=0)]] = None
     latitude: Optional[Annotated[Decimal, Field(ge=LATITUDE_MIN, le=LATITUDE_MAX, decimal_places=5)]] = None
     longitude: Optional[Annotated[Decimal, Field(ge=LONGITUDE_MIN, le=LONGITUDE_MAX, decimal_places=5)]] = None
     coastal: Optional[bool] = None
