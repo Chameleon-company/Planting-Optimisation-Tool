@@ -4,13 +4,17 @@ import L from "leaflet";
 import type { GeoJsonObject } from "geojson";
 import "leaflet/dist/leaflet.css";
 
-interface Props {
+interface FarmBoundaryMapProps {
   boundary: GeoJsonObject | null;
   isLoading: boolean;
   error: string | null;
 }
 
-export default function FarmBoundaryMap({ boundary, isLoading, error }: Props) {
+export default function FarmBoundaryMap({
+  boundary,
+  isLoading,
+  error,
+}: FarmBoundaryMapProps) {
   const bounds = useMemo(() => {
     if (!boundary) return null;
     try {
