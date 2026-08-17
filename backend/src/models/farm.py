@@ -27,6 +27,12 @@ class Farm(Base):
     ph: Mapped[float] = mapped_column()  # 1 decimal point, enforced by Pydantic model
     soil_texture_id: Mapped[int] = mapped_column(ForeignKey("soil_textures.id", ondelete="CASCADE"))
     area_ha: Mapped[float] = mapped_column()  # 3 decimal points
+    baseline_tree_count: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        server_default=text("0"),
+    )
     latitude: Mapped[float] = mapped_column()  # 5 decimal points
     longitude: Mapped[float] = mapped_column()  # 5 decimal points
     coastal: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
