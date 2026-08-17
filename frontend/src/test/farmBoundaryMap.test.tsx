@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import L from "leaflet";
 import type { GeoJsonObject } from "geojson";
 
 vi.mock("leaflet/dist/leaflet.css", () => ({}));
@@ -75,5 +76,15 @@ describe("FarmBoundaryMap", () => {
       <FarmBoundaryMap boundary={BOUNDARY} isLoading={false} error={null} />
     );
     expect(screen.getByText("Farm Boundary")).toBeInTheDocument();
+  });
+
+  it("renders nothing when getBounds throws on an invalid boundary", () => {
+    vi.mocked(L.geoJSON).mockImplementationOnce(() => {
+      throw new Error("Invalid geometry");
+    });
+    render(
+      <FarmBoundaryMap boundary={BOUNDARY} isLoading={false} error={null} />
+    );
+    expect(screen.queryByTestId("map-container")).not.toBeInTheDocument();
   });
 });
