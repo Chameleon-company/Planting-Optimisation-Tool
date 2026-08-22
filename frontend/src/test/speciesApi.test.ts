@@ -5,6 +5,7 @@ import {
   deleteSpecies,
   getAllSpecies,
   getSoilTextures,
+  getSpeciesDropdown,
   updateSpecies,
 } from "../utils/speciesApi";
 
@@ -50,6 +51,33 @@ describe("speciesApi", () => {
     expect(result).toEqual([]);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/species"),
+      expect.objectContaining({
+        headers: {
+          Authorization: "Bearer test-token",
+        },
+      })
+    );
+  });
+
+  it("gets species dropdown options", async () => {
+    const dropdownSpecies = [
+      {
+        id: 1,
+        name: "Tectona grandis",
+        common_name: "Teak",
+      },
+    ];
+
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(mockJsonResponse(dropdownSpecies));
+
+    const result = await getSpeciesDropdown("test-token");
+
+    expect(result).toEqual(dropdownSpecies);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/species/dropdown"),
       expect.objectContaining({
         headers: {
           Authorization: "Bearer test-token",

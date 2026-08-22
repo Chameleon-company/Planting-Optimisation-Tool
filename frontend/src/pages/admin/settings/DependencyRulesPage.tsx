@@ -2,15 +2,16 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
 import { useAuth } from "../../../contexts/AuthContext";
-import { getAllSpecies, Species } from "../../../utils/speciesApi";
+import {
+  createDependency,
+  deleteDependency,
+  getAllDependencies,
+  SpeciesDependency,
+  updateDependency,
+} from "../../../utils/exclusionRulesApi";
+import { getSpeciesDropdown, SpeciesDropdown } from "../../../utils/speciesApi";
 
 type ModalMode = "create" | "edit" | null;
-
-interface DependencyRuleDraft {
-  id: number;
-  focal_species_id: number;
-  required_partner_id: number;
-}
 
 interface DependencyRuleFormData {
   focal_species_id: number;
@@ -25,46 +26,53 @@ const emptyForm: DependencyRuleFormData = {
 function DependencyRulesPage() {
   const { getAccessToken } = useAuth();
 
-  const [species, setSpecies] = useState<Species[]>([]);
-  const [draftRules, setDraftRules] = useState<DependencyRuleDraft[]>([]);
+  const [species, setSpecies] = useState<SpeciesDropdown[]>([]);
+  const [dependencies, setDependencies] = useState<SpeciesDependency[]>([]);
 
-  const [speciesLoading, setSpeciesLoading] = useState(true);
-  const [speciesError, setSpeciesError] = useState<string | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<DependencyRuleFormData>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const loadSpecies = useCallback(async () => {
+  const loadPageData = useCallback(async () => {
     try {
-      setSpeciesLoading(true);
-      setSpeciesError(null);
+      setPageLoading(true);
+      setPageError(null);
 
       const token = getAccessToken();
 
       if (!token) {
-        setSpeciesError(
+        setPageError(
           "You must be logged in as admin to configure dependency rules."
         );
         return;
       }
 
-      const speciesData = await getAllSpecies(token);
+      const [speciesData, dependencyData] = await Promise.all([
+        getSpeciesDropdown(token),
+        getAllDependencies(token),
+      ]);
 
       setSpecies([...speciesData].sort((a, b) => a.name.localeCompare(b.name)));
+
+      setDependencies(dependencyData);
     } catch (error) {
-      setSpeciesError(
-        error instanceof Error ? error.message : "Failed to load species."
+      setPageError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load dependency rules."
       );
     } finally {
-      setSpeciesLoading(false);
+      setPageLoading(false);
     }
   }, [getAccessToken]);
 
   useEffect(() => {
-    void loadSpecies();
-  }, [loadSpecies]);
+    void loadPageData();
+  }, [loadPageData]);
 
   function getSpeciesName(speciesId: number): string {
     const matchingSpecies = species.find(item => item.id === speciesId);
@@ -89,12 +97,14 @@ function DependencyRulesPage() {
     setModalMode("create");
   }
 
-  function openEditModal(rule: DependencyRuleDraft) {
+  function openEditModal(rule: SpeciesDependency) {
     setEditingId(rule.id);
+
     setFormData({
       focal_species_id: rule.focal_species_id,
       required_partner_id: rule.required_partner_id,
     });
+
     setFormError(null);
     setModalMode("edit");
   }
@@ -122,7 +132,7 @@ function DependencyRulesPage() {
     return null;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const validationError = validateForm();
@@ -132,45 +142,82 @@ function DependencyRulesPage() {
       return;
     }
 
-    if (modalMode === "create") {
-      const nextId =
-        draftRules.length === 0
-          ? 1
-          : Math.max(...draftRules.map(rule => rule.id)) + 1;
+    const token = getAccessToken();
 
-      setDraftRules(current => [
-        ...current,
-        {
-          id: nextId,
-          ...formData,
-        },
-      ]);
+    if (!token) {
+      setFormError("You must be logged in as admin to save dependency rules.");
+      return;
     }
 
-    if (modalMode === "edit" && editingId !== null) {
-      setDraftRules(current =>
-        current.map(rule =>
-          rule.id === editingId
-            ? {
-                ...rule,
-                ...formData,
-              }
-            : rule
-        )
+    const payload = {
+      focal_species_id: formData.focal_species_id,
+      required_partner_id: formData.required_partner_id,
+    };
+
+    try {
+      setFormError(null);
+
+      if (modalMode === "create") {
+        const createdDependency = await createDependency(payload, token);
+
+        setDependencies(current => [...current, createdDependency]);
+      }
+
+      if (modalMode === "edit" && editingId !== null) {
+        const updatedDependency = await updateDependency(
+          editingId,
+          payload,
+          token
+        );
+
+        setDependencies(current =>
+          current.map(rule =>
+            rule.id === editingId ? updatedDependency : rule
+          )
+        );
+      }
+
+      closeModal();
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "Failed to save dependency rule."
       );
     }
-
-    closeModal();
   }
 
-  function handleDelete(id: number) {
+  async function handleDelete(id: number) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this dependency rule?"
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
-    setDraftRules(current => current.filter(rule => rule.id !== id));
+    const token = getAccessToken();
+
+    if (!token) {
+      setPageError(
+        "You must be logged in as admin to delete dependency rules."
+      );
+      return;
+    }
+
+    try {
+      setPageError(null);
+
+      await deleteDependency(id, token);
+
+      setDependencies(current => current.filter(rule => rule.id !== id));
+    } catch (error) {
+      setPageError(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete dependency rule."
+      );
+    }
   }
 
   return (
@@ -178,12 +225,6 @@ function DependencyRulesPage() {
       <Helmet>
         <title>Dependency Rules | Planting Optimisation Tool</title>
       </Helmet>
-
-      {/* <nav className="admin-back-nav">
-        <Link to="/admin" className="admin-back-link">
-          &larr; Back to Dashboard
-        </Link>
-      </nav> */}
 
       <section className="admin-page-card">
         <div className="admin-parameters-header">
@@ -199,21 +240,21 @@ function DependencyRulesPage() {
             type="button"
             className="btn-primary"
             onClick={openCreateModal}
-            disabled={speciesLoading || Boolean(speciesError)}
+            disabled={pageLoading || Boolean(pageError)}
           >
             Add Dependency Rule
           </button>
         </div>
 
-        {speciesLoading && <p>Loading species...</p>}
+        {pageLoading && <p>Loading dependency rules...</p>}
 
-        {speciesError && <p className="admin-error-message">{speciesError}</p>}
+        {pageError && <p className="admin-error-message">{pageError}</p>}
 
-        {!speciesLoading && !speciesError && draftRules.length === 0 && (
+        {!pageLoading && !pageError && dependencies.length === 0 && (
           <p>No dependency rules have been configured.</p>
         )}
 
-        {draftRules.length > 0 && (
+        {!pageLoading && dependencies.length > 0 && (
           <div className="admin-table-wrapper">
             <table className="admin-parameters-table">
               <thead>
@@ -225,10 +266,12 @@ function DependencyRulesPage() {
               </thead>
 
               <tbody>
-                {draftRules.map(rule => (
+                {dependencies.map(rule => (
                   <tr key={rule.id}>
                     <td>{getSpeciesName(rule.focal_species_id)}</td>
+
                     <td>{getSpeciesName(rule.required_partner_id)}</td>
+
                     <td>
                       <button
                         type="button"
@@ -241,7 +284,7 @@ function DependencyRulesPage() {
                       <button
                         type="button"
                         className="admin-action-btn admin-action-danger"
-                        onClick={() => handleDelete(rule.id)}
+                        onClick={() => void handleDelete(rule.id)}
                       >
                         Delete
                       </button>
@@ -285,7 +328,10 @@ function DependencyRulesPage() {
               </button>
             </div>
 
-            <form className="admin-parameters-form" onSubmit={handleSubmit}>
+            <form
+              className="admin-parameters-form"
+              onSubmit={event => void handleSubmit(event)}
+            >
               {formError && (
                 <div className="admin-error-message" role="alert">
                   {formError}

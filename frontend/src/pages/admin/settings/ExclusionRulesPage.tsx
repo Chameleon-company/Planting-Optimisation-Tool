@@ -2,28 +2,18 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
 import { useAuth } from "../../../contexts/AuthContext";
-import { getAllSpecies, Species } from "../../../utils/speciesApi";
+import {
+  createExclusionRule,
+  deleteExclusionRule,
+  ExclusionOperator,
+  ExclusionRule,
+  ExclusionRuleValue,
+  getAllExclusionRules,
+  updateExclusionRule,
+} from "../../../utils/exclusionRulesApi";
+import { getSpeciesDropdown, SpeciesDropdown } from "../../../utils/speciesApi";
 
 type ModalMode = "create" | "edit" | null;
-
-type ExclusionOperator =
-  | "<"
-  | ">"
-  | "<="
-  | ">="
-  | "=="
-  | "!="
-  | "in_set"
-  | "not_in_set";
-
-interface ExclusionRuleDraft {
-  id: number;
-  species_id: number;
-  feature: string;
-  operator: ExclusionOperator;
-  value: string;
-  reason: string;
-}
 
 interface ExclusionRuleFormData {
   species_id: number;
@@ -60,49 +50,86 @@ const FEATURE_SUGGESTIONS = [
   "temperature_celsius",
 ];
 
+function formatRuleValue(value: ExclusionRuleValue): string {
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+
+  return String(value);
+}
+
+function parseRuleValue(
+  value: string,
+  operator: ExclusionOperator
+): ExclusionRuleValue {
+  const trimmedValue = value.trim();
+
+  if (operator === "in_set" || operator === "not_in_set") {
+    return trimmedValue
+      .split(",")
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+
+  const numericValue = Number(trimmedValue);
+
+  if (trimmedValue !== "" && Number.isFinite(numericValue)) {
+    return numericValue;
+  }
+
+  return trimmedValue;
+}
+
 function ExclusionRulesPage() {
   const { getAccessToken } = useAuth();
 
-  const [species, setSpecies] = useState<Species[]>([]);
-  const [draftRules, setDraftRules] = useState<ExclusionRuleDraft[]>([]);
+  const [species, setSpecies] = useState<SpeciesDropdown[]>([]);
+  const [rules, setRules] = useState<ExclusionRule[]>([]);
 
-  const [speciesLoading, setSpeciesLoading] = useState(true);
-  const [speciesError, setSpeciesError] = useState<string | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<ExclusionRuleFormData>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const loadSpecies = useCallback(async () => {
+  const loadPageData = useCallback(async () => {
     try {
-      setSpeciesLoading(true);
-      setSpeciesError(null);
+      setPageLoading(true);
+      setPageError(null);
 
       const token = getAccessToken();
 
       if (!token) {
-        setSpeciesError(
+        setPageError(
           "You must be logged in as admin to configure exclusion rules."
         );
         return;
       }
 
-      const speciesData = await getAllSpecies(token);
+      const [speciesData, rulesData] = await Promise.all([
+        getSpeciesDropdown(token),
+        getAllExclusionRules(token),
+      ]);
 
       setSpecies([...speciesData].sort((a, b) => a.name.localeCompare(b.name)));
+
+      setRules(rulesData);
     } catch (error) {
-      setSpeciesError(
-        error instanceof Error ? error.message : "Failed to load species."
+      setPageError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load exclusion rules."
       );
     } finally {
-      setSpeciesLoading(false);
+      setPageLoading(false);
     }
   }, [getAccessToken]);
 
   useEffect(() => {
-    void loadSpecies();
-  }, [loadSpecies]);
+    void loadPageData();
+  }, [loadPageData]);
 
   function getSpeciesName(speciesId: number): string {
     const matchingSpecies = species.find(item => item.id === speciesId);
@@ -127,15 +154,17 @@ function ExclusionRulesPage() {
     setModalMode("create");
   }
 
-  function openEditModal(rule: ExclusionRuleDraft) {
+  function openEditModal(rule: ExclusionRule) {
     setEditingId(rule.id);
+
     setFormData({
       species_id: rule.species_id,
       feature: rule.feature,
       operator: rule.operator,
-      value: rule.value,
+      value: formatRuleValue(rule.value),
       reason: rule.reason,
     });
+
     setFormError(null);
     setModalMode("edit");
   }
@@ -167,7 +196,7 @@ function ExclusionRulesPage() {
     return null;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const validationError = validateForm();
@@ -177,45 +206,73 @@ function ExclusionRulesPage() {
       return;
     }
 
-    if (modalMode === "create") {
-      const nextId =
-        draftRules.length === 0
-          ? 1
-          : Math.max(...draftRules.map(rule => rule.id)) + 1;
+    const token = getAccessToken();
 
-      setDraftRules(current => [
-        ...current,
-        {
-          id: nextId,
-          ...formData,
-          feature: formData.feature.trim(),
-          value: formData.value.trim(),
-          reason: formData.reason.trim(),
-        },
-      ]);
+    if (!token) {
+      setFormError("You must be logged in as admin to save exclusion rules.");
+      return;
     }
 
-    if (modalMode === "edit" && editingId !== null) {
-      setDraftRules(current =>
-        current.map(rule =>
-          rule.id === editingId
-            ? {
-                ...rule,
-                ...formData,
-                feature: formData.feature.trim(),
-                value: formData.value.trim(),
-                reason: formData.reason.trim(),
-              }
-            : rule
-        )
+    const payload = {
+      species_id: formData.species_id,
+      feature: formData.feature.trim(),
+      operator: formData.operator,
+      value: parseRuleValue(formData.value, formData.operator),
+      reason: formData.reason.trim(),
+    };
+
+    try {
+      setFormError(null);
+
+      if (modalMode === "create") {
+        const createdRule = await createExclusionRule(payload, token);
+
+        setRules(current => [...current, createdRule]);
+      }
+
+      if (modalMode === "edit" && editingId !== null) {
+        const updatedRule = await updateExclusionRule(
+          editingId,
+          payload,
+          token
+        );
+
+        setRules(current =>
+          current.map(rule => (rule.id === editingId ? updatedRule : rule))
+        );
+      }
+
+      closeModal();
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "Failed to save exclusion rule."
       );
     }
-
-    closeModal();
   }
 
-  function handleDelete(id: number) {
-    setDraftRules(current => current.filter(rule => rule.id !== id));
+  async function handleDelete(id: number) {
+    const token = getAccessToken();
+
+    if (!token) {
+      setPageError("You must be logged in as admin to delete exclusion rules.");
+      return;
+    }
+
+    try {
+      setPageError(null);
+
+      await deleteExclusionRule(id, token);
+
+      setRules(current => current.filter(rule => rule.id !== id));
+    } catch (error) {
+      setPageError(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete exclusion rule."
+      );
+    }
   }
 
   return (
@@ -223,12 +280,6 @@ function ExclusionRulesPage() {
       <Helmet>
         <title>Exclusion Rules | Planting Optimisation Tool</title>
       </Helmet>
-
-      {/* <nav className="admin-back-nav">
-        <Link to="/admin" className="admin-back-link">
-          &larr; Back to Dashboard
-        </Link>
-      </nav> */}
 
       <section className="admin-page-card">
         <div className="admin-parameters-header">
@@ -244,21 +295,21 @@ function ExclusionRulesPage() {
             type="button"
             className="btn-primary"
             onClick={openCreateModal}
-            disabled={speciesLoading || Boolean(speciesError)}
+            disabled={pageLoading || Boolean(pageError)}
           >
             Add Exclusion Rule
           </button>
         </div>
 
-        {speciesLoading && <p>Loading species...</p>}
+        {pageLoading && <p>Loading exclusion rules...</p>}
 
-        {speciesError && <p className="admin-error-message">{speciesError}</p>}
+        {pageError && <p className="admin-error-message">{pageError}</p>}
 
-        {!speciesLoading && !speciesError && draftRules.length === 0 && (
+        {!pageLoading && !pageError && rules.length === 0 && (
           <p>No exclusion rules have been configured.</p>
         )}
 
-        {draftRules.length > 0 && (
+        {!pageLoading && rules.length > 0 && (
           <div className="admin-table-wrapper">
             <table className="admin-parameters-table">
               <thead>
@@ -273,12 +324,12 @@ function ExclusionRulesPage() {
               </thead>
 
               <tbody>
-                {draftRules.map(rule => (
+                {rules.map(rule => (
                   <tr key={rule.id}>
                     <td>{getSpeciesName(rule.species_id)}</td>
                     <td>{rule.feature}</td>
                     <td>{rule.operator}</td>
-                    <td>{rule.value}</td>
+                    <td>{formatRuleValue(rule.value)}</td>
                     <td>{rule.reason}</td>
                     <td>
                       <button
@@ -292,7 +343,7 @@ function ExclusionRulesPage() {
                       <button
                         type="button"
                         className="admin-action-btn admin-action-danger"
-                        onClick={() => handleDelete(rule.id)}
+                        onClick={() => void handleDelete(rule.id)}
                       >
                         Delete
                       </button>
@@ -320,6 +371,7 @@ function ExclusionRulesPage() {
                     ? "Add Exclusion Rule"
                     : "Edit Exclusion Rule"}
                 </h3>
+
                 <p>
                   Configure the condition that excludes a species from a
                   recommendation.
@@ -336,7 +388,10 @@ function ExclusionRulesPage() {
               </button>
             </div>
 
-            <form className="admin-parameters-form" onSubmit={handleSubmit}>
+            <form
+              className="admin-parameters-form"
+              onSubmit={event => void handleSubmit(event)}
+            >
               {formError && (
                 <div className="admin-error-message" role="alert">
                   {formError}
