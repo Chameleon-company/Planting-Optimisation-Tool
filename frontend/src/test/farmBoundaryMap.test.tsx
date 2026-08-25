@@ -6,9 +6,31 @@ import type { GeoJsonObject } from "geojson";
 
 vi.mock("leaflet/dist/leaflet.css", () => ({}));
 
+interface MockBounds {
+  getNorth: () => number;
+  getSouth: () => number;
+  getEast: () => number;
+  getWest: () => number;
+}
+
 vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="map-container">{children}</div>
+  MapContainer: ({
+    children,
+    bounds,
+  }: {
+    children: React.ReactNode;
+    bounds?: MockBounds;
+  }) => (
+    <div
+      data-testid="map-container"
+      data-bounds={
+        bounds
+          ? `${bounds.getNorth()},${bounds.getSouth()},${bounds.getEast()},${bounds.getWest()}`
+          : ""
+      }
+    >
+      {children}
+    </div>
   ),
   TileLayer: () => null,
   GeoJSON: () => <div data-testid="geojson" />,
@@ -62,6 +84,16 @@ describe("FarmBoundaryMap", () => {
       <FarmBoundaryMap boundary={BOUNDARY} isLoading={false} error={null} />
     );
     expect(screen.getByTestId("map-container")).toBeInTheDocument();
+  });
+
+  it("passes the calculated bounds to MapContainer so it auto-centres and zooms to the farm extent", () => {
+    render(
+      <FarmBoundaryMap boundary={BOUNDARY} isLoading={false} error={null} />
+    );
+    expect(screen.getByTestId("map-container")).toHaveAttribute(
+      "data-bounds",
+      "-8,-9,127,126"
+    );
   });
 
   it("renders the boundary GeoJSON layer", () => {
