@@ -22,6 +22,8 @@ export function useFarmBoundary(farmId: number | null): FarmBoundaryData {
       return;
     }
 
+    let cancelled = false;
+
     const fetchBoundary = async () => {
       setIsLoading(true);
       setError(null);
@@ -29,22 +31,34 @@ export function useFarmBoundary(farmId: number | null): FarmBoundaryData {
 
       const token = getAccessToken();
       if (!token) {
-        setError("Please log in to continue.");
-        setIsLoading(false);
+        if (!cancelled) {
+          setError("Please log in to continue.");
+          setIsLoading(false);
+        }
         return;
       }
 
       try {
         const data = await getFarmBoundary(farmId, token);
-        setBoundary(data);
+        if (!cancelled) {
+          setBoundary(data);
+        }
       } catch {
-        setError("Failed to load farm boundary.");
+        if (!cancelled) {
+          setError("Failed to load farm boundary.");
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchBoundary();
+
+    return () => {
+      cancelled = true;
+    };
   }, [farmId, getAccessToken]);
 
   return { boundary, isLoading, error };
