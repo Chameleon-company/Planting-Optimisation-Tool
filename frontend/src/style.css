@@ -1913,6 +1913,101 @@ main.container {
   width: 100%;
 }
 
+/* =========================
+   ADMIN LOADING AND TOASTS
+   ========================= */
+
+.admin-loading-state {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  gap: 10px;
+}
+
+.admin-spinner {
+  animation: admin-spin 0.8s linear infinite;
+  border: 3px solid var(--border);
+  border-radius: 50%;
+  border-top-color: var(--forest-green);
+  flex-shrink: 0;
+  height: 20px;
+  width: 20px;
+}
+
+.admin-toast-container {
+  display: grid;
+  gap: 10px;
+  max-width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+  position: fixed;
+  right: 24px;
+  top: 24px;
+  width: 100%;
+  z-index: 1100;
+}
+
+.admin-toast {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.2);
+  display: flex;
+  font-weight: 600;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  pointer-events: auto;
+}
+
+.admin-toast-success {
+  background: var(--tint-light);
+  border-color: color-mix(in srgb, var(--forest-green) 30%, white);
+  color: var(--black-forest);
+}
+
+.admin-toast-error {
+  background: color-mix(in srgb, var(--danger) 12%, white);
+  border-color: color-mix(in srgb, var(--danger) 30%, white);
+  color: var(--danger-dark);
+}
+
+.admin-toast-close {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+}
+
+.admin-toast-close:hover {
+  opacity: 0.7;
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-toast-container {
+    left: 16px;
+    max-width: none;
+    right: 16px;
+    top: 16px;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-spinner {
+    animation: none;
+  }
+}
+
 /* ============ RESPONSIVE NAVIGATION ============ */
 
 .menu-toggle {

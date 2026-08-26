@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
@@ -205,9 +211,10 @@ describe("DependencyRulesPage", () => {
       );
     });
 
-    expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
-
-    expect(screen.getByText("Acacia mangium")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
+      expect(screen.getByText("Acacia mangium")).toBeInTheDocument();
+    });
   });
 
   it("disables the focal species as a partner option", async () => {
@@ -309,11 +316,13 @@ describe("DependencyRulesPage", () => {
       );
     });
 
-    const rows = screen.getAllByRole("row");
+    await waitFor(() => {
+      const rows = screen.getAllByRole("row");
 
-    expect(rows).toHaveLength(2);
-    expect(rows[1]).toHaveTextContent("Acacia mangium");
-    expect(rows[1]).toHaveTextContent("Tectona grandis");
+      expect(rows).toHaveLength(2);
+      expect(rows[1]).toHaveTextContent("Acacia mangium");
+      expect(rows[1]).toHaveTextContent("Tectona grandis");
+    });
   });
 
   it("does not delete when confirmation is cancelled", async () => {
@@ -359,7 +368,9 @@ describe("DependencyRulesPage", () => {
       expect(deleteDependency).toHaveBeenCalledWith(20, "test-token");
     });
 
-    expect(screen.queryByText("Tectona grandis")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText("Tectona grandis")).not.toBeInTheDocument();
+    });
 
     expect(
       screen.getByText("No dependency rules have been configured.")
@@ -592,5 +603,202 @@ describe("DependencyRulesPage", () => {
         name: "Add Dependency Rule",
       })
     ).not.toBeInTheDocument();
+  });
+
+  it("shows Saving and disables the form while creating a dependency", async () => {
+    const user = userEvent.setup();
+
+    let resolveCreate: ((value: typeof mockDependency) => void) | undefined;
+
+    vi.mocked(createDependency).mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveCreate = resolve;
+        })
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: /add dependency rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency rule/i,
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
+
+    await user.selectOptions(
+      screen.getByLabelText(/^required partner species$/i),
+      "2"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency$/i,
+      })
+    );
+
+    expect(screen.getByRole("button", { name: /saving/i })).toBeDisabled();
+
+    expect(screen.getByLabelText(/^focal species$/i)).toBeDisabled();
+
+    expect(screen.getByLabelText(/^required partner species$/i)).toBeDisabled();
+
+    expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
+
+    expect(createDependency).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveCreate?.(mockDependency);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Dependency rule created successfully."
+      );
+    });
+  });
+
+  it("shows a success toast after updating a dependency", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+
+    vi.mocked(updateDependency).mockResolvedValue({
+      id: 20,
+      focal_species_id: 2,
+      required_partner_id: 1,
+    });
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /edit/i }));
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "2");
+
+    await user.selectOptions(
+      screen.getByLabelText(/^required partner species$/i),
+      "1"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /update dependency/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Dependency rule updated successfully."
+      );
+    });
+  });
+
+  it("shows Deleting and a success toast while deleting a dependency", async () => {
+    const user = userEvent.setup();
+
+    let resolveDelete: (() => void) | undefined;
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    vi.mocked(deleteDependency).mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveDelete = resolve;
+        })
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(screen.getByRole("button", { name: /deleting/i })).toBeDisabled();
+
+    expect(screen.getByRole("button", { name: /edit/i })).toBeDisabled();
+
+    await act(async () => {
+      resolveDelete?.();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Dependency rule deleted successfully."
+      );
+    });
+  });
+
+  it("keeps the modal open and shows an error toast when saving fails", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(createDependency).mockRejectedValue(
+      new Error("Unable to save dependency rule")
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: /add dependency rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency rule/i,
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
+
+    await user.selectOptions(
+      screen.getByLabelText(/^required partner species$/i),
+      "2"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency$/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Unable to save dependency rule"
+      );
+    });
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Add Dependency Rule",
+      })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", {
+        name: /add dependency$/i,
+      })
+    ).toBeEnabled();
   });
 });

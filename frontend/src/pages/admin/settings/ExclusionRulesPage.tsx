@@ -1,6 +1,9 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
+import AdminToast, {
+  type AdminToastType,
+} from "../../../components/admin/AdminToast";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
   createExclusionRule,
@@ -21,6 +24,11 @@ interface ExclusionRuleFormData {
   operator: ExclusionOperator;
   value: string;
   reason: string;
+}
+
+interface ToastState {
+  message: string;
+  type: AdminToastType;
 }
 
 const emptyForm: ExclusionRuleFormData = {
@@ -49,6 +57,11 @@ const FEATURE_SUGGESTIONS = [
   "soil_texture",
   "temperature_celsius",
 ];
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    window.setTimeout(resolve, ms);
+  });
+}
 
 function formatRuleValue(value: ExclusionRuleValue): string {
   if (Array.isArray(value)) {
@@ -93,6 +106,21 @@ function ExclusionRulesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<ExclusionRuleFormData>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  const dismissToast = useCallback(() => {
+    setToast(null);
+  }, []);
+
+  const showToast = useCallback((message: string, type: AdminToastType) => {
+    setToast({
+      message,
+      type,
+    });
+  }, []);
 
   const loadPageData = useCallback(async () => {
     try {
@@ -170,6 +198,10 @@ function ExclusionRulesPage() {
   }
 
   function closeModal() {
+    if (saving) {
+      return;
+    }
+
     setModalMode(null);
     setEditingId(null);
     setFormData(emptyForm);
@@ -199,6 +231,10 @@ function ExclusionRulesPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (saving) {
+      return;
+    }
+
     const validationError = validateForm();
 
     if (validationError) {
@@ -209,7 +245,10 @@ function ExclusionRulesPage() {
     const token = getAccessToken();
 
     if (!token) {
-      setFormError("You must be logged in as admin to save exclusion rules.");
+      showToast(
+        "You must be logged in as admin to save exclusion rules.",
+        "error"
+      );
       return;
     }
 
@@ -222,56 +261,81 @@ function ExclusionRulesPage() {
     };
 
     try {
+      setSaving(true);
       setFormError(null);
 
       if (modalMode === "create") {
-        const createdRule = await createExclusionRule(payload, token);
+        const [createdRule] = await Promise.all([
+          createExclusionRule(payload, token),
+          delay(400),
+        ]);
 
         setRules(current => [...current, createdRule]);
+
+        showToast("Exclusion rule created successfully.", "success");
       }
 
       if (modalMode === "edit" && editingId !== null) {
-        const updatedRule = await updateExclusionRule(
-          editingId,
-          payload,
-          token
-        );
+        const [updatedRule] = await Promise.all([
+          updateExclusionRule(editingId, payload, token),
+          delay(400),
+        ]);
 
         setRules(current =>
           current.map(rule => (rule.id === editingId ? updatedRule : rule))
         );
+
+        showToast("Exclusion rule updated successfully.", "success");
       }
 
-      closeModal();
+      setModalMode(null);
+      setEditingId(null);
+      setFormData(emptyForm);
+      setFormError(null);
     } catch (error) {
-      setFormError(
+      showToast(
         error instanceof Error
           ? error.message
-          : "Failed to save exclusion rule."
+          : "Failed to save exclusion rule.",
+        "error"
       );
+    } finally {
+      setSaving(false);
     }
   }
 
   async function handleDelete(id: number) {
+    if (deletingId !== null) {
+      return;
+    }
+
     const token = getAccessToken();
 
     if (!token) {
-      setPageError("You must be logged in as admin to delete exclusion rules.");
+      showToast(
+        "You must be logged in as admin to delete exclusion rules.",
+        "error"
+      );
       return;
     }
 
     try {
-      setPageError(null);
+      setDeletingId(id);
 
-      await deleteExclusionRule(id, token);
+      await Promise.all([deleteExclusionRule(id, token), delay(400)]);
 
       setRules(current => current.filter(rule => rule.id !== id));
+
+      showToast("Exclusion rule deleted successfully.", "success");
     } catch (error) {
-      setPageError(
+      showToast(
         error instanceof Error
           ? error.message
-          : "Failed to delete exclusion rule."
+          : "Failed to delete exclusion rule.",
+        "error"
       );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -280,6 +344,16 @@ function ExclusionRulesPage() {
       <Helmet>
         <title>Exclusion Rules | Planting Optimisation Tool</title>
       </Helmet>
+
+      {toast && (
+        <div className="admin-toast-container">
+          <AdminToast
+            message={toast.message}
+            type={toast.type}
+            onClose={dismissToast}
+          />
+        </div>
+      )}
 
       <section className="admin-page-card">
         <div className="admin-parameters-header">
@@ -295,13 +369,18 @@ function ExclusionRulesPage() {
             type="button"
             className="btn-primary"
             onClick={openCreateModal}
-            disabled={pageLoading || Boolean(pageError)}
+            disabled={pageLoading || Boolean(pageError) || deletingId !== null}
           >
             Add Exclusion Rule
           </button>
         </div>
 
-        {pageLoading && <p>Loading exclusion rules...</p>}
+        {pageLoading && (
+          <div className="admin-loading-state" role="status" aria-live="polite">
+            <span className="admin-spinner" aria-hidden="true" />
+            <span>Loading exclusion rules...</span>
+          </div>
+        )}
 
         {pageError && <p className="admin-error-message">{pageError}</p>}
 
@@ -331,11 +410,13 @@ function ExclusionRulesPage() {
                     <td>{rule.operator}</td>
                     <td>{formatRuleValue(rule.value)}</td>
                     <td>{rule.reason}</td>
+
                     <td>
                       <button
                         type="button"
                         className="admin-action-btn"
                         onClick={() => openEditModal(rule)}
+                        disabled={deletingId !== null}
                       >
                         Edit
                       </button>
@@ -344,8 +425,9 @@ function ExclusionRulesPage() {
                         type="button"
                         className="admin-action-btn admin-action-danger"
                         onClick={() => void handleDelete(rule.id)}
+                        disabled={deletingId !== null}
                       >
-                        Delete
+                        {deletingId === rule.id ? "Deleting..." : "Delete"}
                       </button>
                     </td>
                   </tr>
@@ -383,6 +465,7 @@ function ExclusionRulesPage() {
                 className="admin-modal-close"
                 onClick={closeModal}
                 aria-label="Close"
+                disabled={saving}
               >
                 ×
               </button>
@@ -406,6 +489,7 @@ function ExclusionRulesPage() {
                     Species
                     <select
                       required
+                      disabled={saving}
                       value={formData.species_id}
                       onChange={event =>
                         updateFormField(
@@ -431,6 +515,7 @@ function ExclusionRulesPage() {
                     <input
                       type="text"
                       required
+                      disabled={saving}
                       list="exclusion-feature-options"
                       placeholder="e.g. rainfall_mm"
                       value={formData.feature}
@@ -455,6 +540,7 @@ function ExclusionRulesPage() {
                     Operator
                     <select
                       required
+                      disabled={saving}
                       value={formData.operator}
                       onChange={event =>
                         updateFormField(
@@ -476,6 +562,7 @@ function ExclusionRulesPage() {
                     <input
                       type="text"
                       required
+                      disabled={saving}
                       placeholder={
                         formData.operator === "in_set" ||
                         formData.operator === "not_in_set"
@@ -499,6 +586,7 @@ function ExclusionRulesPage() {
                   <input
                     type="text"
                     required
+                    disabled={saving}
                     placeholder="e.g. Rainfall is below the survival threshold"
                     value={formData.reason}
                     onChange={event =>
@@ -513,12 +601,17 @@ function ExclusionRulesPage() {
                   type="button"
                   className="admin-action-btn"
                   onClick={closeModal}
+                  disabled={saving}
                 >
                   Cancel
                 </button>
 
-                <button type="submit" className="btn-primary">
-                  {modalMode === "create" ? "Add Rule" : "Update Rule"}
+                <button type="submit" className="btn-primary" disabled={saving}>
+                  {saving
+                    ? "Saving..."
+                    : modalMode === "create"
+                      ? "Add Rule"
+                      : "Update Rule"}
                 </button>
               </div>
             </form>
