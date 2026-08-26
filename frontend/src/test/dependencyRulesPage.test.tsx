@@ -5,10 +5,23 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import DependencyRulesPage from "@/pages/admin/settings/DependencyRulesPage";
-import { getAllSpecies } from "../utils/speciesApi";
+import {
+  createDependency,
+  deleteDependency,
+  getAllDependencies,
+  updateDependency,
+} from "../utils/exclusionRulesApi";
+import { getSpeciesDropdown } from "../utils/speciesApi";
+
+vi.mock("../utils/exclusionRulesApi", () => ({
+  getAllDependencies: vi.fn(),
+  createDependency: vi.fn(),
+  updateDependency: vi.fn(),
+  deleteDependency: vi.fn(),
+}));
 
 vi.mock("../utils/speciesApi", () => ({
-  getAllSpecies: vi.fn(),
+  getSpeciesDropdown: vi.fn(),
 }));
 
 vi.mock("../contexts/AuthContext", () => {
@@ -62,6 +75,12 @@ const mockSpecies = [
   },
 ];
 
+const mockDependency = {
+  id: 20,
+  focal_species_id: 1,
+  required_partner_id: 2,
+};
+
 function renderPage() {
   return render(
     <MemoryRouter>
@@ -74,22 +93,40 @@ function renderPage() {
 
 describe("DependencyRulesPage", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.clearAllMocks();
-    vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+
+    vi.mocked(getSpeciesDropdown).mockResolvedValue(mockSpecies);
+    vi.mocked(getAllDependencies).mockResolvedValue([]);
+    vi.mocked(deleteDependency).mockResolvedValue();
   });
 
-  it("loads species and displays the empty state", async () => {
+  it("loads species and dependencies from the API", async () => {
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+
     renderPage();
 
-    expect(screen.getByText("Loading species...")).toBeInTheDocument();
+    expect(screen.getByText("Loading dependency rules...")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
+    });
+
+    expect(getSpeciesDropdown).toHaveBeenCalledWith("test-token");
+
+    expect(getAllDependencies).toHaveBeenCalledWith("test-token");
+
+    expect(screen.getByText("Acacia mangium")).toBeInTheDocument();
+  });
+
+  it("shows the empty state when no dependencies exist", async () => {
+    renderPage();
 
     await waitFor(() => {
       expect(
         screen.getByText("No dependency rules have been configured.")
       ).toBeInTheDocument();
     });
-
-    expect(getAllSpecies).toHaveBeenCalledWith("test-token");
   });
 
   it("opens the create modal", async () => {
@@ -124,8 +161,10 @@ describe("DependencyRulesPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("creates a draft dependency rule", async () => {
+  it("creates a dependency through the API", async () => {
     const user = userEvent.setup();
+
+    vi.mocked(createDependency).mockResolvedValue(mockDependency);
 
     renderPage();
 
@@ -155,6 +194,16 @@ describe("DependencyRulesPage", () => {
         name: /add dependency$/i,
       })
     );
+
+    await waitFor(() => {
+      expect(createDependency).toHaveBeenCalledWith(
+        {
+          focal_species_id: 1,
+          required_partner_id: 2,
+        },
+        "test-token"
+      );
+    });
 
     expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
 
@@ -189,37 +238,16 @@ describe("DependencyRulesPage", () => {
     expect(focalOption).toBeDisabled();
   });
 
-  it("opens the edit modal with existing values", async () => {
+  it("opens an existing dependency for editing", async () => {
     const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
 
     renderPage();
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", {
-          name: /add dependency rule/i,
-        })
-      ).toBeEnabled();
+      expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
     });
-
-    await user.click(
-      screen.getByRole("button", {
-        name: /add dependency rule/i,
-      })
-    );
-
-    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
-
-    await user.selectOptions(
-      screen.getByLabelText(/^required partner species$/i),
-      "2"
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: /add dependency$/i,
-      })
-    );
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
 
@@ -236,37 +264,24 @@ describe("DependencyRulesPage", () => {
     );
   });
 
-  it("updates a draft dependency rule", async () => {
+  it("updates a dependency through the API", async () => {
     const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+
+    const updatedDependency = {
+      id: 20,
+      focal_species_id: 2,
+      required_partner_id: 1,
+    };
+
+    vi.mocked(updateDependency).mockResolvedValue(updatedDependency);
 
     renderPage();
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", {
-          name: /add dependency rule/i,
-        })
-      ).toBeEnabled();
+      expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
     });
-
-    await user.click(
-      screen.getByRole("button", {
-        name: /add dependency rule/i,
-      })
-    );
-
-    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
-
-    await user.selectOptions(
-      screen.getByLabelText(/^required partner species$/i),
-      "2"
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: /add dependency$/i,
-      })
-    );
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
 
@@ -283,57 +298,66 @@ describe("DependencyRulesPage", () => {
       })
     );
 
+    await waitFor(() => {
+      expect(updateDependency).toHaveBeenCalledWith(
+        20,
+        {
+          focal_species_id: 2,
+          required_partner_id: 1,
+        },
+        "test-token"
+      );
+    });
+
     const rows = screen.getAllByRole("row");
 
     expect(rows).toHaveLength(2);
-
     expect(rows[1]).toHaveTextContent("Acacia mangium");
     expect(rows[1]).toHaveTextContent("Tectona grandis");
   });
 
-  it("keeps a rule when deletion is cancelled and deletes it when confirmed", async () => {
+  it("does not delete when confirmation is cancelled", async () => {
     const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+
+    vi.spyOn(window, "confirm").mockReturnValue(false);
 
     renderPage();
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", {
-          name: /add dependency rule/i,
-        })
-      ).toBeEnabled();
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("button", {
-        name: /add dependency rule/i,
-      })
-    );
-
-    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
-
-    await user.selectOptions(
-      screen.getByLabelText(/^required partner species$/i),
-      "2"
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: /add dependency$/i,
-      })
-    );
-
-    const confirmSpy = vi.spyOn(window, "confirm");
-
-    confirmSpy.mockReturnValueOnce(false);
-
     await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(deleteDependency).not.toHaveBeenCalled();
 
     expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
+  });
 
-    confirmSpy.mockReturnValueOnce(true);
+  it("deletes a dependency through the API when confirmed", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
+    });
 
     await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    await waitFor(() => {
+      expect(deleteDependency).toHaveBeenCalledWith(20, "test-token");
+    });
 
     expect(screen.queryByText("Tectona grandis")).not.toBeInTheDocument();
 
@@ -342,7 +366,7 @@ describe("DependencyRulesPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows validation when required values are missing", async () => {
+  it("shows validation for incomplete form data", async () => {
     const user = userEvent.setup();
 
     renderPage();
@@ -374,9 +398,17 @@ describe("DependencyRulesPage", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Please select a focal species."
     );
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
+
+    fireEvent.submit(form!);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Please select a required partner species."
+    );
   });
 
-  it("rejects a self dependency", async () => {
+  it("rejects a self dependency before calling the API", async () => {
     const user = userEvent.setup();
 
     renderPage();
@@ -420,6 +452,118 @@ describe("DependencyRulesPage", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "A species cannot depend on itself."
     );
+
+    expect(createDependency).not.toHaveBeenCalled();
+  });
+
+  it("shows an API error when creating a dependency fails", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(createDependency).mockRejectedValue(
+      new Error("Required partner species does not exist.")
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: /add dependency rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency rule/i,
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
+
+    await user.selectOptions(
+      screen.getByLabelText(/^required partner species$/i),
+      "2"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency$/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Required partner species does not exist."
+      );
+    });
+  });
+
+  it("shows an error when initial API loading fails", async () => {
+    vi.mocked(getAllDependencies).mockRejectedValue(
+      new Error("Unable to load dependencies")
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Unable to load dependencies")
+      ).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole("button", {
+        name: /add dependency rule/i,
+      })
+    ).toBeDisabled();
+  });
+
+  it("shows species ids when dependency species are missing from the dropdown", async () => {
+    vi.mocked(getAllDependencies).mockResolvedValue([
+      {
+        id: 20,
+        focal_species_id: 998,
+        required_partner_id: 999,
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("Species 998")).toBeInTheDocument();
+      expect(screen.getByText("Species 999")).toBeInTheDocument();
+    });
+  });
+
+  it("shows an error when deleting a dependency fails", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+
+    vi.mocked(deleteDependency).mockRejectedValue(
+      new Error("Unable to delete dependency")
+    );
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Unable to delete dependency")
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
   });
 
   it("closes the modal when Cancel is clicked", async () => {
@@ -448,23 +592,5 @@ describe("DependencyRulesPage", () => {
         name: "Add Dependency Rule",
       })
     ).not.toBeInTheDocument();
-  });
-
-  it("shows an error when species loading fails", async () => {
-    vi.mocked(getAllSpecies).mockRejectedValue(
-      new Error("Unable to load species")
-    );
-
-    renderPage();
-
-    await waitFor(() => {
-      expect(screen.getByText("Unable to load species")).toBeInTheDocument();
-    });
-
-    expect(
-      screen.getByRole("button", {
-        name: /add dependency rule/i,
-      })
-    ).toBeDisabled();
   });
 });

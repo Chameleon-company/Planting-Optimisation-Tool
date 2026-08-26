@@ -5,10 +5,23 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExclusionRulesPage from "@/pages/admin/settings/ExclusionRulesPage";
-import { getAllSpecies } from "../utils/speciesApi";
+import {
+  createExclusionRule,
+  deleteExclusionRule,
+  getAllExclusionRules,
+  updateExclusionRule,
+} from "../utils/exclusionRulesApi";
+import { getSpeciesDropdown } from "../utils/speciesApi";
+
+vi.mock("../utils/exclusionRulesApi", () => ({
+  getAllExclusionRules: vi.fn(),
+  createExclusionRule: vi.fn(),
+  updateExclusionRule: vi.fn(),
+  deleteExclusionRule: vi.fn(),
+}));
 
 vi.mock("../utils/speciesApi", () => ({
-  getAllSpecies: vi.fn(),
+  getSpeciesDropdown: vi.fn(),
 }));
 
 vi.mock("../contexts/AuthContext", () => {
@@ -62,6 +75,15 @@ const mockSpecies = [
   },
 ];
 
+const mockRule = {
+  id: 10,
+  species_id: 1,
+  feature: "rainfall_mm",
+  operator: "<" as const,
+  value: 1000,
+  reason: "Rainfall below survival threshold",
+};
+
 function renderPage() {
   return render(
     <MemoryRouter>
@@ -75,21 +97,40 @@ function renderPage() {
 describe("ExclusionRulesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+
+    vi.mocked(getSpeciesDropdown).mockResolvedValue(mockSpecies);
+    vi.mocked(getAllExclusionRules).mockResolvedValue([]);
+    vi.mocked(deleteExclusionRule).mockResolvedValue();
   });
 
-  it("loads species and displays the empty state", async () => {
+  it("loads species and exclusion rules from the API", async () => {
+    vi.mocked(getAllExclusionRules).mockResolvedValue([mockRule]);
+
     renderPage();
 
-    expect(screen.getByText("Loading species...")).toBeInTheDocument();
+    expect(screen.getByText("Loading exclusion rules...")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
+    });
+
+    expect(getSpeciesDropdown).toHaveBeenCalledWith("test-token");
+
+    expect(getAllExclusionRules).toHaveBeenCalledWith("test-token");
+
+    expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
+
+    expect(screen.getByText("1000")).toBeInTheDocument();
+  });
+
+  it("shows the empty state when no rules exist", async () => {
+    renderPage();
 
     await waitFor(() => {
       expect(
         screen.getByText("No exclusion rules have been configured.")
       ).toBeInTheDocument();
     });
-
-    expect(getAllSpecies).toHaveBeenCalledWith("test-token");
   });
 
   it("opens the create modal", async () => {
@@ -99,172 +140,283 @@ describe("ExclusionRulesPage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
+        screen.getByRole("button", {
+          name: /add exclusion rule/i,
+        })
       ).toBeEnabled();
     });
 
     await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
+      screen.getByRole("button", {
+        name: /add exclusion rule/i,
+      })
     );
 
     expect(
-      screen.getByRole("heading", { name: "Add Exclusion Rule" })
+      screen.getByRole("heading", {
+        name: "Add Exclusion Rule",
+      })
     ).toBeInTheDocument();
 
     expect(screen.getByLabelText(/^species$/i)).toBeInTheDocument();
+
     expect(screen.getByLabelText(/^feature$/i)).toBeInTheDocument();
+
     expect(screen.getByLabelText(/^operator$/i)).toBeInTheDocument();
+
     expect(screen.getByLabelText(/^value$/i)).toBeInTheDocument();
+
     expect(screen.getByLabelText(/^reason$/i)).toBeInTheDocument();
   });
 
-  it("creates a draft exclusion rule", async () => {
+  it("creates an exclusion rule through the API", async () => {
     const user = userEvent.setup();
+
+    vi.mocked(createExclusionRule).mockResolvedValue(mockRule);
 
     renderPage();
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
+        screen.getByRole("button", {
+          name: /add exclusion rule/i,
+        })
       ).toBeEnabled();
     });
 
     await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
+      screen.getByRole("button", {
+        name: /add exclusion rule/i,
+      })
     );
 
     await user.selectOptions(screen.getByLabelText(/^species$/i), "1");
+
     await user.type(screen.getByLabelText(/^feature$/i), "rainfall_mm");
+
     await user.selectOptions(screen.getByLabelText(/^operator$/i), "<");
+
     await user.type(screen.getByLabelText(/^value$/i), "1000");
+
     await user.type(
       screen.getByLabelText(/^reason$/i),
       "Rainfall below survival threshold"
     );
 
-    await user.click(screen.getByRole("button", { name: /add rule/i }));
+    await user.click(
+      screen.getByRole("button", {
+        name: /add rule/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(createExclusionRule).toHaveBeenCalledWith(
+        {
+          species_id: 1,
+          feature: "rainfall_mm",
+          operator: "<",
+          value: 1000,
+          reason: "Rainfall below survival threshold",
+        },
+        "test-token"
+      );
+    });
 
     expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
-    expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
-    expect(screen.getByText("1000")).toBeInTheDocument();
-    expect(
-      screen.getByText("Rainfall below survival threshold")
-    ).toBeInTheDocument();
   });
 
-  it("opens the edit modal with existing values", async () => {
+  it("converts set values to arrays before creating a rule", async () => {
     const user = userEvent.setup();
+
+    const setRule = {
+      ...mockRule,
+      operator: "in_set" as const,
+      value: ["clay", "loam", "sandy"],
+    };
+
+    vi.mocked(createExclusionRule).mockResolvedValue(setRule);
 
     renderPage();
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
+        screen.getByRole("button", {
+          name: /add exclusion rule/i,
+        })
       ).toBeEnabled();
     });
 
     await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
+      screen.getByRole("button", {
+        name: /add exclusion rule/i,
+      })
     );
 
     await user.selectOptions(screen.getByLabelText(/^species$/i), "1");
-    await user.type(screen.getByLabelText(/^feature$/i), "rainfall_mm");
-    await user.type(screen.getByLabelText(/^value$/i), "1000");
-    await user.type(screen.getByLabelText(/^reason$/i), "Too dry");
 
-    await user.click(screen.getByRole("button", { name: /add rule/i }));
+    await user.type(screen.getByLabelText(/^feature$/i), "soil_texture");
+
+    await user.selectOptions(screen.getByLabelText(/^operator$/i), "in_set");
+
+    await user.type(screen.getByLabelText(/^value$/i), "clay, loam, sandy");
+
+    await user.type(
+      screen.getByLabelText(/^reason$/i),
+      "Unsupported soil texture"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add rule/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(createExclusionRule).toHaveBeenCalledWith(
+        expect.objectContaining({
+          operator: "in_set",
+          value: ["clay", "loam", "sandy"],
+        }),
+        "test-token"
+      );
+    });
+  });
+
+  it("opens an existing rule for editing", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(getAllExclusionRules).mockResolvedValue([
+      {
+        ...mockRule,
+        operator: "in_set",
+        value: ["clay", "loam"],
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
+    });
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
 
     expect(
-      screen.getByRole("heading", { name: "Edit Exclusion Rule" })
+      screen.getByRole("heading", {
+        name: "Edit Exclusion Rule",
+      })
     ).toBeInTheDocument();
 
     expect(screen.getByLabelText(/^species$/i)).toHaveValue("1");
+
     expect(screen.getByLabelText(/^feature$/i)).toHaveValue("rainfall_mm");
-    expect(screen.getByLabelText(/^value$/i)).toHaveValue("1000");
-    expect(screen.getByLabelText(/^reason$/i)).toHaveValue("Too dry");
+
+    expect(screen.getByLabelText(/^value$/i)).toHaveValue("clay, loam");
   });
 
-  it("updates a draft exclusion rule", async () => {
+  it("updates an exclusion rule through the API", async () => {
     const user = userEvent.setup();
+
+    vi.mocked(getAllExclusionRules).mockResolvedValue([mockRule]);
+
+    const updatedRule = {
+      ...mockRule,
+      value: 1200,
+      reason: "Updated threshold",
+    };
+
+    vi.mocked(updateExclusionRule).mockResolvedValue(updatedRule);
 
     renderPage();
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
-      ).toBeEnabled();
+      expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
-    );
-
-    await user.selectOptions(screen.getByLabelText(/^species$/i), "1");
-    await user.type(screen.getByLabelText(/^feature$/i), "rainfall_mm");
-    await user.type(screen.getByLabelText(/^value$/i), "1000");
-    await user.type(screen.getByLabelText(/^reason$/i), "Too dry");
-
-    await user.click(screen.getByRole("button", { name: /add rule/i }));
     await user.click(screen.getByRole("button", { name: /edit/i }));
+
+    const valueInput = screen.getByLabelText(/^value$/i);
 
     const reasonInput = screen.getByLabelText(/^reason$/i);
 
+    await user.clear(valueInput);
+    await user.type(valueInput, "1200");
+
     await user.clear(reasonInput);
-    await user.type(reasonInput, "Updated reason");
+    await user.type(reasonInput, "Updated threshold");
 
-    await user.click(screen.getByRole("button", { name: /update rule/i }));
+    await user.click(
+      screen.getByRole("button", {
+        name: /update rule/i,
+      })
+    );
 
-    expect(screen.getByText("Updated reason")).toBeInTheDocument();
-    expect(screen.queryByText("Too dry")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(updateExclusionRule).toHaveBeenCalledWith(
+        10,
+        {
+          species_id: 1,
+          feature: "rainfall_mm",
+          operator: "<",
+          value: 1200,
+          reason: "Updated threshold",
+        },
+        "test-token"
+      );
+    });
+
+    expect(screen.getByText("Updated threshold")).toBeInTheDocument();
   });
 
-  it("deletes a draft exclusion rule", async () => {
+  it("deletes an exclusion rule through the API", async () => {
     const user = userEvent.setup();
+
+    vi.mocked(getAllExclusionRules).mockResolvedValue([mockRule]);
 
     renderPage();
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
-      ).toBeEnabled();
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
     });
-
-    await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
-    );
-
-    await user.selectOptions(screen.getByLabelText(/^species$/i), "1");
-    await user.type(screen.getByLabelText(/^feature$/i), "rainfall_mm");
-    await user.type(screen.getByLabelText(/^value$/i), "1000");
-    await user.type(screen.getByLabelText(/^reason$/i), "Too dry");
-
-    await user.click(screen.getByRole("button", { name: /add rule/i }));
-
-    expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /delete/i }));
 
+    await waitFor(() => {
+      expect(deleteExclusionRule).toHaveBeenCalledWith(10, "test-token");
+    });
+
     expect(screen.queryByText("rainfall_mm")).not.toBeInTheDocument();
+
+    expect(
+      screen.getByText("No exclusion rules have been configured.")
+    ).toBeInTheDocument();
   });
 
-  it("shows validation when required values are missing", async () => {
+  it("shows validation for incomplete form data", async () => {
     const user = userEvent.setup();
 
     renderPage();
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
+        screen.getByRole("button", {
+          name: /add exclusion rule/i,
+        })
       ).toBeEnabled();
     });
 
     await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
+      screen.getByRole("button", {
+        name: /add exclusion rule/i,
+      })
     );
 
-    const addButton = screen.getByRole("button", { name: /add rule/i });
+    const addButton = screen.getByRole("button", {
+      name: /add rule/i,
+    });
+
     const form = addButton.closest("form");
 
     expect(form).not.toBeNull();
@@ -274,75 +426,8 @@ describe("ExclusionRulesPage", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Please select a species."
     );
-  });
-
-  it("changes the value placeholder for set operators", async () => {
-    const user = userEvent.setup();
-
-    renderPage();
-
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
-      ).toBeEnabled();
-    });
-
-    await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
-    );
-
-    await user.selectOptions(screen.getByLabelText(/^operator$/i), "in_set");
-
-    expect(screen.getByLabelText(/^value$/i)).toHaveAttribute(
-      "placeholder",
-      "e.g. clay, loam, sandy"
-    );
-  });
-
-  it("closes the modal when Cancel is clicked", async () => {
-    const user = userEvent.setup();
-
-    renderPage();
-
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
-      ).toBeEnabled();
-    });
-
-    await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
-    );
-
-    await user.click(screen.getByRole("button", { name: /cancel/i }));
-
-    expect(
-      screen.queryByRole("heading", { name: "Add Exclusion Rule" })
-    ).not.toBeInTheDocument();
-  });
-
-  it("validates feature, value, and reason fields", async () => {
-    const user = userEvent.setup();
-
-    renderPage();
-
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /add exclusion rule/i })
-      ).toBeEnabled();
-    });
-
-    await user.click(
-      screen.getByRole("button", { name: /add exclusion rule/i })
-    );
 
     await user.selectOptions(screen.getByLabelText(/^species$/i), "1");
-
-    const form = screen
-      .getByRole("button", { name: /add rule/i })
-      .closest("form");
-
-    expect(form).not.toBeNull();
 
     fireEvent.submit(form!);
 
@@ -367,19 +452,136 @@ describe("ExclusionRulesPage", () => {
     );
   });
 
-  it("shows an error when species loading fails", async () => {
-    vi.mocked(getAllSpecies).mockRejectedValue(
-      new Error("Unable to load species")
+  it("shows an API error when creating a rule fails", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(createExclusionRule).mockRejectedValue(
+      new Error("Species does not exist.")
     );
 
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText("Unable to load species")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", {
+          name: /add exclusion rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add exclusion rule/i,
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText(/^species$/i), "1");
+
+    await user.type(screen.getByLabelText(/^feature$/i), "rainfall_mm");
+
+    await user.type(screen.getByLabelText(/^value$/i), "1000");
+
+    await user.type(screen.getByLabelText(/^reason$/i), "Test reason");
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add rule/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Species does not exist."
+      );
+    });
+  });
+
+  it("shows an error when initial API loading fails", async () => {
+    vi.mocked(getAllExclusionRules).mockRejectedValue(
+      new Error("Unable to load exclusion rules")
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Unable to load exclusion rules")
+      ).toBeInTheDocument();
     });
 
     expect(
-      screen.getByRole("button", { name: /add exclusion rule/i })
+      screen.getByRole("button", {
+        name: /add exclusion rule/i,
+      })
     ).toBeDisabled();
+  });
+
+  it("shows an error when deleting a rule fails", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(getAllExclusionRules).mockResolvedValue([mockRule]);
+
+    vi.mocked(deleteExclusionRule).mockRejectedValue(
+      new Error("Unable to delete rule")
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Unable to delete rule")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("rainfall_mm")).toBeInTheDocument();
+  });
+
+  it("shows the species id when the species is missing from the dropdown", async () => {
+    vi.mocked(getAllExclusionRules).mockResolvedValue([
+      {
+        ...mockRule,
+        species_id: 999,
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("Species 999")).toBeInTheDocument();
+    });
+  });
+
+  it("closes the modal when Cancel is clicked", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: /add exclusion rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add exclusion rule/i,
+      })
+    );
+
+    await user.click(screen.getByRole("button", { name: /cancel/i }));
+
+    expect(
+      screen.queryByRole("heading", {
+        name: "Add Exclusion Rule",
+      })
+    ).not.toBeInTheDocument();
   });
 });
