@@ -30,13 +30,24 @@ vi.mock("../utils/speciesApi", () => ({
   getSpeciesDropdown: vi.fn(),
 }));
 
-vi.mock("../contexts/AuthContext", () => {
-  const getAccessToken = () => "test-token";
+const authState = vi.hoisted(() => {
+  const state = {
+    accessToken: "test-token" as string | null,
+  };
+
+  const getAccessToken = vi.fn(() => state.accessToken);
 
   return {
-    useAuth: () => ({ getAccessToken }),
+    state,
+    getAccessToken,
   };
 });
+
+vi.mock("../contexts/AuthContext", () => ({
+  useAuth: () => ({
+    getAccessToken: authState.getAccessToken,
+  }),
+}));
 
 const mockSpecies = [
   {
@@ -101,6 +112,7 @@ describe("DependencyRulesPage", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
+    authState.state.accessToken = "test-token";
 
     vi.mocked(getSpeciesDropdown).mockResolvedValue(mockSpecies);
     vi.mocked(getAllDependencies).mockResolvedValue([]);
@@ -656,6 +668,16 @@ describe("DependencyRulesPage", () => {
 
     expect(createDependency).toHaveBeenCalledTimes(1);
 
+    const form = screen
+      .getByRole("button", { name: /saving/i })
+      .closest("form");
+
+    expect(form).not.toBeNull();
+
+    fireEvent.submit(form!);
+
+    expect(createDependency).toHaveBeenCalledTimes(1);
+
     await act(async () => {
       resolveCreate?.(mockDependency);
     });
@@ -800,5 +822,184 @@ describe("DependencyRulesPage", () => {
         name: /add dependency$/i,
       })
     ).toBeEnabled();
+  });
+
+  it("dismisses a success toast from the dependency page", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(createDependency).mockResolvedValue(mockDependency);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: /add dependency rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency rule/i,
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
+    await user.selectOptions(
+      screen.getByLabelText(/^required partner species$/i),
+      "2"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency$/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Dependency rule created successfully."
+      );
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /dismiss notification/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows an authentication toast when the token disappears before saving", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: /add dependency rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency rule/i,
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
+    await user.selectOptions(
+      screen.getByLabelText(/^required partner species$/i),
+      "2"
+    );
+
+    authState.state.accessToken = null;
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency$/i,
+      })
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "You must be logged in as admin to save dependency rules."
+    );
+    expect(createDependency).not.toHaveBeenCalled();
+  });
+
+  it("shows the fallback save error for a non-Error rejection", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(createDependency).mockRejectedValue("save failed");
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: /add dependency rule/i,
+        })
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency rule/i,
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText(/^focal species$/i), "1");
+    await user.selectOptions(
+      screen.getByLabelText(/^required partner species$/i),
+      "2"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /add dependency$/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Failed to save dependency rule."
+      );
+    });
+  });
+
+  it("shows an authentication toast when deleting without a token", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
+    });
+
+    authState.state.accessToken = null;
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "You must be logged in as admin to delete dependency rules."
+    );
+    expect(deleteDependency).not.toHaveBeenCalled();
+  });
+
+  it("shows the fallback delete error for a non-Error rejection", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(getAllDependencies).mockResolvedValue([mockDependency]);
+    vi.mocked(deleteDependency).mockRejectedValue("delete failed");
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /delete/i })
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Failed to delete dependency rule."
+      );
+    });
+
+    expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
   });
 });
