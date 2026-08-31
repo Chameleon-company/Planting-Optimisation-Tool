@@ -1,6 +1,9 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
+import AdminToast, {
+  type AdminToastType,
+} from "../../../components/admin/AdminToast";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
   createDependency,
@@ -18,10 +21,21 @@ interface DependencyRuleFormData {
   required_partner_id: number;
 }
 
+interface ToastState {
+  message: string;
+  type: AdminToastType;
+}
+
 const emptyForm: DependencyRuleFormData = {
   focal_species_id: 0,
   required_partner_id: 0,
 };
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    window.setTimeout(resolve, ms);
+  });
+}
 
 function DependencyRulesPage() {
   const { getAccessToken } = useAuth();
@@ -36,6 +50,21 @@ function DependencyRulesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<DependencyRuleFormData>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  const dismissToast = useCallback(() => {
+    setToast(null);
+  }, []);
+
+  const showToast = useCallback((message: string, type: AdminToastType) => {
+    setToast({
+      message,
+      type,
+    });
+  }, []);
 
   const loadPageData = useCallback(async () => {
     try {
@@ -110,6 +139,10 @@ function DependencyRulesPage() {
   }
 
   function closeModal() {
+    if (saving) {
+      return;
+    }
+
     setModalMode(null);
     setEditingId(null);
     setFormData(emptyForm);
@@ -135,6 +168,10 @@ function DependencyRulesPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (saving) {
+      return;
+    }
+
     const validationError = validateForm();
 
     if (validationError) {
@@ -145,7 +182,10 @@ function DependencyRulesPage() {
     const token = getAccessToken();
 
     if (!token) {
-      setFormError("You must be logged in as admin to save dependency rules.");
+      showToast(
+        "You must be logged in as admin to save dependency rules.",
+        "error"
+      );
       return;
     }
 
@@ -155,39 +195,56 @@ function DependencyRulesPage() {
     };
 
     try {
+      setSaving(true);
       setFormError(null);
 
       if (modalMode === "create") {
-        const createdDependency = await createDependency(payload, token);
+        const [createdDependency] = await Promise.all([
+          createDependency(payload, token),
+          delay(400),
+        ]);
 
         setDependencies(current => [...current, createdDependency]);
+
+        showToast("Dependency rule created successfully.", "success");
       }
 
       if (modalMode === "edit" && editingId !== null) {
-        const updatedDependency = await updateDependency(
-          editingId,
-          payload,
-          token
-        );
+        const [updatedDependency] = await Promise.all([
+          updateDependency(editingId, payload, token),
+          delay(400),
+        ]);
 
         setDependencies(current =>
           current.map(rule =>
             rule.id === editingId ? updatedDependency : rule
           )
         );
+
+        showToast("Dependency rule updated successfully.", "success");
       }
 
-      closeModal();
+      setModalMode(null);
+      setEditingId(null);
+      setFormData(emptyForm);
+      setFormError(null);
     } catch (error) {
-      setFormError(
+      showToast(
         error instanceof Error
           ? error.message
-          : "Failed to save dependency rule."
+          : "Failed to save dependency rule.",
+        "error"
       );
+    } finally {
+      setSaving(false);
     }
   }
 
   async function handleDelete(id: number) {
+    if (deletingId !== null) {
+      return;
+    }
+
     const confirmed = window.confirm(
       "Are you sure you want to delete this dependency rule?"
     );
@@ -199,24 +256,30 @@ function DependencyRulesPage() {
     const token = getAccessToken();
 
     if (!token) {
-      setPageError(
-        "You must be logged in as admin to delete dependency rules."
+      showToast(
+        "You must be logged in as admin to delete dependency rules.",
+        "error"
       );
       return;
     }
 
     try {
-      setPageError(null);
+      setDeletingId(id);
 
-      await deleteDependency(id, token);
+      await Promise.all([deleteDependency(id, token), delay(400)]);
 
       setDependencies(current => current.filter(rule => rule.id !== id));
+
+      showToast("Dependency rule deleted successfully.", "success");
     } catch (error) {
-      setPageError(
+      showToast(
         error instanceof Error
           ? error.message
-          : "Failed to delete dependency rule."
+          : "Failed to delete dependency rule.",
+        "error"
       );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -225,6 +288,16 @@ function DependencyRulesPage() {
       <Helmet>
         <title>Dependency Rules | Planting Optimisation Tool</title>
       </Helmet>
+
+      {toast && (
+        <div className="admin-toast-container">
+          <AdminToast
+            message={toast.message}
+            type={toast.type}
+            onClose={dismissToast}
+          />
+        </div>
+      )}
 
       <section className="admin-page-card">
         <div className="admin-parameters-header">
@@ -240,13 +313,18 @@ function DependencyRulesPage() {
             type="button"
             className="btn-primary"
             onClick={openCreateModal}
-            disabled={pageLoading || Boolean(pageError)}
+            disabled={pageLoading || Boolean(pageError) || deletingId !== null}
           >
             Add Dependency Rule
           </button>
         </div>
 
-        {pageLoading && <p>Loading dependency rules...</p>}
+        {pageLoading && (
+          <div className="admin-loading-state" role="status" aria-live="polite">
+            <span className="admin-spinner" aria-hidden="true" />
+            <span>Loading dependency rules...</span>
+          </div>
+        )}
 
         {pageError && <p className="admin-error-message">{pageError}</p>}
 
@@ -277,6 +355,7 @@ function DependencyRulesPage() {
                         type="button"
                         className="admin-action-btn"
                         onClick={() => openEditModal(rule)}
+                        disabled={deletingId !== null}
                       >
                         Edit
                       </button>
@@ -285,8 +364,9 @@ function DependencyRulesPage() {
                         type="button"
                         className="admin-action-btn admin-action-danger"
                         onClick={() => void handleDelete(rule.id)}
+                        disabled={deletingId !== null}
                       >
-                        Delete
+                        {deletingId === rule.id ? "Deleting..." : "Delete"}
                       </button>
                     </td>
                   </tr>
@@ -323,6 +403,7 @@ function DependencyRulesPage() {
                 className="admin-modal-close"
                 onClick={closeModal}
                 aria-label="Close"
+                disabled={saving}
               >
                 ×
               </button>
@@ -346,6 +427,7 @@ function DependencyRulesPage() {
                     Focal Species
                     <select
                       required
+                      disabled={saving}
                       value={formData.focal_species_id}
                       onChange={event =>
                         updateFormField(
@@ -370,6 +452,7 @@ function DependencyRulesPage() {
                     Required Partner Species
                     <select
                       required
+                      disabled={saving}
                       value={formData.required_partner_id}
                       onChange={event =>
                         updateFormField(
@@ -401,14 +484,17 @@ function DependencyRulesPage() {
                   type="button"
                   className="admin-action-btn"
                   onClick={closeModal}
+                  disabled={saving}
                 >
                   Cancel
                 </button>
 
-                <button type="submit" className="btn-primary">
-                  {modalMode === "create"
-                    ? "Add Dependency"
-                    : "Update Dependency"}
+                <button type="submit" className="btn-primary" disabled={saving}>
+                  {saving
+                    ? "Saving..."
+                    : modalMode === "create"
+                      ? "Add Dependency"
+                      : "Update Dependency"}
                 </button>
               </div>
             </form>
