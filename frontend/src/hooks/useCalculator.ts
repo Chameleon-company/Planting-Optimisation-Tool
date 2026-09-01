@@ -20,6 +20,7 @@ export function useCalculator(farmIds: number[], params: CalcParams) {
 
   useEffect(() => {
     if (!farmIds.length) return;
+    let active = true;
 
     const fetchEstimation = async () => {
       setIsLoading(true);
@@ -29,27 +30,32 @@ export function useCalculator(farmIds: number[], params: CalcParams) {
 
       const token = getAccessToken();
       if (!token) {
-        setError("Please log in to continue.");
-        setIsLoading(false);
+        if (active) {
+          setError("Please log in to continue.");
+          setIsLoading(false);
+        }
         return;
       }
 
       try {
         const data = await getSaplingEstimation(farmIds, params, token);
+        if (!active) return;
         setResults(data.results);
         setHasSearched(true);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
+        if (!active) return;
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred"
+        );
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     };
 
     fetchEstimation();
+    return () => {
+      active = false;
+    };
   }, [farmIds, params, getAccessToken]);
 
   return { results, isLoading, hasSearched, error };

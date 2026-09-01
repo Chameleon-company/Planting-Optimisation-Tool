@@ -29,7 +29,12 @@ export default function CalculatorSearch({
   const [maxSlope, setMaxSlope] = useState(DEFAULT_CALC_PARAMS.maxSlope);
 
   const parsedIds = parseFarmIds(farmIdsInput);
-  const canSearch = parsedIds.length > 0 && spacingX > 0 && spacingY > 0;
+  const canSearch =
+    parsedIds.length > 0 &&
+    spacingX > 0 &&
+    spacingY > 0 &&
+    maxSlope > 0 &&
+    maxSlope < 90;
 
   const handleSearch = () => {
     if (!canSearch) return;
