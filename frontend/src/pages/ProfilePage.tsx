@@ -6,12 +6,14 @@ import ProfileHeader from "@/components/profile/profileHeader";
 import FarmList from "@/components/profile/profileFarms";
 import FarmSearchPanel from "@/components/profile/profileSearchPanel";
 import EditFarmModal from "@/components/farmManagement/farmsEditModal";
+import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Farm, useUserProfiles } from "@/hooks/useUserProfiles";
 import { useSearchProfiles } from "@/hooks/useSearchProfiles";
 import { FarmUpdatePayload, useFarms } from "@/hooks/useFarms";
 import { useProfileActions } from "@/hooks/useProfileActions";
+import { useFarmBoundary } from "@/hooks/useFarmBoundary";
 
 import "./profile.css";
 import "./farmManagement.css";
@@ -55,6 +57,12 @@ function ProfilePage() {
     actionMessage,
     clearActionFeedback,
   } = useProfileActions();
+
+  const {
+    boundary,
+    isLoading: mapLoading,
+    error: mapError,
+  } = useFarmBoundary(profile?.id ?? null);
 
   useEffect(() => {
     clearActionFeedback();
@@ -141,6 +149,16 @@ function ProfilePage() {
         actionError={actionError}
         actionMessage={actionMessage ?? editMessage}
       />
+
+      {profile && (
+        <div className="farm-map-wrapper">
+          <FarmBoundaryMap
+            boundary={boundary}
+            isLoading={mapLoading}
+            error={mapError}
+          />
+        </div>
+      )}
 
       {!isSearching && (
         <FarmList

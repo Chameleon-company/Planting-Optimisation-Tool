@@ -1,10 +1,39 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react";
 import { act } from "react";
 import { Farm } from "@/hooks/useUserProfiles";
 import type { FormState } from "@/components/farmManagement/farmForms/farmConstantsForm";
+import type { GeoJsonObject } from "geojson";
+
+vi.mock("leaflet/dist/leaflet.css", () => ({}));
+
+vi.mock("react-leaflet", () => ({
+  MapContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="map-container">{children}</div>
+  ),
+  TileLayer: () => null,
+  GeoJSON: () => <div data-testid="geojson" />,
+}));
+
+vi.mock("leaflet", () => ({
+  default: {
+    geoJSON: vi.fn(() => ({
+      getBounds: () => ({
+        getNorth: () => -8.0,
+        getSouth: () => -9.0,
+        getEast: () => 127.0,
+        getWest: () => 126.0,
+      }),
+    })),
+  },
+}));
+
+const mockUseFarmBoundary = vi.fn();
+vi.mock("@/hooks/useFarmBoundary", () => ({
+  useFarmBoundary: (...args: unknown[]) => mockUseFarmBoundary(...args),
+}));
 
 import FarmsTable from "@/components/farmManagement/farmsTable";
 import RegisterFarmModal from "@/components/farmManagement/farmRegisterModal";
@@ -76,10 +105,14 @@ vi.mock("@/hooks/useUserProfiles", () => ({
 
 beforeEach(() => {
   profilesOverride = {};
-  // Default to an admin user so all action buttons are visible unless overridden
   mockUseAuth.mockReturnValue({
     user: { name: "Test Admin", role: "admin" },
     getAccessToken: () => "mock-token",
+  });
+  mockUseFarmBoundary.mockReturnValue({
+    boundary: null,
+    isLoading: false,
+    error: null,
   });
   vi.clearAllMocks();
 });
@@ -341,6 +374,27 @@ describe("FarmsManagementPage render", () => {
   it("does not display error paragraph when there is no error", () => {
     render(<FarmsManagmentPage />);
     expect(screen.queryByText("Failed to load farms")).not.toBeInTheDocument();
+  });
+
+  it("does not render the map when no farm is selected", () => {
+    render(<FarmsManagmentPage />);
+    expect(screen.queryByTestId("map-container")).not.toBeInTheDocument();
+  });
+
+  it("renders the farm boundary map when a farm is selected", () => {
+    const BOUNDARY: GeoJsonObject = {
+      type: "FeatureCollection",
+      features: [],
+    } as GeoJsonObject;
+    mockUseFarmBoundary.mockReturnValue({
+      boundary: BOUNDARY,
+      isLoading: false,
+      error: null,
+    });
+    render(<FarmsManagmentPage />);
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+    expect(screen.getByTestId("map-container")).toBeInTheDocument();
   });
 });
 

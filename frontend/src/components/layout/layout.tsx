@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStickyHeader } from "@/hooks/useStickyHeader";
@@ -8,8 +9,14 @@ export default function MainLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
 
   const handleLogout = () => {
+    setMenuOpen(false);
     logout();
     navigate("/");
   };
@@ -29,9 +36,20 @@ export default function MainLayout() {
               className="aboutLogo"
             />
           </div>
-          <nav className="nav">
+
+          <button
+            type="button"
+            className="menu-toggle"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
+          <nav className={`nav ${menuOpen ? "nav-open" : ""}`}>
             <NavLink
               to="/"
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -40,6 +58,7 @@ export default function MainLayout() {
             </NavLink>
             <NavLink
               to="/recommendation"
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -48,6 +67,7 @@ export default function MainLayout() {
             </NavLink>
             <NavLink
               to="/calculator"
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -56,6 +76,7 @@ export default function MainLayout() {
             </NavLink>
             <NavLink
               to="/profile"
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -64,6 +85,7 @@ export default function MainLayout() {
             </NavLink>
             <NavLink
               to="/species"
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -71,13 +93,17 @@ export default function MainLayout() {
               Species
             </NavLink>
           </nav>
-          <div className="actions">
+          <div className={`actions ${menuOpen ? "actions-open" : ""}`}>
             {user ? (
               <div className="user-info">
                 <span>Welcome, {user.name}</span>
                 {/* Conditionally render the Admin button */}
                 {user.role === "admin" && (
-                  <NavLink to="/admin" className="admin-panel-btn">
+                  <NavLink
+                    to="/admin"
+                    onClick={closeMenu}
+                    className="admin-panel-btn"
+                  >
                     Admin Panel
                   </NavLink>
                 )}
@@ -87,10 +113,14 @@ export default function MainLayout() {
               </div>
             ) : (
               <div className="auth-actions">
-                <NavLink to="/login" className="login-btn">
+                <NavLink to="/login" onClick={closeMenu} className="login-btn">
                   Login
                 </NavLink>
-                <NavLink to="/register" className="login-btn">
+                <NavLink
+                  to="/register"
+                  onClick={closeMenu}
+                  className="login-btn"
+                >
                   Register
                 </NavLink>
               </div>

@@ -18,6 +18,7 @@ from src.routers import (
     ahp,
     auth,
     environmental_profile,
+    exclusion_rules,
     farm,
     global_weights,
     parameters,
@@ -79,6 +80,7 @@ app.include_router(farm.router)
 app.include_router(recommendation.router)
 app.include_router(soil_texture.router)
 app.include_router(environmental_profile.router)
+app.include_router(exclusion_rules.router)
 app.include_router(sapling_estimation.router)
 app.include_router(ahp.router)
 app.include_router(reporting.router)
