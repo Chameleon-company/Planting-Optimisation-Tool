@@ -1,10 +1,36 @@
+from geoalchemy2 import WKTElement
 from httpx import AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
 from src.models.recommendations import Recommendation
 from src.models.species import Species
 from src.models.user import User
+
+# Matches the DEM fixture used in test_sapling_service.py, so sapling
+# estimation succeeds for farms whose boundary falls inside this extent.
+DEM_INSERT = text(
+    """
+    INSERT INTO dem_table (rast)
+    VALUES (
+        ST_AddBand(
+            ST_MakeEmptyRaster(
+                5, 5,
+                125, -8.9995,
+                0.001, -0.001,
+                0, 0,
+                4326
+            ),
+            1,
+            '32BF',
+            100
+        )
+    );
+    """
+)
+FARM_BOUNDARY_WKT_IN_DEM_EXTENT = "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))"
 
 
 def make_farm(user_id: int, soil_texture_id: int = 1) -> Farm:
@@ -604,3 +630,109 @@ async def test_export_all_farms_report_admin(
     assert response_pdf.status_code == 200
     assert len(response_docx.content) > 0
     assert len(response_pdf.content) > 0
+
+
+async def test_get_farm_report_has_no_boundary_or_sapling_when_farm_has_no_boundary(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    officer_auth_headers: dict,
+    test_officer_user: User,
+):
+    """A farm with no saved boundary gets a report with boundary and sapling both null."""
+    farm = make_farm(user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+
+    response = await async_client.get(f"/reports/farm/{farm.id}", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["boundary"] is None
+    assert data["sapling"] is None
+    assert data["planting_guidance"] == "No suitable species were identified for this farm's current conditions."
+
+
+async def test_get_farm_report_includes_boundary_when_farm_has_one(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    officer_auth_headers: dict,
+    test_officer_user: User,
+):
+    """A farm with a saved boundary gets that boundary back as a GeoJSON Feature on the report."""
+    farm = make_farm(user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    boundary = FarmBoundary(
+        id=farm.id,
+        external_id=farm.id,
+        boundary=WKTElement(FARM_BOUNDARY_WKT_IN_DEM_EXTENT, srid=4326),
+    )
+    async_session.add(boundary)
+    await async_session.flush()
+
+    response = await async_client.get(f"/reports/farm/{farm.id}", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["boundary"] is not None
+    assert data["boundary"]["type"] == "Feature"
+    assert data["boundary"]["geometry"]["type"] == "MultiPolygon"
+
+
+async def test_get_farm_report_includes_sapling_summary_and_guidance_when_dem_available(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    officer_auth_headers: dict,
+    test_officer_user: User,
+):
+    """When a farm has a boundary within DEM coverage, the report includes sapling
+    numbers from the estimation service, and planting guidance mentions capacity."""
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm = make_farm(user_id=test_officer_user.id)
+    farm.baseline_tree_count = 5
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    boundary = FarmBoundary(
+        id=farm.id,
+        external_id=farm.id,
+        boundary=WKTElement(FARM_BOUNDARY_WKT_IN_DEM_EXTENT, srid=4326),
+    )
+    async_session.add(boundary)
+    await async_session.flush()
+
+    species = make_species("Teak", "Common Teak")
+    async_session.add(species)
+    await async_session.flush()
+    await async_session.refresh(species)
+
+    rec = Recommendation(
+        farm_id=farm.id,
+        species_id=species.id,
+        rank_overall=1,
+        score_mcda=0.85,
+        key_reasons=["suitable rainfall"],
+    )
+    async_session.add(rec)
+    await async_session.flush()
+
+    response = await async_client.get(f"/reports/farm/{farm.id}", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["sapling"] is not None
+    assert data["sapling"]["baseline_tree_count"] == 5
+    assert data["sapling"]["aligned_count"] > 0
+    assert data["sapling"]["additional_sapling_count"] == max(data["sapling"]["aligned_count"] - 5, 0)
+    assert "Teak" in data["planting_guidance"]
+    assert "additional saplings" in data["planting_guidance"]
+    assert "5 existing trees" in data["planting_guidance"]
