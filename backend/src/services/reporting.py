@@ -4,9 +4,17 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.domains.reporting import FarmReportContract, FarmReportMetadata, RecommendationReportEntry
+from src.domains.reporting import FarmReportContract, FarmReportMetadata, RecommendationReportEntry, SaplingReportSummary
 from src.models.farm import Farm
 from src.models.recommendations import Recommendation
+from src.services import farm as farm_service
+from src.services.sapling_estimation import SaplingEstimationService
+
+# Same defaults the frontend Sapling Calculator uses, so report sapling numbers
+# match what a user would see if they ran the calculator themselves.
+DEFAULT_SPACING_X = 3.0
+DEFAULT_SPACING_Y = 3.0
+DEFAULT_MAX_SLOPE = 15.0
 
 
 async def get_farm_report(db: AsyncSession, farm_id: int, user_id: int | None = None) -> FarmReportContract | None:
@@ -30,7 +38,13 @@ async def get_farm_report(db: AsyncSession, farm_id: int, user_id: int | None = 
     excl_result = await db.execute(select(Recommendation).options(selectinload(Recommendation.species)).where(Recommendation.farm_id == farm_id).where(Recommendation.rank_overall == -1))
     exclusions = list(excl_result.scalars().all())
 
-    return _assemble_report(farm, recommendations, exclusions)
+    report = _assemble_report(farm, recommendations, exclusions)
+
+    boundary = await farm_service.get_farm_boundary(db, farm.id)
+    sapling = await _build_sapling_summary(db, farm.id) if boundary is not None else None
+    planting_guidance = _build_planting_guidance(report.recommendations, sapling)
+
+    return report.model_copy(update={"boundary": boundary, "sapling": sapling, "planting_guidance": planting_guidance})
 
 
 async def get_all_farms_report(db: AsyncSession, user_id: int | None = None) -> list[FarmReportContract]:
@@ -61,6 +75,14 @@ async def get_all_farms_report(db: AsyncSession, user_id: int | None = None) -> 
 
 
 def _assemble_report(farm: Farm, recommendations: list[Recommendation], exclusions: list[Recommendation]) -> FarmReportContract:
+    """Builds the base report contract from farm and recommendation data.
+
+    Deliberately does not fetch the boundary or run sapling estimation here:
+    this is also used by get_all_farms_report, which can return every farm in
+    the system, and per-farm boundary/DEM lookups at that scale are too
+    expensive to run in a loop. Only get_farm_report (a single farm) enriches
+    the contract with that data after calling this.
+    """
     farm_metadata = FarmReportMetadata(
         id=farm.id,
         user_name=farm.farm_supervisor.name,
@@ -104,3 +126,45 @@ def _assemble_report(farm: Farm, recommendations: list[Recommendation], exclusio
         exclusions=excl,
         generated_at=datetime.now(timezone.utc),
     )
+
+
+async def _build_sapling_summary(db: AsyncSession, farm_id: int) -> SaplingReportSummary | None:
+    """Runs the sapling estimation for a single farm using the product's default
+    spacing and slope settings. Returns None if the estimation could not run
+    (e.g. no DEM coverage for the farm's location).
+    """
+    result = await SaplingEstimationService().run_estimation(
+        db,
+        farm_ids=[farm_id],
+        spacing_x=DEFAULT_SPACING_X,
+        spacing_y=DEFAULT_SPACING_Y,
+        max_slope=DEFAULT_MAX_SLOPE,
+    )
+    items = result.get("results", [])
+    if not items or items[0].get("status") != "success":
+        return None
+
+    item = items[0]
+    return SaplingReportSummary(
+        aligned_count=item.get("aligned_count"),
+        baseline_tree_count=item.get("baseline_tree_count"),
+        additional_sapling_count=item.get("additional_sapling_count"),
+    )
+
+
+def _build_planting_guidance(recommendations: list[RecommendationReportEntry], sapling: SaplingReportSummary | None) -> str | None:
+    """Builds a short planting guidance sentence from the top recommendation and sapling capacity."""
+    if not recommendations:
+        return "No suitable species were identified for this farm's current conditions."
+
+    top = recommendations[0]
+    guidance = f"Plant {top.species_name} ({top.species_common_name}) first, it is the highest-ranked match for this farm's conditions."
+
+    if sapling is not None and sapling.additional_sapling_count is not None:
+        guidance += f" This farm has capacity for {sapling.additional_sapling_count} additional saplings at {DEFAULT_SPACING_X:g}m x {DEFAULT_SPACING_Y:g}m spacing"
+        if sapling.baseline_tree_count:
+            guidance += f", alongside its {sapling.baseline_tree_count} existing trees."
+        else:
+            guidance += "."
+
+    return guidance
