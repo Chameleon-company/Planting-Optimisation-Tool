@@ -736,3 +736,142 @@ async def test_get_farm_report_includes_sapling_summary_and_guidance_when_dem_av
     assert "Teak" in data["planting_guidance"]
     assert "additional saplings" in data["planting_guidance"]
     assert "5 existing trees" in data["planting_guidance"]
+
+
+async def test_get_all_farms_report_still_skips_boundary_and_sapling_for_a_farm_that_has_one(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    admin_auth_headers: dict,
+    test_officer_user: User,
+):
+    """Regression guard: the bulk all-farms report must never enrich with boundary/sapling
+    data, even for a farm that actually has a boundary within DEM coverage. This is what
+    keeps the all-farms endpoint fast; if this starts failing, the per-farm enrichment
+    has been reintroduced into the bulk loop and the N+1 performance issue is back."""
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm = make_farm(user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    boundary = FarmBoundary(
+        id=farm.id,
+        external_id=farm.id,
+        boundary=WKTElement(FARM_BOUNDARY_WKT_IN_DEM_EXTENT, srid=4326),
+    )
+    async_session.add(boundary)
+    await async_session.flush()
+
+    response = await async_client.get("/reports/farms", headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    report = next(r for r in data if r["farm"]["id"] == farm.id)
+    assert report["boundary"] is None
+    assert report["sapling"] is None
+
+
+async def test_get_farm_report_guidance_omits_capacity_when_sapling_unavailable(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    officer_auth_headers: dict,
+    test_officer_user: User,
+):
+    """A farm with a boundary but no DEM coverage has a recommendation but no sapling
+    numbers. Planting guidance should mention the top species without any capacity claim."""
+    # dem_table is shared across tests and not covered by the per-test rollback, so
+    # explicitly clear it rather than assuming no earlier test has left rows behind.
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.flush()
+
+    farm = make_farm(user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    boundary = FarmBoundary(
+        id=farm.id,
+        external_id=farm.id,
+        boundary=WKTElement(FARM_BOUNDARY_WKT_IN_DEM_EXTENT, srid=4326),
+    )
+    async_session.add(boundary)
+    await async_session.flush()
+
+    species = make_species("Teak", "Common Teak")
+    async_session.add(species)
+    await async_session.flush()
+    await async_session.refresh(species)
+
+    rec = Recommendation(
+        farm_id=farm.id,
+        species_id=species.id,
+        rank_overall=1,
+        score_mcda=0.85,
+        key_reasons=["suitable rainfall"],
+    )
+    async_session.add(rec)
+    await async_session.flush()
+
+    response = await async_client.get(f"/reports/farm/{farm.id}", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["sapling"] is None
+    assert "Teak" in data["planting_guidance"]
+    assert "additional saplings" not in data["planting_guidance"]
+
+
+async def test_get_farm_report_guidance_omits_existing_trees_when_baseline_is_zero(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    officer_auth_headers: dict,
+    test_officer_user: User,
+):
+    """A farm with zero existing trees gets capacity guidance without the
+    'alongside its existing trees' clause, since there are none to mention."""
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm = make_farm(user_id=test_officer_user.id)
+    farm.baseline_tree_count = 0
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    boundary = FarmBoundary(
+        id=farm.id,
+        external_id=farm.id,
+        boundary=WKTElement(FARM_BOUNDARY_WKT_IN_DEM_EXTENT, srid=4326),
+    )
+    async_session.add(boundary)
+    await async_session.flush()
+
+    species = make_species("Teak", "Common Teak")
+    async_session.add(species)
+    await async_session.flush()
+    await async_session.refresh(species)
+
+    rec = Recommendation(
+        farm_id=farm.id,
+        species_id=species.id,
+        rank_overall=1,
+        score_mcda=0.85,
+        key_reasons=["suitable rainfall"],
+    )
+    async_session.add(rec)
+    await async_session.flush()
+
+    response = await async_client.get(f"/reports/farm/{farm.id}", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["sapling"]["baseline_tree_count"] == 0
+    assert "additional saplings" in data["planting_guidance"]
+    assert "existing trees" not in data["planting_guidance"]
