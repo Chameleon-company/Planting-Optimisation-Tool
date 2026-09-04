@@ -2,11 +2,11 @@
 # For type hinting only, not runtime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, ForeignKey, Integer, text
+from sqlalchemy import Boolean, ForeignKey, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import Base
-from src.models.association import farm_agroforestry_association
+from src.models.association import farm_agroforestry_association, farm_owners_association
 
 if TYPE_CHECKING:
     from src.models.agroforestry_type import AgroforestryType
@@ -41,7 +41,7 @@ class Farm(Base):
     shade_tolerant: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     bank_stabilising: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     slope: Mapped[float] = mapped_column()  # 2 decimal points
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     external_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True, default=None)
 
     # Imputation flags — True when the field was filled by the ML imputation service.
@@ -68,8 +68,8 @@ class Farm(Base):
 
     recommendations: Mapped[list["Recommendation"]] = relationship(back_populates="farm", cascade="all, delete-orphan")
 
-    # Links farm owner/user to farm (1:1)
-    farm_supervisor: Mapped["User"] = relationship(back_populates="farms")
+    # Links a Farm to the Users who own/supervise it (M:M)
+    owners: Mapped[list["User"]] = relationship(secondary=farm_owners_association, back_populates="farms")
 
     def __repr__(self) -> str:
         """Returns the official string representation of the Farm object.

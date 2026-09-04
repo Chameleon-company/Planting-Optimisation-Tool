@@ -36,3 +36,10 @@ species_soil_texture_association = Table(
         primary_key=True,
     ),
 )
+
+farm_owners_association = Table(
+    "farm_owners",
+    Base.metadata,
+    Column("farm_id", ForeignKey("farms.id", ondelete="CASCADE"), primary_key=True),
+    Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+)

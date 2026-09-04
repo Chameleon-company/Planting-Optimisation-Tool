@@ -26,7 +26,7 @@ async def other_officer_user(async_session):  # a second officer, owns farms oth
     return user
 
 
-async def _add_owned_farm(async_session, user_id, boundary_wkt):  # extra officer-owned farm inside the DEM extent
+async def _add_owned_farm(async_session, owner, boundary_wkt):  # extra officer-owned farm inside the DEM extent
     farm = Farm(
         rainfall_mm=1000,
         temperature_celsius=25,
@@ -42,8 +42,8 @@ async def _add_owned_farm(async_session, user_id, boundary_wkt):  # extra office
         shade_tolerant=False,
         bank_stabilising=False,
         slope=5,
-        user_id=user_id,
     )
+    farm.owners = [owner]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -101,8 +101,8 @@ async def setup_farm(async_session, test_officer_user):  # sapling_estimation ro
         shade_tolerant=False,
         bank_stabilising=False,
         slope=5,
-        user_id=test_officer_user.id,
     )
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -167,7 +167,7 @@ async def test_calculate_multiple_farms(
     farm_a = setup_farm  # first farm + DEM
     farm_b = await _add_owned_farm(
         async_session,
-        test_officer_user.id,
+        test_officer_user,
         "MULTIPOLYGON (((125.0025 -9.0005, 125.0025 -9.0025, 125.0045 -9.0025, 125.0045 -9.0005, 125.0025 -9.0005)))",
     )
 
@@ -258,7 +258,7 @@ async def test_calculate_rejects_unowned_farm(
     # A farm owned by a different officer, not the authenticated caller
     other_farm = await _add_owned_farm(
         async_session,
-        other_officer_user.id,
+        other_officer_user,
         "MULTIPOLYGON (((125.0025 -9.0005, 125.0025 -9.0025, 125.0045 -9.0025, 125.0045 -9.0005, 125.0025 -9.0005)))",
     )
 

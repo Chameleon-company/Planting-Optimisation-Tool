@@ -92,7 +92,7 @@ async def regenerate_farm_profile(
 
     farm = farms[0]
 
-    if current_user.role == Role.SUPERVISOR and farm.user_id != current_user.id:
+    if current_user.role == Role.SUPERVISOR and current_user.id not in {owner.id for owner in farm.owners}:
         raise HTTPException(
             status_code=403,
             detail="The user does not have adequate permissions.",

@@ -34,7 +34,8 @@ async def test_cache_miss(
     test_admin_user: User,
     admin_auth_headers: dict,
 ):
-    farm = Farm(user_id=test_admin_user.id, **_FARM_DATA)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -56,7 +57,8 @@ async def test_cache_hit(
     test_admin_user: User,
     admin_auth_headers: dict,
 ):
-    farm = Farm(user_id=test_admin_user.id, **_FARM_DATA)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -83,7 +85,8 @@ async def test_regenerate_profile_admin_success(
     test_admin_user: User,
     admin_auth_headers: dict,
 ):
-    farm = Farm(user_id=test_admin_user.id, **_FARM_DATA)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -131,7 +134,8 @@ async def test_regenerate_profile_supervisor_own_farm_success(
     test_supervisor_user: User,
     supervisor_auth_headers: dict,
 ):
-    farm = Farm(user_id=test_supervisor_user.id, **_FARM_DATA)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_supervisor_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -177,7 +181,8 @@ async def test_regenerate_profile_supervisor_other_farm_forbidden(
     test_officer_user: User,
     supervisor_auth_headers: dict,
 ):
-    farm = Farm(user_id=test_officer_user.id, **_FARM_DATA)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -204,7 +209,8 @@ async def test_regenerate_profile_officer_forbidden(
     test_officer_user: User,
     officer_auth_headers: dict,
 ):
-    farm = Farm(user_id=test_officer_user.id, **_FARM_DATA)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -242,10 +248,8 @@ async def test_regenerate_profile_imputation_error_returns_503(
     test_supervisor_user: User,
     supervisor_auth_headers: dict,
 ):
-    farm = Farm(
-        user_id=test_supervisor_user.id,
-        **_FARM_DATA,
-    )
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_supervisor_user]
 
     async_session.add(farm)
     await async_session.flush()
@@ -284,10 +288,8 @@ async def test_regenerate_profile_empty_result_returns_404(
     test_officer_user: User,
     admin_auth_headers: dict,
 ):
-    farm = Farm(
-        user_id=test_officer_user.id,
-        **_FARM_DATA,
-    )
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
 
     async_session.add(farm)
     await async_session.flush()

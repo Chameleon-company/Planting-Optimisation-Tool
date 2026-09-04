@@ -77,8 +77,8 @@ async def test_slowapi_limiter_on_recommendations(
         shade_tolerant=False,
         bank_stabilising=False,
         slope=10.5,
-        user_id=test_admin_user.id,
     )
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)

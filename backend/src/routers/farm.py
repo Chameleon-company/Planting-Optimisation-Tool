@@ -89,7 +89,7 @@ async def read_farm(
 
     # OFFICER → only own farm
     if current_user.role == Role.OFFICER:
-        if farm.user_id != current_user.id:
+        if current_user.id not in {owner.id for owner in farm.owners}:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Farm not found.",
@@ -126,7 +126,7 @@ async def update_farm(
 
     existing_farm = existing_farms[0]
 
-    if current_user.role == Role.SUPERVISOR and existing_farm.user_id != current_user.id:
+    if current_user.role == Role.SUPERVISOR and current_user.id not in {owner.id for owner in existing_farm.owners}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user does not have adequate permissions.",
