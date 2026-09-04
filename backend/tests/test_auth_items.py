@@ -33,7 +33,8 @@ async def test_officer_items_returns_own_farms(
     setup_soil_texture,
 ):
     """Officer's /auth/users/me/items returns only farms belonging to them."""
-    farm = Farm(**VALID_FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**VALID_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -44,7 +45,7 @@ async def test_officer_items_returns_own_farms(
     data = response.json()
     assert isinstance(data, list)
     assert any(f["id"] == farm.id for f in data)
-    assert all(f["user_id"] == test_officer_user.id for f in data)
+    assert all(any(owner["id"] == test_officer_user.id for owner in f["owners"]) for f in data)
 
 
 async def test_officer_items_excludes_other_users_farms(
@@ -56,7 +57,8 @@ async def test_officer_items_excludes_other_users_farms(
     setup_soil_texture,
 ):
     """Officer's /auth/users/me/items does not include farms belonging to other users."""
-    other_users_farm = Farm(**VALID_FARM_DATA, user_id=test_supervisor_user.id)
+    other_users_farm = Farm(**VALID_FARM_DATA)
+    other_users_farm.owners = [test_supervisor_user]
     async_session.add(other_users_farm)
     await async_session.flush()
     await async_session.refresh(other_users_farm)

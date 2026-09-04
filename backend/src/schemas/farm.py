@@ -130,8 +130,7 @@ class FarmRead(FarmBase):
     # I think it is the fields being exposed to the end-user
     # Of which these existing values would be useless
     id: int = Field(..., description="The unique database ID of the farm.")
-    user_id: Optional[int] = Field(None, description="User ID")
-    farm_supervisor: Optional[UserReadNested] = Field(None, description="Details of the farm supervisor.")
+    owners: List[UserReadNested] = Field(default_factory=list, description="Users who own/supervise this farm.")
     soil_texture: SoilTextureReadNested = Field(..., description="The soil texture name and ID.")
     agroforestry_type: List[AgroforestryTypeReadNested] = Field(
         default_factory=list,  # default value if none currently exist will be [].

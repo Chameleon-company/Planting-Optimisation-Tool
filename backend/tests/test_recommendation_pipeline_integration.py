@@ -77,7 +77,8 @@ async def test_pipeline_returns_one_result_per_farm(
     pipeline_species: Species,
 ):
     """Pipeline returns exactly one result dict per farm passed in."""
-    farm = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_PROFILE)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
 
@@ -96,7 +97,8 @@ async def test_pipeline_result_contains_required_keys(
     pipeline_species: Species,
 ):
     """Each pipeline result contains farm_id, timestamp_utc, recommendations, and excluded_species."""
-    farm = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_PROFILE)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
 
@@ -119,7 +121,8 @@ async def test_pipeline_recommendation_fields_and_types(
     pipeline_species: Species,
 ):
     """Each recommendation entry has the required fields with correct types."""
-    farm = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_PROFILE)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
 
@@ -149,7 +152,8 @@ async def test_pipeline_farm_id_matches_input(
     pipeline_species: Species,
 ):
     """The farm_id in each result matches the corresponding input farm."""
-    farm = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_PROFILE)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
 
@@ -171,7 +175,8 @@ async def test_pipeline_with_no_species_returns_empty_recommendations(
     setup_soil_texture,
 ):
     """Pipeline returns empty recommendations and excluded_species when given an empty species list."""
-    farm = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_PROFILE)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
 
@@ -190,7 +195,8 @@ async def test_pipeline_persists_recommendations_to_database(
     pipeline_species: Species,
 ):
     """Pipeline writes Recommendation records to the database after running."""
-    farm = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_PROFILE)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
 
@@ -211,7 +217,8 @@ async def test_pipeline_replaces_existing_recommendations_on_rerun(
     pipeline_species: Species,
 ):
     """Running the pipeline twice for the same farm replaces old recommendations without duplicating them."""
-    farm = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_PROFILE)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
 
@@ -236,8 +243,10 @@ async def test_pipeline_batch_returns_result_per_farm(
     pipeline_species: Species,
 ):
     """Pipeline processes multiple farms in a batch and returns one result per farm."""
-    farm1 = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
-    farm2 = Farm(**_FARM_PROFILE, user_id=test_officer_user.id)
+    farm1 = Farm(**_FARM_PROFILE)
+    farm1.owners = [test_officer_user]
+    farm2 = Farm(**_FARM_PROFILE)
+    farm2.owners = [test_officer_user]
     async_session.add_all([farm1, farm2])
     await async_session.flush()
 
