@@ -1,10 +1,11 @@
 from geoalchemy2 import WKTElement
 from httpx import AsyncClient
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
+from src.models.planting_estimates import PlantingEstimate
 from src.models.recommendations import Recommendation
 from src.models.species import Species
 from src.models.user import User
@@ -875,3 +876,57 @@ async def test_get_farm_report_guidance_omits_existing_trees_when_baseline_is_ze
     assert data["sapling"]["baseline_tree_count"] == 0
     assert "additional saplings" in data["planting_guidance"]
     assert "existing trees" not in data["planting_guidance"]
+
+
+async def test_get_farm_report_does_not_modify_existing_planting_estimates(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+    officer_auth_headers: dict,
+    test_officer_user: User,
+):
+    """Fetching a farm report must never overwrite the farm's saved planting grid.
+    The report always estimates with default spacing/slope, which can differ from
+    whatever custom spacing the farm's real calculator grid was generated with, so
+    the report's estimation must run read-only and leave existing PlantingEstimate
+    records untouched. Regression test for a bug flagged in review on PR #573."""
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm = make_farm(user_id=test_officer_user.id)
+    async_session.add(farm)
+    await async_session.flush()
+    await async_session.refresh(farm)
+
+    boundary = FarmBoundary(
+        id=farm.id,
+        external_id=farm.id,
+        boundary=WKTElement(FARM_BOUNDARY_WKT_IN_DEM_EXTENT, srid=4326),
+    )
+    async_session.add(boundary)
+    await async_session.flush()
+
+    # Simulate an existing planting grid from a previous real calculator run,
+    # using a distinctive point and slope that the report's own estimation
+    # (different spacing/slope defaults) would never independently produce.
+    existing_estimate = PlantingEstimate(
+        farm_id=farm.id,
+        slope=42.0,
+        geometry=WKTElement("POINT (125.0005 -9.0005)", srid=4326),
+    )
+    async_session.add(existing_estimate)
+    await async_session.flush()
+    await async_session.refresh(existing_estimate)
+    existing_estimate_id = existing_estimate.id
+
+    response = await async_client.get(f"/reports/farm/{farm.id}", headers=officer_auth_headers)
+
+    assert response.status_code == 200
+
+    remaining = await async_session.execute(select(PlantingEstimate).where(PlantingEstimate.farm_id == farm.id))
+    remaining_estimates = list(remaining.scalars().all())
+
+    assert len(remaining_estimates) == 1
+    assert remaining_estimates[0].id == existing_estimate_id
+    assert remaining_estimates[0].slope == 42.0
