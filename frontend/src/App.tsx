@@ -29,6 +29,7 @@ import ScoringParametersPage from "./pages/admin/settings/ScoringParametersPage"
 import ExclusionRulesPage from "./pages/admin/settings/ExclusionRulesPage";
 import DependencyRulesPage from "./pages/admin/settings/DependencyRulesPage";
 import AdminUsers from "./pages/admin/AdminUsers";
+import CompatibilityMatrixPage from "./pages/admin/settings/CompatibilityMatrixPage";
 
 // Export App
 export default function App() {
@@ -81,6 +82,10 @@ export default function App() {
                 <Route path="scoring" element={<ScoringParametersPage />} />
                 <Route path="exclusions" element={<ExclusionRulesPage />} />
                 <Route path="dependencies" element={<DependencyRulesPage />} />
+                <Route
+                  path="compatibility"
+                  element={<CompatibilityMatrixPage />}
+                />
               </Route>
               <Route path="logs" element={<AdminLogs />} />
               <Route path="users" element={<AdminUsers />} />
