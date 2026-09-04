@@ -10,8 +10,11 @@ from src.models.recommendations import Recommendation
 from src.services import farm as farm_service
 from src.services.sapling_estimation import SaplingEstimationService
 
-# Same defaults the frontend Sapling Calculator uses, so report sapling numbers
-# match what a user would see if they ran the calculator themselves.
+# Intended to match DEFAULT_CALC_PARAMS in frontend/src/hooks/useCalculator.ts,
+# so report sapling numbers match what a user would see running the calculator
+# themselves. There is no shared backend source of truth for these values yet,
+# both sides hardcode them independently, so keep this comment and that file
+# in sync manually if either default ever changes.
 DEFAULT_SPACING_X = 3.0
 DEFAULT_SPACING_Y = 3.0
 DEFAULT_MAX_SLOPE = 15.0
@@ -132,6 +135,10 @@ async def _build_sapling_summary(db: AsyncSession, farm_id: int) -> SaplingRepor
     """Runs the sapling estimation for a single farm using the product's default
     spacing and slope settings. Returns None if the estimation could not run
     (e.g. no DEM coverage for the farm's location).
+
+    Runs with persist=False: viewing a report must never overwrite the farm's
+    saved PlantingEstimate records, since the report always uses the default
+    spacing/slope regardless of what the farm's actual calculator grid used.
     """
     result = await SaplingEstimationService().run_estimation(
         db,
@@ -139,6 +146,7 @@ async def _build_sapling_summary(db: AsyncSession, farm_id: int) -> SaplingRepor
         spacing_x=DEFAULT_SPACING_X,
         spacing_y=DEFAULT_SPACING_Y,
         max_slope=DEFAULT_MAX_SLOPE,
+        persist=False,
     )
     items = result.get("results", [])
     if not items or items[0].get("status") != "success":
