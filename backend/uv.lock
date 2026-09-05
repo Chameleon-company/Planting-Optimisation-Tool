@@ -25,6 +25,7 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4c/d4/6585f3b6fdb75648bca294664af4becc8aa2fb3fb08f4e4e9fd27e10d773/adjusttext-1.3.0.tar.gz", hash = "sha256:4ab75cd4453af4828876ac3e964f2c49be642ea834f0c1f7449558d5f12cbca1", size = 15724, upload-time = "2024-10-31T16:45:36.101Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/53/1c/8feedd607cc14c5df9aef74fe3af9a99bf660743b842a9b5b1865326b4aa/adjustText-1.3.0-py3-none-any.whl", hash = "sha256:da23d7b24b6db5ffa039bb136bfa556207365e32f48ac74b07ad26dd485bc691", size = 13154, upload-time = "2024-10-31T16:45:35.227Z" },
+    { url = "https://files.pythonhosted.org/packages/2d/80/7ad35ee5321a86b842f9e8516c8ae4c86f58db7b40e82ce9759f94517a50/adjusttext-1.3.0-py3-none-any.whl", hash = "sha256:bc6c118cd9d7caf6ae37f9355e51d840a2d7f64b4fb2956b8401de27c5af803b", size = 13264, upload-time = "2026-06-08T16:40:05.041Z" },
 ]
 
 [[package]]
@@ -169,6 +170,7 @@ dependencies = [
     { name = "mermaid-cli" },
     { name = "numpy" },
     { name = "paracelsus" },
+    { name = "pillow" },
     { name = "psutil" },
     { name = "psycopg" },
     { name = "psycopg-binary" },
@@ -187,6 +189,7 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "sqlalchemy-schemadisplay" },
     { name = "sqlalchemy-utils" },
+    { name = "staticmap" },
 ]
 
 [package.metadata]
@@ -207,6 +210,7 @@ requires-dist = [
     { name = "mermaid-cli", specifier = ">=0.1.2" },
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "paracelsus", specifier = ">=0.14.0" },
+    { name = "pillow", specifier = ">=12.2.0" },
     { name = "psutil", specifier = ">=7.1.3" },
     { name = "psycopg", specifier = ">=3.3.2" },
     { name = "psycopg-binary", specifier = ">=3.3.2" },
@@ -225,6 +229,7 @@ requires-dist = [
     { name = "sqlalchemy", specifier = ">=2.0.44" },
     { name = "sqlalchemy-schemadisplay", specifier = ">=2.0" },
     { name = "sqlalchemy-utils", specifier = ">=0.42.1" },
+    { name = "staticmap", specifier = ">=0.5.7" },
 ]
 
 [[package]]
@@ -4092,6 +4097,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/81/69/17425771797c36cded50b7fe44e850315d039f28b15901ab44839e70b593/starlette-1.0.0.tar.gz", hash = "sha256:6a4beaf1f81bb472fd19ea9b918b50dc3a77a6f2e190a12954b25e6ed5eea149", size = 2655289, upload-time = "2026-03-22T18:29:46.779Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/c9/584bc9651441b4ba60cc4d557d8a547b5aff901af35bda3a4ee30c819b82/starlette-1.0.0-py3-none-any.whl", hash = "sha256:d3ec55e0bb321692d275455ddfd3df75fff145d009685eb40dc91fc66b03d38b", size = 72651, upload-time = "2026-03-22T18:29:45.111Z" },
+]
+
+[[package]]
+name = "staticmap"
+version = "0.5.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pillow" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/36/a8/939282f5e368ce0211b0a78f3adb55b3111a8a400b872e759ed1013cc407/staticmap-0.5.7.tar.gz", hash = "sha256:c7a96b902ba61292e818c20b0810619d6b81a6cdb50bcc1ab92d50ac4db20a7f", size = 7740, upload-time = "2023-08-01T12:33:05.598Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/39/69/6f6c04591cced82a807b4b1e71e892ca7dc40c96d337ec6bd00f7be7035d/staticmap-0.5.7-py3-none-any.whl", hash = "sha256:f4ffc40ee4502b92e91045e0df85a46a2fd68483b4e7e404a6b545fd7396ea01", size = 7027, upload-time = "2023-08-01T12:33:03.987Z" },
 ]
 
 [[package]]
