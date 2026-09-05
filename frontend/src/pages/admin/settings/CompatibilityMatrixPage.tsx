@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "../../../contexts/AuthContext";
-import { getAllSpecies, Species } from "../../../utils/speciesApi";
+import {
+  getAllSpecies,
+  Species,
+  updateSpecies,
+} from "../../../utils/speciesApi";
 
 type CompatibilityKey =
   | "coastal"
@@ -70,6 +74,7 @@ function CompatibilityMatrixPage() {
   const [matrix, setMatrix] = useState<CompatibilityMatrixState>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function loadSpecies() {
@@ -108,14 +113,59 @@ function CompatibilityMatrixPage() {
     void loadSpecies();
   }, [getAccessToken]);
 
-  function toggleCompatibility(speciesId: number, condition: CompatibilityKey) {
+  async function toggleCompatibility(
+    speciesId: number,
+    condition: CompatibilityKey
+  ) {
+    const token = getAccessToken();
+
+    if (!token) {
+      return;
+    }
+
+    const currentValue = matrix[speciesId]?.[condition] ?? false;
+    const nextValue = !currentValue;
+    const cellKey = `${speciesId}-${condition}`;
+
     setMatrix(current => ({
       ...current,
       [speciesId]: {
         ...current[speciesId],
-        [condition]: !current[speciesId]?.[condition],
+        [condition]: nextValue,
       },
     }));
+
+    setSavingCells(current => {
+      const next = new Set(current);
+      next.add(cellKey);
+      return next;
+    });
+
+    try {
+      await updateSpecies(
+        speciesId,
+        {
+          [condition]: nextValue,
+        },
+        token
+      );
+    } catch (saveError) {
+      setMatrix(current => ({
+        ...current,
+        [speciesId]: {
+          ...current[speciesId],
+          [condition]: currentValue,
+        },
+      }));
+
+      console.error("Failed to update species compatibility:", saveError);
+    } finally {
+      setSavingCells(current => {
+        const next = new Set(current);
+        next.delete(cellKey);
+        return next;
+      });
+    }
   }
 
   return (
@@ -180,8 +230,11 @@ function CompatibilityMatrixPage() {
                         <input
                           type="checkbox"
                           checked={matrix[item.id]?.[condition.key] ?? false}
+                          disabled={savingCells.has(
+                            `${item.id}-${condition.key}`
+                          )}
                           onChange={() =>
-                            toggleCompatibility(item.id, condition.key)
+                            void toggleCompatibility(item.id, condition.key)
                           }
                           aria-label={`${item.name} ${condition.label}`}
                         />

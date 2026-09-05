@@ -110,7 +110,7 @@ describe("speciesApi", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(mockJsonResponse({ id: 1, ...speciesPayload }));
 
-    const result = await updateSpecies(1, speciesPayload, "test-token");
+    const result = await updateSpecies(1, { coastal: true }, "test-token");
 
     expect(result.id).toBe(1);
     expect(fetchMock).toHaveBeenCalledWith(
@@ -119,6 +119,9 @@ describe("speciesApi", () => {
         method: "PUT",
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
+        }),
+        body: JSON.stringify({
+          coastal: true,
         }),
       })
     );
