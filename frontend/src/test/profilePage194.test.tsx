@@ -327,7 +327,7 @@ describe("ProfilePage #194 interactions", () => {
     await waitFor(() => {
       expect(mockToastSuccess).toHaveBeenCalledWith(
         "Environmental profile updated successfully"
-      )
+      );
     });
   });
 

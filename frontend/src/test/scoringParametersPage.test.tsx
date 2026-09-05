@@ -193,7 +193,7 @@ describe("ScoringParametersPage", () => {
     await waitFor(() => {
       expect(mockToastSuccess).toHaveBeenCalledWith(
         "Scoring parameter created successfully"
-      ); 
+      );
     });
   });
 
