@@ -189,7 +189,7 @@ describe("FarmsManagmentPage", () => {
   });
 
   it("shows success toast when a farm is created successfully", async () => {
-  const user = userEvent.setup();
+    const user = userEvent.setup();
 
     render(
       <BrowserRouter>
@@ -209,14 +209,9 @@ describe("FarmsManagmentPage", () => {
     await user.type(screen.getByLabelText(/longitude/i), "144.9");
     await user.type(screen.getByLabelText(/slope/i), "5");
 
-    await user.selectOptions(
-      screen.getByLabelText(/soil texture/i),
-      "1"
-    );
+    await user.selectOptions(screen.getByLabelText(/soil texture/i), "1");
 
-    await user.click(
-      screen.getByRole("button", { name: /^block$/i })
-    );
+    await user.click(screen.getByRole("button", { name: /^block$/i }));
 
     await user.click(screen.getByRole("button", { name: /register farm/i }));
 
@@ -229,9 +224,9 @@ describe("FarmsManagmentPage", () => {
   });
 
   it("shows error toast when creating a farm fails", async () => {
-  mocks.createFarm.mockResolvedValue(false);
+    mocks.createFarm.mockResolvedValue(false);
 
-  const user = userEvent.setup();
+    const user = userEvent.setup();
 
     render(
       <BrowserRouter>
@@ -250,26 +245,19 @@ describe("FarmsManagmentPage", () => {
     await user.type(screen.getByLabelText(/longitude/i), "144.9");
     await user.type(screen.getByLabelText(/slope/i), "5");
 
-    await user.selectOptions(
-      screen.getByLabelText(/soil texture/i),
-      "1"
-    );
+    await user.selectOptions(screen.getByLabelText(/soil texture/i), "1");
 
-    await user.click(
-      screen.getByRole("button", { name: /^block$/i })
-    );
+    await user.click(screen.getByRole("button", { name: /^block$/i }));
 
     await user.click(screen.getByRole("button", { name: /register farm/i }));
 
     await waitFor(() => {
-      expect(mocks.toastError).toHaveBeenCalledWith(
-        "Failed to create farm"
-      );
+      expect(mocks.toastError).toHaveBeenCalledWith("Failed to create farm");
     });
   });
 
   it("shows success toast when a farm is updated successfully", async () => {
-  const user = userEvent.setup();
+    const user = userEvent.setup();
 
     render(
       <BrowserRouter>
@@ -280,10 +268,7 @@ describe("FarmsManagmentPage", () => {
     await user.click(screen.getByRole("checkbox"));
     await user.click(screen.getByText(/edit/i));
 
-    await user.selectOptions(
-      screen.getByLabelText(/soil texture/i),
-      "1"
-    );
+    await user.selectOptions(screen.getByLabelText(/soil texture/i), "1");
 
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
@@ -296,9 +281,9 @@ describe("FarmsManagmentPage", () => {
   });
 
   it("shows error toast when updating a farm fails", async () => {
-  mocks.updateFarm.mockResolvedValue(false);
+    mocks.updateFarm.mockResolvedValue(false);
 
-  const user = userEvent.setup();
+    const user = userEvent.setup();
 
     render(
       <BrowserRouter>
@@ -309,17 +294,12 @@ describe("FarmsManagmentPage", () => {
     await user.click(screen.getByRole("checkbox"));
     await user.click(screen.getByText(/edit/i));
 
-    await user.selectOptions(
-      screen.getByLabelText(/soil texture/i),
-      "1"
-    );
+    await user.selectOptions(screen.getByLabelText(/soil texture/i), "1");
 
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => {
-      expect(mocks.toastError).toHaveBeenCalledWith(
-        "Failed to update farm"
-      );
+      expect(mocks.toastError).toHaveBeenCalledWith("Failed to update farm");
     });
   });
 
@@ -337,7 +317,7 @@ describe("FarmsManagmentPage", () => {
   });
 
   it("shows success toast when a farm is deleted successfully", async () => {
-  const user = userEvent.setup();
+    const user = userEvent.setup();
 
     render(
       <BrowserRouter>
@@ -348,9 +328,7 @@ describe("FarmsManagmentPage", () => {
     await user.click(screen.getByRole("checkbox"));
     await user.click(screen.getByText(/delete/i));
 
-    await user.click(
-      screen.getByRole("button", { name: /confirm delete/i })
-    );
+    await user.click(screen.getByRole("button", { name: /confirm delete/i }));
 
     expect(mocks.deleteFarm).toHaveBeenCalledWith(1);
 
@@ -360,9 +338,9 @@ describe("FarmsManagmentPage", () => {
   });
 
   it("shows error toast when deleting a farm fails", async () => {
-  mocks.deleteFarm.mockResolvedValue(false);
+    mocks.deleteFarm.mockResolvedValue(false);
 
-  const user = userEvent.setup();
+    const user = userEvent.setup();
 
     render(
       <BrowserRouter>
@@ -372,16 +350,12 @@ describe("FarmsManagmentPage", () => {
 
     await user.click(screen.getByRole("checkbox"));
     await user.click(screen.getByText(/delete/i));
- 
-    await user.click(
-      screen.getByRole("button", { name: /confirm delete/i })
-    );
+
+    await user.click(screen.getByRole("button", { name: /confirm delete/i }));
 
     expect(mocks.deleteFarm).toHaveBeenCalledWith(1);
 
-    expect(mocks.toastError).toHaveBeenCalledWith(
-      "Failed to delete farm"
-    );
+    expect(mocks.toastError).toHaveBeenCalledWith("Failed to delete farm");
   });
 
   it("closes the edit modal when Cancel is clicked", async () => {
