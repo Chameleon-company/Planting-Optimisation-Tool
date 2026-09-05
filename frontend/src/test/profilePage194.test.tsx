@@ -5,6 +5,18 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const { mockToastSuccess, mockToastError } = vi.hoisted(() => ({
+  mockToastSuccess: vi.fn(),
+  mockToastError: vi.fn(),
+}));
+
+vi.mock("react-hot-toast", () => ({
+  default: {
+    success: mockToastSuccess,
+    error: mockToastError,
+  },
+}));
+
 vi.mock("leaflet/dist/leaflet.css", () => ({}));
 
 vi.mock("react-leaflet", () => ({
@@ -209,6 +221,8 @@ function renderPage(route = "/profile?farmId=42") {
 describe("ProfilePage #194 interactions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockToastSuccess.mockClear();
+    mockToastError.mockClear();
 
     mocks.useUserProfiles.mockReturnValue({
       farms: [FARM],
@@ -310,9 +324,11 @@ describe("ProfilePage #194 interactions", () => {
       ).not.toBeInTheDocument();
     });
 
-    expect(screen.getByTestId("action-message")).toHaveTextContent(
-      "Environmental profile updated successfully."
-    );
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Environmental profile updated successfully"
+      )
+    });
   });
 
   it("keeps the modal open when the farm update fails", async () => {

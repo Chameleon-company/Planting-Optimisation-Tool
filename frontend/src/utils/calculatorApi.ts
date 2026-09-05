@@ -33,7 +33,16 @@ export async function getSaplingEstimation(
   });
   if (!res.ok) {
     const data = await res.json();
-    throw new Error(data.detail || "Failed to fetch estimation");
+    let message = "Failed to fetch estimation";
+
+    if (typeof data.detail === "string") {
+      message = data.detail;
+    } else if (Array.isArray(data.detail)) {
+      message = data.detail
+        .map((item: { msg?: string }) => item.msg || "Invalid input")
+        .join(", ");
+    }
+    throw new Error(message);
   }
   return res.json();
 }
