@@ -5,12 +5,12 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CompatibilityMatrixPage from "@/pages/admin/settings/CompatibilityMatrixPage";
-import { getAllSpecies } from "../utils/speciesApi";
+import { getAllSpecies, updateSpecies } from "../utils/speciesApi";
 
 vi.mock("../utils/speciesApi", () => ({
   getAllSpecies: vi.fn(),
+  updateSpecies: vi.fn(),
 }));
-
 const authState = vi.hoisted(() => {
   const state = {
     accessToken: "test-token" as string | null,
@@ -90,6 +90,7 @@ describe("CompatibilityMatrixPage", () => {
     authState.state.accessToken = "test-token";
 
     vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+    vi.mocked(updateSpecies).mockResolvedValue(mockSpecies[1]);
   });
 
   it("loads species and displays the compatibility matrix", async () => {
@@ -161,7 +162,7 @@ describe("CompatibilityMatrixPage", () => {
     expect(riparianCheckbox).not.toBeChecked();
   });
 
-  it("allows a compatibility value to be toggled locally", async () => {
+  it("saves a changed compatibility value through the species API", async () => {
     const user = userEvent.setup();
 
     renderPage();
@@ -176,9 +177,77 @@ describe("CompatibilityMatrixPage", () => {
 
     expect(checkbox).not.toBeChecked();
 
-    await user.click(checkbox);
+    expect(updateSpecies).toHaveBeenCalledWith(
+      1,
+      {
+        coastal: false,
+      },
+      "test-token"
+    );
+  });
+
+  it("restores the previous value when saving fails", async () => {
+    const user = userEvent.setup();
+
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    vi.mocked(updateSpecies).mockRejectedValue(
+      new Error("Failed to save compatibility")
+    );
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
 
     expect(checkbox).toBeChecked();
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(checkbox).toBeChecked();
+    });
+
+    expect(updateSpecies).toHaveBeenCalledWith(
+      1,
+      {
+        coastal: false,
+      },
+      "test-token"
+    );
+
+    consoleError.mockRestore();
+  });
+
+  it("disables the checkbox while the compatibility value is saving", async () => {
+    const user = userEvent.setup();
+
+    let resolveUpdate!: (value: (typeof mockSpecies)[number]) => void;
+
+    const pendingUpdate = new Promise<(typeof mockSpecies)[number]>(resolve => {
+      resolveUpdate = resolve;
+    });
+
+    vi.mocked(updateSpecies).mockReturnValue(pendingUpdate);
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    expect(checkbox).toBeDisabled();
+
+    resolveUpdate(mockSpecies[1]);
+
+    await waitFor(() => {
+      expect(checkbox).not.toBeDisabled();
+    });
   });
 
   it("allows an initially unchecked compatibility value to be enabled", async () => {

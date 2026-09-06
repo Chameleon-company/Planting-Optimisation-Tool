@@ -60,6 +60,8 @@ export interface SpeciesPayload {
   agroforestry_types: number[];
 }
 
+export type SpeciesUpdatePayload = Partial<SpeciesPayload>;
+
 // ---------- HELPERS ----------
 
 async function handleResponse(res: Response) {
@@ -178,7 +180,7 @@ export async function createSpecies(
 
 export async function updateSpecies(
   id: number,
-  data: SpeciesPayload,
+  data: SpeciesUpdatePayload,
   token: string
 ): Promise<Species> {
   const res = await fetch(`${API_BASE}/species/${id}`, {
