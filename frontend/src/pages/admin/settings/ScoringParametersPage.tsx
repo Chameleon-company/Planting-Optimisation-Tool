@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
@@ -59,7 +60,6 @@ function ScoringParametersPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
@@ -101,7 +101,6 @@ function ScoringParametersPage() {
 
   function openCreateModal() {
     setError(null);
-    setSuccessMessage(null);
     setEditingId(null);
     setFormData(emptyForm);
     setModalMode("create");
@@ -110,7 +109,6 @@ function ScoringParametersPage() {
 
   function openEditModal(param: Parameter) {
     setError(null);
-    setSuccessMessage(null);
     setEditingId(param.id);
     setFormData(buildParameterPayload(param));
     setModalMode("edit");
@@ -154,11 +152,10 @@ function ScoringParametersPage() {
     try {
       setSaving(true);
       setError(null);
-      setSuccessMessage(null);
 
       if (modalMode === "create") {
         await createParameter(formData, token);
-        setSuccessMessage("Scoring parameter created successfully.");
+        toast.success("Scoring parameter created successfully");
       }
 
       if (modalMode === "edit" && editingId !== null) {
@@ -170,7 +167,7 @@ function ScoringParametersPage() {
           trap_right_tol: formData.trap_right_tol,
         };
         await updateParameter(editingId, updatePayload, token);
-        setSuccessMessage("Scoring parameter updated successfully.");
+        toast.success("Scoring parameter updated successfully");
       }
 
       closeModal();
@@ -203,16 +200,15 @@ function ScoringParametersPage() {
 
     try {
       setError(null);
-      setSuccessMessage(null);
       await deleteParameter(id, token);
-      setSuccessMessage("Scoring parameter deleted successfully.");
+      toast.success("Scoring parameter deleted successfully");
       await loadData();
     } catch (err) {
-      setError(
+      const message =
         err instanceof Error
           ? err.message
-          : "Failed to delete scoring parameter"
-      );
+          : "Failed to delete scoring parameter";
+      toast.error(message);
     }
   }
 
@@ -254,10 +250,6 @@ function ScoringParametersPage() {
         {loading && <p>Loading scoring parameters...</p>}
 
         {error && <p className="admin-error-message">{error}</p>}
-
-        {successMessage && (
-          <p className="admin-success-message">{successMessage}</p>
-        )}
 
         {!loading && !error && parameters.length === 0 && (
           <p>No scoring parameters found.</p>

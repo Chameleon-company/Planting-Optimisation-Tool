@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -52,8 +53,11 @@ export default function FarmsManagementPage() {
   const handleRegisterSuccess = async (payload: FarmCreatePayload) => {
     const ok = await createFarm(payload);
     if (ok) {
+      toast.success("Farm created successfully");
       setIsRegisterModalOpen(false);
       await refetch();
+    } else {
+      toast.error("Failed to create farm");
     }
   };
 
@@ -78,8 +82,11 @@ export default function FarmsManagementPage() {
   ) => {
     const ok = await updateFarm(farmId, payload);
     if (ok) {
+      toast.success("Farm updated successfully");
       setEditingFarm(null);
       await refetch();
+    } else {
+      toast.error("Failed to update farm");
     }
   };
 
@@ -88,8 +95,11 @@ export default function FarmsManagementPage() {
     if (!selectedFarmId) return;
     const ok = await deleteFarm(selectedFarmId);
     if (ok) {
+      toast.success("Farm deleted successfully");
       setSelectedFarmId(null);
       await refetch();
+    } else {
+      toast.error("Failed to delete farm");
     }
   };
 
