@@ -123,6 +123,15 @@ function formatApiError(error: unknown): string {
     return error.detail;
   }
 
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "error" in error &&
+    typeof error.error === "string"
+  ) {
+    return error.error;
+  }
+
   return "API error";
 }
 // ---------- SPECIES ----------
