@@ -80,6 +80,30 @@ describe("calculatorApi", () => {
       );
     });
 
+    it("throws a combined message when API detail is an array", async () => {
+      (global.fetch as Mock).mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          detail: [
+            {
+              field: "farm_ids",
+              message: "Field required",
+              msg: "Field required",
+            },
+            {
+              field: "spacing_x",
+              message: "Invalid value",
+              msg: "Invalid value",
+            },
+          ],
+        }),
+      });
+
+      await expect(getSaplingEstimation(42, PARAMS, TOKEN)).rejects.toThrow(
+        "Field required, Invalid value"
+      );
+    });
+
     it("throws a fallback message when error response has no message field", async () => {
       (global.fetch as Mock).mockResolvedValue({
         ok: false,

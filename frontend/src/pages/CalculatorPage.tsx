@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import { useCalculator, DEFAULT_CALC_PARAMS } from "@/hooks/useCalculator";
 import type { CalcParams } from "@/hooks/useCalculator";
@@ -16,6 +17,13 @@ export default function CalculatorPage() {
     farmId,
     calcParams
   );
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const { boundary, grid } = useFarmMap(result ? Number(farmId) : null);
 
   const handleSearch = (newFarmId: string, newParams: CalcParams) => {

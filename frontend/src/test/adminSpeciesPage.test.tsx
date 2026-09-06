@@ -12,6 +12,18 @@ import {
   updateSpecies,
 } from "../utils/speciesApi";
 
+const { mockToastSuccess, mockToastError } = vi.hoisted(() => ({
+  mockToastSuccess: vi.fn(),
+  mockToastError: vi.fn(),
+}));
+
+vi.mock("react-hot-toast", () => ({
+  default: {
+    success: mockToastSuccess,
+    error: mockToastError,
+  },
+}));
+
 vi.mock("../utils/speciesApi", () => ({
   getAllSpecies: vi.fn(),
   getSoilTextures: vi.fn(),
@@ -74,6 +86,8 @@ describe("AdminSpeciesPage", () => {
     vi.mocked(createSpecies).mockResolvedValue(mockSpecies[0]);
     vi.mocked(updateSpecies).mockResolvedValue(mockSpecies[0]);
     vi.mocked(deleteSpecies).mockResolvedValue(undefined);
+    mockToastSuccess.mockClear();
+    mockToastError.mockClear();
   });
 
   it("loads and displays species records", async () => {
@@ -141,9 +155,11 @@ describe("AdminSpeciesPage", () => {
       "test-token"
     );
 
-    expect(
-      await screen.findByText(/species created successfully/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Species created successfully"
+      );
+    });
   });
 
   it("opens edit modal with prefilled species data", async () => {
@@ -193,9 +209,11 @@ describe("AdminSpeciesPage", () => {
       "test-token"
     );
 
-    expect(
-      await screen.findByText(/species updated successfully/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Species updated successfully"
+      );
+    });
   });
 
   it("deletes a species after confirmation", async () => {
@@ -213,9 +231,11 @@ describe("AdminSpeciesPage", () => {
       expect(deleteSpecies).toHaveBeenCalledWith(1, "test-token");
     });
 
-    expect(
-      await screen.findByText(/species deleted successfully/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Species deleted successfully"
+      );
+    });
   });
 
   it("does not delete when confirmation is cancelled", async () => {
