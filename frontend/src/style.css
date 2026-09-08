@@ -1842,3 +1842,37 @@ main.container {
   margin: 12px 0;
   padding: 12px 14px;
 }
+
+/* Responsive improvements for Tasks #161 and #162 */
+@media (max-width: 640px) {
+  /* Stack multi-column form layouts on small screens */
+  .admin-form-grid,
+  .admin-checkbox-grid {
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+
+  /* Improve touch targets and readability on mobile */
+  button,
+  .button,
+  input[type="submit"],
+  input[type="button"] {
+    font-size: 1rem;
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  /* Improve spacing around form controls */
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  /* Allow complex tables to be accessed comfortably on small screens */
+  .admin-table-wrapper {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+}
