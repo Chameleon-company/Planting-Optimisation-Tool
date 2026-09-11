@@ -17,7 +17,16 @@ class SaplingEstimationService:
         spacing_x: float,
         spacing_y: float,
         max_slope: float,
+        persist: bool = True,
     ) -> dict:
+        """Runs the sapling estimation for one or many farms.
+
+        persist controls whether the computed planting grid replaces the farm's
+        saved PlantingEstimate records. Defaults to True for the Sapling
+        Calculator's normal use. Callers that only need the numbers (e.g. a
+        read-only report) should pass persist=False so viewing a report can
+        never overwrite a farm's existing planting grid.
+        """
 
         if not farm_ids:
             return {"status": "success", "farm_count": 0, "results": []}
@@ -31,6 +40,7 @@ class SaplingEstimationService:
                 spacing_x=spacing_x,
                 spacing_y=spacing_y,
                 max_slope=max_slope,
+                persist=persist,
             )
 
             results.append(
@@ -61,6 +71,7 @@ class SaplingEstimationService:
         spacing_x: float,
         spacing_y: float,
         max_slope: float,
+        persist: bool = True,
     ) -> dict:
         try:
             farm_result = await db.execute(select(Farm).where(Farm.id == farm_id))
@@ -133,22 +144,23 @@ class SaplingEstimationService:
             aligned_count = len(final_grid)
             additional_sapling_count = max(aligned_count - baseline_tree_count, 0)
 
-            # Clear old results
-            await db.execute(delete(PlantingEstimate).where(PlantingEstimate.farm_id == farm_id))
+            if persist:
+                # Clear old results
+                await db.execute(delete(PlantingEstimate).where(PlantingEstimate.farm_id == farm_id))
 
-            # Insert new
-            planting_estimates = []
-            for pt, slope_value in zip(final_grid["geometry"], slope_values):
-                planting_estimates.append(
-                    PlantingEstimate(
-                        farm_id=farm_id,
-                        slope=float(slope_value) if slope_value is not None else None,
-                        geometry=from_shape(pt, srid=4326),
+                # Insert new
+                planting_estimates = []
+                for pt, slope_value in zip(final_grid["geometry"], slope_values):
+                    planting_estimates.append(
+                        PlantingEstimate(
+                            farm_id=farm_id,
+                            slope=float(slope_value) if slope_value is not None else None,
+                            geometry=from_shape(pt, srid=4326),
+                        )
                     )
-                )
 
-            db.add_all(planting_estimates)
-            await db.commit()
+                db.add_all(planting_estimates)
+                await db.commit()
 
             return {
                 "id": farm_id,

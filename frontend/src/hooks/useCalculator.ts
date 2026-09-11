@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSaplingEstimation } from "@/utils/calculatorApi";
-import type { CalcParams, CalculatorResult } from "@/utils/calculatorApi";
+import type { CalcParams, FarmEstimationResult } from "@/utils/calculatorApi";
 
-export type { CalcParams, CalculatorResult };
+export type { CalcParams, FarmEstimationResult };
 
 export const DEFAULT_CALC_PARAMS: CalcParams = {
   spacingX: 3.0,
@@ -11,46 +11,52 @@ export const DEFAULT_CALC_PARAMS: CalcParams = {
   maxSlope: 15.0,
 };
 
-export function useCalculator(farmId: string, params: CalcParams) {
+export function useCalculator(farmIds: number[], params: CalcParams) {
   const { getAccessToken } = useAuth();
-  const [result, setResult] = useState<CalculatorResult | null>(null);
+  const [results, setResults] = useState<FarmEstimationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!farmId) return;
+    if (!farmIds.length) return;
+    let active = true;
 
     const fetchEstimation = async () => {
       setIsLoading(true);
       setError(null);
       setHasSearched(false);
-      setResult(null);
+      setResults([]);
 
       const token = getAccessToken();
       if (!token) {
-        setError("Please log in to continue.");
-        setIsLoading(false);
+        if (active) {
+          setError("Please log in to continue.");
+          setIsLoading(false);
+        }
         return;
       }
 
       try {
-        const data = await getSaplingEstimation(Number(farmId), params, token);
-        setResult(data);
+        const data = await getSaplingEstimation(farmIds, params, token);
+        if (!active) return;
+        setResults(data.results);
         setHasSearched(true);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
+        if (!active) return;
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred"
+        );
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     };
 
     fetchEstimation();
-  }, [farmId, params, getAccessToken]);
+    return () => {
+      active = false;
+    };
+  }, [farmIds, params, getAccessToken]);
 
-  return { result, isLoading, hasSearched, error };
+  return { results, isLoading, hasSearched, error };
 }

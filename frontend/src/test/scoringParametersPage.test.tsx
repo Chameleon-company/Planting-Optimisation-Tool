@@ -13,6 +13,18 @@ import {
 } from "../utils/parametersApi";
 import { getAllSpecies } from "../utils/speciesApi";
 
+const { mockToastSuccess, mockToastError } = vi.hoisted(() => ({
+  mockToastSuccess: vi.fn(),
+  mockToastError: vi.fn(),
+}));
+
+vi.mock("react-hot-toast", () => ({
+  default: {
+    success: mockToastSuccess,
+    error: mockToastError,
+  },
+}));
+
 vi.mock("../utils/parametersApi", () => ({
   getAllParameters: vi.fn(),
   createParameter: vi.fn(),
@@ -90,6 +102,8 @@ describe("ScoringParametersPage", () => {
     vi.clearAllMocks();
     vi.mocked(getAllParameters).mockResolvedValue(mockParameters);
     vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+    mockToastSuccess.mockClear();
+    mockToastError.mockClear();
   });
 
   it("loads and displays scoring parameters", async () => {
@@ -177,9 +191,9 @@ describe("ScoringParametersPage", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Scoring parameter created successfully.")
-      ).toBeInTheDocument();
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Scoring parameter created successfully"
+      );
     });
   });
 
@@ -234,9 +248,9 @@ describe("ScoringParametersPage", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Scoring parameter updated successfully.")
-      ).toBeInTheDocument();
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Scoring parameter updated successfully"
+      );
     });
   });
 
@@ -259,9 +273,9 @@ describe("ScoringParametersPage", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Scoring parameter deleted successfully.")
-      ).toBeInTheDocument();
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Scoring parameter deleted successfully"
+      );
     });
   });
 
@@ -394,7 +408,7 @@ describe("ScoringParametersPage", () => {
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByText("Delete failed")).toBeInTheDocument();
+      expect(mockToastError).toHaveBeenCalledWith("Delete failed");
     });
   });
 

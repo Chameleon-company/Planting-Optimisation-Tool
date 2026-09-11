@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import "./recommendations.css";
@@ -12,6 +13,11 @@ export default function RecommendationPage() {
   const [farmId, setFarmId] = useState("");
   const { recs, excludes, isLoading, hasSearched, error, downloadPdf } =
     useRecommendations(farmId);
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const topFits = recs.filter(r => r.score_mcda >= 0.8);
   const cautionaryFits = recs.filter(r => r.score_mcda < 0.8);

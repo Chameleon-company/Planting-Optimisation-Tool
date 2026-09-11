@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
 
@@ -27,7 +28,6 @@ function ProfilePage() {
     searchParams.get("farmId") ?? ""
   );
   const [editingFarm, setEditingFarm] = useState<Farm | null>(null);
-  const [editMessage, setEditMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -54,7 +54,6 @@ function ProfilePage() {
     regenerateProfile,
     isRegenerating,
     actionError,
-    actionMessage,
     clearActionFeedback,
   } = useProfileActions();
 
@@ -66,14 +65,12 @@ function ProfilePage() {
 
   useEffect(() => {
     clearActionFeedback();
-    setEditMessage(null);
   }, [query, clearActionFeedback]);
 
   const handleEdit = () => {
     if (!profile) return;
 
     clearActionFeedback();
-    setEditMessage(null);
     setEditingFarm(profile);
   };
 
@@ -84,18 +81,17 @@ function ProfilePage() {
     const updated = await updateFarm(farmId, payload);
 
     if (!updated) {
+      toast.error("Failed to update farm");
       throw new Error("Failed to update farm.");
     }
 
     setEditingFarm(null);
     await refetch();
-    setEditMessage("Environmental profile updated successfully.");
+    toast.success("Environmental profile updated successfully");
   };
 
   const handleRegenerate = async () => {
     if (!profile) return;
-
-    setEditMessage(null);
 
     try {
       const regenerated = await regenerateProfile(profile.id);
@@ -122,8 +118,10 @@ function ProfilePage() {
           ? { name: regenerated.soil_texture }
           : profile.soil_texture,
       });
+
+      toast.success("Environmental profile regenerated successfully");
     } catch {
-      // useProfileActions exposes the error through actionError.
+      toast.error("Failed to regenerate environmental profile");
     }
   };
 
@@ -147,7 +145,7 @@ function ProfilePage() {
         onRegenerate={handleRegenerate}
         isRegenerating={isRegenerating}
         actionError={actionError}
-        actionMessage={actionMessage ?? editMessage}
+        actionMessage={null}
       />
 
       {profile && (
