@@ -41,18 +41,24 @@ erDiagram
     INTEGER farm_id PK,FK
   }
 
+  farm_owners {
+    INTEGER farm_id PK,FK
+    INTEGER user_id PK,FK
+  }
+
   farms {
     INTEGER id PK
     INTEGER soil_texture_id FK
-    INTEGER user_id FK "nullable"
     FLOAT area_ha
     BOOLEAN bank_stabilising
+    INTEGER baseline_tree_count
     BOOLEAN coastal
     INTEGER elevation_m
     BOOLEAN elevation_m_imputed
     INTEGER external_id UK "nullable"
     FLOAT latitude
     FLOAT longitude
+    VARCHAR name "nullable"
     BOOLEAN nitrogen_fixing
     FLOAT ph
     BOOLEAN ph_imputed
@@ -64,6 +70,26 @@ erDiagram
     BOOLEAN slope_imputed
     INTEGER temperature_celsius
     BOOLEAN temperature_celsius_imputed
+  }
+
+  global_weights {
+    INTEGER id PK
+    UUID run_id FK
+    FLOAT ci_lower
+    FLOAT ci_upper
+    FLOAT ci_width
+    VARCHAR feature
+    FLOAT mean_weight
+    BOOLEAN touches_zero
+  }
+
+  global_weights_runs {
+    UUID id PK
+    BOOLEAN bootstrap_early_stopped
+    INTEGER bootstraps
+    DATETIME created_at
+    VARCHAR dataset_hash
+    TEXT source "nullable"
   }
 
   parameters {
@@ -177,8 +203,10 @@ erDiagram
   farms ||--o| boundary : id
   farms ||--o| farm_agroforestry_association : farm_id
   agroforestry_types ||--o| farm_agroforestry_association : agroforestry_type_id
+  farms ||--o| farm_owners : farm_id
+  users ||--o| farm_owners : user_id
   soil_textures ||--o{ farms : soil_texture_id
-  users ||--o{ farms : user_id
+  global_weights_runs ||--o{ global_weights : run_id
   species ||--o{ parameters : species_id
   farms ||--o{ planting_estimates : farm_id
   farms ||--o{ recommendations : farm_id

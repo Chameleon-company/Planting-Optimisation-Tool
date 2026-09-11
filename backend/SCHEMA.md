@@ -18,6 +18,12 @@
 | :--- | :--- | :--- | :--- | :--- |
 | `species_id` | `Integer` | No | Yes | id |
 | `soil_texture_id` | `Integer` | No | Yes | id |
+## TABLE: `farm_owners`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `farm_id` | `Integer` | No | Yes | id |
+| `user_id` | `Integer` | No | Yes | id |
 ## TABLE: `agroforestry_types`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
@@ -44,6 +50,7 @@
 | `ph` | `Float` | No | No |  |
 | `soil_texture_id` | `Integer` | No | No | id |
 | `area_ha` | `Float` | No | No |  |
+| `baseline_tree_count` | `Integer` | No | No |  |
 | `latitude` | `Float` | No | No |  |
 | `longitude` | `Float` | No | No |  |
 | `coastal` | `Boolean` | No | No |  |
@@ -52,7 +59,7 @@
 | `shade_tolerant` | `Boolean` | No | No |  |
 | `bank_stabilising` | `Boolean` | No | No |  |
 | `slope` | `Float` | No | No |  |
-| `user_id` | `Integer` | Yes | No | id |
+| `name` | `String` | Yes | No |  |
 | `external_id` | `Integer` | Yes | No |  |
 | `elevation_m_imputed` | `Boolean` | No | No |  |
 | `slope_imputed` | `Boolean` | No | No |  |
@@ -89,6 +96,28 @@
 | `id` | `Integer` | No | Yes |  |
 | `focal_species_id` | `Integer` | No | No | id |
 | `required_partner_id` | `Integer` | No | No | id |
+## TABLE: `global_weights_runs`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | No | Yes |  |
+| `created_at` | `DateTime` | No | No |  |
+| `dataset_hash` | `String` | No | No |  |
+| `bootstraps` | `Integer` | No | No |  |
+| `bootstrap_early_stopped` | `Boolean` | No | No |  |
+| `source` | `Text` | Yes | No |  |
+## TABLE: `global_weights`
+
+| Column Name | SQL Type | Nullable | Primary Key | Foreign Key |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Integer` | No | Yes |  |
+| `run_id` | `UUID` | No | No | id |
+| `feature` | `String` | No | No |  |
+| `mean_weight` | `Float` | No | No |  |
+| `ci_lower` | `Float` | No | No |  |
+| `ci_upper` | `Float` | No | No |  |
+| `ci_width` | `Float` | No | No |  |
+| `touches_zero` | `Boolean` | No | No |  |
 ## TABLE: `parameters`
 
 | Column Name | SQL Type | Nullable | Primary Key | Foreign Key |

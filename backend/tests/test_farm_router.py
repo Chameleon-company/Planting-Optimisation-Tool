@@ -680,3 +680,46 @@ async def test_update_farm_rejects_invalid_slope(
     )
 
     assert response.status_code == 422
+
+
+async def test_farm_with_multiple_owners_both_can_access(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+):
+    """A farm with two owners is accessible by both owners individually."""
+    user_a = User(
+        name="Owner A",
+        email="ownera@test.com",
+        hashed_password=get_password_hash("passworda"),
+        role=Role.OFFICER.value,
+    )
+    user_b = User(
+        name="Owner B",
+        email="ownerb@test.com",
+        hashed_password=get_password_hash("passwordb"),
+        role=Role.OFFICER.value,
+    )
+    async_session.add_all([user_a, user_b])
+    await async_session.flush()
+    await async_session.refresh(user_a)
+    await async_session.refresh(user_b)
+
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [user_a, user_b]
+    async_session.add(farm)
+    await async_session.commit()
+    await async_session.refresh(farm)
+
+    token_a = create_access_token(data={"sub": str(user_a.id), "role": user_a.role})
+    token_b = create_access_token(data={"sub": str(user_b.id), "role": user_b.role})
+
+    response_a = await async_client.get(f"/farms/{farm.id}", headers={"Authorization": f"Bearer {token_a}"})
+    response_b = await async_client.get(f"/farms/{farm.id}", headers={"Authorization": f"Bearer {token_b}"})
+
+    assert response_a.status_code == 200
+    assert response_b.status_code == 200
+
+    owner_ids = {owner["id"] for owner in response_a.json()["owners"]}
+    assert user_a.id in owner_ids
+    assert user_b.id in owner_ids

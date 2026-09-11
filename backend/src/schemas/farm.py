@@ -32,6 +32,11 @@ from src.schemas.nested_models import (
 
 # Base Farm model used for validation
 class FarmBase(BaseModel):
+    name: Optional[str] = Field(
+        default=None,
+        title="Farm name",
+        description="Human-readable name for the farm.",
+    )
     rainfall_mm: int = Field(
         title="Annual rainfall in millimetres",
         description="Annual rainfall in millimetres",
@@ -143,6 +148,7 @@ class FarmRead(FarmBase):
 class FarmUpdate(BaseModel):
     # Annotated is used to restate validators explicitly, as Pydantic v2 does not
     # enforce Field constraints on Optional fields without it.
+    name: Optional[str] = None
     rainfall_mm: Optional[Annotated[int, Field(ge=RAINFALL_MIN, le=RAINFALL_MAX)]] = None
     temperature_celsius: Optional[Annotated[int, Field(ge=TEMPERATURE_MIN, le=TEMPERATURE_MAX)]] = None
     elevation_m: Optional[Annotated[int, Field(ge=ELEVATION_MIN, le=ELEVATION_MAX)]] = None
