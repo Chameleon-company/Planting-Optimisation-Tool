@@ -30,7 +30,9 @@ const mockSpeciesItem = (name: string, id: string): Species => ({
 describe("SpeciesGrid", () => {
   it("should show empty message when no species are returned", () => {
     // Render SpeciesGrid with no cards, and mock onCardClick function
-    render(<SpeciesGrid species={[]} onCardClick={vi.fn()} />);
+    render(
+      <SpeciesGrid species={[]} isLoading={false} onCardClick={vi.fn()} />
+    );
 
     // Expect 'no species found matching your criteria' to be within the page HTML
     expect(
@@ -46,7 +48,9 @@ describe("SpeciesGrid", () => {
     ];
 
     // Render mock species array with mock onCardClick function
-    render(<SpeciesGrid species={species} onCardClick={vi.fn()} />);
+    render(
+      <SpeciesGrid species={species} isLoading={false} onCardClick={vi.fn()} />
+    );
 
     // Collate all .article-cards in HTML to const cards
     const cards = document.querySelectorAll(".article-card");
@@ -62,7 +66,13 @@ describe("SpeciesGrid", () => {
     const onCardClick = vi.fn();
     const item = mockSpeciesItem("Eucalyptus alba", "1");
 
-    render(<SpeciesGrid species={[item]} onCardClick={onCardClick} />);
+    render(
+      <SpeciesGrid
+        species={[item]}
+        isLoading={false}
+        onCardClick={onCardClick}
+      />
+    );
 
     // Wait for fake user to click 'view details' button
     await user.click(screen.getByRole("button", { name: /view details/i }));
