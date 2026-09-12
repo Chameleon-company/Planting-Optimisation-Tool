@@ -96,9 +96,7 @@ describe("CompatibilityMatrixPage", () => {
   it("loads species and displays the compatibility matrix", async () => {
     renderPage();
 
-    expect(
-      screen.getByText("Loading compatibility matrix...")
-    ).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Acacia mangium")).toBeInTheDocument();

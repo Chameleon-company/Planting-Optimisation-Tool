@@ -31,6 +31,55 @@
   width: 100%;
 }
 
+/* ============ PROFILE SKELETON LOADING ============ */
+
+.farm-card-skeleton {
+  pointer-events: none;
+}
+
+.skeleton-line {
+  animation: skeleton-shimmer 1.5s infinite linear;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--border) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+}
+
+.skeleton-title {
+  height: 22px;
+  width: 45%;
+}
+
+.skeleton-label {
+  height: 10px;
+  margin-bottom: 6px;
+  width: 55%;
+}
+
+.skeleton-value {
+  height: 16px;
+  width: 75%;
+}
+
+.skeleton-coords {
+  height: 14px;
+  width: 60%;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .farm-card.searched-card {
   margin: 32px 7%;
   width: calc(100% - 14%);
