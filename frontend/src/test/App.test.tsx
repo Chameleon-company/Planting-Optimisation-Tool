@@ -1,8 +1,4 @@
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-} from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import App from "../App";
@@ -36,9 +32,9 @@ describe("App", () => {
       await screen.findByRole("button", { name: /add species/i })
     ).toBeInTheDocument();
 
-    await waitForElementToBeRemoved(() =>
-      screen.queryByText(/loading species/i)
-    );
+    await waitFor(() => {
+      expect(screen.queryByText(/loading species/i)).not.toBeInTheDocument();
+    });
   });
 
   it("renders forgot password page route", () => {
