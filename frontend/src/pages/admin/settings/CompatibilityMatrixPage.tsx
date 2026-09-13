@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import AdminToast, {
+  type AdminToastType,
+} from "../../../components/admin/AdminToast";
 import { useAuth } from "../../../contexts/AuthContext";
 import CompatibilityMatrixSkeleton from "@/components/admin/compatibilityMatrixSkeleton";
 import {
@@ -25,6 +28,11 @@ type CompatibilityMatrixState = Record<
   number,
   Record<CompatibilityKey, boolean>
 >;
+
+interface ToastState {
+  message: string;
+  type: AdminToastType;
+}
 
 const CONDITIONS: MatrixCondition[] = [
   {
@@ -77,6 +85,19 @@ function CompatibilityMatrixPage() {
   const [error, setError] = useState<string | null>(null);
   const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
 
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  const dismissToast = useCallback(() => {
+    setToast(null);
+  }, []);
+
+  const showToast = useCallback((message: string, type: AdminToastType) => {
+    setToast({
+      message,
+      type,
+    });
+  }, []);
+
   useEffect(() => {
     async function loadSpecies() {
       try {
@@ -121,6 +142,10 @@ function CompatibilityMatrixPage() {
     const token = getAccessToken();
 
     if (!token) {
+      showToast(
+        "You must be logged in as admin to update the compatibility matrix.",
+        "error"
+      );
       return;
     }
 
@@ -150,6 +175,8 @@ function CompatibilityMatrixPage() {
         },
         token
       );
+
+      showToast("Compatibility change saved successfully.", "success");
     } catch (saveError) {
       setMatrix(current => ({
         ...current,
@@ -158,6 +185,13 @@ function CompatibilityMatrixPage() {
           [condition]: currentValue,
         },
       }));
+
+      showToast(
+        saveError instanceof Error
+          ? saveError.message
+          : "Failed to save compatibility change.",
+        "error"
+      );
 
       console.error("Failed to update species compatibility:", saveError);
     } finally {
@@ -175,6 +209,16 @@ function CompatibilityMatrixPage() {
         <title>Compatibility Matrix | Planting Optimisation Tool</title>
       </Helmet>
 
+      {toast && (
+        <div className="admin-toast-container">
+          <AdminToast
+            message={toast.message}
+            type={toast.type}
+            onClose={dismissToast}
+          />
+        </div>
+      )}
+
       <section className="admin-page-card">
         <div className="admin-parameters-header">
           <div>
@@ -190,7 +234,13 @@ function CompatibilityMatrixPage() {
 
         {error && <p className="admin-error-message">{error}</p>}
 
-        {!loading && !error && (
+        {!loading && !error && species.length === 0 && (
+          <p>
+            No species are available to display in the compatibility matrix.
+          </p>
+        )}
+
+        {!loading && !error && species.length > 0 && (
           <div className="admin-table-wrapper">
             <table className="admin-parameters-table compatibility-matrix-table">
               <thead>

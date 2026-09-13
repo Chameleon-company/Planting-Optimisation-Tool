@@ -189,3 +189,18 @@ it("falls back when backend error format is unknown", async () => {
 
   await expect(getAllSpecies("test-token")).rejects.toThrow("API error");
 });
+
+it("shows the backend rate limit message", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    mockJsonResponse(
+      {
+        error: "Rate limit exceeded: 10 per 1 minute",
+      },
+      false
+    )
+  );
+
+  await expect(getAllSpecies("test-token")).rejects.toThrow(
+    "Rate limit exceeded: 10 per 1 minute"
+  );
+});

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
@@ -127,6 +127,30 @@ describe("CompatibilityMatrixPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows an authentication toast when the token disappears before saving", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    // Simulate the session expiring after the matrix has loaded.
+    authState.state.accessToken = null;
+
+    await user.click(checkbox);
+
+    expect(
+      screen.getByText(
+        "You must be logged in as admin to update the compatibility matrix."
+      )
+    ).toBeInTheDocument();
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(updateSpecies).not.toHaveBeenCalled();
+  });
+
   it("sorts species alphabetically", async () => {
     renderPage();
 
@@ -241,10 +265,17 @@ describe("CompatibilityMatrixPage", () => {
 
     expect(checkbox).toBeDisabled();
 
-    resolveUpdate(mockSpecies[1]);
+    await act(async () => {
+      resolveUpdate(mockSpecies[1]);
+      await pendingUpdate;
+    });
 
     await waitFor(() => {
-      expect(checkbox).not.toBeDisabled();
+      expect(
+        screen.getByRole("checkbox", {
+          name: "Acacia mangium Coastal",
+        })
+      ).not.toBeDisabled();
     });
   });
 
@@ -292,6 +323,124 @@ describe("CompatibilityMatrixPage", () => {
     });
   });
 
+  it("shows an empty state when no species are available", async () => {
+    vi.mocked(getAllSpecies).mockResolvedValue([]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "No species are available to display in the compatibility matrix."
+        )
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("shows a success toast after a compatibility change is saved", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Compatibility change saved successfully.")
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("status")).toBeInTheDocument();
+  });
+
+  it("shows an error toast and rolls back when saving fails", async () => {
+    const user = userEvent.setup();
+
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    vi.mocked(updateSpecies).mockRejectedValue(
+      new Error("Unable to save compatibility change")
+    );
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    expect(checkbox).toBeChecked();
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(checkbox).toBeChecked();
+      expect(
+        screen.getByText("Unable to save compatibility change")
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    consoleError.mockRestore();
+  });
+
+  it("shows a fallback toast for a non-Error save failure", async () => {
+    const user = userEvent.setup();
+
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    vi.mocked(updateSpecies).mockRejectedValue("save failed");
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to save compatibility change.")
+      ).toBeInTheDocument();
+    });
+
+    consoleError.mockRestore();
+  });
+
+  it("allows a success toast to be dismissed", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    await screen.findByText("Compatibility change saved successfully.");
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Dismiss notification",
+      })
+    );
+
+    expect(
+      screen.queryByText("Compatibility change saved successfully.")
+    ).not.toBeInTheDocument();
+  });
   it("shows a fallback error for a non-Error API rejection", async () => {
     vi.mocked(getAllSpecies).mockRejectedValue("request failed");
 
