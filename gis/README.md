@@ -136,6 +136,8 @@ cd gis
 uv venv
 uv sync
 source .venv/bin/activate
+or
+source .venv/Scripts/activate
 ```
 
 ### Google Earth Engine Setup
@@ -1050,6 +1052,7 @@ for farm in farms:
 ```bash
 # Run all tests
 pytest gis/tests/ -v
+uv run pytest tests/ -v
 
 # Run specific test
 pytest gis/tests/test_gis.py::test_get_rainfall -v

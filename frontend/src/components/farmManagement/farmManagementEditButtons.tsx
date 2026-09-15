@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import ConfirmModal from "@/components/shared/confirmModal";
 
 interface FarmEditProps {
   onAdd?: () => void;
@@ -59,23 +60,15 @@ export default function FarmManageActions({
       </div>
 
       {showDeleteConfirm && (
-        <div className="delete-modal-overlay" onClick={handleCancelDelete}>
-          <div className="delete-modal" onClick={e => e.stopPropagation()}>
-            <h3 className="delete-modal-title">Delete Farm</h3>
-            <p className="delete-modal-message">
-              Are you sure you want to delete this farm? This action cannot be
-              undone.
-            </p>
-            <div className="delete-modal-actions">
-              <button className="btn-secondary" onClick={handleCancelDelete}>
-                Cancel
-              </button>
-              <button className="btn-danger" onClick={handleConfirmDelete}>
-                🗑️ Confirm Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Delete Farm"
+          message="Are you sure you want to delete this farm? This action cannot be undone."
+          confirmLabel="Confirm Delete"
+          confirmIcon="🗑️"
+          isPending={false}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
       )}
     </>
   );
