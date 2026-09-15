@@ -31,7 +31,11 @@ export default function SpeciesPage() {
       {error && <p className="species-empty">{error}</p>}
 
       {/* SpeciesGrid, creates grid of searched species array, on card click, set that as SelectedSpecies */}
-      <SpeciesGrid species={species} onCardClick={setSelectedSpecies} />
+      <SpeciesGrid
+        species={species}
+        isLoading={isLoading}
+        onCardClick={setSelectedSpecies}
+      />
 
       {/* SpeciesModal, hand selectedSpecies, when closed, setSelectedSpecies to null */}
       <SpeciesModal

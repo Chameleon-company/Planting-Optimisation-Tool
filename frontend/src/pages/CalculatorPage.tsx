@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
+import CalculatorSkeleton from "@/components/calculator/calculatorSkeleton";
 
 import { useCalculator, DEFAULT_CALC_PARAMS } from "@/hooks/useCalculator";
 import type { CalcParams } from "@/hooks/useCalculator";
@@ -88,7 +89,9 @@ export default function CalculatorPage() {
         </div>
       )}
 
-      {hasSearched && results.length > 0 && (
+      {isLoading && <CalculatorSkeleton />}
+
+      {hasSearched && !isLoading && results.length > 0 && (
         <div className="calc-results-section">
           <CalculatorTabs
             results={results}
