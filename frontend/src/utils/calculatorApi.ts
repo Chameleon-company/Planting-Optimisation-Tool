@@ -6,18 +6,30 @@ export interface CalcParams {
   maxSlope: number;
 }
 
-export interface CalculatorResult {
-  id: number;
-  pre_slope_count: number;
-  aligned_count: number;
-  optimal_angle: number;
+export interface FarmEstimationResult {
+  farm_id: number;
+  status: "success" | "failed";
+  message?: string | null;
+  pre_slope_count?: number | null;
+  aligned_count?: number | null;
+  baseline_tree_count?: number | null;
+  additional_sapling_count?: number | null;
+  optimal_angle?: number | null;
+  rotation_average?: number | null;
+  rotation_std_dev?: number | null;
+}
+
+export interface SaplingEstimationResponse {
+  status: string;
+  farm_count: number;
+  results: FarmEstimationResult[];
 }
 
 export async function getSaplingEstimation(
-  farmId: number,
+  farmIds: number[],
   params: CalcParams,
   token: string
-): Promise<CalculatorResult> {
+): Promise<SaplingEstimationResponse> {
   const res = await fetch(`${API_BASE}/sapling_estimation/calculate`, {
     method: "POST",
     headers: {
@@ -25,7 +37,7 @@ export async function getSaplingEstimation(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      farm_id: farmId,
+      farm_ids: farmIds,
       spacing_x: params.spacingX,
       spacing_y: params.spacingY,
       max_slope: params.maxSlope,
@@ -33,7 +45,16 @@ export async function getSaplingEstimation(
   });
   if (!res.ok) {
     const data = await res.json();
-    throw new Error(data.detail || "Failed to fetch estimation");
+    let message = "Failed to fetch estimation";
+
+    if (typeof data.detail === "string") {
+      message = data.detail;
+    } else if (Array.isArray(data.detail)) {
+      message = data.detail
+        .map((item: { msg?: string }) => item.msg || "Invalid input")
+        .join(", ");
+    }
+    throw new Error(message);
   }
   return res.json();
 }

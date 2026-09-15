@@ -118,7 +118,11 @@ class EnvironmentalProfileService:
                 "latitude": farm_record.latitude,
                 "longitude": farm_record.longitude,
                 "coastal": farm_record.coastal,
-                "riparian": farm_record.riparian,
+                # Not farm_record.riparian: that's the farm's own possibly-stale
+                # stored flag. `riparian` here is the live PostGIS intersection
+                # result computed above, which doesn't depend on GEE/GIS at all,
+                # so it should still be used even when the GIS profile build fails.
+                "riparian": riparian,
                 "nitrogen_fixing": farm_record.nitrogen_fixing,
                 "shade_tolerant": farm_record.shade_tolerant,
                 "bank_stabilising": farm_record.bank_stabilising,

@@ -451,6 +451,121 @@ describe("FarmSearchPanel", () => {
     expect(screen.getByText(/must be logged in/i)).toBeInTheDocument();
   });
 
+  it("shows Edit and Regenerate actions for an admin", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^edit$/i })).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", { name: /^regenerate$/i })
+    ).toBeInTheDocument();
+  });
+
+  it("shows Edit and Regenerate actions for a supervisor", () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: "Supervisor User",
+        role: "supervisor",
+      },
+    });
+
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^edit$/i })).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", { name: /^regenerate$/i })
+    ).toBeInTheDocument();
+  });
+
+  it("does not show profile actions for an officer", () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: "Officer User",
+        role: "officer",
+      },
+    });
+
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /^edit$/i })
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("button", { name: /^regenerate$/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("disables profile actions while regeneration is running", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+        isRegenerating={true}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^edit$/i })).toBeDisabled();
+
+    expect(
+      screen.getByRole("button", { name: /regenerating/i })
+    ).toBeDisabled();
+  });
+
+  it("shows action success feedback", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        actionMessage="Environmental profile regenerated successfully."
+      />
+    );
+
+    expect(
+      screen.getByText(/profile regenerated successfully/i)
+    ).toBeInTheDocument();
+  });
+
+  it("shows action error feedback", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        actionError="Failed to regenerate the environmental profile."
+      />
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /failed to regenerate/i
+    );
+  });
+
   it("does not show any search result state when query is empty", () => {
     renderWithRouter(<FarmSearchPanel {...baseProps} query="" />);
     // With no active query none of the result/empty/loading states should appear

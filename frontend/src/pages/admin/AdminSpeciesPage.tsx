@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -75,7 +76,6 @@ function AdminSpeciesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
@@ -110,7 +110,6 @@ function AdminSpeciesPage() {
 
   function openCreateModal() {
     setError(null);
-    setSuccessMessage(null);
     setEditingSpeciesId(null);
     setFormData(emptyForm);
     setModalMode("create");
@@ -119,7 +118,6 @@ function AdminSpeciesPage() {
 
   function openEditModal(item: Species) {
     setError(null);
-    setSuccessMessage(null);
     setEditingSpeciesId(item.id);
     setFormData(buildSpeciesPayload(item));
     setModalMode("edit");
@@ -175,16 +173,15 @@ function AdminSpeciesPage() {
     try {
       setSaving(true);
       setError(null);
-      setSuccessMessage(null);
 
       if (modalMode === "create") {
         await createSpecies(formData, token);
-        setSuccessMessage("Species created successfully.");
+        toast.success("Species created successfully");
       }
 
       if (modalMode === "edit" && editingSpeciesId !== null) {
         await updateSpecies(editingSpeciesId, formData, token);
-        setSuccessMessage("Species updated successfully.");
+        toast.success("Species updated successfully");
       }
 
       closeModal();
@@ -216,12 +213,13 @@ function AdminSpeciesPage() {
 
     try {
       setError(null);
-      setSuccessMessage(null);
       await deleteSpecies(id, token);
-      setSuccessMessage("Species deleted successfully.");
+      toast.success("Species deleted successfully");
       await loadSpecies();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete species");
+      const message =
+        err instanceof Error ? err.message : "Failed to delete species";
+      toast.error(message);
     }
   }
 
@@ -256,10 +254,6 @@ function AdminSpeciesPage() {
         {loading && <p>Loading species...</p>}
 
         {error && <p className="admin-error-message">{error}</p>}
-
-        {successMessage && (
-          <p className="admin-success-message">{successMessage}</p>
-        )}
 
         {!loading && !error && species.length === 0 && <p>No species found.</p>}
 

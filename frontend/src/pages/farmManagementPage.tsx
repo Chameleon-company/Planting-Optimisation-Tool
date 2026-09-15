@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -13,6 +14,8 @@ import RegisterFarmModal from "@/components/farmManagement/farmRegisterModal";
 import EditFarmModal from "@/components/farmManagement/farmsEditModal";
 import FarmManageActions from "@/components/farmManagement/farmManagementEditButtons";
 import FarmsHeader from "@/components/farmManagement/farmHeader";
+import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
+import { useFarmBoundary } from "@/hooks/useFarmBoundary";
 import "./farmManagement.css";
 
 export default function FarmsManagementPage() {
@@ -50,8 +53,11 @@ export default function FarmsManagementPage() {
   const handleRegisterSuccess = async (payload: FarmCreatePayload) => {
     const ok = await createFarm(payload);
     if (ok) {
+      toast.success("Farm created successfully");
       setIsRegisterModalOpen(false);
       await refetch();
+    } else {
+      toast.error("Failed to create farm");
     }
   };
 
@@ -76,8 +82,11 @@ export default function FarmsManagementPage() {
   ) => {
     const ok = await updateFarm(farmId, payload);
     if (ok) {
+      toast.success("Farm updated successfully");
       setEditingFarm(null);
       await refetch();
+    } else {
+      toast.error("Failed to update farm");
     }
   };
 
@@ -86,8 +95,11 @@ export default function FarmsManagementPage() {
     if (!selectedFarmId) return;
     const ok = await deleteFarm(selectedFarmId);
     if (ok) {
+      toast.success("Farm deleted successfully");
       setSelectedFarmId(null);
       await refetch();
+    } else {
+      toast.error("Failed to delete farm");
     }
   };
 
@@ -95,6 +107,12 @@ export default function FarmsManagementPage() {
   // Or farms loading or mutation loading
   const error = farmsError ?? mutationError;
   const isLoading = farmsLoading || mutationLoading;
+
+  const {
+    boundary,
+    isLoading: mapLoading,
+    error: mapError,
+  } = useFarmBoundary(selectedFarmId);
 
   return (
     <div className="farms-page">
@@ -133,6 +151,16 @@ export default function FarmsManagementPage() {
         selectedFarmId={selectedFarmId}
         onSelectFarm={setSelectedFarmId}
       />
+
+      {selectedFarmId && (
+        <div className="farm-map-wrapper">
+          <FarmBoundaryMap
+            boundary={boundary}
+            isLoading={mapLoading}
+            error={mapError}
+          />
+        </div>
+      )}
 
       {/* Container for if Register new farm button is clicked */}
       {isRegisterModalOpen && (

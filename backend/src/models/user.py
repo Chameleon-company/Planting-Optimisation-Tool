@@ -11,6 +11,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import Base
+from src.models.association import farm_owners_association
 
 if TYPE_CHECKING:
     from .farm import Farm
@@ -37,7 +38,7 @@ class User(Base):
         - admin (level 3): Full system access
 
     Relationships:
-        - farms: One-to-many relationship with Farm model through farm_supervisor
+        - farms: Many-to-many relationship with Farm model through farm_supervisor
 
     Security Notes:
         - Passwords are hashed using bcrypt before storage
@@ -66,7 +67,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(50), index=True, default="officer")
 
     # Relationships - farms supervised by this user
-    farms: Mapped[List["Farm"]] = relationship(back_populates="farm_supervisor")
+    farms: Mapped[List["Farm"]] = relationship(secondary=farm_owners_association, back_populates="owners")
 
     def __repr__(self) -> str:
         """String representation for debugging."""

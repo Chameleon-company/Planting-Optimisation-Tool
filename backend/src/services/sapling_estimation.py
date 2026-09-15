@@ -5,25 +5,87 @@ from sqlalchemy import delete, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.boundaries import FarmBoundary
+from src.models.farm import Farm
 from src.models.planting_estimates import PlantingEstimate
 
 
 class SaplingEstimationService:
-    @staticmethod
     async def run_estimation(
+        self,
+        db: AsyncSession,
+        farm_ids: list[int],
+        spacing_x: float,
+        spacing_y: float,
+        max_slope: float,
+        persist: bool = True,
+    ) -> dict:
+        """Runs the sapling estimation for one or many farms.
+
+        persist controls whether the computed planting grid replaces the farm's
+        saved PlantingEstimate records. Defaults to True for the Sapling
+        Calculator's normal use. Callers that only need the numbers (e.g. a
+        read-only report) should pass persist=False so viewing a report can
+        never overwrite a farm's existing planting grid.
+        """
+
+        if not farm_ids:
+            return {"status": "success", "farm_count": 0, "results": []}
+
+        results = []
+
+        for farm_id in farm_ids:
+            data = await self._estimate_single_farm(
+                db=db,
+                farm_id=farm_id,
+                spacing_x=spacing_x,
+                spacing_y=spacing_y,
+                max_slope=max_slope,
+                persist=persist,
+            )
+
+            results.append(
+                {
+                    "status": data.get("status", "success"),
+                    "farm_id": farm_id,
+                    "message": data.get("message"),
+                    "pre_slope_count": data.get("pre_slope_count"),
+                    "aligned_count": data.get("aligned_count"),
+                    "baseline_tree_count": data.get("baseline_tree_count"),  # add
+                    "additional_sapling_count": data.get("additional_sapling_count"),  # add
+                    "optimal_angle": data.get("optimal_angle"),
+                    "rotation_average": data.get("rotation_average"),
+                    "rotation_std_dev": data.get("rotation_std_dev"),
+                }
+            )
+
+        return {
+            "status": "success",
+            "farm_count": len(farm_ids),
+            "results": results,
+        }
+
+    @staticmethod
+    async def _estimate_single_farm(
         db: AsyncSession,
         farm_id: int,
         spacing_x: float,
         spacing_y: float,
         max_slope: float,
-    ):
+        persist: bool = True,
+    ) -> dict:
         try:
+            farm_result = await db.execute(select(Farm).where(Farm.id == farm_id))
+            farm = farm_result.scalar_one_or_none()
+
+            if farm is None:
+                return {"status": "failed", "message": "Farm not found"}
             boundary_result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
             boundary = boundary_result.scalar_one_or_none()
 
             if boundary is None:
-                return {"status": "failed", "message": "Farm not found"}
+                return {"status": "failed", "message": "Farm boundary not found"}
 
+            baseline_tree_count = farm.baseline_tree_count
             farm_polygon = to_shape(boundary.boundary)
             farm_wkt = farm_polygon.wkt
 
@@ -79,28 +141,33 @@ class SaplingEstimationService:
             final_grid = estimation_result["final_grid"]
             slope_values = estimation_result["slope_values"]
             optimal_angle = estimation_result["optimal_angle"]
+            aligned_count = len(final_grid)
+            additional_sapling_count = max(aligned_count - baseline_tree_count, 0)
 
-            # Clear old results
-            await db.execute(delete(PlantingEstimate).where(PlantingEstimate.farm_id == farm_id))
+            if persist:
+                # Clear old results
+                await db.execute(delete(PlantingEstimate).where(PlantingEstimate.farm_id == farm_id))
 
-            # Insert new
-            planting_estimates = []
-            for pt, slope_value in zip(final_grid["geometry"], slope_values):
-                planting_estimates.append(
-                    PlantingEstimate(
-                        farm_id=farm_id,
-                        slope=float(slope_value) if slope_value is not None else None,
-                        geometry=from_shape(pt, srid=4326),
+                # Insert new
+                planting_estimates = []
+                for pt, slope_value in zip(final_grid["geometry"], slope_values):
+                    planting_estimates.append(
+                        PlantingEstimate(
+                            farm_id=farm_id,
+                            slope=float(slope_value) if slope_value is not None else None,
+                            geometry=from_shape(pt, srid=4326),
+                        )
                     )
-                )
 
-            db.add_all(planting_estimates)
-            await db.commit()
+                db.add_all(planting_estimates)
+                await db.commit()
 
             return {
                 "id": farm_id,
                 "pre_slope_count": estimation_result.get("pre_slope_count"),
-                "aligned_count": len(final_grid),
+                "aligned_count": aligned_count,
+                "baseline_tree_count": baseline_tree_count,
+                "additional_sapling_count": additional_sapling_count,
                 "optimal_angle": optimal_angle,
                 "rotation_average": estimation_result.get("rotation_average"),
                 "rotation_std_dev": estimation_result.get("rotation_std_dev"),

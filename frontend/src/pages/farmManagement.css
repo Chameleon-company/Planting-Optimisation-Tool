@@ -524,6 +524,39 @@
   }
 }
 
+/* ============ FARM BOUNDARY MAP ============ */
+
+.farm-map-wrapper {
+  padding: 0 7% 32px;
+}
+
+.farm-map-section {
+  background: var(--bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px
+    color-mix(in srgb, var(--charcoal-blue) 5%, transparent);
+  overflow: hidden;
+  padding: 20px;
+}
+
+.farm-map-title {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.farm-map-status {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.farm-map-error {
+  color: var(--danger);
+}
+
 /* ============ SCROLLBAR STYLING ============ */
 
 .farms-modal::-webkit-scrollbar {

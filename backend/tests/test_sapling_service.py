@@ -1,3 +1,4 @@
+import pytest
 from geoalchemy2 import WKTElement
 from sqlalchemy import text
 
@@ -5,33 +6,28 @@ from src.models.boundaries import FarmBoundary
 from src.models.farm import Farm
 from src.services.sapling_estimation import SaplingEstimationService
 
-
-async def test_run_estimation_basic(async_session, setup_soil_texture):
-    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
-
-    await async_session.execute(
-        text(
-            """
-            INSERT INTO dem_table (rast)
-            VALUES (
-                ST_AddBand(
-                    ST_MakeEmptyRaster(
-                        5, 5,
-                        125, -8.9995,
-                        0.001, -0.001,
-                        0, 0,
-                        4326
-                    ),
-                    1,
-                    '32BF',
-                    100
-                )
-            );
-            """
+DEM_INSERT = text(
+    """
+    INSERT INTO dem_table (rast)
+    VALUES (
+        ST_AddBand(
+            ST_MakeEmptyRaster(
+                5, 5,
+                125, -8.9995,
+                0.001, -0.001,
+                0, 0,
+                4326
+            ),
+            1,
+            '32BF',
+            100
         )
-    )
-    await async_session.flush()
+    );
+    """
+)
 
+
+async def _add_farm(async_session, boundary_wkt, baseline_tree_count=0):  # farm + boundary inside the DEM extent
     farm = Farm(
         rainfall_mm=1000,
         temperature_celsius=25,
@@ -39,6 +35,7 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
         ph=6.5,
         soil_texture_id=1,
         area_ha=10,
+        baseline_tree_count=baseline_tree_count,
         latitude=0,
         longitude=0,
         coastal=False,
@@ -55,20 +52,41 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     boundary = FarmBoundary(
         id=farm.id,
         external_id=farm.id,
-        boundary=WKTElement(
-            "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))",
-            srid=4326,
-        ),
+        boundary=WKTElement(boundary_wkt, srid=4326),
     )
     async_session.add(boundary)
     await async_session.flush()
 
-    result = await SaplingEstimationService.run_estimation(async_session, farm_id=farm.id, spacing_x=10, spacing_y=10, max_slope=15)
+    return farm
 
-    assert result is not None
+
+@pytest.mark.parametrize("baseline_tree_count", [0, 3, 1_000_000])
+async def test_run_estimation_basic(async_session, baseline_tree_count):
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))",
+        baseline_tree_count=baseline_tree_count,
+    )
+
+    service = SaplingEstimationService()
+    estimation_results = await service.run_estimation(async_session, farm_ids=[farm.id], spacing_x=10, spacing_y=10, max_slope=15)
+
+    result = estimation_results["results"][0]
     assert result.get("status") != "failed", f"Service failed: {result}"
+    assert result["farm_id"] == farm.id
     assert "aligned_count" in result
     assert result["aligned_count"] > 0
+    assert result["baseline_tree_count"] == baseline_tree_count
+    assert result["additional_sapling_count"] == max(
+        result["aligned_count"] - baseline_tree_count,
+        0,
+    )
+    assert result["additional_sapling_count"] >= 0
+    assert result["additional_sapling_count"] <= result["aligned_count"]
 
     assert "pre_slope_count" in result
     assert result["pre_slope_count"] >= result["aligned_count"]
@@ -91,3 +109,86 @@ async def test_run_estimation_basic(async_session, setup_soil_texture):
     )
 
     assert rows.scalar_one() == result["aligned_count"]
+
+
+# Batch: several farms estimated in one call
+async def test_run_estimation_multiple_farms(async_session):
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm_a = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))",
+    )
+    farm_b = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125.0025 -9.0005, 125.0025 -9.0025, 125.0045 -9.0025, 125.0045 -9.0005, 125.0025 -9.0005)))",
+    )
+
+    service = SaplingEstimationService()
+    result = await service.run_estimation(async_session, farm_ids=[farm_a.id, farm_b.id], spacing_x=10, spacing_y=10, max_slope=15)
+
+    assert result["status"] == "success"
+    assert result["farm_count"] == 2
+    assert len(result["results"]) == 2
+
+    # Results come back in the same order as the requested farm_ids
+    assert [item["farm_id"] for item in result["results"]] == [farm_a.id, farm_b.id]
+    for item in result["results"]:
+        assert item.get("status") != "failed", f"Service failed: {item}"
+        assert item["aligned_count"] > 0
+
+
+# Batch: a missing farm fails on its own without sinking the others
+async def test_run_estimation_partial_missing(async_session):
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125 -9, 125 -9.002, 125.002 -9.002, 125.002 -9, 125 -9)))",
+    )
+    missing_id = farm.id + 999999  # id that does not exist
+
+    service = SaplingEstimationService()
+    result = await service.run_estimation(async_session, farm_ids=[farm.id, missing_id], spacing_x=10, spacing_y=10, max_slope=15)
+
+    assert result["status"] == "success"  # envelope should succeed, per-farm status has the failures
+    assert result["farm_count"] == 2
+
+    by_id = {item["farm_id"]: item for item in result["results"]}
+
+    assert by_id[farm.id].get("status") != "failed"
+    assert by_id[farm.id]["aligned_count"] > 0
+
+    assert by_id[missing_id]["status"] == "failed"
+    assert by_id[missing_id]["message"] == "Farm not found"
+
+
+# Batch: results should be the same whether in a batch or just one at a time
+async def test_run_estimation_single_batch_same_results(async_session):
+    await async_session.execute(text("TRUNCATE dem_table RESTART IDENTITY;"))
+    await async_session.execute(DEM_INSERT)
+    await async_session.flush()
+
+    farm_a = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125.0005 -9.0005, 125.0005 -9.0015, 125.0015 -9.0015, 125.0015 -9.0005, 125.0005 -9.0005)))",
+    )
+    farm_b = await _add_farm(
+        async_session,
+        "MULTIPOLYGON (((125.0025 -9.0005, 125.0025 -9.0025, 125.0045 -9.0025, 125.0045 -9.0005, 125.0025 -9.0005)))",
+    )
+
+    service = SaplingEstimationService()
+    result_batch = await service.run_estimation(async_session, farm_ids=[farm_a.id, farm_b.id], spacing_x=3, spacing_y=3, max_slope=10)
+    result_single = await service._estimate_single_farm(async_session, farm_b.id, spacing_x=3, spacing_y=3, max_slope=10)
+
+    assert result_single.get("status") != "failed"
+
+    # create key value pair where the key is the id and the value is the details
+    batch_by_id = {item["farm_id"]: item for item in result_batch["results"]}
+    assert batch_by_id[farm_b.id]["aligned_count"] == result_single["aligned_count"]
+    assert batch_by_id[farm_a.id]["aligned_count"] != result_single["aligned_count"]
