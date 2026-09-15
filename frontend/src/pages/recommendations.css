@@ -329,3 +329,21 @@
 .rec-download-report-btn:active {
   transform: translateY(1px);
 }
+
+/* Responsive recommendation data cards */
+@media (max-width: 900px) {
+  .rec-data-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .rec-data-grid {
+    gap: 16px;
+    grid-template-columns: 1fr;
+  }
+
+  .rec-data-item {
+    padding: 14px;
+  }
+}

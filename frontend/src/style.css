@@ -2093,3 +2093,124 @@ main.container {
     width: 100%;
   }
 }
+
+/* Responsive typography, spacing, and touch targets */
+@media (max-width: 900px) {
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .search-btn {
+    min-height: 44px;
+  }
+
+  .species-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-left: 6%;
+    padding-right: 6%;
+  }
+}
+
+@media (max-width: 640px) {
+  .species-grid {
+    gap: 16px;
+    grid-template-columns: 1fr;
+    padding: 0.5rem 5% 2rem;
+  }
+
+  .article-title {
+    font-size: 1rem;
+  }
+
+  .article-lead {
+    font-size: 0.9rem;
+  }
+
+  button,
+  .button,
+  input[type="submit"],
+  input[type="button"] {
+    font-size: 1rem;
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  .admin-table-wrapper,
+  .farms-table-wrapper {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+}
+/* Mobile hero layout improvements for Task #162 */
+@media (max-width: 640px) {
+  .heroSection {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: auto;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 32px 8% 48px;
+  }
+
+  .heroTagline {
+    left: auto;
+    margin-top: 32px;
+    max-width: 100%;
+    position: static;
+    text-align: left;
+    top: auto;
+    transform: none;
+    width: 100%;
+  }
+
+  .heroTagline h1 {
+    font-size: clamp(2.5rem, 12vw, 3.5rem);
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+    line-height: 1.4;
+    margin-top: 16px;
+  }
+
+  .heroCarouselWrapper {
+    left: auto;
+    margin: 0;
+    max-width: 100%;
+    position: static;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+  }
+
+  .heroCarousel {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    width: 100%;
+  }
+
+  .heroCTA {
+    bottom: auto;
+    margin-top: 0;
+    position: static;
+    right: auto;
+    text-align: left;
+  }
+
+  .exploreButton {
+    font-size: 1rem;
+    min-height: 44px;
+    padding: 10px 18px;
+  }
+}
