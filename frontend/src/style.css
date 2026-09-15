@@ -2148,3 +2148,69 @@ main.container {
     overflow-x: auto;
   }
 }
+/* Mobile hero layout improvements for Task #162 */
+@media (max-width: 640px) {
+  .heroSection {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: auto;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 32px 8% 48px;
+  }
+
+  .heroTagline {
+    left: auto;
+    margin-top: 32px;
+    max-width: 100%;
+    position: static;
+    text-align: left;
+    top: auto;
+    transform: none;
+    width: 100%;
+  }
+
+  .heroTagline h1 {
+    font-size: clamp(2.5rem, 12vw, 3.5rem);
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+    line-height: 1.4;
+    margin-top: 16px;
+  }
+
+  .heroCarouselWrapper {
+    left: auto;
+    margin: 0;
+    max-width: 100%;
+    position: static;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+  }
+
+  .heroCarousel {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    width: 100%;
+  }
+
+  .heroCTA {
+    bottom: auto;
+    margin-top: 0;
+    position: static;
+    right: auto;
+    text-align: left;
+  }
+
+  .exploreButton {
+    font-size: 1rem;
+    min-height: 44px;
+    padding: 10px 18px;
+  }
+}
