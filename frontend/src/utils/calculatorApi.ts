@@ -30,19 +30,34 @@ export async function getSaplingEstimation(
   params: CalcParams,
   token: string
 ): Promise<SaplingEstimationResponse> {
-  const res = await fetch(`${API_BASE}/sapling_estimation/calculate`, {
+  const endpoint =
+    farmIds.length > 0
+      ? `${API_BASE}/sapling_estimation/calculate`
+      : `${API_BASE}/sapling_estimation/batch_calculate`;
+
+  const body =
+    farmIds.length > 0
+      ? {
+          farm_ids: farmIds,
+          spacing_x: params.spacingX,
+          spacing_y: params.spacingY,
+          max_slope: params.maxSlope,
+        }
+      : {
+          spacing_x: params.spacingX,
+          spacing_y: params.spacingY,
+          max_slope: params.maxSlope,
+        };
+
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      farm_ids: farmIds,
-      spacing_x: params.spacingX,
-      spacing_y: params.spacingY,
-      max_slope: params.maxSlope,
-    }),
+    body: JSON.stringify(body),
   });
+
   if (!res.ok) {
     const data = await res.json();
     let message = "Failed to fetch estimation";
@@ -56,5 +71,6 @@ export async function getSaplingEstimation(
     }
     throw new Error(message);
   }
+
   return res.json();
 }

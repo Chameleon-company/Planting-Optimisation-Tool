@@ -23,10 +23,12 @@ export default function CalculatorPage() {
   const [farmIds, setFarmIds] = useState<number[]>([]);
   const [calcParams, setCalcParams] = useState<CalcParams>(DEFAULT_CALC_PARAMS);
   const [selectedFarmId, setSelectedFarmId] = useState<number | null>(null);
+  const [shouldRun, setShouldRun] = useState(false);
 
   const { results, isLoading, hasSearched, error } = useCalculator(
     farmIds,
-    calcParams
+    calcParams,
+    shouldRun
   );
 
   useEffect(() => {
@@ -35,15 +37,12 @@ export default function CalculatorPage() {
     }
   }, [error]);
 
-  // showAggregate is true when selectedFarmId is the same as AGGREGATE_ID
   const showAggregate = selectedFarmId === AGGREGATE_ID;
 
-  // If showAggregate is true show null, if not, find farm id matching selected, if find nothing, show null
   const selectedResult = showAggregate
     ? null
     : (results.find(r => r.farm_id === selectedFarmId) ?? null);
 
-  // Only load the single-farm map for a farm that actually produced a grid
   const mapFarmId =
     selectedResult?.status === "success" ? selectedFarmId : null;
   const { boundary, grid } = useFarmMap(mapFarmId);
@@ -55,7 +54,6 @@ export default function CalculatorPage() {
     }
     const successful = results.filter(r => r.status === "success");
     const firstSuccess = successful[0];
-    // If more than 1 farm succeeded, default to the aggregate tab, else the first success.
     setSelectedFarmId(
       successful.length > 1
         ? AGGREGATE_ID
@@ -66,6 +64,7 @@ export default function CalculatorPage() {
   const handleSearch = (newFarmIds: number[], newParams: CalcParams) => {
     setFarmIds(newFarmIds);
     setCalcParams(newParams);
+    setShouldRun(true);
   };
 
   return (
@@ -96,7 +95,6 @@ export default function CalculatorPage() {
             onSelect={setSelectedFarmId}
           />
 
-          {/* if showAggregate is true, display combined farm map and calc aggregate */}
           {showAggregate ? (
             <div className="calc-farm-panel">
               <CalculatorAggregate results={results} />
@@ -105,8 +103,7 @@ export default function CalculatorPage() {
                 spacingY={calcParams.spacingY}
               />
             </div>
-          ) : // Else, display calculator result handing selected result to components
-          selectedResult && selectedResult.status === "success" ? (
+          ) : selectedResult && selectedResult.status === "success" ? (
             <div className="calc-farm-panel">
               <CalculatorResult result={selectedResult} />
               <FarmMap

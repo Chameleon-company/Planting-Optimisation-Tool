@@ -14,7 +14,11 @@ export const DEFAULT_CALC_PARAMS: CalcParams = {
   maxSlope: 15.0,
 };
 
-export function useCalculator(farmIds: number[], params: CalcParams) {
+export function useCalculator(
+  farmIds: number[],
+  params: CalcParams,
+  shouldRun = true
+) {
   const { getAccessToken } = useAuth();
   const [results, setResults] = useState<FarmEstimationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +26,8 @@ export function useCalculator(farmIds: number[], params: CalcParams) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!farmIds.length) return;
+    if (!shouldRun) return;
+
     let active = true;
 
     const fetchEstimation = async () => {
@@ -59,7 +64,7 @@ export function useCalculator(farmIds: number[], params: CalcParams) {
     return () => {
       active = false;
     };
-  }, [farmIds, params, getAccessToken]);
+  }, [farmIds, params, getAccessToken, shouldRun]);
 
   return { results, isLoading, hasSearched, error };
 }

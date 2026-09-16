@@ -29,8 +29,9 @@ export default function CalculatorSearch({
   const [maxSlope, setMaxSlope] = useState(DEFAULT_CALC_PARAMS.maxSlope);
 
   const parsedIds = parseFarmIds(farmIdsInput);
+  const hasSelectedFarms = parsedIds.length > 0;
   const canSearch =
-    parsedIds.length > 0 &&
+    (hasSelectedFarms || farmIdsInput.trim() === "") &&
     spacingX > 0 &&
     spacingY > 0 &&
     maxSlope > 0 &&
@@ -52,7 +53,7 @@ export default function CalculatorSearch({
           type="text"
           className="calc-input"
           value={farmIdsInput}
-          placeholder="e.g. 1, 2, 3"
+          placeholder="Leave blank to run all owned farms"
           onChange={e => setFarmIdsInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleSearch()}
         />
@@ -90,7 +91,7 @@ export default function CalculatorSearch({
 
       <div className="calc-input-group">
         <label className="calc-label" htmlFor="calc-max-slope">
-          Max Slope (°)
+          Max Slope (?)
         </label>
         <input
           id="calc-max-slope"
@@ -109,7 +110,11 @@ export default function CalculatorSearch({
         onClick={handleSearch}
         disabled={isLoading || !canSearch}
       >
-        {isLoading ? "Estimating Saplings..." : "Generate Planting Plan"}
+        {isLoading
+          ? "Estimating Saplings..."
+          : hasSelectedFarms
+            ? "Generate Planting Plan"
+            : "Run Portfolio Calculation"}
       </button>
     </div>
   );

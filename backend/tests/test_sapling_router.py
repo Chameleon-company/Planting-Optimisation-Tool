@@ -193,6 +193,33 @@ async def test_calculate_multiple_farms(
         assert item["aligned_count"] > 0
 
 
+# Batch: portfolio calculation runs across all farms owned by the authenticated user
+async def test_batch_calculate_all_owned_farms(
+    async_client,
+    setup_farm,
+    officer_auth_headers,
+):
+    farm = setup_farm
+
+    payload = {
+        "spacing_x": 10,
+        "spacing_y": 10,
+        "max_slope": 15,
+    }
+
+    request = await async_client.post(
+        "/sapling_estimation/batch_calculate",
+        json=payload,
+        headers=officer_auth_headers,
+    )
+
+    assert request.status_code == 200
+    data = request.json()
+    assert data["farm_count"] == 1
+    assert [item["farm_id"] for item in data["results"]] == [farm.id]
+    assert data["results"][0]["aligned_count"] > 0
+
+
 # Batch: any unknown / unowned id in the list yields a 404
 async def test_calculate_partial_not_found(
     async_client,
