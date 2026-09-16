@@ -132,6 +132,13 @@ class FarmRead(FarmBase):
         description="List of associated agroforestry types with names.",
     )
 
+    # Indicates whether each environmental value was estimated by ML
+    elevation_m_imputed: bool = False
+    slope_imputed: bool = False
+    temperature_celsius_imputed: bool = False
+    rainfall_mm_imputed: bool = False
+    ph_imputed: bool = False
+
     model_config = ConfigDict(from_attributes=True)
 
 

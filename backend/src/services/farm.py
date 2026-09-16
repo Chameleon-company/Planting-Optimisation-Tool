@@ -11,6 +11,13 @@ from src.models.boundaries import FarmBoundary
 from src.schemas.farm import FarmCreate, FarmUpdate
 from src.schemas.user import Role
 
+IMPUTATION_FLAG_FIELDS = {
+    "rainfall_mm": "rainfall_mm_imputed",
+    "temperature_celsius": "temperature_celsius_imputed",
+    "elevation_m": "elevation_m_imputed",
+    "slope": "slope_imputed",
+    "ph": "ph_imputed",
+}
 
 async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: int):
     # Convert Pydantic to Dict
@@ -112,10 +119,21 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
     agroforestry_ids = update_data.pop("agroforestry_type_ids", None)
 
     for field, value in update_data.items():
+        if field in IMPUTATION_FLAG_FIELDS:
+            existing_value = getattr(db_farm, field)
+
+            if value != existing_value:
+                flag_field = IMPUTATION_FLAG_FIELDS[field]
+                setattr(db_farm, flag_field, False)
+
         setattr(db_farm, field, value)
 
     if agroforestry_ids is not None:
-        result = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_ids)))
+        result = await db.execute(
+            select(AgroforestryType).where(
+                AgroforestryType.id.in_(agroforestry_ids)
+            )
+        )
         selected_types = list(result.scalars().all())
         db_farm.agroforestry_type = selected_types
 
@@ -132,7 +150,6 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
         .where(Farm.id == db_farm.id)
     )
     return result.scalar_one()
-
 
 async def get_farm_boundary(db: AsyncSession, farm_id: int) -> dict | None:
     result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))

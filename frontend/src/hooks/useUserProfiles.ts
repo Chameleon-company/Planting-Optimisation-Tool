@@ -27,6 +27,12 @@ export interface Farm {
   bank_stabilising: boolean;
   slope: number;
   agroforestry_type: AgroforestryType[];
+
+  elevation_m_imputed?: boolean;
+  slope_imputed?: boolean;
+  temperature_celsius_imputed?: boolean;
+  rainfall_mm_imputed?: boolean;
+  ph_imputed?: boolean;
 }
 
 export function useUserProfiles() {

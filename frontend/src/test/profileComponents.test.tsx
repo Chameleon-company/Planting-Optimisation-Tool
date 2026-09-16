@@ -14,9 +14,17 @@ import FarmSearchPanel from "@/components/profile/profileSearchPanel";
 const mockFarm = (id: number): Farm => ({
   id,
   rainfall_mm: 800,
+  rainfall_mm_imputed: false,
+
   temperature_celsius: 22,
+  temperature_celsius_imputed: false,
+
   elevation_m: 150,
+  elevation_m_imputed: false,
+
   ph: 6.5,
+  ph_imputed: false,
+
   soil_texture: { name: "Loam" },
   area_ha: 12.345,
   latitude: -37.12345,
@@ -26,7 +34,10 @@ const mockFarm = (id: number): Farm => ({
   nitrogen_fixing: true,
   shade_tolerant: false,
   bank_stabilising: false,
+
   slope: 3.75,
+  slope_imputed: false,
+
   agroforestry_type: [{ id: 1, type_name: "Silvopasture" }],
 });
 
@@ -93,6 +104,58 @@ describe("FarmCard", () => {
     expect(screen.getByText("6.5")).toBeInTheDocument();
     expect(screen.getByText("3.75°")).toBeInTheDocument();
     expect(screen.getByText("Loam")).toBeInTheDocument();
+  });
+
+  it("renders Estimated badges for imputed environmental metrics", () => {
+    const farm = {
+      ...mockFarm(1),
+      rainfall_mm_imputed: true,
+      temperature_celsius_imputed: false,
+      elevation_m_imputed: true,
+      ph_imputed: false,
+      slope_imputed: true,
+    };
+
+    render(<FarmCard farm={farm} isSearched={false} />);
+
+    expect(screen.getAllByText("Estimated")).toHaveLength(3);
+  });
+
+  it("shows an Estimated indicator with tooltip text for imputed metrics", () => {
+    const farm = {
+      ...mockFarm(1),
+      rainfall_mm_imputed: true,
+    };
+
+    render(<FarmCard farm={farm} isSearched={false} />);
+
+    const estimated = screen.getByText("Estimated");
+
+    expect(estimated).toBeInTheDocument();
+
+    expect(estimated).toHaveAttribute(
+      "aria-label",
+      "Estimated value. This value was predicted using similar farm archetypes because spatial data was unavailable."
+    );
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent(
+      "Estimated value. This value was predicted using similar farm archetypes because spatial data was unavailable."
+    );
+  });
+
+  it("does not render Estimated badges when metrics are not imputed", () => {
+    const farm = {
+      ...mockFarm(1),
+      rainfall_mm_imputed: false,
+      temperature_celsius_imputed: false,
+      elevation_m_imputed: false,
+      ph_imputed: false,
+      slope_imputed: false,
+    };
+
+    render(<FarmCard farm={farm} isSearched={false} />);
+
+    expect(screen.queryByText("Estimated")).not.toBeInTheDocument();
   });
 
   it("renders coordinates formatted to 5 decimal places", () => {

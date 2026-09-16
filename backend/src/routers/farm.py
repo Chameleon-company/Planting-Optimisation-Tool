@@ -138,7 +138,10 @@ async def update_farm(
         farm_data=farm_data,
     )
 
-    await cache.invalidate(f"rec:{farm_id}")
+    await cache.invalidate(
+    f"profile:{farm_id}",
+    f"rec:{farm_id}",
+)
     return updated_farm
 
 

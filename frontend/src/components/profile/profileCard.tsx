@@ -5,6 +5,24 @@ interface FarmCardProps {
   isSearched: boolean;
 }
 
+const ESTIMATED_TOOLTIP =
+  "Estimated value. This value was predicted using similar farm archetypes because spatial data was unavailable.";
+
+function EstimatedIndicator() {
+  return (
+    <span
+      className="estimated-indicator"
+      tabIndex={0}
+      aria-label={ESTIMATED_TOOLTIP}
+    >
+      Estimated
+      <span className="estimated-tooltip" role="tooltip">
+        {ESTIMATED_TOOLTIP}
+      </span>
+    </span>
+  );
+}
+
 // Create farm card that parses data from backend to be displayed in the frontend
 export default function FarmCard({ farm, isSearched }: FarmCardProps) {
   // Convert boolean tags to strings to be displayed
@@ -28,28 +46,38 @@ export default function FarmCard({ farm, isSearched }: FarmCardProps) {
       <div className="farm-card-grid">
         <div className="farm-card-stat">
           <span className="farm-card-stat-label">Rainfall</span>
-          <span className="farm-card-stat-value">{farm.rainfall_mm} mm</span>
+          <span className="farm-card-stat-value">
+            {farm.rainfall_mm} mm
+            {farm.rainfall_mm_imputed && <EstimatedIndicator />}
+          </span>
         </div>
         <div className="farm-card-stat">
           <span className="farm-card-stat-label">Temperature</span>
           <span className="farm-card-stat-value">
             {farm.temperature_celsius}°C
+            {farm.temperature_celsius_imputed && <EstimatedIndicator />}
           </span>
         </div>
+
         <div className="farm-card-stat">
           <span className="farm-card-stat-label">Elevation</span>
-          <span className="farm-card-stat-value">{farm.elevation_m} m</span>
+          <span className="farm-card-stat-value">
+            {farm.elevation_m} m
+            {farm.elevation_m_imputed && <EstimatedIndicator />}
+          </span>
         </div>
         <div className="farm-card-stat">
           <span className="farm-card-stat-label">Soil pH</span>
           <span className="farm-card-stat-value">
             {farm.ph ? Number(farm.ph).toFixed(1) : "N/A"}
+            {farm.ph_imputed && <EstimatedIndicator />}
           </span>
         </div>
         <div className="farm-card-stat">
           <span className="farm-card-stat-label">Slope</span>
           <span className="farm-card-stat-value">
             {farm.slope ? Number(farm.slope).toFixed(2) : "N/A"}°
+            {farm.slope_imputed && <EstimatedIndicator />}
           </span>
         </div>
         <div className="farm-card-stat">
