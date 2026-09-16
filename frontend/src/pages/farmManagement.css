@@ -576,3 +576,20 @@
 .farms-modal::-webkit-scrollbar-thumb:hover {
   background: var(--black-forest);
 }
+
+/* Improve form controls and actions on small screens */
+@media (max-width: 640px) {
+  .register-farm-input,
+  .register-farm-toggle,
+  .register-farm-btn {
+    min-height: 44px;
+  }
+
+  .register-farm-actions {
+    flex-direction: column;
+  }
+
+  .register-farm-actions button {
+    width: 100%;
+  }
+}

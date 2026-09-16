@@ -258,3 +258,29 @@
     width: 100%;
   }
 }
+
+/* Responsive profile cards */
+@media (max-width: 900px) {
+  .farm-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .farm-list {
+    gap: 16px;
+    padding: 20px 5%;
+  }
+
+  .farm-card {
+    padding: 16px;
+  }
+
+  .farm-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .farm-card-id {
+    font-size: 1rem;
+  }
+}
