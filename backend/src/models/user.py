@@ -5,7 +5,7 @@ Users have hierarchical roles (officer, supervisor, admin) that determine their 
 """
 
 # For type hinting only, not runtime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,6 +14,7 @@ from src.database import Base
 from src.models.association import farm_owners_association
 
 if TYPE_CHECKING:
+    from .auth_token import AuthToken
     from .farm import Farm
 
 
@@ -30,6 +31,8 @@ class User(Base):
         email: User's email address (unique, indexed, used for login)
         hashed_password: Bcrypt-hashed password (never store plain text!)
         role: User's role - one of: "officer", "supervisor", "admin" (indexed)
+        is_approved: Whether an admin has approved this account for login
+        requested_role: The role the user asked for at registration (admin context only)
         farms: Relationship to Farm model - farms supervised by this user
 
     Role Hierarchy:
@@ -45,6 +48,8 @@ class User(Base):
         - Email is used as the username for OAuth2 authentication
         - Role determines access via require_role() dependency
         - All user modifications should be audit logged
+        - New registrations are created with is_approved=False and cannot log in
+          until an admin approves them and assigns their effective role
 
     Database Schema:
         - Table name: users
@@ -63,11 +68,27 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_verified: Mapped[bool] = mapped_column(default=False, nullable=False)
 
+    # Admin approval gate, users cannot log in until an admin approves them
+    is_approved: Mapped[bool] = mapped_column(default=False, nullable=False)
+
+    # The role the applicant requested at registration. The effective role lives
+    # in "role" and is only ever assigned by an admin at approval time. Nullable so
+    # pre-existing rows (and admin-created users) are unaffected.
+    requested_role: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, default=None)
+
     # Authorization - role determines user's permission level
     role: Mapped[str] = mapped_column(String(50), index=True, default="officer")
 
     # Relationships - farms supervised by this user
     farms: Mapped[List["Farm"]] = relationship(secondary=farm_owners_association, back_populates="owners")
+
+    # Auth tokens (email verification / password reset) belonging to this user.
+    # delete-orphan so removing a user cleans up their tokens and doesn't trip
+    # the auth_tokens_user_id_fkey constraint.
+    tokens: Mapped[List["AuthToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         """String representation for debugging."""

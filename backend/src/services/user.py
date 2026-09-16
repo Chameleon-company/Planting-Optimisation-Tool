@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.user import User
+from src.schemas.constants import Role
 from src.schemas.user import UserCreate, UserUpdate
 from src.utils.security import get_password_hash
 
@@ -35,6 +36,30 @@ async def list_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[
     """Returns a paginated list of all users."""
     result = await db.execute(select(User).offset(skip).limit(limit))
     return list(result.scalars().all())
+
+
+async def list_pending_users(db: AsyncSession) -> list[User]:
+    """Returns all users awaiting admin approval, oldest first."""
+    result = await db.execute(select(User).where(User.is_approved.is_(False)).order_by(User.id))
+    return list(result.scalars().all())
+
+
+async def approve_user(db: AsyncSession, user_id: int, role: Role) -> User | None:
+    """Approves a pending user and assigns their effective role.
+
+    Returns None if the user does not exist.
+    """
+    result = await db.execute(select(User).where(User.id == user_id))
+    db_user = result.scalar_one_or_none()
+    if db_user is None:
+        return None
+
+    db_user.role = Role(role).value
+    db_user.is_approved = True
+
+    await db.commit()
+    await db.refresh(db_user)
+    return db_user
 
 
 async def update_user(db: AsyncSession, user_id: int, user: UserUpdate) -> User | None:

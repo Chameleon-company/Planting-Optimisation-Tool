@@ -9,6 +9,7 @@ import type { FarmEstimationResult } from "@/hooks/useCalculator";
 vi.mock("@/hooks/useCalculator", () => ({
   useCalculator: vi.fn(),
   DEFAULT_CALC_PARAMS: { spacingX: 3.0, spacingY: 3.0, maxSlope: 15.0 },
+  AGGREGATE_ID: -1,
 }));
 
 vi.mock("@/hooks/useFarmMap", () => ({
@@ -20,7 +21,11 @@ vi.mock("@/hooks/useFarmMap", () => ({
   })),
 }));
 
-vi.mock("@/components/calculator/FarmMap", () => ({
+vi.mock("@/components/calculator/calculatorFarmMap", () => ({
+  default: () => null,
+}));
+
+vi.mock("@/components/calculator/calculatorCombinedMap", () => ({
   default: () => null,
 }));
 
@@ -102,11 +107,8 @@ describe("CalculatorPage Integration", () => {
 
     renderPage();
 
-    // Auto-focuses the first successful farm
-    expect(
-      screen.getByText(/estimation results - farm 1/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText("80")).toBeInTheDocument();
+    expect(screen.getByText(/aggregate of 2 farms/i)).toBeInTheDocument();
+    expect(screen.getByRole("tablist")).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /farm 2/i }));
 
@@ -115,6 +117,64 @@ describe("CalculatorPage Integration", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("55")).toBeInTheDocument();
     expect(screen.getByText("35")).toBeInTheDocument();
+  });
+
+  it("aggregate totals equal the sum of the individual per-farm tabs", async () => {
+    const user = UserEvent.setup();
+    const farmA = success(1, 80);
+    const farmB = success(2, 55);
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [farmA, farmB],
+    });
+
+    renderPage();
+
+    expect(screen.getByText(/aggregate of 2 farms/i)).toBeInTheDocument();
+
+    const expectedPreSlope =
+      (farmA.pre_slope_count ?? 0) + (farmB.pre_slope_count ?? 0);
+    const expectedAligned =
+      (farmA.aligned_count ?? 0) + (farmB.aligned_count ?? 0);
+    const expectedAdditional =
+      (farmA.additional_sapling_count ?? 0) +
+      (farmB.additional_sapling_count ?? 0);
+
+    expect(screen.getByText(String(expectedPreSlope))).toBeInTheDocument();
+    expect(screen.getByText(String(expectedAligned))).toBeInTheDocument();
+    expect(screen.getByText(String(expectedAdditional))).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /farm 1/i }));
+    expect(
+      screen.getByText(/estimation results - farm 1/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(String(farmA.pre_slope_count))).toBeInTheDocument();
+    expect(screen.getByText(String(farmA.aligned_count))).toBeInTheDocument();
+    expect(
+      screen.getByText(String(farmA.additional_sapling_count))
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /farm 2/i }));
+    expect(
+      screen.getByText(/estimation results - farm 2/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(String(farmB.pre_slope_count))).toBeInTheDocument();
+    expect(screen.getByText(String(farmB.aligned_count))).toBeInTheDocument();
+    expect(
+      screen.getByText(String(farmB.additional_sapling_count))
+    ).toBeInTheDocument();
+
+    expect(expectedPreSlope).toBe(
+      (farmA.pre_slope_count ?? 0) + (farmB.pre_slope_count ?? 0)
+    );
+    expect(expectedAligned).toBe(
+      (farmA.aligned_count ?? 0) + (farmB.aligned_count ?? 0)
+    );
+    expect(expectedAdditional).toBe(
+      (farmA.additional_sapling_count ?? 0) +
+        (farmB.additional_sapling_count ?? 0)
+    );
   });
 
   it("focuses the first successful farm even when earlier farms failed", () => {
@@ -197,5 +257,61 @@ describe("CalculatorPage Integration", () => {
     await user.type(input, "5");
 
     expect(input).toHaveValue(5);
+  });
+
+  it("defaults to the aggregate view when more than one farm succeeds", () => {
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [success(1, 80), success(2, 55)],
+    });
+
+    renderPage();
+
+    expect(screen.getByText(/aggregate of 2 farms/i)).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /aggregate/i })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+  });
+
+  it("returns to the aggregate view after viewing a single farm", async () => {
+    const user = UserEvent.setup();
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [success(1, 80), success(2, 55)],
+    });
+
+    renderPage();
+
+    await user.click(screen.getByRole("tab", { name: /farm 1/i }));
+    expect(
+      screen.getByText(/estimation results - farm 1/i)
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /aggregate/i }));
+    expect(screen.getByText(/aggregate of 2 farms/i)).toBeInTheDocument();
+  });
+
+  it("does not show an aggregate tab or card when only one farm succeeds", () => {
+    vi.mocked(useCalculator).mockReturnValue({
+      ...idleHook,
+      hasSearched: true,
+      results: [
+        success(1, 80),
+        { farm_id: 2, status: "failed", message: "No boundary data" },
+      ],
+    });
+
+    renderPage();
+
+    expect(screen.queryByText(/aggregate of/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("tab", { name: /aggregate/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/estimation results - farm 1/i)
+    ).toBeInTheDocument();
   });
 });

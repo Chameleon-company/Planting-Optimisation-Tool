@@ -105,6 +105,8 @@ async def login_for_access_token(
 
     Raises:
         HTTPException: 401 if credentials are invalid
+        HTTPException: 403 if email is unverified or the account is not yet
+            approved by an admin
 
     Example:
         POST /auth/token
@@ -156,6 +158,12 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if not user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is awaiting admin approval.",
+        )
+
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -182,7 +190,9 @@ async def register_user(request: Request, user: UserCreate, background_tasks: Ba
         email=normalized_email,
         name=user.name,
         hashed_password=hashed_password,
-        role=user.role,
+        role=Role.OFFICER,
+        requested_role=user.role,
+        is_approved=False,
         is_verified=False,
     )
     db.add(db_user)

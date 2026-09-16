@@ -5,6 +5,9 @@ import type { CalcParams, FarmEstimationResult } from "@/utils/calculatorApi";
 
 export type { CalcParams, FarmEstimationResult };
 
+// Sentinel ID for Aggregate tab, set to -1 as no ID is less than 1
+export const AGGREGATE_ID = -1;
+
 export const DEFAULT_CALC_PARAMS: CalcParams = {
   spacingX: 3.0,
   spacingY: 3.0,

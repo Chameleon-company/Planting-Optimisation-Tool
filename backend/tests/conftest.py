@@ -110,6 +110,7 @@ async def test_admin_user(async_session: AsyncSession) -> User:
         hashed_password=get_password_hash("adminpassword"),
         role=Role.ADMIN.value,
         is_verified=True,
+        is_approved=True,
     )
     user = await async_session.merge(user)
     await async_session.flush()
@@ -126,6 +127,7 @@ async def test_supervisor_user(async_session: AsyncSession) -> User:
         hashed_password=get_password_hash("supervisorpassword"),
         role=Role.SUPERVISOR.value,
         is_verified=True,
+        is_approved=True,
     )
     user = await async_session.merge(user)
     await async_session.flush()
@@ -142,6 +144,7 @@ async def test_officer_user(async_session: AsyncSession) -> User:
         hashed_password=get_password_hash("officerpassword"),
         role=Role.OFFICER.value,
         is_verified=True,
+        is_approved=True,
     )
     user = await async_session.merge(user)
     await async_session.flush()

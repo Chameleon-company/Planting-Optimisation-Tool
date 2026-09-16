@@ -322,3 +322,16 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Responsive layout for medium and small screens */
+@media (max-width: 900px) {
+  .calc-farm-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .calc-farm-panel {
+    gap: 16px;
+  }
+}

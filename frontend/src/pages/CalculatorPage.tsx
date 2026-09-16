@@ -1,17 +1,22 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import CalculatorSkeleton from "@/components/calculator/calculatorSkeleton";
 
 import { useCalculator, DEFAULT_CALC_PARAMS } from "@/hooks/useCalculator";
 import type { CalcParams } from "@/hooks/useCalculator";
+import { AGGREGATE_ID } from "@/hooks/useCalculator";
 import { useFarmMap } from "@/hooks/useFarmMap";
 
 import CalculatorHeader from "@/components/calculator/calculatorHeader";
 import CalculatorSearch from "@/components/calculator/calculatorSearch";
-import CalculatorResult from "@/components/calculator/calculatorResult";
+import {
+  CalculatorResult,
+  CalculatorAggregate,
+} from "@/components/calculator/calculatorResult";
 import CalculatorTabs from "@/components/calculator/calculatorTabs";
-import FarmMap from "@/components/calculator/FarmMap";
+import FarmMap from "@/components/calculator/calculatorFarmMap";
+import CombinedFarmMap from "@/components/calculator/calculatorCombinedMap";
 
 import "@/components/calculator/calculator.css";
 
@@ -31,22 +36,32 @@ export default function CalculatorPage() {
     }
   }, [error]);
 
-  const selectedResult =
-    results.find(r => r.farm_id === selectedFarmId) ?? null;
+  // showAggregate is true when selectedFarmId is the same as AGGREGATE_ID
+  const showAggregate = selectedFarmId === AGGREGATE_ID;
 
-  // Only load the map for a farm that actually produced a grid
+  // If showAggregate is true show null, if not, find farm id matching selected, if find nothing, show null
+  const selectedResult = showAggregate
+    ? null
+    : (results.find(r => r.farm_id === selectedFarmId) ?? null);
+
+  // Only load the single-farm map for a farm that actually produced a grid
   const mapFarmId =
     selectedResult?.status === "success" ? selectedFarmId : null;
   const { boundary, grid } = useFarmMap(mapFarmId);
 
-  // When successful search focus the first successful farm
   useEffect(() => {
     if (results.length === 0) {
       setSelectedFarmId(null);
       return;
     }
-    const firstSuccess = results.find(r => r.status === "success");
-    setSelectedFarmId((firstSuccess ?? results[0]).farm_id);
+    const successful = results.filter(r => r.status === "success");
+    const firstSuccess = successful[0];
+    // If more than 1 farm succeeded, default to the aggregate tab, else the first success.
+    setSelectedFarmId(
+      successful.length > 1
+        ? AGGREGATE_ID
+        : (firstSuccess ?? results[0]).farm_id
+    );
   }, [results]);
 
   const handleSearch = (newFarmIds: number[], newParams: CalcParams) => {
@@ -84,7 +99,17 @@ export default function CalculatorPage() {
             onSelect={setSelectedFarmId}
           />
 
-          {selectedResult && selectedResult.status === "success" ? (
+          {/* if showAggregate is true, display combined farm map and calc aggregate */}
+          {showAggregate ? (
+            <div className="calc-farm-panel">
+              <CalculatorAggregate results={results} />
+              <CombinedFarmMap
+                results={results}
+                spacingY={calcParams.spacingY}
+              />
+            </div>
+          ) : // Else, display calculator result handing selected result to components
+          selectedResult && selectedResult.status === "success" ? (
             <div className="calc-farm-panel">
               <CalculatorResult result={selectedResult} />
               <FarmMap

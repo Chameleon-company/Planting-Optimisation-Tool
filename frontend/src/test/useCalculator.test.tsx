@@ -147,4 +147,46 @@ describe("useCalculator Hook", () => {
     expect(global.fetch).not.toHaveBeenCalled();
     expect(result.current.error).toBe("Please log in to continue.");
   });
+
+  it("refetches when farmIds change", async () => {
+    (global.fetch as Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockResponse,
+    });
+
+    const { result, rerender } = renderHook(
+      ({ ids }) => useCalculator(ids, DEFAULT_CALC_PARAMS),
+      { initialProps: { ids: [1] } }
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    rerender({ ids: [2] });
+
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+    const secondBody = JSON.parse(
+      (global.fetch as Mock).mock.calls[1][1].body as string
+    );
+    expect(secondBody.farm_ids).toEqual([2]);
+  });
+
+  it("reports isLoading while the request is in flight", async () => {
+    // A promise we resolve by hand, so we can observe the loading state mid-request
+    let resolveFetch!: () => void;
+    (global.fetch as Mock).mockReturnValue(
+      new Promise(res => {
+        resolveFetch = () => res({ ok: true, json: async () => mockResponse });
+      })
+    );
+
+    const { result } = renderHook(() =>
+      useCalculator(ONE_FARM, DEFAULT_CALC_PARAMS)
+    );
+
+    expect(result.current.isLoading).toBe(true);
+
+    resolveFetch();
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  });
 });
