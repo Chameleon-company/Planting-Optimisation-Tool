@@ -22,27 +22,8 @@ async def get_batch_estimation(
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.OFFICER)),
 ):
-    """- Batch estimates sapling planting capacity for all farms owned by the authenticated user.
-
-    Inputs:
-    - spacing_x: horizontal spacing between saplings
-    - spacing_y: vertical spacing between saplings
-    - max_slope: maximum allowed slope
-
-    Returns:
-    - status
-    - farm_count: total number of farms processed
-    - results: a list of estimations/results for a single farm:
-        - farm_id
-        - status
-        - pre_slope_count
-        - aligned_count
-        - optimal_angle (if applicable)
-
-    Requires OFFICER role or higher.
-    """
+    """Runs sapling estimation for all farms owned by the authenticated user."""
     service = SaplingBatchEstimationService()
-
     return await service.run_batch_estimation(
         db=db,
         user_id=current_user.id,
