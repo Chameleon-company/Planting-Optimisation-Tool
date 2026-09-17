@@ -16,9 +16,7 @@ const TestComponent = () => {
 
   return (
     <div>
-      <p>
-        {user ? `Logged in as ${user.name}` : "Not logged in"}
-      </p>
+      <p>{user ? `Logged in as ${user.name}` : "Not logged in"}</p>
       <p>{isLoading ? "Loading" : "Idle"}</p>
 
       <button
@@ -82,50 +80,44 @@ describe("AuthContext", () => {
     await userEvent.click(screen.getByText("Login"));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Logged in as Admin User")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Logged in as Admin User")).toBeInTheDocument();
     });
 
     expect(localStorage.getItem("access_token")).toBe("test-token");
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
- it("should clear the session when an unauthorized event is received", async () => {
-  localStorage.setItem("access_token", "expired-token");
+  it("should clear the session when an unauthorized event is received", async () => {
+    localStorage.setItem("access_token", "expired-token");
 
-  mockFetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({
-      id: 1,
-      name: "Admin User",
-      email: "admin@test.com",
-      role: "admin",
-    }),
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 1,
+        name: "Admin User",
+        email: "admin@test.com",
+        role: "admin",
+      }),
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Logged in as Admin User")).toBeInTheDocument();
+    });
+
+    window.dispatchEvent(new Event("auth:unauthorized"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Not logged in")).toBeInTheDocument();
+    });
+
+    expect(localStorage.getItem("access_token")).toBeNull();
   });
-
-  render(
-    <AuthProvider>
-      <TestComponent />
-    </AuthProvider>
-  );
-
-  await waitFor(() => {
-    expect(
-      screen.getByText("Logged in as Admin User")
-    ).toBeInTheDocument();
-  });
-
-  window.dispatchEvent(new Event("auth:unauthorized"));
-
-  await waitFor(() => {
-    expect(
-      screen.getByText("Not logged in")
-    ).toBeInTheDocument();
-  });
-
-  expect(localStorage.getItem("access_token")).toBeNull();
-});
 
   it("should clear user and token after logout", async () => {
     mockFetch
@@ -155,9 +147,7 @@ describe("AuthContext", () => {
     await userEvent.click(screen.getByText("Login"));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Logged in as Admin User")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Logged in as Admin User")).toBeInTheDocument();
     });
 
     await userEvent.click(screen.getByText("Logout"));
@@ -186,9 +176,7 @@ describe("AuthContext", () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Logged in as Stored Admin")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Logged in as Stored Admin")).toBeInTheDocument();
     });
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
