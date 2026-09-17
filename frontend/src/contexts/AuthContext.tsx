@@ -6,6 +6,8 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+
+import { AUTH_UNAUTHORIZED_EVENT } from "../utils/apiFetch";
 // API base URL (adjust if needed)
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -112,6 +114,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("access_token");
     setUser(null);
   }, []);
+
+  useEffect(() => {
+  const handleUnauthorized = () => {
+    logout();
+  };
+
+  window.addEventListener(
+    AUTH_UNAUTHORIZED_EVENT,
+    handleUnauthorized
+  );
+
+  return () => {
+    window.removeEventListener(
+      AUTH_UNAUTHORIZED_EVENT,
+      handleUnauthorized
+    );
+  };
+}, [logout]);
 
   const getAccessToken = useCallback(() => {
     return localStorage.getItem("access_token");
