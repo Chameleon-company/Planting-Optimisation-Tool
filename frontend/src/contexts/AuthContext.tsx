@@ -116,22 +116,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-  const handleUnauthorized = () => {
-    logout();
-  };
+    const handleUnauthorized = () => {
+      logout();
+    };
 
-  window.addEventListener(
-    AUTH_UNAUTHORIZED_EVENT,
-    handleUnauthorized
-  );
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
 
-  return () => {
-    window.removeEventListener(
-      AUTH_UNAUTHORIZED_EVENT,
-      handleUnauthorized
-    );
-  };
-}, [logout]);
+    return () => {
+      window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+    };
+  }, [logout]);
 
   const getAccessToken = useCallback(() => {
     return localStorage.getItem("access_token");
