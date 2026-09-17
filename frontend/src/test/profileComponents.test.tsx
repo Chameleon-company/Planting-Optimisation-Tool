@@ -155,7 +155,7 @@ describe("FarmCard", () => {
       <FarmCard farm={mockFarm(1)} isSearched={false} />
     );
     // No extra class should be applied when the card is part of the regular farm list
-    expect(container.firstChild).not.toHaveClass("searchedCard");
+    expect(container.firstChild).not.toHaveClass("searched-card");
   });
 });
 
