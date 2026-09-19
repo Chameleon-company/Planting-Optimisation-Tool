@@ -51,6 +51,7 @@ gis/
 │   └── settings.py              # Environment variable loading and dataset configuration
 │
 ├── core/
+|   ├── __init__.py              #
 │   ├── extract_data.py          # Functions to fetch rainfall, temperature, pH, elevation, and landcover data
 │   ├── farm_profile.py          # Builds farm profiles from coordinates (single & bulk)
 │   ├── gee_client.py            # Google Earth Engine initialization and client handling
@@ -61,6 +62,7 @@ gis/
 │
 ├── notebook/
 │   └── eda_gee.ipynb            # Exploratory analysis of GEE environmental data 
+│   └── eda_gee.pdf
 │
 ├── sapling_estimation/
 │   ├── data/
@@ -71,6 +73,7 @@ gis/
 │   │   │   └── flowchart.png    # Sapling estimation workflow diagram
 │   │   ├── feature_summary.md   # Feature overview and summary
 │   │   └── output_schema.md     # Sapling estimation output schema
+│   └── __init__.py
 │   ├── estimate.py              # Sapling estimation logic
 │   ├── planting_points.py       # Planting point generation
 │   ├── rotation.py              # Rotation and geometry alignment logic
@@ -88,6 +91,7 @@ gis/
 ├── .gitignore
 ├── .python-version
 ├── README.md
+|── __init__.py
 ├── pyproject.toml
 └── uv.lock
 
@@ -102,6 +106,21 @@ gis/
 - **Error Handling**: Graceful handling of missing data and invalid inputs
 - **Temporal Data**: Supports year-specific queries for rainfall and temperature
 
+
+## Completed GIS Improvements
+
+The following GIS-related work has been completed:
+
+- DEM data integration and results storing.
+- GEE baseline analysis update.
+- Riparian zone identification.
+- Farm spatial visualisation.
+- Environmental profile data flow documentation.
+- Environmental data imputation and data flagging.
+- Sapling estimation algorithm performance optimisation.
+- Riparian calculation improvements.
+
+
 ## Data Sources
 
 ### Google Earth Engine Datasets (Global - Used for API )
@@ -112,6 +131,24 @@ gis/
 | SRTM DEM    | Elevation   | 90 m       | Static (2000)     | r=0.998, MAE=7.97m     | Excellent                      |
 | MODIS LST   | Temperature | 1 km       | 2000-present      | r=0.880, MAE=3.82°C    | Good (bias correction needed)  |
 | OpenLandMap | Soil pH     | 250 m      | Static (~2020)    | r=0.188, MAE=1.27      | Poor (not recommended)         |
+
+
+## GIS Data Processing
+
+The GIS module supports environmental data processing for farm locations, including:
+
+- Rainfall extraction.
+- Temperature extraction.
+- Elevation extraction.
+- Slope calculation.
+- Soil pH extraction.
+- Soil texture processing.
+- Farm area calculation.
+- Farm centroid calculation.
+- Farm profile generation.
+- Bulk farm profile creation.
+- Bulk farm profile updates.
+- Riparian-related calculations.
 
 ### Product Owner (PO) Datasets (Timor-Leste)
 

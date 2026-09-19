@@ -49,6 +49,15 @@ To run, from the base directory of your team, enter `uv run ruff check` and it w
 
 You can also choose to run `uv run ruff check --fix` to automatically fix any linting issues.
 
+## Testing
+
+The Data Science module uses pytest for automated testing.
+
+The test suite includes unit and integration tests for the Data Science libraries, including the imputation service.
+
+The Data Science and GIS CI pipelines also include pytest coverage reporting.
+
+Run the tests using the project testing command defined in the project configuration.
 
 # Models
 
@@ -63,6 +72,28 @@ Fills missing environmental variables (`elevation_m`, `slope`, `temperature_cels
 
 Predicts annualised trunk circumference growth rate (cm/year) per tree species from historical TreeO2 measurement data. Used to rank species by expected growth trajectory at planting time.
 
+## Survivability Model
+
+The survivability model is used to support tree survival analysis. The model was updated through data remediation, baseline retraining, training logic improvements, and feature engineering.
+
+Completed work includes:
+
+- Survivability model data remediation and baseline retraining.
+- Survivability model training logic improvements.
+- Survivability model feature engineering.
+
+## Suitability Scoring
+
+The suitability scoring library calculates species suitability based on farm environmental conditions and species requirements.
+
+Completed work includes:
+
+- Suitability scoring architecture modernisation.
+- Expert-driven weight calculation using AHP.
+- Data-driven and hybrid weight calculation.
+- Species-specific exclusion logic.
+- Biological dependency enforcement.
+- Ecological function integration.
 
 
 ## Configuration

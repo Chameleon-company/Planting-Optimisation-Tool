@@ -91,12 +91,13 @@ backend/
 │   └── script.py.mako          # Alembic migration template
 │
 ├── docs/                       # Backend documentation
-│
+│    └── database-migration-workflow.md  
 ├── init-db/                    # Database initialisation SQL scripts
 │   └── 01-remove-extensions.sql
 │
 ├── locust/                     # Load testing utilities
-│
+│    └── locustfile.py
+│    └── seed_users.py 
 ├── src/                        # Python src-layout application package
 │   ├── domains/                # Domain contracts and integration models
 │   ├── models/                 # SQLAlchemy ORM database models
@@ -138,6 +139,23 @@ backend/
 
 
 ## Infrastructure
+
+## Completed Backend Improvements
+
+The following backend improvements have been completed:
+
+- Foundational architecture and reliability improvements.
+- Backend core architecture and reliability refactoring.
+- Production infrastructure and resilience improvements.
+- Deployment environment configuration.
+- Farm dataset rebuild.
+- Environmental data imputation service integration and data flagging.
+- Species management system API.
+- Exclusion rule management API.
+- Suitability scoring architecture modernisation.
+- Exclusion module architecture modernisation.
+- Unit tests for the recommendation API router.
+- Schema validation improvements for Pydantic models.
 
 ### Database
 The database is a [containerized PostGIS](https://postgis.net/documentation/getting_started/install_docker/) image - defined in `docker-compose.yml`.
