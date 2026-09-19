@@ -1,0 +1,79 @@
+.confirm-modal-backdrop {
+  align-items: center;
+  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--charcoal-blue) 6%, transparent);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 1000;
+}
+
+.confirm-modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+  max-width: 440px;
+  padding: 28px;
+  text-align: left;
+  width: 100%;
+}
+
+.confirm-modal-title {
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.confirm-modal-message {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.confirm-modal-btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.confirm-modal-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.confirm-modal-btn-cancel {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.confirm-modal-btn-cancel:hover:not(:disabled) {
+  background: var(--tint-light);
+}
+
+.confirm-modal-btn-confirm {
+  background: var(--danger);
+  color: var(--bg);
+}
+
+.confirm-modal-btn-confirm:hover:not(:disabled) {
+  background: var(--danger-dark);
+}

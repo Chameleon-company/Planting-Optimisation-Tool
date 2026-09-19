@@ -114,6 +114,7 @@ class UserApprove(BaseModel):
 # NEVER INCLUDE PASSWORD
 class UserRead(UserBase):
     id: int = Field(..., description="The unique database ID of the user.")
+    name: Optional[str] = Field(None, description="Null when hidden from the viewer.")
     role: Role = Field(..., description="The user's role.")
     is_approved: bool = Field(..., description="Whether the account has been approved by an admin.")
     requested_role: Optional[Role] = Field(None, description="Role the user requested at registration, if any.")
