@@ -1,22 +1,33 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
-import "./profile.css";
+import { useSearchParams } from "react-router-dom";
+
 import ProfileHeader from "@/components/profile/profileHeader";
 import FarmList from "@/components/profile/profileFarms";
 import FarmSearchPanel from "@/components/profile/profileSearchPanel";
+import EditFarmModal from "@/components/farmManagement/farmsEditModal";
+import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 
-import { useUserProfiles } from "../hooks/useUserProfiles";
-import { useSearchProfiles } from "../hooks/useSearchProfiles";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSearchParams } from "react-router-dom";
+import { Farm, useUserProfiles } from "@/hooks/useUserProfiles";
+import { useSearchProfiles } from "@/hooks/useSearchProfiles";
+import { FarmUpdatePayload, useFarms } from "@/hooks/useFarms";
+import { useProfileActions } from "@/hooks/useProfileActions";
+import { useFarmBoundary } from "@/hooks/useFarmBoundary";
+
+import "./profile.css";
+import "./farmManagement.css";
 
 function ProfilePage() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+
   const [query, setQuery] = useState(searchParams.get("farmId") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(
     searchParams.get("farmId") ?? ""
   );
+  const [editingFarm, setEditingFarm] = useState<Farm | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -33,7 +44,86 @@ function ProfilePage() {
     profile,
     isLoading: isProfileLoading,
     error,
+    refetch,
+    replaceProfile,
   } = useSearchProfiles(debouncedQuery);
+
+  const { updateFarm } = useFarms();
+
+  const {
+    regenerateProfile,
+    isRegenerating,
+    actionError,
+    clearActionFeedback,
+  } = useProfileActions();
+
+  const {
+    boundary,
+    isLoading: mapLoading,
+    error: mapError,
+  } = useFarmBoundary(profile?.id ?? null);
+
+  useEffect(() => {
+    clearActionFeedback();
+  }, [query, clearActionFeedback]);
+
+  const handleEdit = () => {
+    if (!profile) return;
+
+    clearActionFeedback();
+    setEditingFarm(profile);
+  };
+
+  const handleEditSuccess = async (
+    farmId: number,
+    payload: FarmUpdatePayload
+  ) => {
+    const updated = await updateFarm(farmId, payload);
+
+    if (!updated) {
+      toast.error("Failed to update farm");
+      throw new Error("Failed to update farm.");
+    }
+
+    setEditingFarm(null);
+    await refetch();
+    toast.success("Environmental profile updated successfully");
+  };
+
+  const handleRegenerate = async () => {
+    if (!profile) return;
+
+    try {
+      const regenerated = await regenerateProfile(profile.id);
+
+      replaceProfile({
+        ...profile,
+        id: regenerated.id ?? profile.id,
+        rainfall_mm: regenerated.rainfall_mm ?? profile.rainfall_mm,
+        temperature_celsius:
+          regenerated.temperature_celsius ?? profile.temperature_celsius,
+        elevation_m: regenerated.elevation_m ?? profile.elevation_m,
+        ph: regenerated.ph ?? profile.ph,
+        slope: regenerated.slope ?? profile.slope,
+        area_ha: regenerated.area_ha ?? profile.area_ha,
+        latitude: regenerated.latitude ?? profile.latitude,
+        longitude: regenerated.longitude ?? profile.longitude,
+        coastal: regenerated.coastal ?? profile.coastal,
+        riparian: regenerated.riparian ?? profile.riparian,
+        nitrogen_fixing: regenerated.nitrogen_fixing ?? profile.nitrogen_fixing,
+        shade_tolerant: regenerated.shade_tolerant ?? profile.shade_tolerant,
+        bank_stabilising:
+          regenerated.bank_stabilising ?? profile.bank_stabilising,
+        soil_texture: regenerated.soil_texture?.trim()
+          ? { name: regenerated.soil_texture }
+          : profile.soil_texture,
+      });
+
+      toast.success("Environmental profile regenerated successfully");
+    } catch {
+      toast.error("Failed to regenerate environmental profile");
+    }
+  };
 
   const isSearching = query.trim().length > 0;
 
@@ -51,7 +141,22 @@ function ProfilePage() {
         profile={profile}
         isLoading={isProfileLoading}
         error={error}
+        onEdit={handleEdit}
+        onRegenerate={handleRegenerate}
+        isRegenerating={isRegenerating}
+        actionError={actionError}
+        actionMessage={null}
       />
+
+      {profile && (
+        <div className="farm-map-wrapper">
+          <FarmBoundaryMap
+            boundary={boundary}
+            isLoading={mapLoading}
+            error={mapError}
+          />
+        </div>
+      )}
 
       {!isSearching && (
         <FarmList
@@ -60,6 +165,14 @@ function ProfilePage() {
           page={page}
           totalPages={totalPages}
           setPage={setPage}
+        />
+      )}
+
+      {editingFarm && (
+        <EditFarmModal
+          farm={editingFarm}
+          onClose={() => setEditingFarm(null)}
+          onSuccess={handleEditSuccess}
         />
       )}
     </div>

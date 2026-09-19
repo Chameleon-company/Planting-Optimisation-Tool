@@ -21,7 +21,11 @@ const mockSpecies = [
 describe("Snapshot Tests", () => {
   it("matches snapshot for SpeciesGrid with data", () => {
     const { container } = render(
-      <SpeciesGrid species={mockSpecies} onCardClick={vi.fn()} />
+      <SpeciesGrid
+        species={mockSpecies}
+        isLoading={false}
+        onCardClick={vi.fn()}
+      />
     );
 
     // Verifies grid rendering structure

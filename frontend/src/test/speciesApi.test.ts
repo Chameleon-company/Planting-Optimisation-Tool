@@ -5,6 +5,7 @@ import {
   deleteSpecies,
   getAllSpecies,
   getSoilTextures,
+  getSpeciesDropdown,
   updateSpecies,
 } from "../utils/speciesApi";
 
@@ -58,6 +59,33 @@ describe("speciesApi", () => {
     );
   });
 
+  it("gets species dropdown options", async () => {
+    const dropdownSpecies = [
+      {
+        id: 1,
+        name: "Tectona grandis",
+        common_name: "Teak",
+      },
+    ];
+
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(mockJsonResponse(dropdownSpecies));
+
+    const result = await getSpeciesDropdown("test-token");
+
+    expect(result).toEqual(dropdownSpecies);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/species/dropdown"),
+      expect.objectContaining({
+        headers: {
+          Authorization: "Bearer test-token",
+        },
+      })
+    );
+  });
+
   it("creates species with auth token", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
@@ -82,7 +110,7 @@ describe("speciesApi", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(mockJsonResponse({ id: 1, ...speciesPayload }));
 
-    const result = await updateSpecies(1, speciesPayload, "test-token");
+    const result = await updateSpecies(1, { coastal: true }, "test-token");
 
     expect(result.id).toBe(1);
     expect(fetchMock).toHaveBeenCalledWith(
@@ -91,6 +119,9 @@ describe("speciesApi", () => {
         method: "PUT",
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
+        }),
+        body: JSON.stringify({
+          coastal: true,
         }),
       })
     );
@@ -157,4 +188,19 @@ it("falls back when backend error format is unknown", async () => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(mockJsonResponse({}, false));
 
   await expect(getAllSpecies("test-token")).rejects.toThrow("API error");
+});
+
+it("shows the backend rate limit message", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    mockJsonResponse(
+      {
+        error: "Rate limit exceeded: 10 per 1 minute",
+      },
+      false
+    )
+  );
+
+  await expect(getAllSpecies("test-token")).rejects.toThrow(
+    "Rate limit exceeded: 10 per 1 minute"
+  );
 });

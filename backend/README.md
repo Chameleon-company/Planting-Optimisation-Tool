@@ -205,7 +205,6 @@ Can:
 - Generate environmental profiles for farm locations
 - Calculate sapling estimations
 - Generate and view planting recommendations
-- Create new user accounts (any role - requires authentication)
 - View their own profile information
 
 Cannot:
@@ -234,6 +233,7 @@ Can (in addition to all Supervisor and Officer permissions):
 
 - Update any user's information (email, name, password, role)
 - Delete user accounts
+- Create new user accounts (ADMIN only)
 - Full unrestricted access to all system endpoints
 
 Cannot:
@@ -262,8 +262,18 @@ To register a new user, send a POST request to `/auth/register`:
 
 - `email`: Valid email address (required, must be unique)
 - `name`: User's full name (required)
-- `password`: Password with minimum 8 characters (required)
-- `role`: User role (defaults to `officer` if not provided)
+- `password`: Password meeting the complexity rules above (required)
+- `role`: Requested role only (optional). 
+
+New accounts are created in a pending state until an admin approves them via `POST /users/{user_id}/approve`. 
+
+Response confirms registration and that a verification email has been sent:
+
+```json
+{
+  "message": "User registered. Verification email sent."
+}
+```
 
 Response returns the created user (without password):
 
@@ -305,6 +315,9 @@ The following endpoints have role-based access control implemented:
 | `/users/{user_id}` | GET | SUPERVISOR | Authenticated user (ownership/admin enforced) |
 | `/users/{user_id}` | PUT | ADMIN | Update user information |
 | `/users/{user_id}` | DELETE | ADMIN | Delete user account |
+| `/users/pending` | GET    | ADMIN | List users awaiting approval |
+| `/users/{user_id}/approve` | POST | ADMIN | Approve a pending registration and assign role |
+| `/users/{user_id}/reject` | POST | ADMIN | Reject (delete) a pending registration |
 | `/farms/` | POST | OFFICER | Create new farm |
 | `/farms/{farm_id}` | GET | OFFICER | Read farm by ID (ownership verified) |
 | `/species/` | POST | SUPERVISOR | Create new species |

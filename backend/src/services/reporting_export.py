@@ -6,7 +6,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, RGBColor
 from fpdf import FPDF, XPos, YPos
 
-from src.domains.reporting import FarmReportContract
+from src.domains.reporting import FarmReportContract, SaplingReportSummary
 
 LOGO_PATH_SVG = Path(__file__).parent.parent.parent.parent / "frontend" / "public" / "assets" / "images" / "logo2.svg"
 LOGO_PATH_PNG = Path(__file__).parent.parent.parent.parent / "frontend" / "public" / "assets" / "images" / "logo2.png"
@@ -60,7 +60,88 @@ def _add_key_reasons_pdf(pdf, rec):
     pdf.set_text_color(0, 0, 0)
 
 
-def generate_docx(report: FarmReportContract) -> bytes:
+def _sapling_summary_rows(sapling: SaplingReportSummary) -> list[tuple[str, str]]:
+    return [
+        ("Existing Trees", str(sapling.baseline_tree_count) if sapling.baseline_tree_count is not None else "N/A"),
+        ("Aligned Planting Positions", str(sapling.aligned_count) if sapling.aligned_count is not None else "N/A"),
+        ("Additional Capacity", str(sapling.additional_sapling_count) if sapling.additional_sapling_count is not None else "N/A"),
+    ]
+
+
+def _add_boundary_map_docx(doc, map_image_bytes: bytes | None):
+    if not map_image_bytes:
+        return
+    doc.add_heading("Farm Boundary Map", level=2)
+    image_para = doc.add_paragraph()
+    image_para.add_run().add_picture(io.BytesIO(map_image_bytes), width=Inches(5.5))
+    doc.add_paragraph("")
+
+
+def _add_sapling_summary_docx(doc, sapling: SaplingReportSummary | None):
+    if sapling is None:
+        return
+    doc.add_heading("Sapling Capacity", level=2)
+    table = doc.add_table(rows=1, cols=2)
+    table.style = "Table Grid"
+    header_cells = table.rows[0].cells
+    header_cells[0].text = "Property"
+    header_cells[1].text = "Value"
+
+    for label, value in _sapling_summary_rows(sapling):
+        row_cells = table.add_row().cells
+        row_cells[0].text = label
+        row_cells[1].text = value
+
+    doc.add_paragraph("")
+
+
+def _add_planting_guidance_docx(doc, guidance: str | None):
+    if not guidance:
+        return
+    doc.add_heading("Planting Guidance", level=2)
+    para = doc.add_paragraph()
+    label_run = para.add_run("Planting Guidance: ")
+    label_run.bold = True
+    para.add_run(guidance)
+    doc.add_paragraph("")
+
+
+def _add_boundary_map_pdf(pdf, map_image_bytes: bytes | None):
+    if not map_image_bytes:
+        return
+    pdf.set_font("Helvetica", style="B", size=13)
+    pdf.cell(0, 10, "Farm Boundary Map", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.image(io.BytesIO(map_image_bytes), w=150)
+    pdf.ln(5)
+
+
+def _add_sapling_summary_pdf(pdf, sapling: SaplingReportSummary | None):
+    if sapling is None:
+        return
+    pdf.set_font("Helvetica", style="B", size=13)
+    pdf.cell(0, 10, "Sapling Capacity", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    col_w = 60
+    for label, value in _sapling_summary_rows(sapling):
+        pdf.set_font("Helvetica", style="B", size=10)
+        pdf.cell(col_w, 8, label, border=1)
+        pdf.set_font("Helvetica", size=10)
+        pdf.cell(0, 8, value, border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    pdf.ln(5)
+
+
+def _add_planting_guidance_pdf(pdf, guidance: str | None):
+    if not guidance:
+        return
+    pdf.set_font("Helvetica", style="B", size=13)
+    pdf.cell(0, 10, "Planting Guidance", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", size=10)
+    pdf.multi_cell(0, 6, guidance)
+    pdf.ln(5)
+
+
+def generate_docx(report: FarmReportContract, map_image_bytes: bytes | None = None) -> bytes:
     doc = Document()
 
     if LOGO_PATH_PNG.exists():
@@ -99,6 +180,11 @@ def generate_docx(report: FarmReportContract) -> bytes:
         row_cells[1].text = value
 
     doc.add_paragraph("")
+
+    _add_boundary_map_docx(doc, map_image_bytes)
+    _add_sapling_summary_docx(doc, report.sapling)
+    _add_planting_guidance_docx(doc, report.planting_guidance)
+
     doc.add_heading("Species Recommendations", level=2)
 
     if not report.recommendations:
@@ -150,7 +236,7 @@ def generate_docx(report: FarmReportContract) -> bytes:
     return buffer.read()
 
 
-def generate_pdf(report: FarmReportContract) -> bytes:
+def generate_pdf(report: FarmReportContract, map_image_bytes: bytes | None = None) -> bytes:
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -189,6 +275,11 @@ def generate_pdf(report: FarmReportContract) -> bytes:
         pdf.cell(0, 8, value, border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
     pdf.ln(5)
+
+    _add_boundary_map_pdf(pdf, map_image_bytes)
+    _add_sapling_summary_pdf(pdf, report.sapling)
+    _add_planting_guidance_pdf(pdf, report.planting_guidance)
+
     pdf.set_font("Helvetica", style="B", size=13)
     pdf.cell(0, 10, "Species Recommendations", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 

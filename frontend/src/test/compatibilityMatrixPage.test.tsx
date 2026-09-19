@@ -1,0 +1,455 @@
+import { act, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { HelmetProvider } from "react-helmet-async";
+import { MemoryRouter } from "react-router-dom";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import CompatibilityMatrixPage from "@/pages/admin/settings/CompatibilityMatrixPage";
+import { getAllSpecies, updateSpecies } from "../utils/speciesApi";
+
+vi.mock("../utils/speciesApi", () => ({
+  getAllSpecies: vi.fn(),
+  updateSpecies: vi.fn(),
+}));
+const authState = vi.hoisted(() => {
+  const state = {
+    accessToken: "test-token" as string | null,
+  };
+
+  const getAccessToken = vi.fn(() => state.accessToken);
+
+  return {
+    state,
+    getAccessToken,
+  };
+});
+
+vi.mock("../contexts/AuthContext", () => ({
+  useAuth: () => ({
+    getAccessToken: authState.getAccessToken,
+  }),
+}));
+
+const mockSpecies = [
+  {
+    id: 2,
+    name: "Tectona grandis",
+    common_name: "Teak",
+    rainfall_mm_min: 1000,
+    rainfall_mm_max: 2000,
+    temperature_celsius_min: 20,
+    temperature_celsius_max: 35,
+    elevation_m_min: 0,
+    elevation_m_max: 800,
+    ph_min: 6,
+    ph_max: 8,
+    coastal: false,
+    riparian: true,
+    nitrogen_fixing: false,
+    shade_tolerant: false,
+    bank_stabilising: true,
+    soil_textures: [],
+    agroforestry_types: [],
+  },
+  {
+    id: 1,
+    name: "Acacia mangium",
+    common_name: "Mangium",
+    rainfall_mm_min: 1000,
+    rainfall_mm_max: 4500,
+    temperature_celsius_min: 12,
+    temperature_celsius_max: 34,
+    elevation_m_min: 0,
+    elevation_m_max: 800,
+    ph_min: 4,
+    ph_max: 7,
+    coastal: true,
+    riparian: false,
+    nitrogen_fixing: true,
+    shade_tolerant: false,
+    bank_stabilising: false,
+    soil_textures: [],
+    agroforestry_types: [],
+  },
+];
+
+function renderPage() {
+  return render(
+    <MemoryRouter>
+      <HelmetProvider>
+        <CompatibilityMatrixPage />
+      </HelmetProvider>
+    </MemoryRouter>
+  );
+}
+
+describe("CompatibilityMatrixPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    authState.state.accessToken = "test-token";
+
+    vi.mocked(getAllSpecies).mockResolvedValue(mockSpecies);
+    vi.mocked(updateSpecies).mockResolvedValue(mockSpecies[1]);
+  });
+
+  it("loads species and displays the compatibility matrix", async () => {
+    renderPage();
+
+    expect(screen.getByRole("status")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Acacia mangium")).toBeInTheDocument();
+    });
+
+    expect(getAllSpecies).toHaveBeenCalledWith("test-token");
+
+    expect(screen.getByText("Tectona grandis")).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("columnheader", { name: "Coastal" })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("columnheader", { name: "Riparian" })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("columnheader", { name: "Nitrogen Fixing" })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("columnheader", { name: "Shade Tolerant" })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("columnheader", { name: "Bank Stabilising" })
+    ).toBeInTheDocument();
+  });
+
+  it("shows an authentication toast when the token disappears before saving", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    // Simulate the session expiring after the matrix has loaded.
+    authState.state.accessToken = null;
+
+    await user.click(checkbox);
+
+    expect(
+      screen.getByText(
+        "You must be logged in as admin to update the compatibility matrix."
+      )
+    ).toBeInTheDocument();
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(updateSpecies).not.toHaveBeenCalled();
+  });
+
+  it("sorts species alphabetically", async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("Acacia mangium")).toBeInTheDocument();
+    });
+
+    const rows = screen.getAllByRole("row");
+
+    expect(rows[1]).toHaveTextContent("Acacia mangium");
+    expect(rows[2]).toHaveTextContent("Tectona grandis");
+  });
+
+  it("shows existing compatibility values from species data", async () => {
+    renderPage();
+
+    const coastalCheckbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    const nitrogenCheckbox = screen.getByRole("checkbox", {
+      name: "Acacia mangium Nitrogen Fixing",
+    });
+
+    const riparianCheckbox = screen.getByRole("checkbox", {
+      name: "Acacia mangium Riparian",
+    });
+
+    expect(coastalCheckbox).toBeChecked();
+    expect(nitrogenCheckbox).toBeChecked();
+    expect(riparianCheckbox).not.toBeChecked();
+  });
+
+  it("saves a changed compatibility value through the species API", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    expect(checkbox).toBeChecked();
+
+    await user.click(checkbox);
+
+    expect(checkbox).not.toBeChecked();
+
+    expect(updateSpecies).toHaveBeenCalledWith(
+      1,
+      {
+        coastal: false,
+      },
+      "test-token"
+    );
+  });
+
+  it("restores the previous value when saving fails", async () => {
+    const user = userEvent.setup();
+
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    vi.mocked(updateSpecies).mockRejectedValue(
+      new Error("Failed to save compatibility")
+    );
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    expect(checkbox).toBeChecked();
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(checkbox).toBeChecked();
+    });
+
+    expect(updateSpecies).toHaveBeenCalledWith(
+      1,
+      {
+        coastal: false,
+      },
+      "test-token"
+    );
+
+    consoleError.mockRestore();
+  });
+
+  it("disables the checkbox while the compatibility value is saving", async () => {
+    const user = userEvent.setup();
+
+    let resolveUpdate!: (value: (typeof mockSpecies)[number]) => void;
+
+    const pendingUpdate = new Promise<(typeof mockSpecies)[number]>(resolve => {
+      resolveUpdate = resolve;
+    });
+
+    vi.mocked(updateSpecies).mockReturnValue(pendingUpdate);
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    expect(checkbox).toBeDisabled();
+
+    await act(async () => {
+      resolveUpdate(mockSpecies[1]);
+      await pendingUpdate;
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("checkbox", {
+          name: "Acacia mangium Coastal",
+        })
+      ).not.toBeDisabled();
+    });
+  });
+
+  it("allows an initially unchecked compatibility value to be enabled", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Tectona grandis Coastal",
+    });
+
+    expect(checkbox).not.toBeChecked();
+
+    await user.click(checkbox);
+
+    expect(checkbox).toBeChecked();
+  });
+
+  it("shows an authentication error when no access token exists", async () => {
+    authState.state.accessToken = null;
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "You must be logged in as admin to view the compatibility matrix."
+        )
+      ).toBeInTheDocument();
+    });
+
+    expect(getAllSpecies).not.toHaveBeenCalled();
+  });
+
+  it("shows the API error when species loading fails", async () => {
+    vi.mocked(getAllSpecies).mockRejectedValue(
+      new Error("Unable to load species")
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("Unable to load species")).toBeInTheDocument();
+    });
+  });
+
+  it("shows an empty state when no species are available", async () => {
+    vi.mocked(getAllSpecies).mockResolvedValue([]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "No species are available to display in the compatibility matrix."
+        )
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("shows a success toast after a compatibility change is saved", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Compatibility change saved successfully.")
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("status")).toBeInTheDocument();
+  });
+
+  it("shows an error toast and rolls back when saving fails", async () => {
+    const user = userEvent.setup();
+
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    vi.mocked(updateSpecies).mockRejectedValue(
+      new Error("Unable to save compatibility change")
+    );
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    expect(checkbox).toBeChecked();
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(checkbox).toBeChecked();
+      expect(
+        screen.getByText("Unable to save compatibility change")
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    consoleError.mockRestore();
+  });
+
+  it("shows a fallback toast for a non-Error save failure", async () => {
+    const user = userEvent.setup();
+
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    vi.mocked(updateSpecies).mockRejectedValue("save failed");
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to save compatibility change.")
+      ).toBeInTheDocument();
+    });
+
+    consoleError.mockRestore();
+  });
+
+  it("allows a success toast to be dismissed", async () => {
+    const user = userEvent.setup();
+
+    renderPage();
+
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "Acacia mangium Coastal",
+    });
+
+    await user.click(checkbox);
+
+    await screen.findByText("Compatibility change saved successfully.");
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Dismiss notification",
+      })
+    );
+
+    expect(
+      screen.queryByText("Compatibility change saved successfully.")
+    ).not.toBeInTheDocument();
+  });
+  it("shows a fallback error for a non-Error API rejection", async () => {
+    vi.mocked(getAllSpecies).mockRejectedValue("request failed");
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to load compatibility matrix.")
+      ).toBeInTheDocument();
+    });
+  });
+});

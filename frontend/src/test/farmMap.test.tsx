@@ -29,7 +29,7 @@ vi.mock("leaflet", () => ({
   },
 }));
 
-import FarmMap from "@/components/calculator/FarmMap";
+import FarmMap from "@/components/calculator/calculatorFarmMap";
 
 const BOUNDARY = { type: "FeatureCollection", features: [] } as GeoJsonObject;
 const GRID = { type: "FeatureCollection", features: [] } as GeoJsonObject;

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import App from "../App";
@@ -31,25 +31,29 @@ describe("App", () => {
     expect(
       await screen.findByRole("button", { name: /add species/i })
     ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.queryByText(/loading species/i)).not.toBeInTheDocument();
+    });
   });
 
-  it("renders forgot password page route", () => {
+  it("renders forgot password page route", async () => {
     window.history.pushState({}, "", "/forgot-password");
 
     render(<App />);
 
     expect(
-      screen.getByRole("heading", { name: /forgot your password/i })
+      await screen.findByRole("heading", { name: /forgot your password/i })
     ).toBeInTheDocument();
   });
 
-  it("renders reset password page route", () => {
+  it("renders reset password page route", async () => {
     window.history.pushState({}, "", "/reset-password?token=reset-token");
 
     render(<App />);
 
     expect(
-      screen.getByRole("heading", { name: /reset your password/i })
+      await screen.findByRole("heading", { name: /reset your password/i })
     ).toBeInTheDocument();
   });
 });

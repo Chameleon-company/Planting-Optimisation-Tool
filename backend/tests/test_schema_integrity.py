@@ -17,15 +17,14 @@ async def test_foreign_key_cascade_delete(async_session: AsyncSession):
     test_user = User(name="John Doe", email="test_user@test.com", hashed_password="password999999")
     session.add(test_user)
     await session.flush()
-    user_id = test_user.id
 
-    # 1b Create soil testure
+    # 1b Create soil texture
     soil_texture = SoilTexture(name="Loam")
     session.add(soil_texture)
     await session.flush()
     soil_id = soil_texture.id
 
-    # 1b. Insert Child (Farm) referencing the Parent
+    # 1c. Insert Child (Farm) referencing the Parent
     farm = Farm(
         rainfall_mm=1000053400,
         temperature_celsius=222135.08686,
@@ -41,8 +40,8 @@ async def test_foreign_key_cascade_delete(async_session: AsyncSession):
         shade_tolerant=False,
         bank_stabilising=True,
         slope=32.556,
-        user_id=user_id,
     )
+    farm.owners = [test_user]
     session.add(farm)
     await session.flush()
 

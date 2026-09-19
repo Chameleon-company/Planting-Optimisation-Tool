@@ -64,7 +64,8 @@ async def test_get_recommendations_officer_own_farm(
     monkeypatch,
 ):
     """Test that officer can get recommendations for their own farm."""
-    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -86,7 +87,8 @@ async def test_get_recommendations_officer_other_farm_forbidden(
     setup_soil_texture,
 ):
     """Test that officer cannot get recommendations for another user's farm."""
-    farm = Farm(**_FARM_DATA, user_id=test_admin_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -107,7 +109,8 @@ async def test_get_recommendations_supervisor_any_farm(
     monkeypatch,
 ):
     """Test that supervisor can get recommendations for a farm belonging to another user."""
-    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -130,7 +133,8 @@ async def test_get_recommendations_admin_any_farm(
     monkeypatch,
 ):
     """Test that admin can get recommendations for a farm belonging to another user."""
-    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -164,7 +168,8 @@ async def test_get_recommendations_cache_hit(
     monkeypatch,
 ):
     """Test that a cached result is returned from cache without calling the pipeline."""
-    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -200,8 +205,10 @@ async def test_batch_recommendations_officer_own_farms(
     monkeypatch,
 ):
     """Test that officer can get batch recommendations for their own farms."""
-    farm1 = Farm(**_FARM_DATA, user_id=test_officer_user.id)
-    farm2 = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm1 = Farm(**_FARM_DATA)
+    farm1.owners = [test_officer_user]
+    farm2 = Farm(**_FARM_DATA)
+    farm2.owners = [test_officer_user]
     async_session.add_all([farm1, farm2])
     await async_session.commit()
     await async_session.refresh(farm1)
@@ -234,7 +241,8 @@ async def test_batch_recommendations_officer_other_farms_forbidden(
     setup_soil_texture,
 ):
     """Test that officer cannot get batch recommendations for another user's farms."""
-    farm = Farm(**_FARM_DATA, user_id=test_admin_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -259,7 +267,8 @@ async def test_batch_recommendations_supervisor_any_farms(
     monkeypatch,
 ):
     """Test that supervisor can get batch recommendations for a farm belonging to another user."""
-    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -286,7 +295,8 @@ async def test_batch_recommendations_admin_any_farms(
     monkeypatch,
 ):
     """Test that admin can get batch recommendations for a farm belonging to another user."""
-    farm = Farm(**_FARM_DATA, user_id=test_officer_user.id)
+    farm = Farm(**_FARM_DATA)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)

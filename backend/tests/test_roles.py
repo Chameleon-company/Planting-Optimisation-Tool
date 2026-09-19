@@ -23,12 +23,12 @@ async def test_create_user_by_admin(async_client: AsyncClient, test_admin_user, 
     assert response.status_code == 201
 
 
-async def test_create_user_by_supervisor_success(async_client: AsyncClient, test_supervisor_user, supervisor_auth_headers: dict):
-    """Test that supervisors CAN create users.
+async def test_create_user_by_supervisor_fails(async_client: AsyncClient, test_supervisor_user, supervisor_auth_headers: dict):
+    """Test that supervisors CANNOT create users.
 
-    Note: This endpoint was changed to allow any authenticated user to create users,
-    not just admins. If you want to restrict user creation to admins only,
-    add require_role(Role.ADMIN) to the create_user endpoint.
+    User creation is restricted to ADMIN only, so that all account creation
+    funnels through either an admin or the public registration + admin-approval
+    flow.
     """
     response = await async_client.post(
         "/users/",
@@ -40,11 +40,7 @@ async def test_create_user_by_supervisor_success(async_client: AsyncClient, test
         },
         headers=supervisor_auth_headers,
     )
-    # Changed from 403 to 201 because supervisors can now create users
-    assert response.status_code == 201
-    data = response.json()
-    assert data["email"] == "supervisor_created_officer@test.com"
-    assert data["role"] == "officer"
+    assert response.status_code == 403
 
 
 # Test reading user information

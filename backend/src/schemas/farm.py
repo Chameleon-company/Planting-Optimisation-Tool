@@ -32,6 +32,11 @@ from src.schemas.nested_models import (
 
 # Base Farm model used for validation
 class FarmBase(BaseModel):
+    name: Optional[str] = Field(
+        default=None,
+        title="Farm name",
+        description="Human-readable name for the farm.",
+    )
     rainfall_mm: int = Field(
         title="Annual rainfall in millimetres",
         description="Annual rainfall in millimetres",
@@ -68,6 +73,12 @@ class FarmBase(BaseModel):
         ge=AREA_MIN,
         le=AREA_MAX,
         decimal_places=3,
+    )
+    baseline_tree_count: int = Field(
+        default=0,
+        title="Baseline tree count",
+        description="Number of established trees already present on the farm",
+        ge=0,
     )
     latitude: Decimal = Field(
         title="Latitude",
@@ -124,8 +135,7 @@ class FarmRead(FarmBase):
     # I think it is the fields being exposed to the end-user
     # Of which these existing values would be useless
     id: int = Field(..., description="The unique database ID of the farm.")
-    user_id: Optional[int] = Field(None, description="User ID")
-    farm_supervisor: Optional[UserReadNested] = Field(None, description="Details of the farm supervisor.")
+    owners: List[UserReadNested] = Field(default_factory=list, description="Users who own/supervise this farm.")
     soil_texture: SoilTextureReadNested = Field(..., description="The soil texture name and ID.")
     agroforestry_type: List[AgroforestryTypeReadNested] = Field(
         default_factory=list,  # default value if none currently exist will be [].
@@ -138,12 +148,14 @@ class FarmRead(FarmBase):
 class FarmUpdate(BaseModel):
     # Annotated is used to restate validators explicitly, as Pydantic v2 does not
     # enforce Field constraints on Optional fields without it.
+    name: Optional[str] = None
     rainfall_mm: Optional[Annotated[int, Field(ge=RAINFALL_MIN, le=RAINFALL_MAX)]] = None
     temperature_celsius: Optional[Annotated[int, Field(ge=TEMPERATURE_MIN, le=TEMPERATURE_MAX)]] = None
     elevation_m: Optional[Annotated[int, Field(ge=ELEVATION_MIN, le=ELEVATION_MAX)]] = None
     ph: Optional[Annotated[Decimal, Field(ge=SOIL_PH_MIN, le=SOIL_PH_MAX, max_digits=2, decimal_places=1)]] = None
     soil_texture_id: Optional[SoilTextureID] = None
     area_ha: Optional[Annotated[Decimal, Field(ge=AREA_MIN, le=AREA_MAX, decimal_places=3)]] = None
+    baseline_tree_count: Optional[Annotated[int, Field(ge=0)]] = None
     latitude: Optional[Annotated[Decimal, Field(ge=LATITUDE_MIN, le=LATITUDE_MAX, decimal_places=5)]] = None
     longitude: Optional[Annotated[Decimal, Field(ge=LONGITUDE_MIN, le=LONGITUDE_MAX, decimal_places=5)]] = None
     coastal: Optional[bool] = None

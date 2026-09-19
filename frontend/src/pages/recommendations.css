@@ -104,6 +104,78 @@
   padding: 20px;
 }
 
+/* Recommendation skeleton loading */
+
+.rec-skeleton-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 0 40px;
+  width: 100%;
+}
+
+.rec-skeleton-card {
+  flex: 1 1 300px;
+  margin: 0;
+}
+
+.rec-skeleton-line {
+  animation: rec-skeleton-shimmer 1.5s linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--border) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+}
+
+.rec-skeleton-title {
+  height: 18px;
+  margin-bottom: 20px;
+  width: 45%;
+}
+
+.rec-skeleton-row {
+  align-items: center;
+  border-bottom: 1px solid var(--surface);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 40px 1fr 90px 80px;
+  padding: 16px 0;
+}
+
+.rec-skeleton-rank {
+  height: 14px;
+  width: 24px;
+}
+
+.rec-skeleton-name {
+  height: 16px;
+  width: 80%;
+}
+
+.rec-skeleton-score {
+  height: 12px;
+  width: 70px;
+}
+
+.rec-skeleton-action {
+  height: 32px;
+  width: 70px;
+}
+
+@keyframes rec-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .rec-table {
   border-collapse: collapse;
   margin-top: 25px;
@@ -328,4 +400,22 @@
 
 .rec-download-report-btn:active {
   transform: translateY(1px);
+}
+
+/* Responsive recommendation data cards */
+@media (max-width: 900px) {
+  .rec-data-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .rec-data-grid {
+    gap: 16px;
+    grid-template-columns: 1fr;
+  }
+
+  .rec-data-item {
+    padding: 14px;
+  }
 }

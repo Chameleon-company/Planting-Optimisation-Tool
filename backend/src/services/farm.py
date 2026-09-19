@@ -20,8 +20,15 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
     # We remove them from the dict so SQLAlchemy doesn't crash
     agroforestry_ids = farm_data_dict.pop("agroforestry_type_ids", [])
 
+    # Look up the creating user so we can attach them as the initial owner.
+    # (owners is now a M:M relationship, so this needs the actual User
+    # object, not just the raw id.)
+    owner = await db.get(User, user_id)
+
     # Create the Base Farm Object
-    db_farm = Farm(**farm_data_dict, user_id=user_id)
+    db_farm = Farm(**farm_data_dict)
+    if owner is not None:
+        db_farm.owners = [owner]
 
     # FETCH AND ATTACH (The logic for the end-user)
     if agroforestry_ids:
@@ -40,7 +47,7 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
     result = await db.execute(
         select(Farm)
         .options(
-            selectinload(Farm.farm_supervisor),
+            selectinload(Farm.owners),
             selectinload(Farm.soil_texture),
             selectinload(Farm.agroforestry_type),
         )
@@ -51,40 +58,40 @@ async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: i
 
 async def get_farm_by_id(db: AsyncSession, farm_ids: list[int], user_id: int | None = None) -> list[Farm]:
     """Retrieves one or many Farm records by ID.
-    If user_id is provided, results are filtered to that owner only.
+    If user_id is provided, results are filtered to farms owned by that user.
     """
     stmt = (
         select(Farm)
         .options(
             selectinload(Farm.soil_texture),
             selectinload(Farm.agroforestry_type),
-            selectinload(Farm.farm_supervisor),
+            selectinload(Farm.owners),
         )
         .where(Farm.id.in_(farm_ids))
     )
     if user_id is not None:
-        stmt = stmt.where(Farm.user_id == user_id)
+        stmt = stmt.where(Farm.owners.any(User.id == user_id))
 
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
 
 async def list_farms_by_user(db: AsyncSession, user_or_id: Union[User, int]) -> list[Farm]:
-    """Retrieves all Farm records belonging to a specific user."""
+    """Retrieves all Farm records owned by a specific user."""
     stmt = select(Farm).options(
         selectinload(Farm.soil_texture),
         selectinload(Farm.agroforestry_type),
-        selectinload(Farm.farm_supervisor),
+        selectinload(Farm.owners),
     )
 
     # Check if it's a User object with Admin privileges
     if isinstance(user_or_id, User):
         if user_or_id.role != Role.ADMIN.value:
             # Only apply the .where() filter if they AREN'T an admin
-            stmt = stmt.where(Farm.user_id == user_or_id.id)
+            stmt = stmt.where(Farm.owners.any(User.id == user_or_id.id))
 
     else:  # user_or_id is an int (user ID)
-        stmt = stmt.where(Farm.user_id == user_or_id)
+        stmt = stmt.where(Farm.owners.any(User.id == user_or_id))
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
@@ -96,7 +103,7 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
     result = await db.execute(
         select(Farm)
         .options(
-            selectinload(Farm.farm_supervisor),
+            selectinload(Farm.owners),
             selectinload(Farm.soil_texture),
             selectinload(Farm.agroforestry_type),
         )
@@ -125,7 +132,7 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
     result = await db.execute(
         select(Farm)
         .options(
-            selectinload(Farm.farm_supervisor),
+            selectinload(Farm.owners),
             selectinload(Farm.soil_texture),
             selectinload(Farm.agroforestry_type),
         )
