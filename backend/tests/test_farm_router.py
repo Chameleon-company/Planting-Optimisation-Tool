@@ -723,3 +723,193 @@ async def test_farm_with_multiple_owners_both_can_access(
     owner_ids = {owner["id"] for owner in response_a.json()["owners"]}
     assert user_a.id in owner_ids
     assert user_b.id in owner_ids
+
+
+# Farm name search tests
+
+
+async def test_search_officer_sees_only_own_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    officer_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Officer search is scoped to owned farms, another officer's matching farm is excluded."""
+    other = User(
+        name="Other Officer",
+        email="other_officer@test.com",
+        hashed_password=get_password_hash("passwordx"),
+        role=Role.OFFICER.value,
+    )
+    async_session.add(other)
+    await async_session.flush()
+    await async_session.refresh(other)
+
+    own = Farm(**VALID_FARM_PAYLOAD, name="Riverside Own")
+    own.owners = [test_officer_user]
+    theirs = Farm(**VALID_FARM_PAYLOAD, name="Riverside Other")
+    theirs.owners = [other]
+    async_session.add_all([own, theirs])
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Riverside"}, headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    names = [f["name"] for f in response.json()]
+    assert names == ["Riverside Own"]
+
+
+async def test_search_supervisor_sees_all_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    test_supervisor_user: User,
+    supervisor_auth_headers: dict,
+    setup_soil_texture,
+):
+    """A supervisor searches across all farms, not just their own."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Supervisor Visible")
+    farm.owners = [test_officer_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Supervisor Visible"}, headers=supervisor_auth_headers)
+
+    assert response.status_code == 200
+    names = [f["name"] for f in response.json()]
+    assert "Supervisor Visible" in names
+
+
+async def test_search_admin_sees_all_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Admin searches across all farms regardless of ownership."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Admin Visible")
+    farm.owners = [test_officer_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Admin Visible"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    names = [f["name"] for f in response.json()]
+    assert "Admin Visible" in names
+
+
+async def test_search_is_case_insensitive(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """A lowercase query matches a mixed-case farm name."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Riverside")
+    farm.owners = [test_admin_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "riverside"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert any(f["name"] == "Riverside" for f in response.json())
+
+
+async def test_search_partial_match(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """A substring of the name is enough to match."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Riverside Plantation")
+    farm.owners = [test_admin_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "plant"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert any(f["name"] == "Riverside Plantation" for f in response.json())
+
+
+async def test_search_unauthenticated(async_client: AsyncClient):
+    """Unauthenticated search is rejected."""
+    response = await async_client.get("/farms/search", params={"name": "anything"})
+    assert response.status_code == 401
+
+
+async def test_search_caps_results_at_ten(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """More than ten matches are capped to the ten closest."""
+    farms = [Farm(**VALID_FARM_PAYLOAD, name=f"Cap Farm {i}") for i in range(12)]
+    for f in farms:
+        f.owners = [test_admin_user]
+    async_session.add_all(farms)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Cap Farm"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert len(response.json()) == 10
+
+
+async def test_search_ranks_closest_match_first(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """An exact-name match ranks above a looser partial match."""
+    exact = Farm(**VALID_FARM_PAYLOAD, name="Oak")
+    looser = Farm(**VALID_FARM_PAYLOAD, name="Oakwood Plantation Estate")
+    exact.owners = [test_admin_user]
+    looser.owners = [test_admin_user]
+    async_session.add_all([exact, looser])
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Oak"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data[0]["name"] == "Oak"
+
+
+async def test_search_excludes_null_name_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Farms without a name never surface in search results."""
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "anything"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+async def test_search_empty_query_rejected(
+    async_client: AsyncClient,
+    admin_auth_headers: dict,
+):
+    """An empty search term fails validation (min_length=1)."""
+    response = await async_client.get("/farms/search", params={"name": ""}, headers=admin_auth_headers)
+    assert response.status_code == 422
