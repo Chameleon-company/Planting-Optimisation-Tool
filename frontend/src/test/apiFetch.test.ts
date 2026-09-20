@@ -144,6 +144,4 @@ describe("apiFetch", () => {
     window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, eventSpy);
   });
 
-    );
-  });
 });
