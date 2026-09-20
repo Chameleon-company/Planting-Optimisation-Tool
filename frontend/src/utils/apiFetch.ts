@@ -36,9 +36,4 @@ export async function apiFetch(
  * This is kept as a separate helper for code that needs
  * the same authenticated fetch behaviour.
  */
-export async function apiFetchUrl(
-  path: string,
-  init: RequestInit = {}
-): Promise<Response> {
-  return apiFetch(path, init);
-}
+
