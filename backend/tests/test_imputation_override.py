@@ -22,7 +22,6 @@ async def test_manual_environmental_override_clears_imputation_flag(
         shade_tolerant=False,
         bank_stabilising=False,
         slope=10.5,
-
         rainfall_mm_imputed=False,
         temperature_celsius_imputed=False,
         elevation_m_imputed=False,
@@ -46,6 +45,7 @@ async def test_manual_environmental_override_clears_imputation_flag(
     assert float(updated.ph) == 6.5
     assert updated.ph_imputed is False
 
+
 async def test_unchanged_environmental_value_keeps_imputation_flag(
     async_session,
     setup_soil_texture,
@@ -65,7 +65,6 @@ async def test_unchanged_environmental_value_keeps_imputation_flag(
         shade_tolerant=False,
         bank_stabilising=False,
         slope=10.5,
-
         rainfall_mm_imputed=False,
         temperature_celsius_imputed=False,
         elevation_m_imputed=False,
