@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { apiFetchUrl } from "../utils/apiFetch";
+import { apiFetch } from "../utils/apiFetch";
 
 export interface Recommendation {
   species_id: number;
@@ -34,14 +34,8 @@ export function useRecommendations(farmId: string) {
       setRecs([]);
       setExcludes([]);
 
-      if (!localStorage.getItem("access_token")) {
-        setError("Please log in to continue.");
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        const response = await apiFetchUrl(`/recommendations/${farmId}`, {
+        const response = await apiFetch(`/recommendations/${farmId}`, {
           method: "GET",
           headers: {
             Accept: "application/json",
@@ -79,13 +73,8 @@ export function useRecommendations(farmId: string) {
   const downloadPdf = async () => {
     if (!farmId) return;
 
-    if (!localStorage.getItem("access_token")) {
-      setError("Please log in to continue.");
-      return;
-    }
-
     try {
-      const response = await apiFetchUrl(`/reports/farm/${farmId}/export/pdf`, {
+      const response = await apiFetch(`/reports/farm/${farmId}/export/pdf`, {
         method: "GET",
       });
 
