@@ -3,11 +3,18 @@ import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useFarmMap } from "@/hooks/useFarmMap";
 
-const stableGetAccessToken = vi.fn<() => string | null>(() => "fake-token");
-
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    getAccessToken: stableGetAccessToken,
+    user: {
+      id: 1,
+      name: "Test User",
+      email: "test@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 
@@ -20,6 +27,8 @@ const mockGrid = { type: "FeatureCollection", features: [] };
 
 describe("useFarmMap", () => {
   beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem("access_token", "fake-token");
     vi.clearAllMocks();
     global.fetch = vi.fn();
   });
@@ -84,16 +93,5 @@ describe("useFarmMap", () => {
     expect(result.current.error).toBe("Failed to load map data.");
     expect(result.current.boundary).toBe(null);
     expect(result.current.grid).toBe(null);
-  });
-
-  it("sets session expired error and does not fetch when token is missing", async () => {
-    stableGetAccessToken.mockReturnValueOnce(null);
-
-    const { result } = renderHook(() => useFarmMap(1));
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    expect(global.fetch).not.toHaveBeenCalled();
-    expect(result.current.error).toBe("Please log in to continue.");
   });
 });

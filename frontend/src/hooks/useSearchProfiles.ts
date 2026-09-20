@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Farm } from "./useUserProfiles";
+import { apiFetch } from "../utils/apifetch";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
 export function useSearchProfiles(query: string) {
-  const { getAccessToken } = useAuth();
-  const token = getAccessToken();
+  const { user } = useAuth();
 
   const [profile, setProfile] = useState<Farm | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!query.trim() || !token) {
+    if (!query.trim() || !user) {
       setProfile(null);
       setError(null);
       return;
@@ -24,9 +24,8 @@ export function useSearchProfiles(query: string) {
       setError(null);
 
       try {
-        const res = await fetch(`${API_BASE}/farms/${query}`, {
+        const res = await apiFetch(`${API_BASE}/farms/${query}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
         });
@@ -56,7 +55,7 @@ export function useSearchProfiles(query: string) {
     };
 
     fetchProfile();
-  }, [query, token]);
+  }, [query, user]);
 
   return { profile, isLoading, error };
 }

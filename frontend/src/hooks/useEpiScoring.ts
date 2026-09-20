@@ -1,29 +1,24 @@
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { apiFetch } from "@/utils/apiFetch";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
 export function useEpiScoring() {
-  const { getAccessToken } = useAuth();
   const [isEpiLoading, setIsEpiLoading] = useState(false);
   const [epiError, setEpiError] = useState<string | null>(null);
 
   const processEpiCsv = async (file: File) => {
     setIsEpiLoading(true);
     setEpiError(null);
-    const token = getAccessToken();
 
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_BASE}/global-weights/epi-add-scores`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
           body: formData,
         }
       );

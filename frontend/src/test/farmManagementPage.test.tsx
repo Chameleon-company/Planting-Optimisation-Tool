@@ -30,8 +30,16 @@ const mockFarm = (id: number) => ({
 // Mock hooks and context
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    user: { name: "Test Admin", role: "admin" },
-    getAccessToken: () => "fake-token",
+    user: {
+      id: 1,
+      name: "Test Admin",
+      email: "admin@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 

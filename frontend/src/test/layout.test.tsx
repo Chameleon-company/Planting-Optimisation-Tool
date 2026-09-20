@@ -54,7 +54,6 @@ describe("MainLayout", () => {
       logout: mockLogout,
       login: vi.fn(),
       isLoading: false,
-      getAccessToken: vi.fn(() => null),
     });
 
     vi.mocked(useStickyHeader).mockReturnValue({ isScrolled: false });
@@ -122,7 +121,6 @@ describe("MainLayout", () => {
       logout: mockLogout,
       login: vi.fn(),
       isLoading: false,
-      getAccessToken: vi.fn(() => "test-token"),
     });
 
     renderWithRouter();
@@ -146,7 +144,6 @@ describe("MainLayout", () => {
       logout: mockLogout,
       login: vi.fn(),
       isLoading: false,
-      getAccessToken: vi.fn(() => "test-token"),
     });
 
     renderWithRouter();

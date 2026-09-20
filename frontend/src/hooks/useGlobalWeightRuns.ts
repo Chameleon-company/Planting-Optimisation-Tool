@@ -4,57 +4,66 @@ import {
   GlobalWeightsRunSummary,
   GlobalWeightItem,
 } from "@/utils/globalWeightHelpers";
+import { apiFetch } from "@/utils/apifetch";
 
-const API_BASE = import.meta.env.VITE_API_URL;
-
-// Helper to reliably extract the error message from FastAPI responses
+// Helper to reliably extract the error message from FastAPI responses.
 async function extractErrorMessage(
   response: Response,
   defaultMessage: string
 ): Promise<string> {
   try {
     const data = await response.json();
+
     if (data && data.detail) {
-      // Handle Pydantic 422 Validation Arrays
+      // Handle Pydantic 422 validation arrays.
       if (Array.isArray(data.detail)) {
         return data.detail.map((err: { msg: string }) => err.msg).join(" | ");
       }
-      // Handle standard HTTPException strings
+
+      // Handle standard HTTPException strings.
       if (typeof data.detail === "string") {
         return data.detail;
       }
     }
   } catch {
-    // Failsafe in case the response isn't valid JSON (e.g., 500 HTML page)
     return `Server Error (${response.status}): ${defaultMessage}`;
   }
+
   return defaultMessage;
 }
 
 export function useGlobalWeightRuns() {
-  const { getAccessToken } = useAuth();
+  const { user } = useAuth();
+
   const [runs, setRuns] = useState<GlobalWeightsRunSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRuns = useCallback(async () => {
+    if (!user) {
+      setRuns([]);
+      setError("You must be logged in to view global weight runs.");
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
-    const token = getAccessToken();
 
     try {
-      const response = await fetch(`${API_BASE}/global-weights/runs`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok)
+      const response = await apiFetch("/global-weights/runs");
+
+      if (!response.ok) {
         throw new Error(
           await extractErrorMessage(
             response,
             "Failed to fetch global weight runs"
           )
         );
+      }
 
       const data: GlobalWeightsRunSummary[] = await response.json();
+
       setRuns(data || []);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -65,27 +74,27 @@ export function useGlobalWeightRuns() {
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessToken]);
+  }, [user]);
 
   useEffect(() => {
-    fetchRuns();
+    void fetchRuns();
   }, [fetchRuns]);
 
   const uploadCsv = async (file: File) => {
+    if (!user) {
+      setError("You must be logged in to import global weights.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
-    const token = getAccessToken();
 
-    // FastAPI expects the file as form data with the key "file"
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_BASE}/global-weights/import`, {
+      const response = await apiFetch("/global-weights/import", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
       });
 
@@ -95,11 +104,14 @@ export function useGlobalWeightRuns() {
         );
       }
 
-      // On success, the backend returns { status: "success", run_id: "..." }
-      // Refresh the table to show the newly imported run.
+      // Refresh the list after successful import.
       await fetchRuns();
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -107,47 +119,66 @@ export function useGlobalWeightRuns() {
 
   const fetchRunDetails = useCallback(
     async (runId: string): Promise<GlobalWeightItem[]> => {
-      const token = getAccessToken();
-      const response = await fetch(`${API_BASE}/global-weights/runs/${runId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok)
+      if (!user) {
+        throw new Error(
+          "You must be logged in to view global weight run details."
+        );
+      }
+
+      const response = await apiFetch(`/global-weights/runs/${runId}`);
+
+      if (!response.ok) {
         throw new Error(
           await extractErrorMessage(response, "Failed to fetch run details")
         );
+      }
 
       const data = await response.json();
+
       return data.weights || [];
     },
-    [getAccessToken]
+    [user]
   );
 
   const deleteRun = async (runId: string) => {
+    if (!user) {
+      setError("You must be logged in to delete global weight runs.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
-    const token = getAccessToken();
 
     try {
-      const response = await fetch(`${API_BASE}/global-weights/runs/${runId}`, {
+      const response = await apiFetch(`/global-weights/runs/${runId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
-        // Handle 404 or other errors
         throw new Error(
           await extractErrorMessage(response, "Failed to delete the run")
         );
       }
 
-      // Refresh the table data after successful deletion
+      // Refresh the table after successful deletion.
       await fetchRuns();
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { runs, isLoading, error, uploadCsv, fetchRunDetails, deleteRun };
+  return {
+    runs,
+    isLoading,
+    error,
+    uploadCsv,
+    fetchRunDetails,
+    deleteRun,
+  };
 }

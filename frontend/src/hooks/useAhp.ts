@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AhpResponse, CalculationRequest } from "@/utils/ahp_types";
+import { apiFetch } from "@/utils/apifetch";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -17,29 +18,27 @@ export interface FactorsResponse {
 
 // --- SPECIES DROPDOWN HOOK ---
 export function useAhpSpecies() {
-  const { getAccessToken } = useAuth();
+  const { user } = useAuth();
   const [speciesList, setSpeciesList] = useState<SpeciesDropdownItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSpecies = async () => {
-      const token = getAccessToken();
-      setIsLoading(true);
-      setError(null);
-
-      if (!token) {
-        setError("Please log in to continue.");
+      if (!user) {
+        setSpeciesList([]);
         setIsLoading(false);
         return;
       }
 
+      setIsLoading(true);
+      setError(null);
+
       try {
-        const response = await fetch(`${API_BASE}/species/dropdown`, {
+        const response = await apiFetch("/species/dropdown", {
           method: "GET",
           headers: {
             Accept: "application/json",
-            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -61,38 +60,37 @@ export function useAhpSpecies() {
     };
 
     fetchSpecies();
-  }, [getAccessToken]);
+  }, [user]);
 
   return { speciesList, isLoading, error };
 }
 
 // --- AHP CONFIG (FEATURES) HOOK ---
 export function useAhpFactors() {
-  const { getAccessToken } = useAuth();
+  const { user } = useAuth();
   const [factorsList, setFactorsList] = useState<FactorsResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFactors = async () => {
-      const token = getAccessToken();
       setIsLoading(true);
       setError(null);
 
-      if (!token) {
+      if (!user) {
         setError("Please log in to continue.");
         setIsLoading(false);
         return;
       }
 
       try {
-        const headers: HeadersInit = { Accept: "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
-        const response = await fetch(`${API_BASE}/species/features`, {
+        const response = await apiFetch(`${API_BASE}/species/features`, {
           method: "GET",
-          headers,
+          headers: {
+            Accept: "application/json",
+          },
         });
+
         if (!response.ok) {
           throw new Error(`Could not load features: ${response.statusText}`);
         }
@@ -111,39 +109,35 @@ export function useAhpFactors() {
     };
 
     fetchFactors();
-  }, [getAccessToken]);
+  }, [user]);
 
   return { factorsList, isLoading, error };
 }
 
 // --- AHP CALCULATION HOOK ---
 export function useAhpCalculation() {
-  const { getAccessToken } = useAuth();
+  const { user } = useAuth();
   const [results, setResults] = useState<AhpResponse | null>(null);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleCalculate = async (payload: CalculationRequest) => {
-    const token = getAccessToken();
     setIsCalculating(true);
     setError(null);
 
-    if (!token) {
+    if (!user) {
       setError("Please log in to continue.");
       setIsCalculating(false);
       return;
     }
 
     try {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const response = await fetch(`${API_BASE}/ahp/calculate-and-save`, {
+      const response = await apiFetch(`${API_BASE}/ahp/calculate-and-save`, {
         method: "POST",
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(payload),
       });
 

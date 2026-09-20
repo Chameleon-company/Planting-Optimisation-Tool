@@ -7,17 +7,26 @@ import {
   useAhpCalculation,
 } from "@/hooks/useAhp";
 
-const stableGetAccessToken = vi.fn(() => "fake-token");
-
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    getAccessToken: stableGetAccessToken,
+    user: {
+      id: 1,
+      name: "Test User",
+      email: "test@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 
 describe("AHP Hooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    localStorage.setItem("access_token", "fake-token");
     global.fetch = vi.fn();
   });
 

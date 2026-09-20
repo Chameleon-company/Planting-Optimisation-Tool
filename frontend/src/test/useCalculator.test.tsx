@@ -3,11 +3,18 @@ import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useCalculator, DEFAULT_CALC_PARAMS } from "@/hooks/useCalculator";
 
-const stableGetAccessToken = vi.fn<() => string | null>(() => "fake-token");
-
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    getAccessToken: stableGetAccessToken,
+    user: {
+      id: 1,
+      name: "Test User",
+      email: "test@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 
@@ -40,9 +47,6 @@ describe("useCalculator Hook", () => {
       expect.stringContaining("/sapling_estimation/calculate"),
       expect.objectContaining({
         method: "POST",
-        headers: expect.objectContaining({
-          Authorization: "Bearer fake-token",
-        }),
         body: JSON.stringify({
           farm_id: 123,
           spacing_x: DEFAULT_CALC_PARAMS.spacingX,
@@ -92,18 +96,5 @@ describe("useCalculator Hook", () => {
 
     expect(result.current.error).toBe("Network error");
     expect(result.current.hasSearched).toBe(false);
-  });
-
-  it("sets session expired error and does not fetch when token is missing", async () => {
-    stableGetAccessToken.mockReturnValueOnce(null);
-
-    const { result } = renderHook(() =>
-      useCalculator("123", DEFAULT_CALC_PARAMS)
-    );
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    expect(global.fetch).not.toHaveBeenCalled();
-    expect(result.current.error).toBe("Please log in to continue.");
   });
 });

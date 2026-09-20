@@ -2,11 +2,18 @@ import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useEpiScoring } from "@/hooks/useEpiScoring";
 
-const stableGetAccessToken = vi.fn(() => "fake-token");
-
 vi.mock("../contexts/AuthContext", () => ({
   useAuth: () => ({
-    getAccessToken: stableGetAccessToken,
+    user: {
+      id: 1,
+      name: "Test User",
+      email: "test@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 
@@ -52,7 +59,6 @@ describe("useEpiScoring", () => {
       expect.stringContaining("/global-weights/epi-add-scores"),
       expect.objectContaining({
         method: "POST",
-        headers: { Authorization: "Bearer fake-token" },
         body: expect.any(FormData),
       })
     );

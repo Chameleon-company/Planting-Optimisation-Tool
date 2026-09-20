@@ -533,8 +533,16 @@ describe("useFarms", () => {
   beforeEach(() => {
     // Ensure a valid token is returned for all hook tests
     mockUseAuth.mockReturnValue({
-      user: { name: "Admin", role: "admin" },
-      getAccessToken: () => "mock-token",
+      user: {
+        id: 1,
+        name: "Test Admin",
+        email: "admin@test.com",
+        role: "admin",
+        farms: [],
+      },
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
     });
   });
 

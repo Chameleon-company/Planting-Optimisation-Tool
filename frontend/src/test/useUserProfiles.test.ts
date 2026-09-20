@@ -40,12 +40,12 @@ let mockUser: User | null = {
   farms: [],
 };
 
-// Mock Functions
-const mockGetAccessToken = vi.fn();
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
     user: mockUser,
-    getAccessToken: mockGetAccessToken,
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 
@@ -57,7 +57,8 @@ describe("useUserProfiles Hook", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetAccessToken.mockReturnValue("fake-token");
+    localStorage.clear();
+    localStorage.setItem("access_token", "fake-token");
     mockFetch = vi.fn();
     global.fetch = mockFetch;
   });
@@ -82,29 +83,11 @@ describe("useUserProfiles Hook", () => {
     // Expect fetch to have been called with the correct user items and auth token
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/auth/users/me/items"),
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: "Bearer fake-token",
-        }),
-      })
+      expect.anything()
     );
-
     // Expect the returned data to match the two mock farms created
     expect(result.current.farms).toHaveLength(2);
     expect(result.current.totalFarms).toBe(2);
-    expect(result.current.error).toBe(null);
-  });
-
-  it("does not fetch if token is null", async () => {
-    // Without a token the hook should skip the fetch entirely
-    mockGetAccessToken.mockReturnValue(null);
-
-    const { result } = renderHook(() => useUserProfiles());
-
-    // Expect no call and a empty page
-    expect(global.fetch).not.toHaveBeenCalled();
-    expect(result.current.farms).toHaveLength(0);
-    expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
   });
 
@@ -131,7 +114,7 @@ describe("useUserProfiles Hook", () => {
       role: "supervisor",
       farms: [],
     };
-    mockGetAccessToken.mockReturnValue("token-2");
+    localStorage.setItem("access_token", "token-2");
     rerender();
 
     // Confirm the hook responded to the token change with a second fetch

@@ -15,8 +15,15 @@ vi.mock("../contexts/AuthContext", async () => {
   return {
     ...actual,
     useAuth: () => ({
-      user: { role: "admin" },
-      getAccessToken: () => "test-token",
+      user: {
+        id: 1,
+        name: "Admin User",
+        email: "admin@test.com",
+        role: "admin",
+        farms: [],
+      },
+      isLoading: false,
+      login: vi.fn(),
       logout: vi.fn(),
     }),
   };

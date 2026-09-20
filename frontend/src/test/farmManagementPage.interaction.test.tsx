@@ -55,9 +55,18 @@ vi.mock("@/hooks/useAgroforestryTypes", () => ({
 beforeEach(() => {
   // Default to an admin user so all action buttons are visible unless overridden
   mockUseAuth.mockReturnValue({
-    user: { name: "Test Admin", role: "admin" },
-    getAccessToken: () => "mock-token",
+    user: {
+      id: 1,
+      name: "Test Admin",
+      email: "admin@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   });
+
   mockSoilTextures.mockReturnValue({
     soilTextures: [
       { id: 1, name: "Loam" },
@@ -379,10 +388,17 @@ describe("FarmEditForm ", () => {
   const onSuccess = vi.fn();
 
   beforeEach(() => {
-    vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
-      user: { name: "Admin", role: "admin" },
-      getAccessToken: () => "mock-token",
+      user: {
+        id: 1,
+        name: "Admin",
+        email: "admin@test.com",
+        role: "admin",
+        farms: [],
+      },
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
     });
     mockSoilTextures.mockReturnValue({
       soilTextures: [{ id: 1, name: "Loam" }],

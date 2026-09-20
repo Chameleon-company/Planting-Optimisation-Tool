@@ -66,7 +66,7 @@ function buildSpeciesPayload(species: Species): SpeciesPayload {
 }
 
 function AdminSpeciesPage() {
-  const { getAccessToken } = useAuth();
+  const { user } = useAuth();
 
   const [species, setSpecies] = useState<Species[]>([]);
   const [soilTextures, setSoilTextures] = useState<SoilTexture[]>([]);
@@ -87,15 +87,13 @@ function AdminSpeciesPage() {
       setLoading(true);
       setError(null);
 
-      const token = getAccessToken();
-
-      if (!token) {
+      if (!user) {
         setError("You must be logged in as admin to view species.");
         return;
       }
 
       const [speciesData, soilData] = await Promise.all([
-        getAllSpecies(token),
+        getAllSpecies(),
         getSoilTextures(),
       ]);
 
@@ -106,7 +104,7 @@ function AdminSpeciesPage() {
     } finally {
       setLoading(false);
     }
-  }, [getAccessToken]);
+  }, [user]);
 
   function openCreateModal() {
     setError(null);
@@ -165,9 +163,7 @@ function AdminSpeciesPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const token = getAccessToken();
-
-    if (!token) {
+    if (!user) {
       setError("You must be logged in as admin to manage species.");
       return;
     }
@@ -178,12 +174,12 @@ function AdminSpeciesPage() {
       setSuccessMessage(null);
 
       if (modalMode === "create") {
-        await createSpecies(formData, token);
+        await createSpecies(formData);
         setSuccessMessage("Species created successfully.");
       }
 
       if (modalMode === "edit" && editingSpeciesId !== null) {
-        await updateSpecies(editingSpeciesId, formData, token);
+        await updateSpecies(editingSpeciesId, formData);
         setSuccessMessage("Species updated successfully.");
       }
 
@@ -201,9 +197,7 @@ function AdminSpeciesPage() {
   }
 
   async function handleDelete(id: number) {
-    const token = getAccessToken();
-
-    if (!token) {
+    if (!user) {
       setError("You must be logged in as admin to delete species.");
       return;
     }
@@ -217,7 +211,7 @@ function AdminSpeciesPage() {
     try {
       setError(null);
       setSuccessMessage(null);
-      await deleteSpecies(id, token);
+      await deleteSpecies(id);
       setSuccessMessage("Species deleted successfully.");
       await loadSpecies();
     } catch (err) {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { apiFetch } from "../utils/apifetch";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -30,7 +31,7 @@ export interface Farm {
 }
 
 export function useUserProfiles() {
-  const { getAccessToken, user } = useAuth();
+  const { user } = useAuth();
 
   const [allFarms, setAllFarms] = useState<Farm[]>([]);
   const [page, setPage] = useState(0);
@@ -39,8 +40,7 @@ export function useUserProfiles() {
   const PAGE_SIZE = 9;
 
   const fetchFarms = useCallback(async () => {
-    const token = getAccessToken();
-    if (!token) {
+    if (!user) {
       setAllFarms([]);
       setError(null);
       return;
@@ -50,9 +50,8 @@ export function useUserProfiles() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE}/auth/users/me/items`, {
+      const res = await apiFetch(`${API_BASE}/auth/users/me/items`, {
         headers: {
-          Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
@@ -73,7 +72,7 @@ export function useUserProfiles() {
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessToken]);
+  }, [user]);
 
   useEffect(() => {
     fetchFarms();

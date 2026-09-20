@@ -27,7 +27,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
-  logout: () => void ;
+  logout: () => void;
 }
 
 // Set AuthContext as a context with AuthContextType or null as it's type, default is null
@@ -153,9 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Calling AuthContext with its provider will provide values (variables and functions), user, isLoading, login, logout
   // To all children wrapped by the Provider
   return (
-    <AuthContext.Provider
-      value={{ user, isLoading, login, logout }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

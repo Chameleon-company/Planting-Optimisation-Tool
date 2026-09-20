@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL;
+import { apiFetch } from "./apifetch";
 
 export interface CalcParams {
   spacingX: number;
@@ -15,13 +15,11 @@ export interface CalculatorResult {
 
 export async function getSaplingEstimation(
   farmId: number,
-  params: CalcParams,
-  token: string
+  params: CalcParams
 ): Promise<CalculatorResult> {
-  const res = await fetch(`${API_BASE}/sapling_estimation/calculate`, {
+  const res = await apiFetch("/sapling_estimation/calculate", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -31,9 +29,11 @@ export async function getSaplingEstimation(
       max_slope: params.maxSlope,
     }),
   });
+
   if (!res.ok) {
     const data = await res.json();
     throw new Error(data.detail || "Failed to fetch estimation");
   }
+
   return res.json();
 }

@@ -2,11 +2,11 @@
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { getFarmBoundary, getPlantingGrid } from "@/utils/farmMapApi";
 
-const TOKEN = "test-token";
-
 describe("farmMapApi", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    localStorage.setItem("access_token", "test-token");
     global.fetch = vi.fn();
   });
 
@@ -17,22 +17,18 @@ describe("farmMapApi", () => {
         json: async () => ({ type: "Feature" }),
       });
 
-      await getFarmBoundary(42, TOKEN);
+      await getFarmBoundary(42);
 
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining("/farms/42/boundary"),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: `Bearer ${TOKEN}`,
-          }),
-        })
+        expect.anything()
       );
     });
 
     it("throws on non-ok response", async () => {
       (global.fetch as Mock).mockResolvedValue({ ok: false });
 
-      await expect(getFarmBoundary(42, TOKEN)).rejects.toThrow(
+      await expect(getFarmBoundary(42)).rejects.toThrow(
         "Failed to fetch boundary"
       );
     });
@@ -45,24 +41,18 @@ describe("farmMapApi", () => {
         json: async () => ({ type: "FeatureCollection", features: [] }),
       });
 
-      await getPlantingGrid(42, TOKEN);
+      await getPlantingGrid(42);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/sapling_estimation/42/grid"),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: `Bearer ${TOKEN}`,
-          }),
-        })
+        expect.stringContaining("/farms/42/grid"),
+        expect.anything()
       );
     });
 
     it("throws on non-ok response", async () => {
       (global.fetch as Mock).mockResolvedValue({ ok: false });
 
-      await expect(getPlantingGrid(42, TOKEN)).rejects.toThrow(
-        "Failed to fetch grid"
-      );
+      await expect(getPlantingGrid(42)).rejects.toThrow("Failed to fetch grid");
     });
   });
 });

@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL;
+import { apiFetch } from "./apifetch";
 
 // ---------- TYPES ----------
 
@@ -33,7 +33,8 @@ export interface Species {
   agroforestry_types: AgroforestryType[];
 }
 
-// Payload for create/update
+// ---------- PAYLOAD ----------
+
 export interface SpeciesPayload {
   name: string;
   common_name: string;
@@ -61,6 +62,7 @@ async function handleResponse(res: Response) {
     const error = await res.json();
     throw new Error(formatApiError(error));
   }
+
   return res.json();
 }
 
@@ -117,40 +119,26 @@ function formatApiError(error: unknown): string {
 
   return "API error";
 }
+
 // ---------- SPECIES ----------
 
-export async function getAllSpecies(token: string): Promise<Species[]> {
-  const res = await fetch(`${API_BASE}/species`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export async function getAllSpecies(): Promise<Species[]> {
+  const res = await apiFetch("/species");
 
   return handleResponse(res);
 }
 
-export async function getSpeciesById(
-  id: number,
-  token: string
-): Promise<Species> {
-  const res = await fetch(`${API_BASE}/species/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export async function getSpeciesById(id: number): Promise<Species> {
+  const res = await apiFetch(`/species/${id}`);
 
   return handleResponse(res);
 }
 
-export async function createSpecies(
-  data: SpeciesPayload,
-  token: string
-): Promise<Species> {
-  const res = await fetch(`${API_BASE}/species`, {
+export async function createSpecies(data: SpeciesPayload): Promise<Species> {
+  const res = await apiFetch("/species", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -160,14 +148,12 @@ export async function createSpecies(
 
 export async function updateSpecies(
   id: number,
-  data: SpeciesPayload,
-  token: string
+  data: SpeciesPayload
 ): Promise<Species> {
-  const res = await fetch(`${API_BASE}/species/${id}`, {
+  const res = await apiFetch(`/species/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -175,12 +161,9 @@ export async function updateSpecies(
   return handleResponse(res);
 }
 
-export async function deleteSpecies(id: number, token: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/species/${id}`, {
+export async function deleteSpecies(id: number): Promise<void> {
+  const res = await apiFetch(`/species/${id}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
   if (!res.ok) {
@@ -192,6 +175,6 @@ export async function deleteSpecies(id: number, token: string): Promise<void> {
 // ---------- OPTIONS ----------
 
 export async function getSoilTextures(): Promise<SoilTexture[]> {
-  const res = await fetch(`${API_BASE}/soil-textures`);
+  const res = await apiFetch("/soil-textures");
   return handleResponse(res);
 }

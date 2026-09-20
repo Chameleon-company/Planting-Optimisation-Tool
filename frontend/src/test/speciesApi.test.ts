@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
 import {
   createSpecies,
   deleteSpecies,
@@ -38,6 +37,9 @@ function mockJsonResponse(data: unknown, ok = true) {
 describe("speciesApi", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+
+    localStorage.clear();
+    localStorage.setItem("access_token", "test-token");
   });
 
   it("gets all species", async () => {
@@ -45,63 +47,74 @@ describe("speciesApi", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(mockJsonResponse([]));
 
-    const result = await getAllSpecies("test-token");
+    const result = await getAllSpecies();
 
     expect(result).toEqual([]);
+
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/species"),
       expect.objectContaining({
-        headers: {
+        headers: expect.objectContaining({
           Authorization: "Bearer test-token",
-        },
+        }),
       })
     );
   });
 
   it("creates species with auth token", async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue(mockJsonResponse({ id: 1, ...speciesPayload }));
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      mockJsonResponse({
+        id: 1,
+        ...speciesPayload,
+      })
+    );
 
-    const result = await createSpecies(speciesPayload, "test-token");
+    const result = await createSpecies(speciesPayload);
 
     expect(result.id).toBe(1);
+
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/species"),
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
         }),
       })
     );
   });
 
   it("updates species with auth token", async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue(mockJsonResponse({ id: 1, ...speciesPayload }));
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      mockJsonResponse({
+        id: 1,
+        ...speciesPayload,
+      })
+    );
 
-    const result = await updateSpecies(1, speciesPayload, "test-token");
+    const result = await updateSpecies(1, speciesPayload);
 
     expect(result.id).toBe(1);
+
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/species/1"),
       expect.objectContaining({
         method: "PUT",
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
         }),
       })
     );
   });
 
   it("deletes species with auth token", async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue({ ok: true } as Response);
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+    } as Response);
 
-    await deleteSpecies(1, "test-token");
+    await deleteSpecies(1);
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/species/1"),
@@ -126,35 +139,44 @@ describe("speciesApi", () => {
 
   it("throws API error message when request fails", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      mockJsonResponse({ detail: "Validation failed" }, false)
+      mockJsonResponse(
+        {
+          detail: "Validation failed",
+        },
+        false
+      )
     );
 
-    await expect(getAllSpecies("test-token")).rejects.toThrow(
-      "Validation failed"
+    await expect(getAllSpecies()).rejects.toThrow("Validation failed");
+  });
+
+  it("formats backend validation detail arrays", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      mockJsonResponse(
+        {
+          detail: [
+            {
+              msg: "Temperature must be less than or equal to 50.",
+            },
+            {
+              msg: "pH must be between 0 and 14.",
+            },
+          ],
+        },
+        false
+      )
+    );
+
+    await expect(createSpecies(speciesPayload)).rejects.toThrow(
+      "Temperature must be less than or equal to 50. pH must be between 0 and 14."
     );
   });
-});
 
-it("formats backend validation detail arrays", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    mockJsonResponse(
-      {
-        detail: [
-          { msg: "Temperature must be less than or equal to 50." },
-          { msg: "pH must be between 0 and 14." },
-        ],
-      },
-      false
-    )
-  );
+  it("falls back when backend error format is unknown", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      mockJsonResponse({}, false)
+    );
 
-  await expect(createSpecies(speciesPayload, "test-token")).rejects.toThrow(
-    "Temperature must be less than or equal to 50. pH must be between 0 and 14."
-  );
-});
-
-it("falls back when backend error format is unknown", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(mockJsonResponse({}, false));
-
-  await expect(getAllSpecies("test-token")).rejects.toThrow("API error");
+    await expect(getAllSpecies()).rejects.toThrow("API error");
+  });
 });

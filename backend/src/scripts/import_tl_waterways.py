@@ -60,7 +60,8 @@ async def ingest_waterways():
                     VALUES (:name, :waterway, ST_GeomFromEWKT(:geometry))
                 """),
                 {
-                    "name": row.get("name") or None,
+                    # "name": row.get("name") or None,
+                    "name": None if row.get("name") != row.get("name") else row.get("name"),
                     "waterway": row.get("waterway") or None,
                     "geometry": ewkt,
                 },

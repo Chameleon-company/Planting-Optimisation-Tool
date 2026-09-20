@@ -30,8 +30,16 @@ vi.mock("../hooks/useSearchProfiles", () => ({
 // Mock authentication with a logged-in user
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    user: { name: "John", role: "admin" },
-    getAccessToken: () => "fake-token",
+    user: {
+      id: 1,
+      name: "John",
+      email: "john@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 

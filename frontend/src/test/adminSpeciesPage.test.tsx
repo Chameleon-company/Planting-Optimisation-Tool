@@ -1,8 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HelmetProvider } from "react-helmet-async";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AdminSpeciesPage from "../pages/admin/AdminSpeciesPage";
 import {
   createSpecies,
@@ -20,9 +19,22 @@ vi.mock("../utils/speciesApi", () => ({
   deleteSpecies: vi.fn(),
 }));
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 vi.mock("../contexts/AuthContext", () => ({
   useAuth: () => ({
-    getAccessToken: () => "test-token",
+    user: {
+      id: 1,
+      name: "Admin User",
+      email: "admin@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 
@@ -137,8 +149,7 @@ describe("AdminSpeciesPage", () => {
         common_name: "Test common",
         soil_textures: [1],
         agroforestry_types: [1],
-      }),
-      "test-token"
+      })
     );
 
     expect(
@@ -189,8 +200,7 @@ describe("AdminSpeciesPage", () => {
       1,
       expect.objectContaining({
         common_name: "Updated common",
-      }),
-      "test-token"
+      })
     );
 
     expect(
@@ -210,7 +220,7 @@ describe("AdminSpeciesPage", () => {
     await user.click(screen.getByRole("button", { name: /delete/i }));
 
     await waitFor(() => {
-      expect(deleteSpecies).toHaveBeenCalledWith(1, "test-token");
+      expect(deleteSpecies).toHaveBeenCalledWith(1);
     });
 
     expect(

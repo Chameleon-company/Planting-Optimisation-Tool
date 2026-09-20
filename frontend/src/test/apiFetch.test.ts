@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  apiFetch,
-  AUTH_UNAUTHORIZED_EVENT,
-} from "../utils/apiFetch";
+import { apiFetch, AUTH_UNAUTHORIZED_EVENT } from "../utils/apiFetch";
 
 describe("apiFetch", () => {
   const mockFetch = vi.fn();
@@ -143,5 +140,4 @@ describe("apiFetch", () => {
 
     window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, eventSpy);
   });
-
 });

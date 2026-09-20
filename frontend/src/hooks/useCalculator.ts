@@ -12,7 +12,7 @@ export const DEFAULT_CALC_PARAMS: CalcParams = {
 };
 
 export function useCalculator(farmId: string, params: CalcParams) {
-  const { getAccessToken } = useAuth();
+  const { user } = useAuth();
   const [result, setResult] = useState<CalculatorResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -27,15 +27,14 @@ export function useCalculator(farmId: string, params: CalcParams) {
       setHasSearched(false);
       setResult(null);
 
-      const token = getAccessToken();
-      if (!token) {
+      if (!user) {
         setError("Please log in to continue.");
         setIsLoading(false);
         return;
       }
 
       try {
-        const data = await getSaplingEstimation(Number(farmId), params, token);
+        const data = await getSaplingEstimation(Number(farmId), params);
         setResult(data);
         setHasSearched(true);
       } catch (err: unknown) {
@@ -50,7 +49,7 @@ export function useCalculator(farmId: string, params: CalcParams) {
     };
 
     fetchEstimation();
-  }, [farmId, params, getAccessToken]);
+  }, [farmId, params, user]);
 
   return { result, isLoading, hasSearched, error };
 }

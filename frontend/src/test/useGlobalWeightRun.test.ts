@@ -3,11 +3,18 @@ import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { useGlobalWeightRuns } from "@/hooks/useGlobalWeightRuns";
 
-const stableGetAccessToken = vi.fn(() => "fake-token");
-
 vi.mock("../contexts/AuthContext", () => ({
   useAuth: () => ({
-    getAccessToken: stableGetAccessToken,
+    user: {
+      id: 1,
+      name: "Test User",
+      email: "test@test.com",
+      role: "admin",
+      farms: [],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
   }),
 }));
 

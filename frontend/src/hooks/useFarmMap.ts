@@ -11,7 +11,7 @@ export interface FarmMapData {
 }
 
 export function useFarmMap(farmId: number | null): FarmMapData {
-  const { getAccessToken } = useAuth();
+  const { user } = useAuth();
   const [boundary, setBoundary] = useState<GeoJsonObject | null>(null);
   const [grid, setGrid] = useState<GeoJsonObject | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,16 +26,15 @@ export function useFarmMap(farmId: number | null): FarmMapData {
       setBoundary(null);
       setGrid(null);
 
-      const token = getAccessToken();
-      if (!token) {
+      if (!user) {
         setError("Please log in to continue.");
         setIsLoading(false);
         return;
       }
 
       const [boundaryResult, gridResult] = await Promise.allSettled([
-        getFarmBoundary(farmId, token),
-        getPlantingGrid(farmId, token),
+        getFarmBoundary(farmId),
+        getPlantingGrid(farmId),
       ]);
 
       if (boundaryResult.status === "fulfilled")
@@ -53,7 +52,7 @@ export function useFarmMap(farmId: number | null): FarmMapData {
     };
 
     fetchMapData();
-  }, [farmId, getAccessToken]);
+  }, [farmId, user]);
 
   return { boundary, grid, isLoading, error };
 }
