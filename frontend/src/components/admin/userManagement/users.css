@@ -1,0 +1,284 @@
+/* ============ USER MANAGEMENT ============ */
+
+.users-view-container {
+  --users-warning: #b26a00;
+  --users-warning-strong: #7d4a00;
+  --users-warning-bg: #fff3d6;
+  --users-warning-border: color-mix(in srgb, var(--users-warning) 35%, #fff);
+
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: 1.5rem;
+  text-align: left;
+}
+
+/* ============ PAGE HEADER (sits above the cards) ============ */
+
+.users-header {
+  margin-bottom: 1.5rem;
+}
+
+.users-title {
+  color: var(--text);
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.users-subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.35rem 0 0;
+}
+
+.users-pending-flag {
+  color: var(--users-warning-strong);
+  font-weight: 600;
+}
+
+/* ============ SECTION CARD ("bubble") ============ */
+
+.users-section {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px
+    color-mix(in srgb, var(--charcoal-blue) 04%, transparent);
+  margin-bottom: 24px;
+  padding: 24px 28px;
+}
+
+/* Count pill shown on the right of the pending card header */
+.users-count-badge {
+  background: var(--users-warning);
+  border-radius: 999px;
+  color: var(--bg);
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.15rem 0.65rem;
+}
+
+.users-empty {
+  color: var(--muted);
+  font-style: italic;
+  margin: 0.5rem 0 0;
+}
+
+/* ============ SELF ROW ============ */
+
+.admin-species-table .users-row-self,
+.admin-species-table .users-row-self:hover {
+  background: var(--tint-light);
+}
+
+/* ============ SHARED ADMIN BUTTON ============ */
+
+.users-section .admin-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.users-section .admin-action-btn:disabled:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* ============ ROLE SELECT ============ */
+
+.users-select {
+  appearance: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.users-select:focus {
+  border-color: var(--forest-green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-green) 18%, transparent);
+  outline: none;
+}
+
+.users-select:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ============ STATUS BADGES ============ */
+
+.users-badge {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+}
+
+.users-badge-approved {
+  background: var(--tint-light);
+  border: 1px solid color-mix(in srgb, var(--forest-green) 30%, #fff);
+  color: var(--black-forest);
+}
+
+.users-badge-pending {
+  background: var(--users-warning-bg);
+  border: 1px solid var(--users-warning-border);
+  color: var(--users-warning-strong);
+}
+
+.users-badge-unknown {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* ============ PAGINATION ============ */
+
+.users-pagination {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
+.users-btn-page {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--btn-primary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4rem 0.95rem;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.users-btn-page:hover:not(:disabled) {
+  background: var(--tint-light);
+  border-color: var(--tint-light);
+  transform: translateY(-1px);
+}
+
+.users-btn-page:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.users-page-indicator {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ============ ACCESS-DENIED / ERROR BOX ============ */
+
+.users-error-message {
+  background: color-mix(in srgb, var(--danger) 12%, #fff);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, #fff);
+  border-radius: 10px;
+  color: var(--danger-dark);
+  padding: 1rem 1.1rem;
+}
+
+.users-error-message p {
+  margin: 0;
+}
+
+/* ============ RESPONSIVE ============ */
+
+@media (max-width: 640px) {
+  .users-view-container {
+    padding: 1rem;
+  }
+
+  .users-section {
+    padding: 20px 16px;
+  }
+}
+
+/* ============ COLLAPSIBLE ROLE GROUPS ============ */
+
+.admin-species-table .users-group-row td {
+  background: var(--surface);
+  padding: 0;
+}
+
+.users-group-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 0.5rem;
+  letter-spacing: 0.03em;
+  padding: 0.55rem 0.75rem;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+.users-group-toggle:hover {
+  background: var(--tint-light);
+}
+
+.users-group-caret {
+  color: var(--muted);
+  display: inline-block;
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
+.users-group-caret.is-collapsed {
+  transform: rotate(180deg);
+}
+
+.users-group-count {
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ============ DELETE CONFIRM MODAL ============ */
+
+.users-confirm-modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+  max-width: 440px;
+  padding: 28px;
+  text-align: left;
+  width: 100%;
+}
+
+.users-confirm-title {
+  color: var(--text);
+  font-size: 1.25rem;
+  margin: 0 0 10px;
+}
+
+.users-confirm-message {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.users-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}

@@ -19,6 +19,13 @@ from src.services import user as user_service
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+def mask_name(user: User, viewer_id: int, *, reveal: bool = False) -> UserRead:
+    data = UserRead.model_validate(user)
+    if not reveal and user.id != viewer_id:
+        return data.model_copy(update={"name": None})
+    return data
+
+
 @router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: UserCreate,
@@ -46,7 +53,8 @@ async def read_users(
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role(Role.SUPERVISOR)),
 ):
-    return await user_service.list_users(db, skip, limit)
+    users = await user_service.list_users(db, skip, limit)
+    return [mask_name(u, current_user.id) for u in users]
 
 
 @router.get("/pending", response_model=List[UserRead])
@@ -55,7 +63,8 @@ async def read_pending_users(
     current_user: User = Depends(require_role(Role.ADMIN)),
 ):
     """Returns all users awaiting admin approval."""
-    return await user_service.list_pending_users(db)
+    users = await user_service.list_pending_users(db)
+    return [mask_name(u, current_user.id) for u in users]
 
 
 @router.get("/{user_id}", response_model=UserRead)
@@ -69,8 +78,7 @@ async def read_user(
     db_user = await user_service.get_user_by_id(db, user_id)
     if db_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    return db_user
+    return mask_name(db_user, current_user.id)
 
 
 @router.put("/{user_id}", response_model=UserRead)
