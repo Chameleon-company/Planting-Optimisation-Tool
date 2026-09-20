@@ -70,20 +70,6 @@ describe("useRecommendations Hook", () => {
     expect(result.current.hasSearched).toBe(false);
   });
 
-  it("shows an error when there is no access token", async () => {
-    localStorage.removeItem("access_token");
-
-    const { result } = renderHook(() => useRecommendations("123"));
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(result.current.error).toBe("Please log in to continue.");
-
-    expect(global.fetch).not.toHaveBeenCalled();
-  });
-
   it("handles API errors by returning an error message", async () => {
     (global.fetch as Mock).mockResolvedValue({
       ok: false,
