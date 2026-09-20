@@ -138,6 +138,19 @@
   font-weight: 600;
 }
 
+.farm-estimated-badge {
+  background: var(--tint-light);
+  border: 1px solid var(--forest-green);
+  border-radius: 999px;
+  color: var(--forest-green);
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-left: 8px;
+  padding: 2px 7px;
+  vertical-align: middle;
+}
+
 .farm-card-coords {
   color: var(--muted);
   font-size: 0.82rem;
@@ -235,6 +248,74 @@
   font-size: 0.85rem;
 }
 
+/* ============ ESTIMATED VALUE INDICATOR ============ */
+
+.estimated-indicator {
+  align-items: center;
+  background: var(--tint-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--black-forest);
+  cursor: help;
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-left: 6px;
+  padding: 2px 7px;
+  position: relative;
+  vertical-align: middle;
+}
+
+.estimated-indicator:focus {
+  outline: 2px solid var(--forest-green);
+  outline-offset: 2px;
+}
+
+.estimated-tooltip {
+  background: var(--text);
+  border-radius: 7px;
+  bottom: calc(100% + 8px);
+  box-shadow: 0 4px 12px
+    color-mix(in srgb, var(--charcoal-blue) 20%, transparent);
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 400;
+  left: 50%;
+  line-height: 1.4;
+
+  opacity: 0;
+  padding: 9px 11px;
+  pointer-events: none;
+  position: absolute;
+  text-align: left;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s ease;
+  visibility: hidden;
+  width: 260px;
+  z-index: 20;
+}
+
+.estimated-tooltip::after {
+  border-color: var(--text) transparent transparent transparent;
+  border-style: solid;
+  border-width: 5px;
+  content: "";
+  left: 50%;
+  position: absolute;
+  top: 100%;
+  transform: translateX(-50%);
+}
+
+.estimated-indicator:hover .estimated-tooltip,
+.estimated-indicator:focus .estimated-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  visibility: visible;
+}
 /* ============ PROFILE LOADING AND EMPTY STATES ============ */
 
 .profile-status-card {

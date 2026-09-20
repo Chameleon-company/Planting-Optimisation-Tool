@@ -1,3 +1,4 @@
+from decimal import Decimal, InvalidOperation
 from typing import Union
 
 from geoalchemy2.shape import to_shape
@@ -10,6 +11,25 @@ from src.models import AgroforestryType, Farm, User
 from src.models.boundaries import FarmBoundary
 from src.schemas.farm import FarmCreate, FarmUpdate
 from src.schemas.user import Role
+
+IMPUTATION_FLAG_FIELDS = {
+    "rainfall_mm": "rainfall_mm_imputed",
+    "temperature_celsius": "temperature_celsius_imputed",
+    "elevation_m": "elevation_m_imputed",
+    "slope": "slope_imputed",
+    "ph": "ph_imputed",
+}
+
+
+def _value_changed(existing_value, incoming_value) -> bool:
+    """Return True if incoming_value differs from existing_value."""
+    if existing_value is None or incoming_value is None:
+        return existing_value is not incoming_value
+
+    try:
+        return Decimal(str(existing_value)) != Decimal(str(incoming_value))
+    except (InvalidOperation, ValueError, TypeError):
+        return existing_value != incoming_value
 
 
 async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: int):
@@ -147,6 +167,13 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
     agroforestry_ids = update_data.pop("agroforestry_type_ids", None)
 
     for field, value in update_data.items():
+        if field in IMPUTATION_FLAG_FIELDS:
+            existing_value = getattr(db_farm, field)
+
+            if _value_changed(existing_value, value):
+                flag_field = IMPUTATION_FLAG_FIELDS[field]
+                setattr(db_farm, flag_field, False)
+
         setattr(db_farm, field, value)
 
     if agroforestry_ids is not None:

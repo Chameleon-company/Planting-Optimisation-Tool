@@ -18,13 +18,18 @@ const TestComponent = () => {
     <div>
       <p>{user ? `Logged in as ${user.name}` : "Not logged in"}</p>
       <p>{isLoading ? "Loading" : "Idle"}</p>
+
       <button
         onClick={() =>
-          login({ email: "admin@test.com", password: "Password123!" })
+          login({
+            email: "admin@test.com",
+            password: "Password123!",
+          })
         }
       >
         Login
       </button>
+
       <button onClick={logout}>Logout</button>
     </div>
   );
@@ -80,6 +85,38 @@ describe("AuthContext", () => {
 
     expect(localStorage.getItem("access_token")).toBe("test-token");
     expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("should clear the session when an unauthorized event is received", async () => {
+    localStorage.setItem("access_token", "expired-token");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 1,
+        name: "Admin User",
+        email: "admin@test.com",
+        role: "admin",
+      }),
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Logged in as Admin User")).toBeInTheDocument();
+    });
+
+    window.dispatchEvent(new Event("auth:unauthorized"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Not logged in")).toBeInTheDocument();
+    });
+
+    expect(localStorage.getItem("access_token")).toBeNull();
   });
 
   it("should clear user and token after logout", async () => {
