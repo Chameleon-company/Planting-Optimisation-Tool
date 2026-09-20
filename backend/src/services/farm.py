@@ -19,6 +19,7 @@ IMPUTATION_FLAG_FIELDS = {
     "ph": "ph_imputed",
 }
 
+
 async def create_farm_record(db: AsyncSession, farm_data: FarmCreate, user_id: int):
     # Convert Pydantic to Dict
     farm_data_dict = farm_data.model_dump()
@@ -164,11 +165,7 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
         setattr(db_farm, field, value)
 
     if agroforestry_ids is not None:
-        result = await db.execute(
-            select(AgroforestryType).where(
-                AgroforestryType.id.in_(agroforestry_ids)
-            )
-        )
+        result = await db.execute(select(AgroforestryType).where(AgroforestryType.id.in_(agroforestry_ids)))
         selected_types = list(result.scalars().all())
         db_farm.agroforestry_type = selected_types
 
@@ -185,6 +182,7 @@ async def update_farm_record(db: AsyncSession, farm_id: int, farm_data: FarmUpda
         .where(Farm.id == db_farm.id)
     )
     return result.scalar_one()
+
 
 async def get_farm_boundary(db: AsyncSession, farm_id: int) -> dict | None:
     result = await db.execute(select(FarmBoundary).where(FarmBoundary.id == farm_id))
