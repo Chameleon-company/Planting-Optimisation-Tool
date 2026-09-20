@@ -809,6 +809,55 @@ main.container {
   margin-top: 8px;
 }
 
+/* ============ SPECIES SKELETON LOADING ============ */
+
+.species-card-skeleton {
+  pointer-events: none;
+}
+
+.species-skeleton-media {
+  animation: species-skeleton-shimmer 1.5s linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--border) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+}
+
+.species-skeleton-line {
+  animation: species-skeleton-shimmer 1.5s linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--border) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+}
+
+.species-skeleton-title {
+  height: 20px;
+  width: 70%;
+}
+
+.species-skeleton-button {
+  height: 38px;
+  width: 110px;
+}
+
+@keyframes species-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* ============ SHARED BUTTON STANDARDS ============ */
 
 .btn-primary {
@@ -1932,6 +1981,55 @@ main.container {
   flex-shrink: 0;
   height: 20px;
   width: 20px;
+}
+
+/* =========================
+   ADMIN SKELETON LOADING
+   ========================= */
+
+.admin-skeleton-line {
+  animation: admin-skeleton-shimmer 1.5s linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--border) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+}
+
+.matrix-skeleton-heading {
+  height: 14px;
+  width: 80%;
+}
+
+.matrix-skeleton-species {
+  height: 16px;
+  margin-bottom: 7px;
+  width: 140px;
+}
+
+.matrix-skeleton-common-name {
+  height: 11px;
+  width: 100px;
+}
+
+.matrix-skeleton-checkbox {
+  border-radius: 4px;
+  height: 18px;
+  margin: 0 auto;
+  width: 18px;
+}
+
+@keyframes admin-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .admin-toast-container {

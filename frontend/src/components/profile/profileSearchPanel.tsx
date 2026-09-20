@@ -1,5 +1,6 @@
 import FarmSearchInput from "./profileSearchInput";
 import FarmCard from "./profileCard";
+import ProfileCardSkeleton from "./profileCardSkeleton";
 
 import { useAuth } from "@/contexts/AuthContext";
 import type { Farm } from "@/hooks/useUserProfiles";
@@ -102,12 +103,8 @@ export default function FarmSearchPanel({
       )}
 
       {isSearching && isLoading && (
-        <div className="profile-status-card" role="status" aria-live="polite">
-          <h2 className="profile-status-title">Loading profile...</h2>
-
-          <p className="profile-status-message">
-            Retrieving environmental data for this farm.
-          </p>
+        <div className="farm-search-result" aria-busy="true" aria-live="polite">
+          <ProfileCardSkeleton />
         </div>
       )}
 
@@ -140,14 +137,14 @@ export default function FarmSearchPanel({
         </>
       )}
 
-      {isSearching && !isLoading && !profile && !error && (
-        <>
-          {!user && (
-            <p className="farm-list-empty">You must be logged in to search.</p>
-          )}
+      {isSearching && !isLoading && !profile && !error && user && (
+        <p className="farm-list-empty">No profile found for this farm.</p>
+      )}
 
-          {user && <p className="farm-list-empty">No profile found.</p>}
-        </>
+      {isSearching && !isLoading && !profile && !error && !user && (
+        <p className="farm-list-empty">
+          You must be logged in to search for a farm profile.
+        </p>
       )}
     </>
   );

@@ -4,6 +4,7 @@ import AdminToast, {
   type AdminToastType,
 } from "../../../components/admin/AdminToast";
 import { useAuth } from "../../../contexts/AuthContext";
+import CompatibilityMatrixSkeleton from "@/components/admin/compatibilityMatrixSkeleton";
 import {
   getAllSpecies,
   Species,
@@ -229,12 +230,7 @@ function CompatibilityMatrixPage() {
           </div>
         </div>
 
-        {loading && (
-          <div className="admin-loading-state" role="status" aria-live="polite">
-            <span className="admin-spinner" aria-hidden="true" />
-            <span>Loading compatibility matrix...</span>
-          </div>
-        )}
+        {loading && <CompatibilityMatrixSkeleton />}
 
         {error && <p className="admin-error-message">{error}</p>}
 

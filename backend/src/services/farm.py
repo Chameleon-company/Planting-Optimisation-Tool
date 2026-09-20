@@ -2,7 +2,7 @@ from typing import Union
 
 from geoalchemy2.shape import to_shape
 from shapely.geometry import mapping
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -71,6 +71,34 @@ async def get_farm_by_id(db: AsyncSession, farm_ids: list[int], user_id: int | N
     )
     if user_id is not None:
         stmt = stmt.where(Farm.owners.any(User.id == user_id))
+
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def search_farms_by_name(
+    db: AsyncSession,
+    term: str,
+    current_user,
+    limit: int = 10,
+) -> list[Farm]:
+    escaped = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+    stmt = (
+        select(Farm)
+        .options(
+            selectinload(Farm.soil_texture),
+            selectinload(Farm.agroforestry_type),
+            selectinload(Farm.owners),
+        )
+        .where(Farm.name.isnot(None))
+        .where(Farm.name.ilike(f"%{escaped}%", escape="\\"))
+        .order_by(func.similarity(Farm.name, term).desc())
+        .limit(limit)
+    )
+
+    if current_user.role == Role.OFFICER:
+        stmt = stmt.where(Farm.owners.any(User.id == current_user.id))
 
     result = await db.execute(stmt)
     return list(result.scalars().all())

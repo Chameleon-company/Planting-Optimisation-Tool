@@ -42,7 +42,24 @@ Source structure:
 - `src/utils/` – Utility functions and API clients
 - `src/test/` – Vitest + React Testing Library test files
 
----
+## Frontend Features
+
+The frontend provides the following main pages and interfaces:
+
+- Home page for the main landing screen.
+- Environmental Profile page for displaying farm environmental information.
+- Sapling Calculator page for estimating sapling requirements.
+- Agroforestry Recommendation page for displaying planting recommendations.
+- Species page for viewing species information.
+- Farm record management interface.
+- Farm spatial visualisation.
+- Species management interface.
+- Compatibility matrix editor.
+- Exclusion rules and dependencies interface.
+- Admin dashboard and core settings.
+-The frontend also includes confirmation before deleting a farm record.
+
+--------
 
 ## Frontend Setup
 
