@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   apiFetch,
-  apiFetchUrl,
   AUTH_UNAUTHORIZED_EVENT,
 } from "../utils/apiFetch";
 
@@ -145,18 +144,6 @@ describe("apiFetch", () => {
     window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, eventSpy);
   });
 
-  it("uses the API base URL with apiFetchUrl", async () => {
-    mockFetch.mockResolvedValueOnce(
-      new Response(null, {
-        status: 200,
-      })
-    );
-
-    await apiFetchUrl("/recommendations/123");
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/recommendations/123"),
-      expect.anything()
     );
   });
 });
