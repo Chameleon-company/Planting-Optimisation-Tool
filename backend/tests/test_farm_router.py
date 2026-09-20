@@ -73,8 +73,10 @@ async def test_read_farm_success_and_authorization_check(
         "slope": 10.0,
     }
 
-    farm_a = Farm(**farm_data_a, user_id=user_a.id)
-    farm_b = Farm(**farm_data_a, user_id=user_b.id)
+    farm_a = Farm(**farm_data_a)
+    farm_a.owners = [user_a]
+    farm_b = Farm(**farm_data_a)
+    farm_b.owners = [user_b]
 
     async_session.add_all([farm_a, farm_b])
     await async_session.commit()
@@ -91,7 +93,7 @@ async def test_read_farm_success_and_authorization_check(
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == farm_a_id
-    assert data["user_id"] == user_a.id
+    assert any(owner["id"] == user_a.id for owner in data["owners"])
 
     # Test 2: AUTHORIZATION FAILURE (User A tries to read User B's farm)
     url = f"/farms/{farm_b_id}"
@@ -141,7 +143,8 @@ async def test_profile_owner_access(
         "slope": 10.0,
     }
 
-    farm = Farm(**farm_data, user_id=user_a.id)
+    farm = Farm(**farm_data)
+    farm.owners = [user_a]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -208,7 +211,8 @@ async def test_profile_blocks_non_owner(
         "slope": 10.0,
     }
 
-    farm_b = Farm(**farm_data, user_id=user_b.id)
+    farm_b = Farm(**farm_data)
+    farm_b.owners = [user_b]
     async_session.add(farm_b)
     await async_session.flush()
     await async_session.refresh(farm_b)
@@ -263,7 +267,8 @@ async def test_supervisor_can_read_any_farm(
     setup_soil_texture,
 ):
     """Supervisor can read a farm belonging to a different user (no ownership filter applied)."""
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -283,7 +288,8 @@ async def test_admin_can_read_any_farm(
     setup_soil_texture,
 ):
     """Admin can read a farm belonging to a different user (no ownership filter applied)."""
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -319,7 +325,11 @@ async def test_supervisor_cannot_create_farm(
     supervisor_auth_headers: dict,
     setup_soil_texture,
 ):
-    response = await async_client.post("/farms", json=VALID_FARM_PAYLOAD, headers=supervisor_auth_headers)
+    response = await async_client.post(
+        "/farms",
+        json=VALID_FARM_PAYLOAD,
+        headers=supervisor_auth_headers,
+    )
 
     assert response.status_code == 403
 
@@ -330,12 +340,22 @@ async def test_admin_can_create_farm_success(
     admin_auth_headers: dict,
     setup_soil_texture,
 ):
-    response = await async_client.post("/farms", json=VALID_FARM_PAYLOAD, headers=admin_auth_headers)
+    payload = {
+        **VALID_FARM_PAYLOAD,
+        "baseline_tree_count": 12,
+    }
+
+    response = await async_client.post(
+        "/farms",
+        json=payload,
+        headers=admin_auth_headers,
+    )
 
     assert response.status_code == 201
     data = response.json()
-    assert data["user_id"] == test_admin_user.id
+    assert any(owner["id"] == test_admin_user.id for owner in data["owners"])
     assert data["rainfall_mm"] == VALID_FARM_PAYLOAD["rainfall_mm"]
+    assert data["baseline_tree_count"] == 12
 
 
 async def test_admin_can_update_farm_with_empty_agroforestry_ids(
@@ -345,7 +365,8 @@ async def test_admin_can_update_farm_with_empty_agroforestry_ids(
     admin_auth_headers: dict,
     setup_soil_texture,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -370,7 +391,8 @@ async def test_admin_can_update_farm_partially(
     setup_soil_texture,
     monkeypatch,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -378,6 +400,7 @@ async def test_admin_can_update_farm_partially(
     update_payload = {
         "area_ha": 8.5,
         "slope": 12.0,
+        "baseline_tree_count": 4,
     }
 
     response = await async_client.put(
@@ -388,10 +411,12 @@ async def test_admin_can_update_farm_partially(
 
     assert response.status_code == 200
     data = response.json()
+
     assert data["id"] == farm.id
     assert float(data["area_ha"]) == 8.5
     assert float(data["slope"]) == 12.0
     assert data["rainfall_mm"] == VALID_FARM_PAYLOAD["rainfall_mm"]
+    assert data["baseline_tree_count"] == 4
 
 
 async def test_supervisor_can_update_own_farm(
@@ -402,7 +427,8 @@ async def test_supervisor_can_update_own_farm(
     setup_soil_texture,
     monkeypatch,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_supervisor_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_supervisor_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -427,7 +453,8 @@ async def test_supervisor_cannot_update_other_users_farm(
     setup_soil_texture,
     monkeypatch,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -448,7 +475,8 @@ async def test_officer_cannot_update_farm(
     officer_auth_headers: dict,
     setup_soil_texture,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -483,7 +511,8 @@ async def test_admin_can_delete_farm(
     admin_auth_headers: dict,
     setup_soil_texture,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -503,7 +532,8 @@ async def test_officer_cannot_delete_farm(
     officer_auth_headers: dict,
     setup_soil_texture,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -520,7 +550,8 @@ async def test_supervisor_cannot_delete_farm(
     supervisor_auth_headers: dict,
     setup_soil_texture,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -585,7 +616,8 @@ async def test_get_boundary_returns_geojson(
     officer_auth_headers: dict,
     setup_soil_texture,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_officer_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_officer_user]
     async_session.add(farm)
     await async_session.flush()
     await async_session.refresh(farm)
@@ -635,7 +667,8 @@ async def test_update_farm_rejects_invalid_slope(
     admin_auth_headers: dict,
     setup_soil_texture,
 ):
-    farm = Farm(**VALID_FARM_PAYLOAD, user_id=test_admin_user.id)
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
     async_session.add(farm)
     await async_session.commit()
     await async_session.refresh(farm)
@@ -646,4 +679,237 @@ async def test_update_farm_rejects_invalid_slope(
         headers=admin_auth_headers,
     )
 
+    assert response.status_code == 422
+
+
+async def test_farm_with_multiple_owners_both_can_access(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    setup_soil_texture,
+):
+    """A farm with two owners is accessible by both owners individually."""
+    user_a = User(
+        name="Owner A",
+        email="ownera@test.com",
+        hashed_password=get_password_hash("passworda"),
+        role=Role.OFFICER.value,
+    )
+    user_b = User(
+        name="Owner B",
+        email="ownerb@test.com",
+        hashed_password=get_password_hash("passwordb"),
+        role=Role.OFFICER.value,
+    )
+    async_session.add_all([user_a, user_b])
+    await async_session.flush()
+    await async_session.refresh(user_a)
+    await async_session.refresh(user_b)
+
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [user_a, user_b]
+    async_session.add(farm)
+    await async_session.commit()
+    await async_session.refresh(farm)
+
+    token_a = create_access_token(data={"sub": str(user_a.id), "role": user_a.role})
+    token_b = create_access_token(data={"sub": str(user_b.id), "role": user_b.role})
+
+    response_a = await async_client.get(f"/farms/{farm.id}", headers={"Authorization": f"Bearer {token_a}"})
+    response_b = await async_client.get(f"/farms/{farm.id}", headers={"Authorization": f"Bearer {token_b}"})
+
+    assert response_a.status_code == 200
+    assert response_b.status_code == 200
+
+    owner_ids = {owner["id"] for owner in response_a.json()["owners"]}
+    assert user_a.id in owner_ids
+    assert user_b.id in owner_ids
+
+
+# Farm name search tests
+
+
+async def test_search_officer_sees_only_own_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    officer_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Officer search is scoped to owned farms, another officer's matching farm is excluded."""
+    other = User(
+        name="Other Officer",
+        email="other_officer@test.com",
+        hashed_password=get_password_hash("passwordx"),
+        role=Role.OFFICER.value,
+    )
+    async_session.add(other)
+    await async_session.flush()
+    await async_session.refresh(other)
+
+    own = Farm(**VALID_FARM_PAYLOAD, name="Riverside Own")
+    own.owners = [test_officer_user]
+    theirs = Farm(**VALID_FARM_PAYLOAD, name="Riverside Other")
+    theirs.owners = [other]
+    async_session.add_all([own, theirs])
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Riverside"}, headers=officer_auth_headers)
+
+    assert response.status_code == 200
+    names = [f["name"] for f in response.json()]
+    assert names == ["Riverside Own"]
+
+
+async def test_search_supervisor_sees_all_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    test_supervisor_user: User,
+    supervisor_auth_headers: dict,
+    setup_soil_texture,
+):
+    """A supervisor searches across all farms, not just their own."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Supervisor Visible")
+    farm.owners = [test_officer_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Supervisor Visible"}, headers=supervisor_auth_headers)
+
+    assert response.status_code == 200
+    names = [f["name"] for f in response.json()]
+    assert "Supervisor Visible" in names
+
+
+async def test_search_admin_sees_all_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_officer_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Admin searches across all farms regardless of ownership."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Admin Visible")
+    farm.owners = [test_officer_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Admin Visible"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    names = [f["name"] for f in response.json()]
+    assert "Admin Visible" in names
+
+
+async def test_search_is_case_insensitive(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """A lowercase query matches a mixed-case farm name."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Riverside")
+    farm.owners = [test_admin_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "riverside"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert any(f["name"] == "Riverside" for f in response.json())
+
+
+async def test_search_partial_match(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """A substring of the name is enough to match."""
+    farm = Farm(**VALID_FARM_PAYLOAD, name="Riverside Plantation")
+    farm.owners = [test_admin_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "plant"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert any(f["name"] == "Riverside Plantation" for f in response.json())
+
+
+async def test_search_unauthenticated(async_client: AsyncClient):
+    """Unauthenticated search is rejected."""
+    response = await async_client.get("/farms/search", params={"name": "anything"})
+    assert response.status_code == 401
+
+
+async def test_search_caps_results_at_ten(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """More than ten matches are capped to the ten closest."""
+    farms = [Farm(**VALID_FARM_PAYLOAD, name=f"Cap Farm {i}") for i in range(12)]
+    for f in farms:
+        f.owners = [test_admin_user]
+    async_session.add_all(farms)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Cap Farm"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert len(response.json()) == 10
+
+
+async def test_search_ranks_closest_match_first(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """An exact-name match ranks above a looser partial match."""
+    exact = Farm(**VALID_FARM_PAYLOAD, name="Oak")
+    looser = Farm(**VALID_FARM_PAYLOAD, name="Oakwood Plantation Estate")
+    exact.owners = [test_admin_user]
+    looser.owners = [test_admin_user]
+    async_session.add_all([exact, looser])
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "Oak"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data[0]["name"] == "Oak"
+
+
+async def test_search_excludes_null_name_farms(
+    async_client: AsyncClient,
+    async_session: AsyncSession,
+    test_admin_user: User,
+    admin_auth_headers: dict,
+    setup_soil_texture,
+):
+    """Farms without a name never surface in search results."""
+    farm = Farm(**VALID_FARM_PAYLOAD)
+    farm.owners = [test_admin_user]
+    async_session.add(farm)
+    await async_session.commit()
+
+    response = await async_client.get("/farms/search", params={"name": "anything"}, headers=admin_auth_headers)
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+async def test_search_empty_query_rejected(
+    async_client: AsyncClient,
+    admin_auth_headers: dict,
+):
+    """An empty search term fails validation (min_length=1)."""
+    response = await async_client.get("/farms/search", params={"name": ""}, headers=admin_auth_headers)
     assert response.status_code == 422

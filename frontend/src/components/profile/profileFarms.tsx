@@ -1,5 +1,6 @@
 import FarmCard from "./profileCard";
 import FarmPageNav from "./profilePageNav";
+import ProfileCardSkeleton from "./profileCardSkeleton";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Farm } from "@/hooks/useUserProfiles";
@@ -25,7 +26,13 @@ export default function FarmList({
   const canEdit = user?.role === "supervisor" || user?.role === "admin";
 
   if (isLoading) {
-    return <p className="farm-list-empty">Loading farms...</p>;
+    return (
+      <div className="farm-list" aria-busy="true">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <ProfileCardSkeleton key={index} />
+        ))}
+      </div>
+    );
   }
 
   // Not logged in

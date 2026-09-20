@@ -11,6 +11,7 @@ __all__ = [
     "UserCreate",
     "UserUpdate",
     "UserRead",
+    "UserApprove",
     "UserLogin",
     "Token",
     "TokenData",
@@ -97,11 +98,26 @@ class UserUpdate(BaseModel):
         return v
 
 
+# Used by an admin to approve a pending registration and assign the effective role.
+class UserApprove(BaseModel):
+    role: Role = Field(..., description="Effective role to assign on approval.")
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: Role) -> Role:
+        if v not in Role:
+            raise ValueError("Invalid role")
+        return v
+
+
 # This is what is returned after registration or when fetching the current user.
 # NEVER INCLUDE PASSWORD
 class UserRead(UserBase):
     id: int = Field(..., description="The unique database ID of the user.")
+    name: Optional[str] = Field(None, description="Null when hidden from the viewer.")
     role: Role = Field(..., description="The user's role.")
+    is_approved: bool = Field(..., description="Whether the account has been approved by an admin.")
+    requested_role: Optional[Role] = Field(None, description="Role the user requested at registration, if any.")
 
     model_config = ConfigDict(from_attributes=True)
 

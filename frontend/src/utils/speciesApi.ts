@@ -33,6 +33,12 @@ export interface Species {
   agroforestry_types: AgroforestryType[];
 }
 
+export interface SpeciesDropdown {
+  id: number;
+  name: string;
+  common_name: string;
+}
+
 // Payload for create/update
 export interface SpeciesPayload {
   name: string;
@@ -53,6 +59,8 @@ export interface SpeciesPayload {
   soil_textures: number[];
   agroforestry_types: number[];
 }
+
+export type SpeciesUpdatePayload = Partial<SpeciesPayload>;
 
 // ---------- HELPERS ----------
 
@@ -115,12 +123,33 @@ function formatApiError(error: unknown): string {
     return error.detail;
   }
 
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "error" in error &&
+    typeof error.error === "string"
+  ) {
+    return error.error;
+  }
+
   return "API error";
 }
 // ---------- SPECIES ----------
 
 export async function getAllSpecies(token: string): Promise<Species[]> {
   const res = await fetch(`${API_BASE}/species`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+
+export async function getSpeciesDropdown(
+  token: string
+): Promise<SpeciesDropdown[]> {
+  const res = await fetch(`${API_BASE}/species/dropdown`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -160,7 +189,7 @@ export async function createSpecies(
 
 export async function updateSpecies(
   id: number,
-  data: SpeciesPayload,
+  data: SpeciesUpdatePayload,
   token: string
 ): Promise<Species> {
   const res = await fetch(`${API_BASE}/species/${id}`, {

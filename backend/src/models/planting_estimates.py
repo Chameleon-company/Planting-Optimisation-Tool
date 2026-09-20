@@ -25,6 +25,10 @@ class PlantingEstimate(Base):
     # Define spatial indexes in SQLAlchemy so Alembic won't try to drop them during autogeneration
     __table_args__ = (
         Index(
+            "idx_planting_estimates_farm_id",
+            "farm_id",
+        ),
+        Index(
             "idx_planting_estimates_geom",
             "geometry",
             postgresql_using="gist",

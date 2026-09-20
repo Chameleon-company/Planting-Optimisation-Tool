@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import "./recommendations.css";
@@ -7,11 +8,17 @@ import RecommendationSearch from "@/components/recommendations/recommendationSea
 import RecommendationTable from "@/components/recommendations/recommendationTable";
 import ExcludedTable from "@/components/recommendations/excludedTable";
 import { Download } from "lucide-react";
+import RecommendationSkeleton from "@/components/recommendations/recommendationSkeleton";
 
 export default function RecommendationPage() {
   const [farmId, setFarmId] = useState("");
   const { recs, excludes, isLoading, hasSearched, error, downloadPdf } =
     useRecommendations(farmId);
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const topFits = recs.filter(r => r.score_mcda >= 0.8);
   const cautionaryFits = recs.filter(r => r.score_mcda < 0.8);
@@ -29,7 +36,7 @@ export default function RecommendationPage() {
         <RecommendationSearch onSearch={setFarmId} isLoading={isLoading} />
 
         {/* The button only exists in the DOM once hasSearched is true.*/}
-        {hasSearched && recs.length > 0 && (
+        {hasSearched && !isLoading && recs.length > 0 && (
           <div className="rec-download-container">
             <button onClick={downloadPdf} className="rec-download-report-btn">
               <Download size={20} />
@@ -48,7 +55,9 @@ export default function RecommendationPage() {
         </div>
       )}
 
-      {hasSearched && (
+      {isLoading && <RecommendationSkeleton />}
+
+      {hasSearched && !isLoading && (
         <div
           style={{
             display: "flex",

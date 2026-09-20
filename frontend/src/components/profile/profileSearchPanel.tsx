@@ -1,8 +1,9 @@
 import FarmSearchInput from "./profileSearchInput";
 import FarmCard from "./profileCard";
-import { Farm } from "@/hooks/useUserProfiles";
-import { useNavigate } from "react-router-dom";
+import ProfileCardSkeleton from "./profileCardSkeleton";
+
 import { useAuth } from "@/contexts/AuthContext";
+import type { Farm } from "@/hooks/useUserProfiles";
 
 interface FarmSearchPanelProps {
   query: string;
@@ -10,6 +11,22 @@ interface FarmSearchPanelProps {
   profile: Farm | null;
   isLoading: boolean;
   error: string | null;
+  onEdit?: () => void;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
+  actionError?: string | null;
+  actionMessage?: string | null;
+}
+
+function hasEnvironmentalProfile(profile: Farm): boolean {
+  return (
+    profile.rainfall_mm != null &&
+    profile.temperature_celsius != null &&
+    profile.elevation_m != null &&
+    profile.ph != null &&
+    profile.slope != null &&
+    Boolean(profile.soil_texture?.name?.trim())
+  );
 }
 
 export default function FarmSearchPanel({
@@ -18,14 +35,46 @@ export default function FarmSearchPanel({
   profile,
   isLoading,
   error,
+  onEdit,
+  onRegenerate,
+  isRegenerating = false,
+  actionError = null,
+  actionMessage = null,
 }: FarmSearchPanelProps) {
-  const navigate = useNavigate();
   const { user } = useAuth();
+
   const canEdit = user?.role === "supervisor" || user?.role === "admin";
+
+  const canManageProfile = canEdit && Boolean(onEdit) && Boolean(onRegenerate);
 
   const handleClear = () => setQuery("");
 
   const isSearching = query.trim().length > 0;
+
+  const isProfileReady = profile ? hasEnvironmentalProfile(profile) : false;
+
+  const actionControls =
+    canManageProfile && profile ? (
+      <div className="profile-action-row">
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={onEdit}
+          disabled={isRegenerating}
+        >
+          Edit
+        </button>
+
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={onRegenerate}
+          disabled={isRegenerating}
+        >
+          {isRegenerating ? "Regenerating..." : "Regenerate"}
+        </button>
+      </div>
+    ) : null;
 
   return (
     <>
@@ -38,34 +87,64 @@ export default function FarmSearchPanel({
 
       {error && <p className="farm-list-empty">{error}</p>}
 
-      {isSearching && isLoading && (
-        <p className="farm-list-empty">Loading profile...</p>
+      {actionError && (
+        <p className="profile-action-message profile-action-error" role="alert">
+          {actionError}
+        </p>
       )}
 
-      {isSearching && !isLoading && profile && (
-        <div className="farm-search-result">
-          <FarmCard isSearched={true} farm={profile} />
+      {actionMessage && !actionError && (
+        <p
+          className="profile-action-message profile-action-success"
+          role="status"
+        >
+          {actionMessage}
+        </p>
+      )}
 
-          <div className="farm-bottom-row">
-            {canEdit && (
-              <button
-                className="btn-primary"
-                onClick={() => navigate("/farms")}
-              >
-                Manage
-              </button>
-            )}
-          </div>
+      {isSearching && isLoading && (
+        <div className="farm-search-result" aria-busy="true" aria-live="polite">
+          <ProfileCardSkeleton />
         </div>
       )}
 
-      {isSearching && !isLoading && !profile && !error && (
+      {isSearching && !isLoading && profile && isProfileReady && (
+        <div className="farm-search-result">
+          <FarmCard isSearched={true} farm={profile} />
+          {actionControls}
+        </div>
+      )}
+
+      {isSearching && !isLoading && profile && !isProfileReady && !error && (
         <>
-          {!user && (
-            <p className="farm-list-empty">You must be logged in to search.</p>
-          )}
-          {user && <p className="farm-list-empty">No profile found.</p>}
+          <div
+            className="profile-status-card profile-status-pending"
+            role="status"
+            aria-live="polite"
+          >
+            <h2 className="profile-status-title">
+              Environmental profile not ready
+            </h2>
+
+            <p className="profile-status-message">
+              This farm is registered, but its environmental data is not
+              available yet. Processing may still be in progress. Please check
+              again later.
+            </p>
+          </div>
+
+          {actionControls}
         </>
+      )}
+
+      {isSearching && !isLoading && !profile && !error && user && (
+        <p className="farm-list-empty">No profile found for this farm.</p>
+      )}
+
+      {isSearching && !isLoading && !profile && !error && !user && (
+        <p className="farm-list-empty">
+          You must be logged in to search for a farm profile.
+        </p>
       )}
     </>
   );

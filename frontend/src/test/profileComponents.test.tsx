@@ -218,7 +218,7 @@ describe("FarmCard", () => {
       <FarmCard farm={mockFarm(1)} isSearched={false} />
     );
     // No extra class should be applied when the card is part of the regular farm list
-    expect(container.firstChild).not.toHaveClass("searchedCard");
+    expect(container.firstChild).not.toHaveClass("searched-card");
   });
 });
 
@@ -236,8 +236,8 @@ describe("FarmList", () => {
         setPage={setPage}
       />
     );
-    // A loading message should be shown while data is in flight
-    expect(screen.getByText(/loading farms/i)).toBeInTheDocument();
+
+    expect(screen.getAllByLabelText("Loading farm")).toHaveLength(3);
   });
 
   it("shows empty state message when there are no farms", () => {
@@ -452,7 +452,7 @@ describe("FarmSearchPanel", () => {
       <FarmSearchPanel {...baseProps} query="42" isLoading={true} />
     );
     // A loading message should appear whenever a query is active and loading
-    expect(screen.getByText(/loading profile/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/loading farm/i)).toBeInTheDocument();
   });
 
   it("renders the profile card when a result is returned", () => {
@@ -463,9 +463,39 @@ describe("FarmSearchPanel", () => {
     expect(screen.getByText("Farm #42")).toBeInTheDocument();
   });
 
+  it("shows a pending message when the farm exists but environmental data is incomplete", () => {
+    const incompleteProfile = {
+      ...mockFarm(42),
+      rainfall_mm: null,
+      temperature_celsius: null,
+      elevation_m: null,
+      ph: null,
+      slope: null,
+      soil_texture: null,
+    } as unknown as Farm;
+
+    renderWithRouter(
+      <FarmSearchPanel {...baseProps} query="42" profile={incompleteProfile} />
+    );
+
+    expect(
+      screen.getByText(/environmental profile not ready/i)
+    ).toBeInTheDocument();
+
+    expect(screen.getByText(/this farm is registered/i)).toBeInTheDocument();
+
+    expect(screen.queryByText("Farm #42")).not.toBeInTheDocument();
+  });
+
   it("shows 'no profile found' when query is active but no result and user is logged in", () => {
     renderWithRouter(
-      <FarmSearchPanel {...baseProps} query="999" profile={null} error={null} />
+      <FarmSearchPanel
+        {...baseProps}
+        query="999"
+        profile={null}
+        error={null}
+        isLoading={false}
+      />
     );
     // When a query returns nothing (and there's no error) show a friendly empty state
     expect(screen.getByText(/no profile found/i)).toBeInTheDocument();
@@ -488,6 +518,121 @@ describe("FarmSearchPanel", () => {
 
     // Unauthenticated users trying to search should be prompted to log in
     expect(screen.getByText(/must be logged in/i)).toBeInTheDocument();
+  });
+
+  it("shows Edit and Regenerate actions for an admin", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^edit$/i })).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", { name: /^regenerate$/i })
+    ).toBeInTheDocument();
+  });
+
+  it("shows Edit and Regenerate actions for a supervisor", () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: "Supervisor User",
+        role: "supervisor",
+      },
+    });
+
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^edit$/i })).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", { name: /^regenerate$/i })
+    ).toBeInTheDocument();
+  });
+
+  it("does not show profile actions for an officer", () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: "Officer User",
+        role: "officer",
+      },
+    });
+
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /^edit$/i })
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("button", { name: /^regenerate$/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("disables profile actions while regeneration is running", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        query="42"
+        profile={mockFarm(42)}
+        onEdit={vi.fn()}
+        onRegenerate={vi.fn()}
+        isRegenerating={true}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^edit$/i })).toBeDisabled();
+
+    expect(
+      screen.getByRole("button", { name: /regenerating/i })
+    ).toBeDisabled();
+  });
+
+  it("shows action success feedback", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        actionMessage="Environmental profile regenerated successfully."
+      />
+    );
+
+    expect(
+      screen.getByText(/profile regenerated successfully/i)
+    ).toBeInTheDocument();
+  });
+
+  it("shows action error feedback", () => {
+    renderWithRouter(
+      <FarmSearchPanel
+        {...baseProps}
+        actionError="Failed to regenerate the environmental profile."
+      />
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /failed to regenerate/i
+    );
   });
 
   it("does not show any search result state when query is empty", () => {

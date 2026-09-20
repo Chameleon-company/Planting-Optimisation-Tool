@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src import cache
@@ -34,6 +34,18 @@ async def create_farm(
 
 # NOTE: When a farm boundary update endpoint is added, invalidate cached results for that farm:
 #   await cache.invalidate(f"profile:{farm_id}", f"sapling:{farm_id}", f"rec:{farm_id}")
+
+
+@router.get("/search", response_model=list[FarmRead])
+async def search_farms(
+    name: str = Query(..., min_length=1, max_length=100),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: UserRead = Depends(get_current_user),
+):
+    """Search accessible farms by name (case-insensitive, partial, fuzzy-ranked).
+    Returns up to 10 closest matches within the caller's RBAC scope.
+    """
+    return await farm_service.search_farms_by_name(db, term=name, current_user=current_user)
 
 
 @router.get("/{farm_id}/boundary", response_model=FarmBoundaryResponse)
@@ -89,7 +101,7 @@ async def read_farm(
 
     # OFFICER → only own farm
     if current_user.role == Role.OFFICER:
-        if farm.user_id != current_user.id:
+        if current_user.id not in {owner.id for owner in farm.owners}:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Farm not found.",
@@ -126,7 +138,7 @@ async def update_farm(
 
     existing_farm = existing_farms[0]
 
-    if current_user.role == Role.SUPERVISOR and existing_farm.user_id != current_user.id:
+    if current_user.role == Role.SUPERVISOR and current_user.id not in {owner.id for owner in existing_farm.owners}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user does not have adequate permissions.",
@@ -139,9 +151,10 @@ async def update_farm(
     )
 
     await cache.invalidate(
-    f"profile:{farm_id}",
-    f"rec:{farm_id}",
-)
+        f"profile:{farm_id}",
+        f"sapling:{farm_id}",
+        f"rec:{farm_id}",
+    )
     return updated_farm
 
 

@@ -8,6 +8,7 @@ from src.domains.reporting import FarmReportContract
 from src.schemas.user import Role, UserRead
 from src.services import reporting as reporting_service
 from src.services import reporting_export
+from src.services.farm_map_image import render_farm_boundary_image
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
@@ -111,7 +112,8 @@ async def export_farm_report_docx(
     if report is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Farm not found or access denied")
 
-    file_bytes = reporting_export.generate_docx(report)
+    map_image_bytes = await render_farm_boundary_image(report.boundary) if report.boundary else None
+    file_bytes = reporting_export.generate_docx(report, map_image_bytes=map_image_bytes)
     filename = f"farm_{farm_id}_report.docx"
 
     return Response(
@@ -138,7 +140,8 @@ async def export_farm_report_pdf(
     if report is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Farm not found or access denied")
 
-    file_bytes = reporting_export.generate_pdf(report)
+    map_image_bytes = await render_farm_boundary_image(report.boundary) if report.boundary else None
+    file_bytes = reporting_export.generate_pdf(report, map_image_bytes=map_image_bytes)
     filename = f"farm_{farm_id}_report.pdf"
 
     return Response(

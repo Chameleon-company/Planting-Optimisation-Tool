@@ -17,8 +17,16 @@ exports[`Layout Snapshot > matches snapshot 1`] = `
           src="/assets/images/logo2.svg"
         />
       </div>
+      <button
+        aria-expanded="false"
+        aria-label="Toggle navigation menu"
+        class="menu-toggle"
+        type="button"
+      >
+        ☰
+      </button>
       <nav
-        class="nav"
+        class="nav "
       >
         <a
           aria-current="page"
@@ -58,7 +66,7 @@ exports[`Layout Snapshot > matches snapshot 1`] = `
         </a>
       </nav>
       <div
-        class="actions"
+        class="actions "
       >
         <div
           class="auth-actions"

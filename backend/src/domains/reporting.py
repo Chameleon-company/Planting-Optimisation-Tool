@@ -1,7 +1,17 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
+
+
+class SaplingReportSummary(BaseModel):
+    """Sapling capacity numbers for a farm, using the product's default spacing and slope settings."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    aligned_count: Optional[int] = None
+    baseline_tree_count: Optional[int] = None
+    additional_sapling_count: Optional[int] = None
 
 
 class RecommendationReportEntry(BaseModel):
@@ -45,6 +55,9 @@ class FarmReportContract(BaseModel):
     recommendations: List[RecommendationReportEntry]
     exclusions: List[RecommendationReportEntry]
     generated_at: datetime
+    boundary: Optional[dict] = None
+    sapling: Optional[SaplingReportSummary] = None
+    planting_guidance: Optional[str] = None
 
     @classmethod
     def from_db_data(cls, farm_obj, recommendation_objs):

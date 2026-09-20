@@ -59,6 +59,7 @@ async def test_species_create_constraints(async_client: AsyncClient, test_admin_
         ("area_ha", 150),
         ("latitude", 100),
         ("slope", -5),
+        ("baseline_tree_count", -1),
     ],
 )
 async def test_farm_create_constraints(
@@ -143,6 +144,7 @@ async def test_species_update_constraints(async_client: AsyncClient, test_admin_
         ("area_ha", 150),
         ("latitude", 100),
         ("slope", -5),
+        ("baseline_tree_count", -1),
     ],
 )
 async def test_farm_update_constraints(async_client: AsyncClient, test_admin_user, admin_auth_headers, setup_soil_texture, field, invalid_value):

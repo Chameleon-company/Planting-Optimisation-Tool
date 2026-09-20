@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src import cache
@@ -19,25 +19,31 @@ router = APIRouter(prefix="/sapling_estimation", tags=["Sapling Calculator"])
     response_model=SaplingEstimationResponse,
     response_model_exclude_none=True,
 )
-@limiter.limit("20/minute", key_func=get_user_id)
+@limiter.limit("10/minute", key_func=get_user_id)
 async def get_sapling_estimation(
     request: Request,
+    response: Response,
     data: SaplingEstimationRequest,
     db: AsyncSession = Depends(get_db_session),
     current_user: UserRead = Depends(require_role(Role.OFFICER)),
 ):
-    """- Estimates sapling planting capacity for a farm.
+    """- Estimates sapling planting capacity for one or many farms.
 
     Inputs:
-    - farm_id: ID of the farm
+    - farm_ids: IDs of the farms to estimate
     - spacing_x: horizontal spacing between saplings
     - spacing_y: vertical spacing between saplings
     - max_slope: maximum allowed slope
 
-    Returns:
-    - pre_slope_count
-    - aligned_count
-    - optimal_angle (if applicable)
+    Returns a batch-shaped payload:
+    - status
+    - farm_count: number of farms processed
+    - results: per-farm items, each with farm_id, status, an optional message
+      on failure and on success, pre_slope_count,
+      - aligned_count: total suitable planting capacity before baseline trees
+      - baseline_tree_count: established trees already on the farm
+      - additional_sapling_count: remaining capacity after baseline trees
+        optimal_angle, rotation_average, rotation_std_dev
 
     Requires OFFICER role or higher.
     """
@@ -46,22 +52,29 @@ async def get_sapling_estimation(
     else:
         user_id_filter = None
 
-    farm_id = data.farm_id
-    spacing_x = data.spacing_x
-    spacing_y = data.spacing_y
-    max_slope = data.max_slope
-
-    farms = await farm_service.get_farm_by_id(db, [farm_id], user_id=user_id_filter)
-    if not farms:
-        raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id} not found.")
+    farms = await farm_service.get_farm_by_id(db, data.farm_ids, user_id=user_id_filter)
+    found_ids = {farm.id for farm in farms}
+    missing = [farm_id for farm_id in data.farm_ids if farm_id not in found_ids]
+    if not found_ids:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Farm(s) not found or not owned: {', '.join(map(str, missing))}",
+        )
+    if missing:
+        response.status_code = status.HTTP_207_MULTI_STATUS
 
     service = sapling_estimation_service.SaplingEstimationService()
-    estimation_data = await service.run_estimation(db, farm_id, spacing_x=spacing_x, spacing_y=spacing_y, max_slope=max_slope)
+    estimation_data = await service.run_estimation(
+        db,
+        farm_ids=data.farm_ids,
+        spacing_x=data.spacing_x,
+        spacing_y=data.spacing_y,
+        max_slope=data.max_slope,
+    )
 
-    if not estimation_data:
-        raise HTTPException(status_code=404, detail=f"Farm boundary not found for farm_id: {farm_id}")
+    for farm_id in data.farm_ids:
+        await cache.invalidate(f"grid:{farm_id}")
 
-    await cache.invalidate(f"grid:{farm_id}")
     return estimation_data
 
 
