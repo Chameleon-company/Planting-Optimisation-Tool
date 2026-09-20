@@ -27,8 +27,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
-  logout: () => void;
-  getAccessToken: () => string | null;
+  logout: () => void ;
 }
 
 // Set AuthContext as a context with AuthContextType or null as it's type, default is null
@@ -127,10 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [logout]);
 
-  const getAccessToken = useCallback(() => {
-    return localStorage.getItem("access_token");
-  }, []);
-
   useEffect(() => {
     const token = localStorage.getItem("access_token");
 
@@ -159,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // To all children wrapped by the Provider
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, login, logout, getAccessToken }}
+      value={{ user, isLoading, login, logout }}
     >
       {children}
     </AuthContext.Provider>
