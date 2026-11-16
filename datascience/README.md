@@ -24,7 +24,7 @@
 
 ## Getting Started
 
-Python 3.14 is the default development version; Python 3.12 remains supported.
+Python 3.14 is the minimum supported and default development version.
 
 Install `uv` for your chosen OS from:
 ```

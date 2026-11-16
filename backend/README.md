@@ -7,8 +7,8 @@ Fork and Clone the repository first, instructions [here](https://github.com/Cham
 
 Backend specific prerequisites:
 
-Python 3.14 is the default development and Docker version. Python 3.12 remains
-supported and is also tested in CI.
+Python 3.14 is the minimum supported version and the default for development
+and Docker.
 
 Make sure [uv](https://docs.astral.sh/uv/getting-started/installation/) is installed, confirm with:
 ```bash

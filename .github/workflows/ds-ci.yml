@@ -1,4 +1,4 @@
-# This workflow installs dependencies, runs tests and lints on supported Python versions.
+# This workflow installs dependencies, runs tests and lints on Python 3.14.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: POT Data Science Testing
@@ -19,12 +19,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.12", "3.14"]
-    env:
-      UV_PYTHON: ${{ matrix.python-version }}
     defaults:
       run:
         working-directory: datascience
@@ -61,7 +55,7 @@ jobs:
 
     - name: Fetch base branch and check for data science changes
       id: ds-changes
-      if: github.event_name == 'pull_request' && matrix.python-version == '3.14'
+      if: github.event_name == 'pull_request'
       run: |
         git fetch origin
         CHANGED=$(git diff --name-only origin/master...HEAD -- '**/*.py' | wc -l)
@@ -86,7 +80,7 @@ jobs:
         EOF
 
     - name: Save PR number
-      if: github.event_name == 'pull_request' && matrix.python-version == '3.14'
+      if: github.event_name == 'pull_request'
       run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
 
     - name: Upload diff-coverage artifacts
