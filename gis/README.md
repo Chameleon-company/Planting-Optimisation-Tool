@@ -2,6 +2,8 @@
 
 ## Overview
 
+Python 3.14 is the default development version; Python 3.12 remains supported.
+
 This module provides a lightweight, production-ready interface for extracting geospatial environmental data from farm coordinates in Timor-Leste. It serves as the core GIS engine for the Planting Optimisation Tool, transforming simple longitude/latitude inputs into comprehensive environmental profiles that include elevation, rainfall, temperature, soil properties, and terrain characteristics.
 
 The module integrates three primary data sources:

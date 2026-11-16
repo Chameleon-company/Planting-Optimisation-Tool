@@ -24,6 +24,8 @@
 
 ## Getting Started
 
+Python 3.14 is the default development version; Python 3.12 remains supported.
+
 Install `uv` for your chosen OS from:
 ```
 https://docs.astral.sh/uv/getting-started/installation/
