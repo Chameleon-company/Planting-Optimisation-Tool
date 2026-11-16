@@ -12,7 +12,7 @@ def is_api_process(proc):
         if parent:
             parent_cmdline = " ".join(parent.cmdline() or []).lower()
             return "uvicorn" in parent_cmdline or "fastapi" in parent_cmdline
-    except (psutil.AccessDenied, psutil.NoSuchProcess):
+    except psutil.AccessDenied, psutil.NoSuchProcess:
         pass
     return False
 
@@ -33,7 +33,7 @@ def kill_process_on_port(port):
                     child.kill()
                 target_proc.kill()
                 return
-        except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.Error):
+        except psutil.AccessDenied, psutil.NoSuchProcess, psutil.Error:
             continue
     print(f"No process found on port {port}.")
 

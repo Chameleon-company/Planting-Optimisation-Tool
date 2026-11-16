@@ -49,7 +49,7 @@ async def import_species_exclusion_rules():
                     try:
                         # Attempt to parse as JSON if it looks like a list or number
                         parsed_value = json.loads(raw_value.replace("'", '"'))
-                    except (json.JSONDecodeError, ValueError):
+                    except json.JSONDecodeError, ValueError:
                         # Fallback to raw string if it's not a JSON structure
                         parsed_value = raw_value
 

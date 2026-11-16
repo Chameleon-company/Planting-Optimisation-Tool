@@ -63,7 +63,7 @@ class AhpCli:
 
                 return val
 
-            except (ValueError, ZeroDivisionError):
+            except ValueError, ZeroDivisionError:
                 print("    Invalid input. Try '5', '0.2', or '1/5'.")
 
     def run_profile(self, species_dict):

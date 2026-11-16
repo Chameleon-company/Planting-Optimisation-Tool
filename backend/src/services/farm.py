@@ -28,7 +28,7 @@ def _value_changed(existing_value, incoming_value) -> bool:
 
     try:
         return Decimal(str(existing_value)) != Decimal(str(incoming_value))
-    except (InvalidOperation, ValueError, TypeError):
+    except InvalidOperation, ValueError, TypeError:
         return existing_value != incoming_value
 
 
