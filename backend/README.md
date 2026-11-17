@@ -7,6 +7,9 @@ Fork and Clone the repository first, instructions [here](https://github.com/Cham
 
 Backend specific prerequisites:
 
+Python 3.14 is the minimum supported version and the default for development
+and Docker.
+
 Make sure [uv](https://docs.astral.sh/uv/getting-started/installation/) is installed, confirm with:
 ```bash
 backend $ uv
@@ -18,7 +21,7 @@ Usage: uv [OPTIONS] <COMMAND>
 Use uv to install `python` version for the project and fetch the project dependencies.
 ```bash
 $ cd Planting-Optimisation-Tool/backend
-backend $ uv python install     # to install the python version defined in pyproject.toml
+backend $ uv python install     # to install the version defined in .python-version
 backend $ uv sync               # to install the project's dependencies
 ```
 

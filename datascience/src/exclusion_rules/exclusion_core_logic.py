@@ -44,12 +44,12 @@ def _compare(farm_val: Any, op: str, threshold_val: Any) -> Optional[bool]:
     # Numeric logic
     try:
         f_num = float(farm_val)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False
 
     try:
         t_num = float(threshold_val)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return True
 
     if op == "<":

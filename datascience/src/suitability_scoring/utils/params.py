@@ -12,7 +12,7 @@ def to_float_or_none(value):
         return None
     try:
         return float(value)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 

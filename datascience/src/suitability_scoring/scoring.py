@@ -18,7 +18,7 @@ def numerical_range_score(value, min_val, max_val):
         return None
     try:
         return 1.0 if float(min_val) <= float(value) <= float(max_val) else 0.0
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 
