@@ -168,3 +168,35 @@ VITE_SPACE_ID=
 VITE_ACCESS_TOKEN=
 ```
 Please check the secure handover notes for these credentials
+
+
+### Local Backend Configuration
+
+To connect the frontend to the local backend for development and admin testing:
+
+1. Create a `.env` file inside the `frontend/` directory.
+
+2. Add the following environment variable:
+
+   `VITE_API_URL=http://localhost:8080`
+
+3. Set up the local backend by following the Backend README. Make sure the required tools, including Docker, uv, and just, are installed.
+
+   From the `backend/` directory, run:
+
+   `just setup`
+   `uv run python -m src.scripts.create_test_user`
+   `just run-api`
+  
+4. Start or restart the frontend from the `frontend/` directory:
+
+   `npm run dev`
+
+5. Open `http://localhost:5173` and log in using the local test account credentials provided in the Backend README.
+
+
+**Important Notes:**
+- Make sure port 8080 is available and not being used by another application.
+- Restart the frontend after changing the `.env` file.
+- Do not connect to the production API for local admin testing, as this may affect real user data.
+- Do not commit the local `.env` file to GitHub.
