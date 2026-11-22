@@ -30,7 +30,7 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"], sto
 def get_user_id(request: Request) -> str:
     token = request.headers.get("Authorization", "").removeprefix("Bearer ")
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM], options={"require": ["exp"]})
         return str(payload.get("sub"))
     except Exception:
         return get_remote_address(request)
@@ -43,17 +43,19 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         data: Dictionary of claims to encode in the token.
               Standard format: {"sub": str(user_id), "role": user_role}
         expires_delta: Optional custom expiration duration.
-                      If not provided, uses ACCESS_TOKEN_EXPIRE_MINUTES from settings
+                      If not provided, uses ACCESS_TOKEN_EXPIRE_MINUTES from settings.
+                      Must be positive and no longer than the configured lifetime.
 
     Returns:
         str: Encoded JWT token string ready for use in Authorization headers
     """
     to_encode = data.copy()
 
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    max_lifetime = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    lifetime = max_lifetime if expires_delta is None else expires_delta
+    if lifetime <= timedelta(0) or lifetime > max_lifetime:
+        raise ValueError("Access token lifetime must be positive and no longer than the configured lifetime")
+    expire = datetime.now(timezone.utc) + lifetime
 
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
@@ -81,7 +83,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM], options={"require": ["exp"]})
         user_id: int = payload.get("sub")
         if user_id is None:
             raise credentials_exception
