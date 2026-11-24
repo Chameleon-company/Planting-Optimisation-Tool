@@ -15,6 +15,14 @@ class Role(str, Enum):
     ADMIN = "admin"
 
 
+class ApprovalAction(str, Enum):
+    """User-management actions that can need a second admin's approval."""
+
+    APPROVE_USER = "approve_user"
+    CHANGE_ROLE = "change_role"
+    DEACTIVATE_USER = "deactivate_user"
+
+
 class SoilTextureID(IntEnum):
     SAND = 1
     LOAMY_SAND = 2
