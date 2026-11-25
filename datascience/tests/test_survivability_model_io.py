@@ -1,17 +1,17 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.dummy import DummyClassifier
 
-from src.survivability.model_io import save_model, load_model
+from src.survivability.model_io import load_model, save_model
 
 
 def test_save_and_load_model(tmp_path):
     # Create a simple trained model for testing
-    X = [[0], [1], [2], [3]]
+    x = [[0], [1], [2], [3]]
     y = [0, 1, 0, 1]
 
     pipeline = DummyClassifier(strategy="prior")
-    pipeline.fit(X, y)
+    pipeline.fit(x, y)
 
     threshold = 0.6218
 
@@ -28,10 +28,7 @@ def test_save_and_load_model(tmp_path):
     assert loaded_threshold == pytest.approx(threshold)
 
     # Verify predictions remain unchanged
-    np.testing.assert_allclose(
-        pipeline.predict_proba(X),
-        loaded_pipeline.predict_proba(X)
-    )
+    np.testing.assert_allclose(pipeline.predict_proba(x), loaded_pipeline.predict_proba(x))
 
 
 def test_load_missing_model(tmp_path):

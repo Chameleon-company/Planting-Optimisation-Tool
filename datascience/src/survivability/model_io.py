@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import joblib
 
 
@@ -9,10 +10,7 @@ def save_model(pipeline, threshold, model_path):
 
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
-    model_data = {
-        "pipeline": pipeline,
-        "threshold": float(threshold)
-    }
+    model_data = {"pipeline": pipeline, "threshold": float(threshold)}
 
     joblib.dump(model_data, model_path)
 

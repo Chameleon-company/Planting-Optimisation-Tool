@@ -1,9 +1,10 @@
+import numpy as np
 from lightgbm import LGBMClassifier
+from sklearn.metrics import precision_recall_curve
 from sklearn.pipeline import Pipeline
 
 from .preprocessing import make_preprocessor
-import numpy as np
-from sklearn.metrics import precision_recall_curve
+
 
 def create_model_pipeline() -> Pipeline:
     """Create the tuned LightGBM survivability pipeline."""
@@ -32,34 +33,28 @@ def create_model_pipeline() -> Pipeline:
 
     return pipeline
 
-def train_model(X_train, y_train) -> Pipeline:
+
+def train_model(x_train, y_train) -> Pipeline:
     """Train the survivability model using training data."""
 
     pipeline = create_model_pipeline()
 
-    pipeline.fit(X_train, y_train)
+    pipeline.fit(x_train, y_train)
 
     return pipeline
 
-def calculate_optimal_threshold(pipeline, X_val, y_val) -> float:
+
+def calculate_optimal_threshold(pipeline, x_val, y_val) -> float:
     """Calculate the optimal death probability threshold using F2 score."""
 
     # Calculate survival probabilities
-    y_prob = pipeline.predict_proba(X_val)[:, 1]
+    y_prob = pipeline.predict_proba(x_val)[:, 1]
 
     # Calculate precision and recall for the died class
-    precisions, recalls, thresholds = precision_recall_curve(
-        y_val,
-        1 - y_prob,
-        pos_label=0
-    )
+    precisions, recalls, thresholds = precision_recall_curve(y_val, 1 - y_prob, pos_label=0)
 
     # Calculate F2 scores for available thresholds
-    f2_scores = (
-        5 * precisions[:-1] * recalls[:-1]
-    ) / (
-        4 * precisions[:-1] + recalls[:-1] + 1e-9
-    )
+    f2_scores = (5 * precisions[:-1] * recalls[:-1]) / (4 * precisions[:-1] + recalls[:-1] + 1e-9)
 
     # Find the threshold with the highest F2 score
     best_idx = np.argmax(f2_scores)
