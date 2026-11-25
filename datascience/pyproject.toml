@@ -40,7 +40,7 @@ where = ["src"]
 
 # Required for pyTest to find the modules
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [".","src"]
 testpaths = ["tests"]
 addopts = "--cov=src --cov-report=xml"
 
