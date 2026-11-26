@@ -73,7 +73,8 @@ async def get_current_user(
         User: The authenticated user ORM object
 
     Raises:
-        HTTPException: 401 Unauthorized if token is invalid, expired, or user not found
+        HTTPException: 401 Unauthorized if token is invalid, expired, the user is not found,
+            or the user has been deactivated
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -98,7 +99,9 @@ async def get_current_user(
     result = await db.execute(select(User).filter(User.id == token_data.id))
     user = result.scalar_one_or_none()
 
-    if user is None:
+    # A deactivated user's existing tokens stop working immediately because the
+    # user is re-loaded from the database on every request.
+    if user is None or not user.is_active:
         raise credentials_exception
     return user
 

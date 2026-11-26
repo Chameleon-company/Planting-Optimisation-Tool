@@ -105,8 +105,8 @@ async def login_for_access_token(
 
     Raises:
         HTTPException: 401 if credentials are invalid
-        HTTPException: 403 if email is unverified or the account is not yet
-            approved by an admin
+        HTTPException: 403 if email is unverified, the account is not yet
+            approved by an admin, or the account has been deactivated
 
     Example:
         POST /auth/token
@@ -162,6 +162,12 @@ async def login_for_access_token(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Your account is awaiting admin approval.",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been deactivated.",
         )
 
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
