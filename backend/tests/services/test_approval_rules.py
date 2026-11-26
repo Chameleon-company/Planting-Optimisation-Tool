@@ -47,9 +47,15 @@ def test_needs_second_admin_requires_a_role(action):
         needs_second_admin(action)
 
 
-def test_needs_second_admin_rejects_an_invalid_role():
+@pytest.mark.parametrize("action", [APPROVE, CHANGE_ROLE])
+def test_needs_second_admin_rejects_an_invalid_role(action):
     with pytest.raises(ValueError):
-        needs_second_admin(APPROVE, "superuser")
+        needs_second_admin(action, "superuser")
+
+
+def test_decide_rejects_an_invalid_role_for_a_role_change():
+    with pytest.raises(ValueError):
+        decide(CHANGE_ROLE, new_role="superuser", target_is_active_admin=False, active_admin_count=2)
 
 
 # is_active_admin
@@ -109,7 +115,9 @@ def test_second_admin_actions_create_a_request_when_two_or_more_admins_exist(act
     [
         (APPROVE, Role.SUPERVISOR),
         (APPROVE, Role.ADMIN),
+        (CHANGE_ROLE, Role.OFFICER),
         (CHANGE_ROLE, Role.SUPERVISOR),
+        (CHANGE_ROLE, Role.ADMIN),
         (DEACTIVATE, None),
     ],
 )
@@ -140,6 +148,11 @@ def test_last_admin_cannot_be_demoted(new_role):
 def test_an_admin_can_be_deactivated_when_another_active_admin_exists():
     decision = decide(DEACTIVATE, target_is_active_admin=True, active_admin_count=2)
     assert decision == ApprovalDecision(Outcome.REQUEST)
+
+
+def test_approving_a_user_is_never_blocked_by_the_last_admin_rule():
+    decision = decide(APPROVE, new_role=Role.ADMIN, target_is_active_admin=True, active_admin_count=1)
+    assert decision == ApprovalDecision(Outcome.BYPASS)
 
 
 def test_deactivating_a_non_admin_is_not_blocked_by_the_last_admin_rule():

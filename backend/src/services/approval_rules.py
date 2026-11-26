@@ -3,8 +3,9 @@ from enum import Enum
 
 from src.schemas.constants import ApprovalAction, Role
 
-# Error code for the API contract
+# Error codes for the API contract
 LAST_ADMIN = "last_admin"
+OWN_REQUEST = "own_request"
 
 # Roles that cannot be granted by a single admin
 ELEVATED_ROLES = frozenset({Role.SUPERVISOR, Role.ADMIN})
@@ -47,11 +48,14 @@ def needs_second_admin(action: ApprovalAction, new_role: Role | str | None = Non
     if new_role is None:
         raise ValueError(f"new_role is required for {action.value}")
 
+    # Validate the role on every path, so an invalid role is always rejected
+    role = Role(new_role)
+
     if action == ApprovalAction.CHANGE_ROLE:
         return True
 
     # APPROVE_USER: only granting supervisor or admin needs a second admin
-    return Role(new_role) in ELEVATED_ROLES
+    return role in ELEVATED_ROLES
 
 
 def _removes_admin_access(action: ApprovalAction, new_role: Role | str | None) -> bool:
