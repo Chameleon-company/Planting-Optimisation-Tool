@@ -3,6 +3,7 @@ import secrets
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import jwt
@@ -48,6 +49,46 @@ def test_signing_key_loaded_from_dotenv(monkeypatch, tmp_path):
     assert Settings(_env_file=env_file).SECRET_KEY == key
 
 
+def test_first_run_generates_and_preserves_a_signing_key(monkeypatch, tmp_path):
+    backend_dir = Path(__file__).resolve().parents[1]
+    template = (backend_dir / ".env.example").read_text(encoding="utf-8")
+    script = backend_dir / "src" / "scripts" / "ensure_env.py"
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+    keys = []
+    for name in ("first", "second"):
+        directory = tmp_path / name
+        directory.mkdir()
+        (directory / ".env.example").write_text(template, encoding="utf-8")
+        result = subprocess.run([sys.executable, str(script)], cwd=directory, capture_output=True, text=True, check=True)
+        env_file = directory / ".env"
+        contents = env_file.read_text(encoding="utf-8")
+        key = Settings(_env_file=env_file).SECRET_KEY
+        assert key not in result.stdout
+        assert len(key.encode("utf-8")) >= 32
+        keys.append(key)
+        subprocess.run([sys.executable, str(script)], cwd=directory, capture_output=True, text=True, check=True)
+        assert env_file.read_text(encoding="utf-8") == contents
+    assert keys[0] != keys[1]
+
+
+def test_first_run_does_not_change_existing_empty_key(tmp_path):
+    script = Path(__file__).resolve().parents[1] / "src" / "scripts" / "ensure_env.py"
+    env_file = tmp_path / ".env"
+    env_file.write_text("SECRET_KEY=\n", encoding="utf-8")
+    subprocess.run([sys.executable, str(script)], cwd=tmp_path, capture_output=True, text=True, check=True)
+    assert env_file.read_text(encoding="utf-8") == "SECRET_KEY=\n"
+
+
+@pytest.mark.parametrize("template", [None, "SECRET_KEY=not-empty\n"])
+def test_first_run_rejects_missing_or_invalid_template(tmp_path, template):
+    script = Path(__file__).resolve().parents[1] / "src" / "scripts" / "ensure_env.py"
+    if template is not None:
+        (tmp_path / ".env.example").write_text(template, encoding="utf-8")
+    result = subprocess.run([sys.executable, str(script)], cwd=tmp_path, capture_output=True, text=True, check=False)
+    assert result.returncode != 0
+    assert not (tmp_path / ".env").exists()
+
+
 def test_missing_signing_key_prevents_startup(tmp_path):
     env = os.environ.copy()
     env.pop("SECRET_KEY", None)
@@ -70,6 +111,7 @@ def test_signing_key_is_not_in_settings_repr():
 
 
 def test_access_token_default_lifetime_is_30_minutes(monkeypatch):
+    monkeypatch.setenv("SECRET_KEY", secrets.token_urlsafe(32))  # <- the added line
     monkeypatch.delenv("ACCESS_TOKEN_EXPIRE_MINUTES", raising=False)
     assert Settings(_env_file=None).ACCESS_TOKEN_EXPIRE_MINUTES == 30
     monkeypatch.setattr(settings, "ACCESS_TOKEN_EXPIRE_MINUTES", 30)

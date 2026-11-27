@@ -78,12 +78,14 @@ An `.env` file must be present containing:
 - PostgreSQL database live and test database URLs, must include `+asyncpg` driver.
 - A unique `SECRET_KEY` for signing JWTs, at least 32 bytes long.
 
-`.env.example` has been included in the repository, and an `.env` file will be created via the `ensure-env` target when a [just](#justfile-commands) command is run for the first time.
+`.env.example` has been included in the repository. When a [just](#justfile-commands)
+command first creates `.env`, it generates a random signing key. Existing `.env`
+files are not changed.
 
-Generate a signing key using `python -c "import secrets; print(secrets.token_urlsafe(32))"`
-and set `SECRET_KEY` in the untracked `backend/.env` file before running the
-backend or migrations. Use a different randomly generated key for each
-environment and never commit it.
+If creating `.env` manually or updating an existing file, generate a signing key
+using `python -c "import secrets; print(secrets.token_urlsafe(32))"` and set
+`SECRET_KEY` before running the backend or migrations. Use a different randomly
+generated key for each environment and never commit it.
 
 For Render, set `SECRET_KEY` as a secret environment variable before deploying,
 including before the pre-deploy migration runs. All instances in an environment

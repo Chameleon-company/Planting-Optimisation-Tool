@@ -20,9 +20,7 @@ DEFAULT_HOST    := "http://localhost:" + DEFAULT_PORT
 # Standard recipe to avoid Shebang/CRLF issues
 [private]
 ensure-env:
-    @{{PYTHON}} -c "import os, shutil; \
-    not os.path.exists('.env') and os.path.exists('.env.example') and \
-    (shutil.copy('.env.example', '.env'), print('--- Created .env from .env.example ---'))"
+    @{{PYTHON}} src/scripts/ensure_env.py
 
 # Restarts the DB container and applies any pending migrations (data is preserved)
 setup: ensure-env stop start migrate
