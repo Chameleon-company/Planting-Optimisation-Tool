@@ -76,8 +76,25 @@ backend $ source .venv/bin/activate     # Activate the virtual environment of th
 An `.env` file must be present containing:
 - PostgreSQL user credentials
 - PostgreSQL database live and test database URLs, must include `+asyncpg` driver.
+- A unique `SECRET_KEY` for signing JWTs, at least 32 bytes long.
 
-`.env.example` has been included in the repository, and an `.env` file will be created via the `ensure-env` target when a [just](#justfile-commands) command is run for the first time.
+`.env.example` has been included in the repository. When a [just](#justfile-commands)
+command first creates `.env`, it generates a random signing key. Existing `.env`
+files are not changed.
+
+If creating `.env` manually or updating an existing file, generate a signing key
+using `python -c "import secrets; print(secrets.token_urlsafe(32))"` and set
+`SECRET_KEY` before running the backend or migrations. Use a different randomly
+generated key for each environment and never commit it.
+
+For Render, set `SECRET_KEY` as a secret environment variable before deploying,
+including before the pre-deploy migration runs. All instances in an environment
+must use the same persistent key. Rotate any exposed or placeholder key;
+rotation invalidates existing tokens and requires users to log in again.
+
+Access tokens expire after 30 minutes by default. `ACCESS_TOKEN_EXPIRE_MINUTES`
+can be set to a shorter whole number of minutes (1-30). Users must sign in
+again when their token expires.
 
 To successfully run the `generate_environmental_profile` feature from the `GIS` subdirectory, a Google Earth Engine service account must be registered (service account details included in handover documentation).
 
@@ -408,7 +425,7 @@ The [pytest](https://docs.pytest.org/en/stable/) v2 framework handles all of the
 Directly running `backend $ uv run pytest` will <u>**not**</u> work, because the `just test` target prepares the migrated local development database and replicates it into a dedicated test database before running the test suite.
 
 **Authentication Test Coverage:**
-
+- [tests/test_signing_key.py](tests/test_signing_key.py): `SECRET_KEY` validation (missing, short, weak and placeholder keys), token lifetime limits, and rejection of tokens signed with a wrong or old key or missing an expiry
 - [tests/test_auth.py](tests/test_auth.py): User registration, login, duplicate email prevention, password validation (min 8 chars), token authentication
 - [tests/test_roles.py](tests/test_roles.py): Role-based permissions (Officer/Supervisor/Admin), hierarchical access control, user CRUD operations by role
 

@@ -49,6 +49,12 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Generate CI signing key
+      run: |
+        key=$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')
+        echo "::add-mask::$key"
+        echo "SECRET_KEY=$key" >> "$GITHUB_ENV"
+
     - name: Install uv
       uses: astral-sh/setup-uv@v6
       with:
