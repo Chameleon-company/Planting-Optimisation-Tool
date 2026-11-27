@@ -190,7 +190,7 @@ async def register_user(request: Request, user: UserCreate, background_tasks: Ba
         email=normalized_email,
         name=user.name,
         hashed_password=hashed_password,
-        role=Role.OFFICER,
+        role=Role.OFFICER,  ## requested role is informational only, admin never use it for perm checks
         requested_role=user.role,
         is_approved=False,
         is_verified=False,

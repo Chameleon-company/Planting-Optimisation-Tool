@@ -753,3 +753,77 @@ async def test_resend_verification_email_success(
     tokens = token_result.scalars().all()
 
     assert len(tokens) == 1
+
+
+@pytest.mark.parametrize("submitted_role", ["officer", "supervisor", "admin"])
+async def test_register_always_creates_officer(async_client: AsyncClient, async_session: AsyncSession, submitted_role: str):
+    r = await async_client.post(
+        "/auth/register",
+        json={
+            "email": f"role_{submitted_role}@test.com",
+            "name": f"{submitted_role} role test",
+            "password": "Password1!",
+            "role": submitted_role,
+        },
+    )
+    assert r.status_code == 200
+    # Verify the user was actually created in the database
+    result = await async_session.execute(select(User).filter(User.email == f"role_{submitted_role}@test.com"))
+    db_user = result.scalar_one_or_none()
+    assert db_user is not None
+    assert db_user.role == "officer"
+    assert db_user.requested_role == submitted_role
+    assert db_user.is_approved is False
+
+
+async def test_register_as_admin_cannot_login_until_approved(async_client: AsyncClient, async_session: AsyncSession):
+    r = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "admin@testforapproved.com",
+            "name": "Can I login without approval",
+            "password": "Password1!",
+            "role": "admin",
+        },
+    )
+    assert r.status_code == 200
+    result = await async_session.execute(select(User).filter(User.email == "admin@testforapproved.com"))
+    db_user = result.scalar_one_or_none()
+    assert db_user is not None
+    db_user.is_verified = True
+    await async_session.flush()
+    login = await async_client.post(
+        "/auth/token",
+        data={"username": "admin@testforapproved.com", "password": "Password1!"},
+    )
+    assert login.status_code == 403
+    assert "approval" in login.json()["detail"]
+
+
+async def test_verified_and_approved_user_cant_access_admin_resources(async_client: AsyncClient, async_session: AsyncSession):
+    r = await async_client.post(
+        "/auth/register",
+        json={
+            "email": "admin@testforadminresources.com",
+            "name": "can I access admin resources",
+            "password": "Password1!",
+            "role": "admin",
+        },
+    )
+    assert r.status_code == 200
+    result = await async_session.execute(select(User).filter(User.email == "admin@testforadminresources.com"))
+    db_user = result.scalar_one_or_none()
+    assert db_user is not None
+    assert db_user.role == "officer"
+    assert db_user.requested_role == "admin"
+    db_user.is_verified = True
+    db_user.is_approved = True
+    await async_session.flush()
+    login = await async_client.post(
+        "/auth/token",
+        data={"username": "admin@testforadminresources.com", "password": "Password1!"},
+    )
+    assert login.status_code == 200
+    token = login.json()["access_token"]
+    response = await async_client.get("/users/pending", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 403
