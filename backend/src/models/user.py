@@ -32,6 +32,7 @@ class User(Base):
         hashed_password: Bcrypt-hashed password (never store plain text!)
         role: User's role - one of: "officer", "supervisor", "admin" (indexed)
         is_approved: Whether an admin has approved this account for login
+        is_active: False once an admin has deactivated the account (see Security Notes)
         requested_role: The role the user asked for at registration (admin context only)
         farms: Relationship to Farm model - farms supervised by this user
 
@@ -50,6 +51,9 @@ class User(Base):
         - All user modifications should be audit logged
         - New registrations are created with is_approved=False and cannot log in
           until an admin approves them and assigns their effective role
+        - A deactivated user (is_active=False) cannot log in, and any token they
+          already hold stops working, because get_current_user re-reads this row
+          on every request. The account and its audit history are kept.
 
     Database Schema:
         - Table name: users
@@ -70,6 +74,10 @@ class User(Base):
 
     # Admin approval gate, users cannot log in until an admin approves them
     is_approved: Mapped[bool] = mapped_column(default=False, nullable=False)
+
+    # Deactivation flag. Deactivating keeps the row (and its audit history) but
+    # blocks login and invalidates existing tokens. Existing rows default to active.
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
     # The role the applicant requested at registration. The effective role lives
     # in "role" and is only ever assigned by an admin at approval time. Nullable so
